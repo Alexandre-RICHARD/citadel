@@ -1,0 +1,10 @@
+# Folder
+.vscode
+node_modules
+build
+
+# Files
+.npmrc
+.env
+.env.dev
+.env.prod
