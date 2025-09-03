@@ -105,5 +105,8 @@ module.exports = {
       "warn",
       { allowConstantExport: true },
     ],
+
+    // Vitest
+	  "vitest/no-commented-out-tests": "off",
   },
 };

@@ -1,8 +1,11 @@
 import { NavLink, Outlet } from "react-router";
 
-import { projects } from "./projects/projects.dictionnary";
+import { projects } from "../projects/projects.dictionnary";
+import { useNavigation } from "./useNavigation";
 
 export function Navigation() {
+	useNavigation();
+
 	return (
 		<>
 			<p>Navigation</p>
