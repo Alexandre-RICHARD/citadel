@@ -1,8 +1,8 @@
 # Folder
+.vscode/
 build
 node_modules/
 report/
-.vscode/
 
 # Files
 .env
