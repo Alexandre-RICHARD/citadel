@@ -9,11 +9,11 @@ describe("setFavicon", () => {
 	});
 
 	it("add unique icon link when there isn't", () => {
-		expect(document.head.querySelectorAll('link[rel="icon"]')).toHaveLength(0);
+		expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(0);
 
 		setFavicon("/favicon/test.ico");
 
-		const links = document.head.querySelectorAll('link[rel="icon"]');
+		const links = document.head.querySelectorAll("link[rel='icon']");
 		expect(links).toHaveLength(1);
 
 		const link = links[0] as HTMLLinkElement;
@@ -27,11 +27,11 @@ describe("setFavicon", () => {
       <link rel="icon" href="/favicon/old1.ico" />
       <link rel="icon" href="/favicon/old2.ico" />
     `;
-		expect(document.head.querySelectorAll('link[rel="icon"]')).toHaveLength(2);
+		expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(2);
 
 		setFavicon("/favicon/new.ico");
 
-		const icons = document.head.querySelectorAll('link[rel="icon"]');
+		const icons = document.head.querySelectorAll("link[rel='icon']");
 		expect(icons).toHaveLength(1);
 		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
 			"/favicon/new.ico",
@@ -43,7 +43,7 @@ describe("setFavicon", () => {
 
 		setFavicon("");
 
-		const icons = document.head.querySelectorAll('link[rel="icon"]');
+		const icons = document.head.querySelectorAll("link[rel='icon']");
 		expect(icons).toHaveLength(1);
 		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
 			"/favicon/existing.ico",
@@ -54,7 +54,7 @@ describe("setFavicon", () => {
 		setFavicon("/favicon/a.ico");
 		setFavicon("/favicon/b.ico");
 
-		const icons = document.head.querySelectorAll('link[rel="icon"]');
+		const icons = document.head.querySelectorAll("link[rel='icon']");
 		expect(icons).toHaveLength(1);
 		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
 			"/favicon/b.ico",

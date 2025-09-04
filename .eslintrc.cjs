@@ -13,11 +13,12 @@ module.exports = {
     "vite.config.ts",
     "vitest.config.ts",
     "vitest.setup.ts",
+    "alex-specs",
   ],
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     "plugin:import/recommended",
@@ -55,7 +56,7 @@ module.exports = {
     // Classic rules
     "no-console": ["warn", { allow: ["error"] }],
     "no-param-reassign": "error",
-  
+
     // Prettier rules
     "prettier/prettier": [
       "error",
@@ -75,7 +76,7 @@ module.exports = {
         singleAttributePerLine: true,
       },
     ],
-  
+
     // Import rules
     "import/no-extraneous-dependencies": "off",
     "import/no-default-export": "error",
@@ -84,22 +85,30 @@ module.exports = {
     "import/no-unused-modules": ["error", { "missingExports ": true, "unusedExports": true }],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-  
+    "no-restricted-imports": ["error", {
+      patterns: [
+        {
+          group: ["**/alex-specs/**"],
+          message: "Should import only from @specs",
+        },
+      ],
+    }],
+
     // React rules
     "react/react-in-jsx-scope": "off",
     "react/function-component-definition": "error",
     "react/require-default-props": "off",
-  
+
     // Typescript
     "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/consistent-type-exports": "error",
     "@typescript-eslint/consistent-type-definitions": ["error", "type"],
     "@typescript-eslint/no-use-before-define": "error",
-  
+
     // Disable old and depreciated rules
     "@typescript-eslint/lines-between-class-members": "off",
     "@typescript-eslint/no-throw-literal": "off",
-  
+
     // React-refresh, default vite rules
     "react-refresh/only-export-components": [
       "warn",
@@ -107,6 +116,17 @@ module.exports = {
     ],
 
     // Vitest
-	  "vitest/no-commented-out-tests": "off",
+    "vitest/no-commented-out-tests": "off",
   },
+  overrides: [
+    {
+      files: [
+        "src/vite-env.d.ts",
+      ],
+      rules: {
+        "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+        "@typescript-eslint/no-empty-object-type": "off",
+      }
+    },
+  ],
 };

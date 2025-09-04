@@ -6,13 +6,14 @@ import { projects } from "./src/projects/projects.dictionnary";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
-    server: { port: parseInt(env.VITE_LOCAL_PORT, 10) },
+    server: { port: parseInt(env.VITE_LOCAL_PORT, 10), strictPort: true },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
         "@styles": path.resolve(__dirname, "src/styles"),
+        "@specs": path.resolve(__dirname, "alex-specs/specs"),
       },
-      dedupe: ["react", "react-dom"],
+      dedupe: ["zod"],
     },
     plugins: [react()],
     build: {
@@ -47,6 +48,7 @@ export default defineConfig(({ mode }) => {
                 return project.outputFile;
               }
             }
+      // TODO
       //       const translationsFilesRegex =
       //         /src\/.*\/translations\/.*\.translations\.ts/;
       //       if (translationsFilesRegex.test(fileName)) {
