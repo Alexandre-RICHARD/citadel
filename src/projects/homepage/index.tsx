@@ -4,13 +4,23 @@ import { Button } from "../../common/components/button/Button";
 import { homepageApiClients } from "./homepage.apiClients";
 
 export function Homepage() {
-	async function fetch() {
-		console.log(await homepageApiClients.getTest());
-		console.log(await homepageApiClients.getTests());
-	}
-
 	useEffect(() => {
-		fetch().catch(() => undefined);
+		async function fetchData() {
+			try {
+				const [one, all] = await Promise.all([
+					homepageApiClients.getTest(),
+					homepageApiClients.getTests(),
+				]);
+				// eslint-disable-next-line no-console
+				console.log({ one, all });
+			} catch (err) {
+				if (!(err instanceof DOMException && err.name === "AbortError")) {
+					console.error("Erreur API homepage:", err);
+				}
+			}
+		}
+
+		fetchData().catch(() => {});
 	}, []);
 
 	return (

@@ -11,7 +11,12 @@ export function Navigation() {
 			<p>Navigation</p>
 			<nav>
 				{Object.values(projects).map((route) => (
-					<NavLink to={route.path}>{route.name}</NavLink>
+					<NavLink
+						key={route.name}
+						to={route.path}
+					>
+						{route.name}
+					</NavLink>
 				))}
 			</nav>
 			<Outlet />
