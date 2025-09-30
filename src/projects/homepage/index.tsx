@@ -1,26 +1,48 @@
+import type { GetTest } from "@specs/endpoint/test/getTest.endpoint";
+import type { PostTest } from "@specs/endpoint/test/postTest.endpoint";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useEffect } from "react";
 
 import { Button } from "../../common/components/button/Button";
-import { homepageApiClients } from "./homepage.apiClients";
+import { fetchHandler } from "../../common/helpers/fetch/handlerFetch";
 
 export function Homepage() {
 	useEffect(() => {
-		async function fetchData() {
-			try {
-				const [one, all] = await Promise.all([
-					homepageApiClients.getTest(),
-					homepageApiClients.getTests(),
-				]);
-				// eslint-disable-next-line no-console
-				console.log({ one, all });
-			} catch (err) {
-				if (!(err instanceof DOMException && err.name === "AbortError")) {
-					console.error("Erreur API homepage:", err);
-				}
-			}
-		}
+		(async () => {
+			const response = await fetchHandler<PostTest>({
+				url: "/test/unique/:id",
+				method: HttpMethodEnum.POST,
+				protected: true,
+				pathParams: {
+					id: "1",
+				},
+				queryParams: {
+					possibility: "true",
+				},
+				body: {
+					dateOfDay: new Date(),
+					numero1: 21,
+				},
+			});
+			console.log(response);
+		})().catch((error) => console.log(error));
+	}, []);
 
-		fetchData().catch(() => {});
+	useEffect(() => {
+		(async () => {
+			const response = await fetchHandler<GetTest>({
+				url: "/test/get/:uuid",
+				method: HttpMethodEnum.GET,
+				protected: true,
+				pathParams: {
+					uuid: "b40",
+				},
+				queryParams: {
+					getNode: "f",
+				},
+			});
+			console.log(response);
+		})().catch((error) => console.log(error));
 	}, []);
 
 	return (

@@ -11,9 +11,8 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "src"),
         "@styles": path.resolve(__dirname, "src/styles"),
-        "@specs": path.resolve(__dirname, "alex-specs/specs"),
+        "@specs": path.resolve(__dirname, "alex-specs/src"),
       },
-      dedupe: ["zod"],
     },
     plugins: [react()],
     build: {
@@ -44,7 +43,6 @@ export default defineConfig(({ mode }) => {
             if (fileName.includes("components")) return "common/";
             for (const project of Object.values(projects)) {
               if (fileName.includes(project.buildPath)) {
-                console.log(fileName);
                 return project.outputFile;
               }
             }

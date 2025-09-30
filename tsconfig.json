@@ -41,7 +41,7 @@
 				"src/styles/*"
 			],
 			"@specs/*": [
-				"alex-specs/specs/*"
+				"alex-specs/src/*"
 			]
 		}
 	},
