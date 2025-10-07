@@ -8,9 +8,9 @@
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
-		"module": "esnext",
+		"module": "nodenext",
 		"moduleDetection": "force",
-		"moduleResolution": "bundler",
+		"moduleResolution": "nodenext",
 		"noEmit": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitAny": true,
@@ -29,7 +29,7 @@
 	},
 	"include": [
 		"specs.ts",
-		"specs",
+		"src",
 		"**/*.d.ts",
 	],
 	"exclude": [

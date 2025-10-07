@@ -80,10 +80,17 @@ module.exports = {
   overrides: [
     {
       files: [
-        "specs.ts",
+        "**/*endpoint.ts",
       ],
       rules: {
-        "import/no-default-export": "off",
+        "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      }
+    },
+    {
+      files: [
+        "./src/specs.ts",
+      ],
+      rules: {
         "import/no-unused-modules": "off",
       }
     },
