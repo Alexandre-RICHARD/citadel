@@ -1,1 +1,1 @@
-export type { TestEndpointRegistry } from "./endpoint/testEndpointRegistry.type.ts";
+export type { TestEndpointRegistry } from "./project/test/testEndpointRegistry.type.ts";
