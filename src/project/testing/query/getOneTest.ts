@@ -1,23 +1,31 @@
 import { QueryTypes } from "sequelize";
 
 import { sequelize } from "../../../sequelize.ts";
-import { Test } from "../models/testTable/models.ts";
+import { Test } from "../models/models.ts";
 
-// eslint-disable-next-line import/no-unused-modules
-export async function getOneTest(): Promise<Test | null> {
+type Args = {
+	id: number;
+};
+
+export async function getOneTest({ id }: Args): Promise<Test | null> {
 	const sql = `
-      SELECT *
-      FROM tests
-      ORDER BY id ASC
-			LIMIT 1
+      SELECT t.*
+      FROM tests t
+			WHERE t.id = :id
+			LIMIT 1;
     `;
 
-	const rows = await sequelize.query<Test>(sql, {
-		mapToModel: true,
-		model: Test,
-		type: QueryTypes.SELECT,
-		plain: true,
-	});
+	try {
+		const result = await sequelize.query<Test>(sql, {
+			type: QueryTypes.SELECT,
+			plain: true,
+			mapToModel: true,
+			model: Test,
+			replacements: { id },
+		});
 
-	return rows;
+		return result;
+	} catch (error) {
+		throw new Error(error as string);
+	}
 }
