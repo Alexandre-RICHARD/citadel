@@ -4,6 +4,16 @@ import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { buildQueryString } from "./buildQueryParamsUrl";
 import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
 
+class HttpStatusError extends Error {
+	constructor(
+		public status: number,
+		message?: string,
+	) {
+		super(message ?? `HTTP ${status}`);
+		this.name = "HttpStatusError";
+	}
+}
+
 export async function fetchHandler<Spec extends EndpointModel>(
 	args: Spec["request"],
 ): Promise<Spec["response"]> {
@@ -26,15 +36,19 @@ export async function fetchHandler<Spec extends EndpointModel>(
 		headers.set("Authorization", `Bearer ${"FakeToken"}`);
 	}
 
-	const res = await fetch(finalUrl, {
+	const response = await fetch(finalUrl, {
 		headers,
 		method: args.method,
 		body: isBody ? JSON.stringify(args.body) : null,
 	});
 
-	if (!res.ok) {
-		throw new Error(`HTTP ${res.status} ${res.statusText}`);
+	if (!response.ok) {
+		const msg = `HTTP ${response.status} ${response.statusText}`;
+		throw new HttpStatusError(response.status, msg);
 	}
 
-	return res.json() as Promise<Spec["response"]>;
+	return {
+		status: response.status,
+		data: await response.json(),
+	} as Spec["response"];
 }

@@ -4,7 +4,10 @@ export function SecondTest() {
 	return (
 		<>
 			<p>Projet 2</p>
-			<Button label="bouton de test 2" />
+			<Button
+				label="bouton de test 2"
+				onClick={() => {}}
+			/>
 		</>
 	);
 }

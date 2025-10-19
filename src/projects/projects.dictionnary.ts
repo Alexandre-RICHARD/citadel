@@ -11,7 +11,7 @@ type ProjectDictionnary = {
 
 export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 	[ProjectsEnum.Homepage]: {
-		path: "/",
+		path: "/homepage",
 		name: "Homepage",
 		buildPath: "/projects/homepage",
 		outputFile: "projects/home",
