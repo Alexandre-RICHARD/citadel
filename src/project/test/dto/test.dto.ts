@@ -3,5 +3,5 @@ export type TestDto = {
 	name: string;
 	isActive: boolean;
 	createdAt: Date;
-	updatedAt: Date;
+	updatedAt: Date | null;
 };
