@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Button } from "../../../common/components/button/Button";
 import { useDeleteTest } from "../actions/useDeleteTest";
 import { useGetAllTest } from "../actions/useGetAllTest";
-import { CreateTest } from "./CreateTest";
-import { OneTestDataLine } from "./OneTestDataLine";
-import { UpdateTest } from "./UpdateTest";
+import { CreateTest } from "../components/CreateTest";
+import { OneTestDataLine } from "../components/OneTestDataLine";
+import { UpdateTest } from "../components/UpdateTest";
 
 export function TestDisplayAll() {
 	const [isEditionModalOpen, setIsEditionModalOpen] = useState<boolean>(false);

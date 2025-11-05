@@ -18,20 +18,12 @@ export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 		documentTitle: "Alexandre Richard",
 		favicon: "/favicon/home.ico",
 	},
-	[ProjectsEnum.TestOne]: {
-		path: "/test1",
-		name: "Test numéro 1",
-		buildPath: "/projects/test_first",
-		outputFile: "projects/test1",
-		documentTitle: "Test 1",
-		favicon: "/favicon/testOne.ico",
-	},
-	[ProjectsEnum.TestTwo]: {
-		path: "/test2",
-		name: "Test numéro 2",
-		buildPath: "/projects/test_second",
-		outputFile: "projects/test2",
-		documentTitle: "Test 2",
-		favicon: "/favicon/testTwo.ico",
+	[ProjectsEnum.Test]: {
+		path: "/test",
+		name: "Test",
+		buildPath: "/projects/test",
+		outputFile: "projects/test",
+		documentTitle: "Test",
+		favicon: "/favicon/test.ico",
 	},
 };

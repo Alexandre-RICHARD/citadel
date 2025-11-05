@@ -18,33 +18,20 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 			favicon: projects[ProjectsEnum.Homepage].favicon,
 			basePath: projects[ProjectsEnum.Homepage].path,
 		} satisfies RouteMeta,
+	},
+	[ProjectsEnum.Test]: {
+		path: `${projects[ProjectsEnum.Test].path}/*`,
+		lazy: async () => {
+			const { Test } = await import("../projects/test/index");
+			return { Component: Test };
+		},
+		handle: {
+			project: ProjectsEnum.Test,
+			documentTitle: projects[ProjectsEnum.Test].documentTitle,
+			favicon: projects[ProjectsEnum.Test].favicon,
+			basePath: projects[ProjectsEnum.Test].path,
+		} satisfies RouteMeta,
 		index: true,
-	},
-	[ProjectsEnum.TestOne]: {
-		path: `${projects[ProjectsEnum.TestOne].path}/*`,
-		lazy: async () => {
-			const { FirstTest } = await import("../projects/test_first/index");
-			return { Component: FirstTest };
-		},
-		handle: {
-			project: ProjectsEnum.TestOne,
-			documentTitle: projects[ProjectsEnum.TestOne].documentTitle,
-			favicon: projects[ProjectsEnum.TestOne].favicon,
-			basePath: projects[ProjectsEnum.TestOne].path,
-		} satisfies RouteMeta,
-	},
-	[ProjectsEnum.TestTwo]: {
-		path: `${projects[ProjectsEnum.TestTwo].path}/*`,
-		lazy: async () => {
-			const { SecondTest } = await import("../projects/test_second/index");
-			return { Component: SecondTest };
-		},
-		handle: {
-			project: ProjectsEnum.TestTwo,
-			documentTitle: projects[ProjectsEnum.TestTwo].documentTitle,
-			favicon: projects[ProjectsEnum.TestTwo].favicon,
-			basePath: projects[ProjectsEnum.TestOne].path,
-		} satisfies RouteMeta,
 	},
 };
 
