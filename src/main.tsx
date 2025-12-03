@@ -1,4 +1,5 @@
 import "./styles/reset.scss";
+import "./styles/global.scss";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
