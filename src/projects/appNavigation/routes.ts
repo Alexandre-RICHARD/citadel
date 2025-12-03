@@ -1,8 +1,7 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 
-import { projects } from "../projects.dictionnary";
-import { ProjectsEnum } from "../projects.enum";
-import { AppNavigation } from "./AppNavigation";
+import { projects } from "./projects.dictionnary";
+import { ProjectsEnum } from "./projects.enum";
 import type { RouteMeta } from "./routeMeta.type";
 
 const routes: Record<ProjectsEnum, RouteObject> = {
@@ -38,7 +37,14 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 export const router = createBrowserRouter([
 	{
 		path: "/",
-		Component: AppNavigation,
-		children: Object.values(routes),
+		children: [
+			{
+				index: true,
+				loader() {
+					return redirect(projects[ProjectsEnum.Homepage].path);
+				},
+			},
+			...Object.values(routes),
+		],
 	},
 ]);
