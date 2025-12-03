@@ -1,22 +1,31 @@
 import type { ChangeEvent } from "react";
 
+import { generateUuid } from "../../helpers/uuid/generateUuid";
+import styles from "./inputCheckbox.module.scss";
+
 type Props = {
+	id?: string;
+	label: string;
 	value: boolean;
 	onChange: (newValue: boolean) => void;
 };
 
-export function InputCheckbox({ value, onChange }: Props) {
+export function InputCheckbox({ id, label, value, onChange }: Props) {
+	const uuid = generateUuid();
+
+	function handleChange(event: ChangeEvent<HTMLInputElement>) {
+		onChange(event.target.checked);
+	}
+
 	return (
-		<label htmlFor="testIsActive">
-			Etat de l utilisateur
+		<label htmlFor={id ?? uuid}>
+			{label}
 			<input
-				style={{ marginInline: "0.5rem" }}
-				name="testIsActive"
-				id="testIsActive"
+				className={styles.inputCheckbox}
+				name={id ?? uuid}
+				id={id ?? uuid}
 				type="checkbox"
-				onChange={(event: ChangeEvent<HTMLInputElement>) => {
-					onChange(event.target.checked);
-				}}
+				onChange={handleChange}
 				checked={value}
 			/>
 		</label>

@@ -1,15 +1,15 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 
-import { projects } from "../projects/projects.dictionnary";
-import { ProjectsEnum } from "../projects/projects.enum";
-import { Navigation } from "./Navigation";
+import { projects } from "../projects.dictionnary";
+import { ProjectsEnum } from "../projects.enum";
+import { AppNavigation } from "./AppNavigation";
 import type { RouteMeta } from "./routeMeta.type";
 
 const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../projects/homepage/index");
+			const { Homepage } = await import("../homepage/index");
 			return { Component: Homepage };
 		},
 		handle: {
@@ -22,7 +22,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Test]: {
 		path: `${projects[ProjectsEnum.Test].path}/*`,
 		lazy: async () => {
-			const { Test } = await import("../projects/test/index");
+			const { Test } = await import("../test/index");
 			return { Component: Test };
 		},
 		handle: {
@@ -38,7 +38,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 export const router = createBrowserRouter([
 	{
 		path: "/",
-		Component: Navigation,
+		Component: AppNavigation,
 		children: Object.values(routes),
 	},
 ]);

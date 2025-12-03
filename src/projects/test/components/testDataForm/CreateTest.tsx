@@ -1,9 +1,9 @@
 import type { TestDto } from "@specs/project/test/dto/test.dto";
 import { useState } from "react";
 
-import { InputText } from "../../../common/components/inputText/InputText";
-import { useCreateTest } from "../actions/useCreateTest";
-import { TestForm } from "./TestForm";
+import { InputText } from "../../../../common/components/inputText/InputText";
+import { useCreateTest } from "../../actions/useCreateTest";
+import { TestDataForm } from "./TestDataForm";
 
 type Props = {
 	onClose: () => void;
@@ -35,16 +35,18 @@ export function CreateTest({
 	};
 
 	return (
-		<TestForm
+		<TestDataForm
 			onClose={onClose}
 			handleMutation={handleMutation}
 		>
 			<div>
 				<InputText
+					id="testNameCreate"
+					label="Nom de la nouvelle donnée"
 					value={name}
 					onChange={setName}
 				/>
 			</div>
-		</TestForm>
+		</TestDataForm>
 	);
 }

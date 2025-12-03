@@ -1,0 +1,11 @@
+.appNavigationContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 1rem;
+
+  .navigationItemBox {
+    display: flex;
+    gap: 1rem;
+  }
+}

@@ -1,0 +1,12 @@
+.modalContainer {
+  background-color: white;
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  .modalFooter {
+    display: flex;
+    justify-content: space-between;
+  }
+}

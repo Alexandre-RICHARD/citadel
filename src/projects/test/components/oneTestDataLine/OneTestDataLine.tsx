@@ -1,9 +1,10 @@
 import type { TestDto } from "@specs/project/test/dto/test.dto";
 import { NavLink } from "react-router";
 
-import { Button } from "../../../common/components/button/Button";
-import { LanguageEnum } from "../../../common/enum/language.enum";
-import { formatDate } from "../../../common/helpers/date/formatDate";
+import { Button } from "../../../../common/components/button/Button";
+import { LanguageEnum } from "../../../../common/enum/language.enum";
+import { formatDate } from "../../../../common/helpers/date/formatDate";
+import styles from "./oneDataLine.module.scss";
 
 type Props = {
 	test: TestDto;
@@ -19,7 +20,7 @@ export function OneTestDataLine({
 	onDelete,
 }: Props) {
 	return (
-		<tr style={pending ? { opacity: 0.5 } : undefined}>
+		<tr className={pending ? styles.dataLinePending : undefined}>
 			<td>
 				<NavLink to={test.id.toString()}>{test.id}</NavLink>
 			</td>

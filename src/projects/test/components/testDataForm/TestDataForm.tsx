@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Modal } from "../../../common/components/modal/Modal";
+import { Modal } from "../../../../common/components/modal/Modal";
 
 type Props = {
 	children: ReactNode;
@@ -8,7 +8,7 @@ type Props = {
 	handleMutation: () => void;
 };
 
-export function TestForm({ children, onClose, handleMutation }: Props) {
+export function TestDataForm({ children, onClose, handleMutation }: Props) {
 	return (
 		<Modal
 			onClose={onClose}

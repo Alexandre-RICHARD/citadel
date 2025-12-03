@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Button } from "../button/Button";
 import { CacheOverlay } from "../cacheOverlay/CacheOverlay";
+import styles from "./modal.module.scss";
 
 type Props = {
 	children: ReactNode;
@@ -12,17 +13,9 @@ type Props = {
 export function Modal({ children, onClose, onSubmit }: Props) {
 	return (
 		<CacheOverlay>
-			<div
-				style={{
-					backgroundColor: "white",
-					padding: "1rem",
-					display: "flex",
-					flexDirection: "column",
-					gap: "0.5rem",
-				}}
-			>
+			<div className={styles.modalContainer}>
 				{children}
-				<div style={{ display: "flex", justifyContent: "space-between" }}>
+				<div className={styles.modalFooter}>
 					<Button
 						label="Fermer la modal"
 						onClick={onClose}
