@@ -1,0 +1,62 @@
+// Uniformiser la boîte
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// Uniformiser les espacements
+* {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+// Assainir les titres et textes
+html {
+  line-height: 1.5;
+  scroll-behavior: smooth;
+}
+
+// Rendre l'affichage des médias prévisibles
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+// Facilite la création de tableau
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+// Nettoyer les listes
+ul,
+ol {
+  list-style: none;
+}
+
+// Accessibilité motion-reduce
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+// Rendre les éléments HTML 5 en bloc
+article,
+aside,
+footer,
+header,
+nav,
+section,
+main {
+  display: block;
+}
