@@ -1,23 +1,27 @@
-import { NavLink } from "react-router";
+import { useEffect } from "react";
+import { NavLink, useNavigate, useParams } from "react-router";
 
 import { LanguageEnum } from "../../../common/enum/language.enum";
 import { formatDate } from "../../../common/helpers/date/formatDate";
-import { useGetProjectInternNewPath } from "../../../common/hooks/navigation/useGetProjectInternNewPath";
-import { useGetProjectSubPath } from "../../../common/hooks/navigation/useGetProjectSubPath";
 import { useGetOneTest } from "../actions/useGetOneTest";
 
 export function TestDisplayOne() {
-	const getProjectInternNewPath = useGetProjectInternNewPath();
-	const subPath = useGetProjectSubPath();
-	const { data, error, isFetching } = useGetOneTest({
-		payload: { id: subPath },
+	const navigate = useNavigate();
+	const { id } = useParams();
+
+	useEffect(() => {
+		if (id === null) {
+			void navigate("..", { replace: true });
+		}
 	});
 
-	if (error) return <p>Erreur lors du chargement de cette données de test</p>;
+	const { data, error, isFetching } = useGetOneTest({
+		payload: { id: id ?? null },
+	});
 
 	return (
 		<div>
-			<NavLink to={getProjectInternNewPath()}>Retourner en arrière</NavLink>
+			<NavLink to="..">Retourner en arrière</NavLink>
 			{error ? (
 				<p>Une erreur est survenue dans la récupération de la donnée de test</p>
 			) : null}

@@ -56,6 +56,7 @@ module.exports = {
     // Classic rules
     "no-console": ["warn", { allow: ["error"] }],
     "no-param-reassign": "error",
+    "no-void": "off",
 
     // Prettier rules
     "prettier/prettier": [

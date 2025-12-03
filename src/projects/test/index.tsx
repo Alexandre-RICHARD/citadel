@@ -1,12 +1,22 @@
-import { regex } from "../../common/dictionnaries/regex";
-import { useGetProjectSubPath } from "../../common/hooks/navigation/useGetProjectSubPath";
+import { Route, Routes } from "react-router";
+
 import { TestDisplayAll } from "./pages/TestDisplayAll";
 import { TestDisplayOne } from "./pages/TestDisplayOne";
+import { TestLayout } from "./pages/TestLayout";
 
 export function Test() {
-	const subPath = useGetProjectSubPath();
-
-	if (subPath === null) return <TestDisplayAll />;
-	if (regex.containsOnlyNumbers.test(subPath)) return <TestDisplayOne />;
-	return null;
+	return (
+		<Routes>
+			<Route element={<TestLayout />}>
+				<Route
+					index
+					element={<TestDisplayAll />}
+				/>
+				<Route
+					path=":id"
+					element={<TestDisplayOne />}
+				/>
+			</Route>
+		</Routes>
+	);
 }

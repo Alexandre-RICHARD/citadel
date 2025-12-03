@@ -4,7 +4,6 @@ import { NavLink } from "react-router";
 import { Button } from "../../../common/components/button/Button";
 import { LanguageEnum } from "../../../common/enum/language.enum";
 import { formatDate } from "../../../common/helpers/date/formatDate";
-import { useGetProjectInternNewPath } from "../../../common/hooks/navigation/useGetProjectInternNewPath";
 
 type Props = {
 	test: TestDto;
@@ -19,13 +18,10 @@ export function OneTestDataLine({
 	setSelectedTestData,
 	onDelete,
 }: Props) {
-	const getProjectInternNewPath = useGetProjectInternNewPath();
 	return (
 		<tr style={pending ? { opacity: 0.5 } : undefined}>
 			<td>
-				<NavLink to={`${getProjectInternNewPath()}/${test.id}`}>
-					{test.id}
-				</NavLink>
+				<NavLink to={test.id.toString()}>{test.id}</NavLink>
 			</td>
 			<td>{test.name}</td>
 			<td>{test.isActive ? "OUI" : "NON"}</td>
