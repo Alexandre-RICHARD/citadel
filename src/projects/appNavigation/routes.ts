@@ -8,7 +8,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../homepage/index");
+			const { Homepage } = await import("../homepage/homepage");
 			return { Component: Homepage };
 		},
 		handle: {
@@ -21,7 +21,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Test]: {
 		path: `${projects[ProjectsEnum.Test].path}/*`,
 		lazy: async () => {
-			const { Test } = await import("../test/index");
+			const { TestPage: Test } = await import("../test/testPage");
 			return { Component: Test };
 		},
 		handle: {

@@ -1,0 +1,226 @@
+// Les variables scss qui pourront être utilisées par tous le projet
+$color0: #ffffff;
+$color13: #202a53;
+$z-index-header-logo: 8;
+
+//? Duration
+$animation-logo-duration: 261ms; // Durée totale = D * 9.55
+// $animation-logo-duration: 3ms;
+$animation-logo-duration-delay: calc($animation-logo-duration * 0.65);
+
+//? Variables spécifiques
+$largeurF: 14rem;
+$largeurB: calc($largeurF / 10);
+$longueurE: calc($largeurF / 5);
+$uq1: calc($largeurF * 0.07113);
+$uq2: calc($largeurF * 0.48301);
+$dc1: calc($largeurF * 0.45387);
+$dc2: calc($largeurF * 0.1799);
+$ts1: calc($largeurF * 0.38273);
+$ts2: calc($largeurF * 0.30311);
+$cache: calc($largeurF * 0.80774 + 0.2rem);
+
+// To retrieve default styles and variables
+.header-logo-cache {
+    z-index: $z-index-header-logo;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    pointer-events: none;
+    animation: handle-cache calc($animation-logo-duration * 2) 1 ease-in both;
+    animation-delay: calc(11.62 * $animation-logo-duration-delay);
+
+    .header-logo-container {
+        width: calc($largeurF * 1.3733);
+        height: calc($largeurF * 1.3733);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: replace-logo calc($animation-logo-duration * 2) 1 ease-in both;
+        animation-delay: calc(11.62 * $animation-logo-duration-delay);
+
+        .header-logo-div {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            background-color: $color13;
+
+            div {
+                &:nth-child(1) {
+                    width: calc($largeurF / 2 + 0.57735 * $largeurB + $longueurE - $largeurB / 1.414);
+                    height: $largeurB;
+                }
+
+                &:nth-child(2) {
+                    background-color: $color13;
+                    width: calc($largeurB / 1.414);
+                    height: calc($largeurB / 1.414);
+                    transform: translateX(calc($largeurB / 1.414 / 2)) rotate(45deg);
+                }
+
+                &:nth-child(3) {
+                    position: absolute;
+                    background-color: $color0;
+                    width: $cache;
+                    height: calc($largeurB * 1.2);
+                    left: -0.2rem;
+                }
+            }
+
+            &-one {
+                transform: translate($uq1, -$uq2) rotate(0deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(0 * $animation-logo-duration-delay);
+                }
+            }
+
+            &-two {
+                transform: translate($dc1, -$dc2) rotate(60deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(1 * $animation-logo-duration-delay);
+                }
+            }
+
+            &-tre {
+                transform: translate($ts1, $ts2) rotate(120deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(2 * $animation-logo-duration-delay);
+                }
+            }
+
+            &-for {
+                transform: translate(-$uq1, $uq2) rotate(180deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(3 * $animation-logo-duration-delay);
+                }
+            }
+
+            &-fiv {
+                transform: translate(-$dc1, $dc2) rotate(-120deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(4 * $animation-logo-duration-delay);
+                }
+            }
+
+            &-six {
+                transform: translate(-$ts1, -$ts2) rotate(-60deg);
+                div:nth-child(3) {
+                    animation: apparition-logo $animation-logo-duration 1 ease-in both;
+                    animation-delay: calc(5 * $animation-logo-duration-delay);
+                }
+            }
+        }
+
+        .header-logo-letter {
+            background-color: transparent;
+            display: block;
+            position: absolute;
+            font-weight: 600;
+            font-size: 10rem;
+            color: $color13;
+            animation: apparition-letter calc(3 * $animation-logo-duration) cubic-bezier(0.47, 0, 0.745, 0.715) both;
+            animation-delay: calc(7 * $animation-logo-duration-delay);
+        }
+    }
+
+    @keyframes apparition-logo {
+        0% {
+            margin-left: 0;
+            opacity: 1;
+        }
+        99% {
+            opacity: 1;
+        }
+        100% {
+            margin-left: calc($largeurF * 0.80774);
+            opacity: 0;
+        }
+    }
+
+    @keyframes apparition-letter {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        30% {
+            transform: scale(1) scale3d(1, 1, 1);
+            opacity: 1;
+        }
+        51% {
+            transform: scale3d(0.75, 1.25, 1);
+        }
+        58% {
+            transform: scale3d(1.25, 0.75, 1);
+        }
+        65% {
+            transform: scale3d(0.85, 1.15, 1);
+        }
+        75% {
+            transform: scale3d(1.05, 0.95, 1);
+        }
+        83% {
+            transform: scale3d(0.95, 1.05, 1);
+        }
+        100% {
+            transform: scale3d(1, 1, 1);
+        }
+    }
+
+    @keyframes handle-cache {
+        0% {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            pointer-events: none;
+        }
+        90% {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            pointer-events: none;
+        }
+        91% {
+            position: static;
+            pointer-events: inherit;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        100% {
+            position: static;
+            pointer-events: inherit;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+    }
+
+    @keyframes replace-logo {
+        0% {
+            width: calc($largeurF * 1.3733);
+            height: calc($largeurF * 1.3733);
+            transform: scale(1);
+        }
+        90% {
+            transform: scale(0);
+        }
+        100% {
+            width: 6rem;
+            height: 6rem;
+            transform: scale(0.31214);
+        }
+    }
+}

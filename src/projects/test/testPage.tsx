@@ -5,7 +5,7 @@ import { TestDisplayAll } from "./pages/TestDisplayAll";
 import { TestDisplayOne } from "./pages/TestDisplayOne";
 import { TestLayout } from "./pages/TestLayout";
 
-export function Test() {
+export function TestPage() {
 	return (
 		<AppContainer>
 			<Routes>

@@ -1,26 +1,22 @@
+import type { ProjectDictionnary } from "./projectDictionnary.type";
 import { ProjectsEnum } from "./projects.enum";
-
-type ProjectDictionnary = {
-	path: string;
-	name: string;
-	buildPath: string;
-	outputFile: string;
-	documentTitle: string;
-	favicon: string;
-};
 
 export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 	[ProjectsEnum.Homepage]: {
+		id: "homepage",
 		path: "/homepage",
 		name: "Homepage",
+		description: "La page sur laquelle vous vous trouvez",
 		buildPath: "/projects/homepage",
 		outputFile: "projects/home",
 		documentTitle: "Alexandre Richard",
 		favicon: "/favicon/home.ico",
 	},
 	[ProjectsEnum.Test]: {
+		id: "test",
 		path: "/test",
 		name: "Test",
+		description: "Un projet uniquement fait pour tester des features",
 		buildPath: "/projects/test",
 		outputFile: "projects/test",
 		documentTitle: "Test",
