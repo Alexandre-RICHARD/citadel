@@ -8,7 +8,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../homepage/homepage");
+			const { Homepage } = await import("../homepage/HomepageTEMP");
 			return { Component: Homepage };
 		},
 		handle: {
@@ -21,14 +21,30 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Test]: {
 		path: `${projects[ProjectsEnum.Test].path}/*`,
 		lazy: async () => {
-			const { TestPage: Test } = await import("../test/testPage");
-			return { Component: Test };
+			const { TestPage } = await import("../test/TestPageTEMP");
+			return { Component: TestPage };
 		},
 		handle: {
 			project: ProjectsEnum.Test,
 			documentTitle: projects[ProjectsEnum.Test].documentTitle,
 			favicon: projects[ProjectsEnum.Test].favicon,
 			basePath: projects[ProjectsEnum.Test].path,
+		} satisfies RouteMeta,
+		index: true,
+	},
+	[ProjectsEnum.Satisfactory]: {
+		path: `${projects[ProjectsEnum.Satisfactory].path}/*`,
+		lazy: async () => {
+			const { SatisfactoryPage } = await import(
+				"../satisfactory/SatisfactoryPage"
+			);
+			return { Component: SatisfactoryPage };
+		},
+		handle: {
+			project: ProjectsEnum.Satisfactory,
+			documentTitle: projects[ProjectsEnum.Satisfactory].documentTitle,
+			favicon: projects[ProjectsEnum.Satisfactory].favicon,
+			basePath: projects[ProjectsEnum.Satisfactory].path,
 		} satisfies RouteMeta,
 		index: true,
 	},

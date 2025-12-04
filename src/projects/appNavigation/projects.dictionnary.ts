@@ -22,4 +22,14 @@ export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 		documentTitle: "Test",
 		favicon: "/favicon/test.ico",
 	},
+	[ProjectsEnum.Satisfactory]: {
+		id: "satisfactory",
+		path: "/satisfactory",
+		name: "Satisfactory",
+		description: "Projet en lien avec le jeu éponyme",
+		buildPath: "/projects/satisfactory",
+		outputFile: "projects/satisfactory",
+		documentTitle: "Satisfactory Calculator",
+		favicon: "/favicon/satisfactory.ico",
+	},
 };
