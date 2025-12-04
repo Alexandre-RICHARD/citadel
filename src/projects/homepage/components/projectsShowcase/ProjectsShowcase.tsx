@@ -10,12 +10,12 @@ type Props = {
 export function ProjectsShowcase({ projects }: Props) {
 	return (
 		<div className={styles.projects}>
-			{projects.map((project, index) => (
+			{projects.map((project) => (
 				<NavLink
 					to={project.path}
 					key={project.buildPath}
 					className={styles.project}
-					style={{ transform: `translateX(${index * 60}rem)` }}
+					// style={{ transform: `translateX(${index * 60}rem)` }}
 				>
 					<div className={styles.inner}>
 						<div className={styles.textBlock}>
