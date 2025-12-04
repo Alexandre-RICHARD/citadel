@@ -18,7 +18,10 @@ export function InputCheckbox({ id, label, value, onChange }: Props) {
 	}
 
 	return (
-		<label htmlFor={id ?? uuid}>
+		<label
+			className={styles.inputCheckboxContainer}
+			htmlFor={id ?? uuid}
+		>
 			{label}
 			<input
 				className={styles.inputCheckbox}

@@ -18,7 +18,10 @@ export function InputText({ id, label, value, onChange }: Props) {
 	}
 
 	return (
-		<label htmlFor={id ?? uuid}>
+		<label
+			className={styles.inputTextContainer}
+			htmlFor={id ?? uuid}
+		>
 			{label}
 			<input
 				className={styles.inputText}

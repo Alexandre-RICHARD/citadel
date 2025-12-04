@@ -21,8 +21,9 @@ $ts2: calc($largeurF * 0.30311);
 $cache: calc($largeurF * 0.80774 + 0.2rem);
 
 // To retrieve default styles and variables
-.header-logo-cache {
+.headerLogoCache {
     z-index: $z-index-header-logo;
+    background-color: white;
     position: fixed;
     top: 0;
     bottom: 0;
@@ -36,7 +37,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
     animation: handle-cache calc($animation-logo-duration * 2) 1 ease-in both;
     animation-delay: calc(11.62 * $animation-logo-duration-delay);
 
-    .header-logo-container {
+    .headerLogoContainer {
         width: calc($largeurF * 1.3733);
         height: calc($largeurF * 1.3733);
         display: flex;
@@ -45,7 +46,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
         animation: replace-logo calc($animation-logo-duration * 2) 1 ease-in both;
         animation-delay: calc(11.62 * $animation-logo-duration-delay);
 
-        .header-logo-div {
+        .headerLogoDiv {
             position: absolute;
             display: flex;
             align-items: center;
@@ -73,7 +74,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-one {
+            &One {
                 transform: translate($uq1, -$uq2) rotate(0deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -81,7 +82,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-two {
+            &Two {
                 transform: translate($dc1, -$dc2) rotate(60deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -89,7 +90,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-tre {
+            &Three {
                 transform: translate($ts1, $ts2) rotate(120deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -97,7 +98,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-for {
+            &Four {
                 transform: translate(-$uq1, $uq2) rotate(180deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -105,7 +106,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-fiv {
+            &Five {
                 transform: translate(-$dc1, $dc2) rotate(-120deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -113,7 +114,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
                 }
             }
 
-            &-six {
+            &Six {
                 transform: translate(-$ts1, -$ts2) rotate(-60deg);
                 div:nth-child(3) {
                     animation: apparition-logo $animation-logo-duration 1 ease-in both;
@@ -122,7 +123,7 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
             }
         }
 
-        .header-logo-letter {
+        .headerLogoLetter {
             background-color: transparent;
             display: block;
             position: absolute;
@@ -221,6 +222,41 @@ $cache: calc($largeurF * 0.80774 + 0.2rem);
             width: 6rem;
             height: 6rem;
             transform: scale(0.31214);
+        }
+    }
+
+    &.noAnim {
+        animation: none !important;
+        animation-delay: 0 !important;
+        position: static;
+        pointer-events: inherit;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        .headerLogoContainer {
+            animation: none !important;
+            animation-delay: 0 !important;
+            transform: scale(0);
+            width: 6rem;
+            height: 6rem;
+            transform: scale(0.31214);
+        }
+
+        .headerLogoDiv {
+            div:nth-child(3) {
+                animation: none !important;
+                animation-delay: 0 !important;
+                margin-left: calc($largeurF * 0.80774);
+                opacity: 0;
+            }
+        }
+
+        .headerLogoLetter {
+            animation: none !important;
+            animation-delay: 0 !important;
+            opacity: 1;
+            transform: scale3d(1, 1, 1);
         }
     }
 }

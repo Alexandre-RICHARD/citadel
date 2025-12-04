@@ -15,7 +15,7 @@ export function ProjectsShowcase({ projects }: Props) {
 					to={project.path}
 					key={project.buildPath}
 					className={styles.project}
-					style={{ transform: `translateX(${index * 60}px)` }}
+					style={{ transform: `translateX(${index * 60}rem)` }}
 				>
 					<div className={styles.inner}>
 						<div className={styles.textBlock}>

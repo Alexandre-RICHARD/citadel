@@ -1,12 +1,13 @@
 import type { TestDto } from "@specs/project/test/dto/test.dto";
 import { useState } from "react";
 
-import { Button } from "../../../common/components/button/Button";
-import { useDeleteTest } from "../actions/useDeleteTest";
-import { useGetAllTest } from "../actions/useGetAllTest";
-import { OneTestDataLine } from "../components/oneTestDataLine/OneTestDataLine";
-import { CreateTest } from "../components/testDataForm/CreateTest";
-import { UpdateTest } from "../components/testDataForm/UpdateTest";
+import { Button } from "../../../../common/components/button/Button";
+import { useDeleteTest } from "../../actions/useDeleteTest";
+import { useGetAllTest } from "../../actions/useGetAllTest";
+import { OneTestDataLine } from "../../components/oneTestDataLine/OneTestDataLine";
+import { CreateTest } from "../../components/testDataForm/CreateTest";
+import { UpdateTest } from "../../components/testDataForm/UpdateTest";
+import styles from "./testDisplayAll.module.scss";
 
 export function TestDisplayAll() {
 	const [isEditionModalOpen, setIsEditionModalOpen] = useState<boolean>(false);
@@ -41,9 +42,9 @@ export function TestDisplayAll() {
 	};
 
 	return (
-		<div>
+		<div className={styles.testDisplayContainer}>
 			{isFetching ? <p>En cours de chargement</p> : null}
-			<table>
+			<table className={styles.testTable}>
 				<thead>
 					<tr>
 						<td>Id</td>

@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router";
 
-import { LanguageEnum } from "../../../common/enum/language.enum";
-import { formatDate } from "../../../common/helpers/date/formatDate";
-import { useGetOneTest } from "../actions/useGetOneTest";
+import { LanguageEnum } from "../../../../common/enum/language.enum";
+import { formatDate } from "../../../../common/helpers/date/formatDate";
+import { useGetOneTest } from "../../actions/useGetOneTest";
+import styles from "./testDisplayOne.module.scss";
 
 export function TestDisplayOne() {
 	const navigate = useNavigate();
@@ -35,11 +36,19 @@ export function TestDisplayOne() {
 			) : null}
 			{data ? (
 				<>
-					<p>Id : {data?.data.id}</p>
-					<p>Nom : {data?.data.name}</p>
-					<p>Actif : {data?.data.isActive}</p>
 					<p>
-						Créé le : {formatDate(data?.data.createdAt, LanguageEnum.FRENCH)}
+						<span className={styles.dataType}>Id :</span> {data?.data.id}
+					</p>
+					<p>
+						<span className={styles.dataType}>Nom :</span> {data?.data.name}
+					</p>
+					<p>
+						<span className={styles.dataType}>Actif :</span>{" "}
+						{data?.data.isActive}
+					</p>
+					<p>
+						<span className={styles.dataType}>Créé le :</span>{" "}
+						{formatDate(data?.data.createdAt, LanguageEnum.FRENCH)}
 					</p>
 				</>
 			) : null}
