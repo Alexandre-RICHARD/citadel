@@ -1,0 +1,17 @@
+@use "@styles/variables";
+
+.input_container {
+  color: var(--theme-colorNeutralContent);
+  margin-block: var(--theme-spaceM);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--theme-spaceS);
+}
+
+.recipes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--theme-spaceS);
+}

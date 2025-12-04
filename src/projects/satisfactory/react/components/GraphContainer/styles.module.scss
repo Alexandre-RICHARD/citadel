@@ -1,0 +1,61 @@
+@use "@styles/variables";
+
+.graph_container {
+  background-color: var(--theme-colorBlack);
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+
+  &.fullscreen {
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .graph_button_container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--theme-spaceL);
+    margin: var(--theme-spaceS);
+    height: calc(2 * var(--theme-spaceXL));
+
+    * {
+      line-height: 0;
+    }
+
+    .arrow_button_rotator_container {
+      &[data-direction="RL"] {
+        transform: rotate(180deg);
+      }
+
+      &[data-direction="LR"] {
+        transform: rotate(0);
+      }
+
+      &[data-direction="DU"] {
+        transform: rotate(270deg);
+      }
+
+      &[data-direction="UD"] {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  .graph_summary_container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: var(--theme-spaceL);
+    background-color: var(--theme-colorAccentDark);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

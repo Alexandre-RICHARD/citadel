@@ -1,0 +1,14 @@
+.text_input_container {
+  width: 300px;
+  display: flex;
+  align-items: center;
+
+  .text_input {
+    background-color: var(--theme-colorNeutralLight);
+    padding: var(--theme-spaceXS) var(--theme-spaceS);
+    margin-left: var(--theme-spaceS);
+    border-radius: var(--theme-spaceXS);
+    color: var(--theme-colorNeutralDark);
+    width: 150px;
+  }
+}

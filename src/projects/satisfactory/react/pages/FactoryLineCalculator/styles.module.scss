@@ -1,0 +1,7 @@
+@use "@styles/variables";
+
+.recipes_calculator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--theme-spaceXL);
+}

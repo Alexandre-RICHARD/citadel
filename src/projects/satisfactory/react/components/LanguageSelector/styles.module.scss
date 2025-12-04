@@ -1,0 +1,14 @@
+@use "@styles/variables";
+
+.dropdown_language_label {
+  display: flex;
+  align-items: center;
+  gap: var(--theme-spaceXS);
+  font-size: var(--theme-sizeM);
+
+  span {
+    font-size: var(--theme-sizeXS);
+    color: var(--theme-colorNeutralLight);
+    font-style: italic;
+  }
+}

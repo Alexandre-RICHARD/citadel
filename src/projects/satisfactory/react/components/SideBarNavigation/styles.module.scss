@@ -1,0 +1,14 @@
+@use "@styles/variables";
+
+$navSideBarWitdthSmall: 50px;
+$navSideBarWitdthLarge: 180px;
+
+.sidebar_navigation_small {
+  min-width: $navSideBarWitdthSmall;
+  max-width: $navSideBarWitdthSmall;
+}
+
+.sidebar_navigation_large {
+  min-width: $navSideBarWitdthLarge;
+  max-width: $navSideBarWitdthLarge;
+}

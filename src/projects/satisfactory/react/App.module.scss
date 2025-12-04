@@ -1,0 +1,18 @@
+@use "@styles/variables";
+
+.app {
+  font-family: var(--theme-primaryFontFamily);
+  font-size: var(--theme-sizeM);
+  background-color: var(--theme-colorNeutralHue);
+  min-height: 100svh;
+  max-height: 100svh;
+  color: var(--theme-colorNeutralContent);
+  width: 100%;
+
+  .content_container {
+    min-height: calc(100svh - variables.$headerHeight);
+    max-height: calc(100svh - variables.$headerHeight);
+    overflow: auto;
+    padding: var(--theme-spaceS);
+  }
+}
