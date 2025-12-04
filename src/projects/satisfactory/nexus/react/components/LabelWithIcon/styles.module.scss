@@ -1,0 +1,17 @@
+@use "../../../styles/index.scss";
+
+.label_with_icon {
+  display: flex;
+  gap: 10px;
+
+  .side_image {
+    width: 25px;
+    height: 25px;
+  }
+
+  .label_container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
