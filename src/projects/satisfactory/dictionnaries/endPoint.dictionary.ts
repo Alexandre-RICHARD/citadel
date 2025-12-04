@@ -6,8 +6,8 @@ import { worldInventoryDtoToFmMapper } from "../mappers/satisfactory/worldInvent
 import type { EndPoint } from "../types/satisfactory/endpoint.type";
 
 export const endPointDictionnary: EndPoint = {
-  [EndpointEnum.EXTRACTOR]: extractorDtoToFmMapper,
-  [EndpointEnum.FACTORY]: factoryDtoToFmMapper,
-  [EndpointEnum.GENERATOR]: generatorsDtoToFmMapper,
-  [EndpointEnum.WORLD_INVENTORY]: worldInventoryDtoToFmMapper,
+	[EndpointEnum.EXTRACTOR]: extractorDtoToFmMapper,
+	[EndpointEnum.FACTORY]: factoryDtoToFmMapper,
+	[EndpointEnum.GENERATOR]: generatorsDtoToFmMapper,
+	[EndpointEnum.WORLD_INVENTORY]: worldInventoryDtoToFmMapper,
 };

@@ -1,14 +1,14 @@
 export type SelectSearchType = {
-  strictMode?: boolean;
+	strictMode?: boolean;
 } & (
-  | {
-      isHandlingCustomSearch: true;
-      customSearchString: string;
-      customOnChangeSearch: (newSearchString: string) => void;
-    }
-  | {
-      isHandlingCustomSearch: false;
-      customSearchString?: undefined;
-      customOnChangeSearch?: undefined;
-    }
+	| {
+			isHandlingCustomSearch: true;
+			customSearchString: string;
+			customOnChangeSearch: (newSearchString: string) => void;
+	  }
+	| {
+			isHandlingCustomSearch: false;
+			customSearchString?: undefined;
+			customOnChangeSearch?: undefined;
+	  }
 );

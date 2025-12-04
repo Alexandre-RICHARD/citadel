@@ -1,6 +1,6 @@
 import { LanguageEnum } from "@nexus/nexusExporter";
 
 export const supportedLanguages: LanguageEnum[] = [
-  LanguageEnum.ENGLISH,
-  LanguageEnum.FRENCH,
+	LanguageEnum.ENGLISH,
+	LanguageEnum.FRENCH,
 ];

@@ -1,4 +1,4 @@
 export enum CookieEnum {
-  VISIT = "visit",
-  LANG = "lang",
+	VISIT = "visit",
+	LANG = "lang",
 }

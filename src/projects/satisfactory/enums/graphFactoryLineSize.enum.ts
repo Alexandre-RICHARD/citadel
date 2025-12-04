@@ -1,4 +1,4 @@
 export enum GraphFactoryLineSizeEnum {
-  NORMAL = "NORMAL",
-  FULLSCREEN = "FULLSCREEN",
+	NORMAL = "NORMAL",
+	FULLSCREEN = "FULLSCREEN",
 }

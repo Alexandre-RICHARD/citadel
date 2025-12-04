@@ -5,39 +5,39 @@ import { getTranslationsFiles } from "../../../helpers/translation/getTranslatio
 import type { TranslationsType } from "../../../types/translations.type";
 
 type PropsType = {
-  TranslationsContext: Context<TranslationsType>;
-  filesContexts: Record<string, () => Promise<unknown>>;
-  language: LanguageCodeEnum;
-  children: React.JSX.Element;
+	TranslationsContext: Context<TranslationsType>;
+	filesContexts: Record<string, () => Promise<unknown>>;
+	language: LanguageCodeEnum;
+	children: React.JSX.Element;
 };
 
-export const TranslationProvider = ({
-  TranslationsContext,
-  filesContexts,
-  language,
-  children,
-}: PropsType): React.JSX.Element => {
-  const [translations, setTranslations] = useState<TranslationsType>({});
+export function TranslationProvider({
+	TranslationsContext,
+	filesContexts,
+	language,
+	children,
+}: PropsType): React.JSX.Element {
+	const [translations, setTranslations] = useState<TranslationsType>({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setTranslations(
-          await getTranslationsFiles({ filesContexts, language }),
-        );
-      } catch (error) {
-        console.error(error);
-      }
-    };
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				setTranslations(
+					await getTranslationsFiles({ filesContexts, language }),
+				);
+			} catch (error) {
+				console.error(error);
+			}
+		};
 
-    fetchData()
-      .then((translationsFile) => translationsFile)
-      .catch((error) => console.error(error));
-  }, [filesContexts, language]);
+		fetchData()
+			.then((translationsFile) => translationsFile)
+			.catch((error) => console.error(error));
+	}, [filesContexts, language]);
 
-  return (
-    <TranslationsContext.Provider value={translations}>
-      {children}
-    </TranslationsContext.Provider>
-  );
-};
+	return (
+		<TranslationsContext.Provider value={translations}>
+			{children}
+		</TranslationsContext.Provider>
+	);
+}

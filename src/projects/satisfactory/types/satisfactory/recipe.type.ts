@@ -4,11 +4,11 @@ import type { GameItemManufacturerBuilding } from "./gameItems/manufacturerBuild
 import type { ItemsInOutType } from "./itemsInOut.type";
 
 export type RecipeType = {
-  recipeName: RecipesEnum;
-  craftBuildings: GameItemGeneratorBuilding | GameItemManufacturerBuilding;
-  itemsIn: ItemsInOutType[];
-  itemsOut: ItemsInOutType[];
-  initCycleDuration: number;
-  isDuplicate?: true;
-  isAlternate?: true;
+	recipeName: RecipesEnum;
+	craftBuildings: GameItemGeneratorBuilding | GameItemManufacturerBuilding;
+	itemsIn: ItemsInOutType[];
+	itemsOut: ItemsInOutType[];
+	initCycleDuration: number;
+	isDuplicate?: true;
+	isAlternate?: true;
 };

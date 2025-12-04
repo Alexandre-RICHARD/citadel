@@ -12,81 +12,81 @@ import { useCalculateFactoryLine } from "./useCalculateFactoryLine";
 import { useGetDiagramData } from "./useGetDiagramData";
 import { useGetDiagramOptions } from "./useGetDiagramOptions";
 
-export const GraphContainer = (): React.JSX.Element | null => {
-  const [
-    factoryLine,
-    factoryLineData,
-    selectedFactoryLineData,
-    setFactoryLine,
-    setFactoryLineData,
-  ] = useCombinedStore(
-    useShallow((state) => [
-      state.factoryLine,
-      state.factoryLineData,
-      state.selectedFactoryLineData,
-      state.setFactoryLine,
-      state.setFactoryLineData,
-    ]),
-  );
+export function GraphContainer(): React.JSX.Element | null {
+	const [
+		factoryLine,
+		factoryLineData,
+		selectedFactoryLineData,
+		setFactoryLine,
+		setFactoryLineData,
+	] = useCombinedStore(
+		useShallow((state) => [
+			state.factoryLine,
+			state.factoryLineData,
+			state.selectedFactoryLineData,
+			state.setFactoryLine,
+			state.setFactoryLineData,
+		]),
+	);
 
-  const [graphSize, setGraphSize] = useState<GraphSize>(GraphSize.NORMAL);
-  const [graphDirection, setGraphDirection] = useState<GraphDirection>(
-    GraphDirection.RIGHT_TO_LEFT,
-  );
-  const [graphHorizontalSpacing, setGraphHorizontalSpacing] =
-    useState<number>(0);
+	const [graphSize, setGraphSize] = useState<GraphSize>(GraphSize.NORMAL);
+	const [graphDirection, setGraphDirection] = useState<GraphDirection>(
+		GraphDirection.RIGHT_TO_LEFT,
+	);
+	const [graphHorizontalSpacing, setGraphHorizontalSpacing] =
+		useState<number>(0);
 
-  useCalculateFactoryLine({
-    selectedFactoryLineData,
-    setFactoryLine,
-    setFactoryLineData,
-  });
+	useCalculateFactoryLine({
+		selectedFactoryLineData,
+		setFactoryLine,
+		setFactoryLineData,
+	});
 
-  const visJsRef = useRef<HTMLDivElement>(null);
-  const graphContainerRef = useRef<HTMLDivElement>(null);
+	const visJsRef = useRef<HTMLDivElement>(null);
+	const graphContainerRef = useRef<HTMLDivElement>(null);
 
-  const { nodes, edges } = useGetDiagramData({
-    factoryLine,
-    graphHorizontalSpacing,
-    setGraphHorizontalSpacing,
-  });
-  const data: Data = useMemo(
-    () => ({
-      nodes,
-      edges,
-    }),
-    [nodes, edges],
-  );
+	const { nodes, edges } = useGetDiagramData({
+		factoryLine,
+		graphHorizontalSpacing,
+		setGraphHorizontalSpacing,
+	});
+	const data: Data = useMemo(
+		() => ({
+			nodes,
+			edges,
+		}),
+		[nodes, edges],
+	);
 
-  const options = useGetDiagramOptions({
-    graphSize,
-    graphDirection,
-    graphContainer: graphContainerRef,
-    graphHorizontalSpacing,
-  });
+	const options = useGetDiagramOptions({
+		graphSize,
+		graphDirection,
+		graphContainer: graphContainerRef,
+		graphHorizontalSpacing,
+	});
 
-  useEffect(() => {
-    if (visJsRef.current) {
-      // eslint-disable-next-line no-new
-      new Network(visJsRef.current, data, options);
-    }
-  }, [visJsRef, nodes, edges, data, options]);
+	useEffect(() => {
+		if (visJsRef.current) {
+			// eslint-disable-next-line no-new
+			new Network(visJsRef.current, data, options);
+		}
+	}, [visJsRef, nodes, edges, data, options]);
 
-  if (!factoryLine) return null;
+	if (!factoryLine) return null;
 
-  return (
-    <div
-      className={`${styles.graph_container} ${graphSize === GraphSize.FULLSCREEN ? styles.fullscreen : ""}`}
-      ref={graphContainerRef}
-    >
-      <div ref={visJsRef} />
-      <GraphHandlerButtons
-        graphSize={graphSize}
-        setGraphSize={setGraphSize}
-        graphDirection={graphDirection}
-        setGraphDirection={setGraphDirection}
-      />
-      {factoryLineData && <GraphSummary />}
-    </div>
-  );
-};
+	return (
+		<div
+			className={`${styles.graph_container} ${graphSize === GraphSize.FULLSCREEN ? styles.fullscreen : ""}`}
+			ref={graphContainerRef}
+		>
+			<div ref={visJsRef} />
+			<GraphHandlerButtons
+				graphSize={graphSize}
+				setGraphSize={setGraphSize}
+				graphDirection={graphDirection}
+				setGraphDirection={setGraphDirection}
+			/>
+			{factoryLineData && <GraphSummary />}
+		</div>
+	);
+}

@@ -1,10 +1,10 @@
 import type { LanguageEnum } from "../../enums/language.enum";
 
 export const getIsSupportedLanguage = (
-  supportedLanguages: LanguageEnum[],
-  language?: LanguageEnum,
+	supportedLanguages: LanguageEnum[],
+	language?: LanguageEnum,
 ): boolean => {
-  if (!language) return false;
+	if (!language) return false;
 
-  return supportedLanguages.includes(language);
+	return supportedLanguages.includes(language);
 };

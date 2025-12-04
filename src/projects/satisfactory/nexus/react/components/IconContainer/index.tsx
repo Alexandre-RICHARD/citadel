@@ -4,23 +4,23 @@ import { IconsList } from "../../../dictionnaries/iconsList.dictionnary";
 import type { IconTokenEnum } from "../../../enums/iconToken.enum";
 
 type PropsType = {
-  iconToken: IconTokenEnum;
-  size: number;
-  color?: string;
+	iconToken: IconTokenEnum;
+	size: number;
+	color?: string;
 };
 
-export const IconContainer = ({
-  iconToken,
-  size,
-  color,
-}: PropsType): React.JSX.Element => {
-  const Icon = IconsList[iconToken];
+export function IconContainer({
+	iconToken,
+	size,
+	color,
+}: PropsType): React.JSX.Element {
+	const Icon = IconsList[iconToken];
 
-  const styles = {
-    fill: color,
-    width: `${size}px`,
-    height: `${size}px`,
-  };
+	const styles = {
+		fill: color,
+		width: `${size}px`,
+		height: `${size}px`,
+	};
 
-  return <Icon styles={styles} />;
-};
+	return <Icon styles={styles} />;
+}

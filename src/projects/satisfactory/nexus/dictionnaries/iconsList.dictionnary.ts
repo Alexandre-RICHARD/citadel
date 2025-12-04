@@ -8,12 +8,12 @@ import { Expand } from "../react/icons/Expand";
 import { TriangleArrow } from "../react/icons/TriangleArrow";
 
 export const IconsList: Record<
-  IconTokenEnum,
-  React.JSXElementConstructor<{ styles: React.CSSProperties }>
+	IconTokenEnum,
+	React.JSXElementConstructor<{ styles: React.CSSProperties }>
 > = {
-  [IconTokenEnum.Arrow]: Arrow,
-  [IconTokenEnum.Collapse]: Collapse,
-  [IconTokenEnum.DropdownArrow]: DropdownArrow,
-  [IconTokenEnum.Expand]: Expand,
-  [IconTokenEnum.TriangleArrow]: TriangleArrow,
+	[IconTokenEnum.Arrow]: Arrow,
+	[IconTokenEnum.Collapse]: Collapse,
+	[IconTokenEnum.DropdownArrow]: DropdownArrow,
+	[IconTokenEnum.Expand]: Expand,
+	[IconTokenEnum.TriangleArrow]: TriangleArrow,
 };

@@ -5,18 +5,18 @@ import type { WorldInvDto } from "../../types/satisfactory/apis/dataTransferObje
 import type { WorldInventoryFM } from "../../types/satisfactory/apis/frontModel/worldInventoryFm.type";
 
 export const worldInventoryDtoToFmMapper = (
-  dto: WorldInvDto[],
+	dto: WorldInvDto[],
 ): WorldInventoryFM[] => {
-  return dto.map((worldInvDto) => {
-    const className = enumDtoToFmMapper(
-      worldInvDto.ClassName,
-      GameClassNamesEnum,
-      "GameClassNamesEnum",
-    );
+	return dto.map((worldInvDto) => {
+		const className = enumDtoToFmMapper(
+			worldInvDto.ClassName,
+			GameClassNamesEnum,
+			"GameClassNamesEnum",
+		);
 
-    return {
-      className,
-      amount: worldInvDto.Amount,
-    };
-  });
+		return {
+			className,
+			amount: worldInvDto.Amount,
+		};
+	});
 };

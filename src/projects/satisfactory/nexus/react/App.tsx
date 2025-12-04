@@ -1,5 +1,5 @@
 import React from "react";
 
-export const App = (): React.JSX.Element => {
-  return <>Nexus</>;
-};
+export function App(): React.JSX.Element {
+	return <>Nexus</>;
+}

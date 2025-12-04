@@ -1,8 +1,8 @@
 import {
-  fetcherHelper,
-  FetchMethodsEnum,
-  type FetchResponse,
-  useLocalStorage,
+	fetcherHelper,
+	FetchMethodsEnum,
+	type FetchResponse,
+	useLocalStorage,
 } from "@nexus/nexusExporter";
 import { useEffect, useState } from "react";
 
@@ -14,50 +14,50 @@ import type { FrmSettingsData } from "../../types/satisfactory/frmSettingsData.t
 
 // eslint-disable-next-line import/no-unused-modules
 export const useAutoRefetch = <Dto, Fm>(
-  endPoint?: EndpointEnum,
-  skip?: boolean,
+	endPoint?: EndpointEnum,
+	skip?: boolean,
 ): FetchResponse<Fm> => {
-  const mapper = endPoint
-    ? (endPointDictionnary[endPoint] as MapperFunction<Dto, Fm>)
-    : undefined;
-  const { value: settings } = useLocalStorage<FrmSettingsData>(
-    "rmd_settings",
-    defaultFrmSettingsData,
-  );
+	const mapper = endPoint
+		? (endPointDictionnary[endPoint] as MapperFunction<Dto, Fm>)
+		: undefined;
+	const { value: settings } = useLocalStorage<FrmSettingsData>(
+		"rmd_settings",
+		defaultFrmSettingsData,
+	);
 
-  const [responseState, setResponseState] = useState<FetchResponse<Fm>>({
-    status: "",
-    success: false,
-  });
+	const [responseState, setResponseState] = useState<FetchResponse<Fm>>({
+		status: "",
+		success: false,
+	});
 
-  useEffect(() => {
-    let isMounted = true;
+	useEffect(() => {
+		let isMounted = true;
 
-    const fetchData = async () => {
-      if (isMounted && !skip && mapper) {
-        const response = await fetcherHelper<Dto>({
-          apiUrl: `http://${settings.ip}:${settings.port}`,
-          endPoint: `/${endPoint}`,
-          method: FetchMethodsEnum.GET,
-        });
-        setResponseState({
-          ...response,
-          data: response.data && mapper(response.data),
-        });
-      }
-    };
+		const fetchData = async () => {
+			if (isMounted && !skip && mapper) {
+				const response = await fetcherHelper<Dto>({
+					apiUrl: `http://${settings.ip}:${settings.port}`,
+					endPoint: `/${endPoint}`,
+					method: FetchMethodsEnum.GET,
+				});
+				setResponseState({
+					...response,
+					data: response.data && mapper(response.data),
+				});
+			}
+		};
 
-    const refetchLoop = () => {
-      fetchData().catch((error) => console.error(error));
-      setTimeout(refetchLoop, settings.interval);
-    };
+		const refetchLoop = () => {
+			fetchData().catch((error) => console.error(error));
+			setTimeout(refetchLoop, settings.interval);
+		};
 
-    refetchLoop();
+		refetchLoop();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [endPoint, mapper, settings, skip]);
+		return () => {
+			isMounted = false;
+		};
+	}, [endPoint, mapper, settings, skip]);
 
-  return responseState;
+	return responseState;
 };

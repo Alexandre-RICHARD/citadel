@@ -15,7 +15,7 @@ import { expect, test } from "vitest";
 // });
 
 test("True", () => {
-  expect(true).toBeTruthy();
+	expect(true).toBeTruthy();
 });
 
 // ("Translation should be found", () => {
