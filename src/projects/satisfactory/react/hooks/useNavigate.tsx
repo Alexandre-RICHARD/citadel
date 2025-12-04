@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNavigate as useNav } from "react-router-dom";
+import { useNavigate as useNav } from "react-router";
 
 export const useNavigate = () => {
 	const navigate = useNav();

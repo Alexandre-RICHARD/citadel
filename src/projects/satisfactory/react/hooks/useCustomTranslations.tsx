@@ -1,6 +1,5 @@
-import { useTranslations } from "@nexus/nexusExporter";
-
 import type { TranslationsFilesEnum } from "../../enums/translationsFile.enum";
+import { useTranslations } from "../../nexus/react/hooks/useTranslations.hook";
 
 export const useCustomTranslations = () => {
 	const Nt = useTranslations();

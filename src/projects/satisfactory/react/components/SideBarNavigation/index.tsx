@@ -1,10 +1,10 @@
-import { roundNumber } from "@nexus/nexusExporter";
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 import { EndpointEnum } from "../../../enums/endpoint.enum";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
+import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
 import type { WorldInvDto } from "../../../types/satisfactory/apis/dataTransferObject/worldInvDto.type";
 import type { WorldInventoryFM } from "../../../types/satisfactory/apis/frontModel/worldInventoryFm.type";
 import { useAutoRefetch } from "../../hooks/useAutoRefetch";

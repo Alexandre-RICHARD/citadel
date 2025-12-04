@@ -129,5 +129,32 @@ module.exports = {
         "@typescript-eslint/no-empty-object-type": "off",
       }
     },
+    {
+      // Default export used in translation files
+      files: [
+        "**/*.translations.ts"
+      ],
+      rules: {
+        "import/no-default-export": "off",
+        "import/no-unused-modules": "off",
+      }
+    },
+    {
+      files: [
+        "src/reserve/**",
+      ],
+      rules: {
+        "import/no-unused-modules": "off",
+      },
+    },
+    {
+      files: [
+        "src/projects/satisfactory/store/combined.store.ts",
+      ],
+      rules: {
+        "import/no-default-export": "off",
+        "import/no-unused-modules": "off",
+      }
+    },
   ],
 };

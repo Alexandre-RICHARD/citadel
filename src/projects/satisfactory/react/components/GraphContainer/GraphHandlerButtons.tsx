@@ -1,9 +1,10 @@
-import { IconContainer, IconTokenEnum } from "@nexus/nexusExporter";
 import React from "react";
 
 import { GraphFactoryLineDirectionEnum as GraphDirection } from "../../../enums/graphFactoryLineDirection.enum";
 import { GraphFactoryLineSizeEnum as GraphSize } from "../../../enums/graphFactoryLineSize.enum";
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
+import { IconTokenEnum } from "../../../nexus/enums/iconToken.enum";
+import { IconContainer } from "../../../nexus/react/components/IconContainer";
 import { theme } from "../../../styles/theme";
 import styles from "./styles.module.scss";
 

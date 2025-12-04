@@ -1,4 +1,4 @@
-import type { ThemeType } from "@nexus/nexusExporter";
+import type { ThemeType } from "../nexus/types/react/theme.type";
 
 export const theme: ThemeType = {
 	// Base colors

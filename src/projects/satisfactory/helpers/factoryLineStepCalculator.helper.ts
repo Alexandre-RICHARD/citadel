@@ -1,6 +1,5 @@
-import { roundNumber } from "@nexus/nexusExporter";
-
 import { recipes } from "../dictionnaries/recipes.dictionnary";
+import { roundNumber } from "../nexus/helpers/data/number/roundNumber.helper";
 import type { FactoryLine } from "../types/satisfactory/factoryLine.type";
 import type { SelectedFactoryLineData } from "../types/satisfactory/selectedFactoryLineData.type";
 import { itemPerMinute } from "./itemPerMinute.helper";

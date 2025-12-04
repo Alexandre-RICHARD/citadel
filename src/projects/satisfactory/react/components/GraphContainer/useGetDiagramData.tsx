@@ -1,8 +1,9 @@
-import { getTextSizeHelper, roundNumber } from "@nexus/nexusExporter";
 import type { Edge, Node } from "vis-network";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
+import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
+import { getTextSizeHelper } from "../../../nexus/helpers/data/string/getTextSize.helper";
 import { theme } from "../../../styles/theme";
 import type { FactoryLine } from "../../../types/satisfactory/factoryLine.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";

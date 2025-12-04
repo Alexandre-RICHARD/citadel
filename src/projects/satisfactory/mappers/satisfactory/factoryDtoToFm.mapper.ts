@@ -1,6 +1,5 @@
-import { enumDtoToFmMapper } from "@nexus/nexusExporter";
-
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
+import { enumDtoToFmMapper } from "../../nexus/mappers/enumDtoToFm.mapper";
 import type { FactoryDto } from "../../types/satisfactory/apis/dataTransferObject/factoryDto.type";
 import type { FactoryFm } from "../../types/satisfactory/apis/frontModel/factoryFm.type";
 

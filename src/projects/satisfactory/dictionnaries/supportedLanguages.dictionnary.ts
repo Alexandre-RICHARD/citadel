@@ -1,4 +1,4 @@
-import { LanguageEnum } from "@nexus/nexusExporter";
+import { LanguageEnum } from "../nexus/enums/language.enum";
 
 export const supportedLanguages: LanguageEnum[] = [
 	LanguageEnum.ENGLISH,

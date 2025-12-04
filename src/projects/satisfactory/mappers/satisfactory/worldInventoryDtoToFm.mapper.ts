@@ -1,6 +1,5 @@
-import { enumDtoToFmMapper } from "@nexus/nexusExporter";
-
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
+import { enumDtoToFmMapper } from "../../nexus/mappers/enumDtoToFm.mapper";
 import type { WorldInvDto } from "../../types/satisfactory/apis/dataTransferObject/worldInvDto.type";
 import type { WorldInventoryFM } from "../../types/satisfactory/apis/frontModel/worldInventoryFm.type";
 

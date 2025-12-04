@@ -1,5 +1,5 @@
 import { FetchMethodsEnum } from "../../enums/fetchMethods.enum";
-import type { FetchResponse } from "../../nexusExporter";
+import type { FetchResponse } from "../../types/fetchResponse.type";
 
 type Args = {
 	apiUrl: string;

@@ -1,5 +1,6 @@
-import { type CountryEnum } from "@nexus/nexusExporter";
 import React from "react";
+
+import { type CountryEnum } from "../../../nexus/enums/country.enum";
 
 type PropsType = {
 	country: CountryEnum;

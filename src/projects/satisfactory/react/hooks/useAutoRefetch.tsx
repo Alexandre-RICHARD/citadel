@@ -1,18 +1,15 @@
-import {
-	fetcherHelper,
-	FetchMethodsEnum,
-	type FetchResponse,
-	useLocalStorage,
-} from "@nexus/nexusExporter";
 import { useEffect, useState } from "react";
 
 import { defaultFrmSettingsData } from "../../dictionnaries/defaultFrmSettingsData";
 import { endPointDictionnary } from "../../dictionnaries/endPoint.dictionary";
 import type { EndpointEnum } from "../../enums/endpoint.enum";
+import { FetchMethodsEnum } from "../../nexus/enums/fetchMethods.enum";
+import { fetcherHelper } from "../../nexus/helpers/api/fetcher.helper";
+import { useLocalStorage } from "../../nexus/react/hooks/useLocalStorage";
+import type { FetchResponse } from "../../nexus/types/fetchResponse.type";
 import type { MapperFunction } from "../../types/satisfactory/endpoint.type";
 import type { FrmSettingsData } from "../../types/satisfactory/frmSettingsData.type";
 
-// eslint-disable-next-line import/no-unused-modules
 export const useAutoRefetch = <Dto, Fm>(
 	endPoint?: EndpointEnum,
 	skip?: boolean,

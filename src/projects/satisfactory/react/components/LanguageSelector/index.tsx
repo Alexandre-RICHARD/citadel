@@ -1,20 +1,18 @@
-import {
-	getInvertObject,
-	getSortStringValue,
-	LabelWithIcon,
-	type LanguageCodeEnum,
-	type LanguageEnum,
-	languageToCode,
-	languageToCountry,
-	nativeLanguageNames,
-	type SelectItemsType,
-	Selector,
-} from "@nexus/nexusExporter";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { supportedLanguages } from "../../../dictionnaries/supportedLanguages.dictionnary";
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
+import { languageToCode } from "../../../nexus/dictionnaries/languageToCode.dictionnary";
+import { languageToCountry } from "../../../nexus/dictionnaries/languageToCountry.dictionnary";
+import { nativeLanguageNames } from "../../../nexus/dictionnaries/nativeLanguageNames.dictionnary";
+import type { LanguageEnum } from "../../../nexus/enums/language.enum";
+import type { LanguageCodeEnum } from "../../../nexus/enums/languageCode.enum";
+import { getSortStringValue } from "../../../nexus/helpers/data/getSortStringValue.helper";
+import { getInvertObject } from "../../../nexus/helpers/data/object/getInvertObject.helper";
+import { LabelWithIcon } from "../../../nexus/react/components/LabelWithIcon";
+import { Selector } from "../../../nexus/react/components/Selector";
+import type { SelectItemsType } from "../../../nexus/types/react/selectedItems.type";
 import { useCombinedStore } from "../../../store/combined.store";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
 import { LanguageSelectorFlag } from "../LanguageSelectorFlag";
