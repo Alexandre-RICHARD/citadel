@@ -12,7 +12,7 @@ export function TestDisplayOne() {
 
 	useEffect(() => {
 		if (id === null) {
-			void navigate("..", { replace: true });
+			void navigate("..");
 		}
 	});
 

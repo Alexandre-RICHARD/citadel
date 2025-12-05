@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
-import { useNavigate } from "../../hooks/useNavigate";
+import { projects } from "../../../../appNavigation/projects.dictionnary";
+import { ProjectsEnum } from "../../../../appNavigation/projects.enum";
 
 export function NotFound(): React.JSX.Element {
 	const [timeLeft, setTimeLeft] = useState(5);
@@ -10,7 +11,7 @@ export function NotFound(): React.JSX.Element {
 	useEffect(() => {
 		const redirectInterval = setInterval(() => {
 			if (timeLeft === 0) {
-				navigate("/");
+				void navigate(projects[ProjectsEnum.Satisfactory].path);
 			} else {
 				setTimeLeft((prev) => prev - 1);
 			}
@@ -21,7 +22,7 @@ export function NotFound(): React.JSX.Element {
 
 	return (
 		<div className="flex flex-col items-center">
-			<NavLink to="/">
+			<NavLink to={projects[ProjectsEnum.Satisfactory].path}>
 				<p className="hover:font-bold underline">Go back to homepage</p>
 			</NavLink>
 			<p>404 - You ll be redirected in {timeLeft}s</p>

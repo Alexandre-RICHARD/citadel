@@ -46,27 +46,27 @@ export function SideBarNavigation(): React.JSX.Element {
 		[
 			{
 				label: t(TF.COMMON, "homepage"),
-				link: "/",
+				link: "",
 			},
 			{
 				label: t(TF.COMMON, "recipes"),
-				link: "/recipes",
+				link: "recipes",
 			},
 			{
 				label: t(TF.COMMON, "calculator"),
-				link: "/calculator",
+				link: "calculator",
 			},
 		],
 		[
 			{
 				label: t(TF.COMMON, "machines"),
-				link: "/frm/allMachines",
+				link: "frm/allMachines",
 			},
 		],
 		[
 			{
 				label: t(TF.COMMON, "settings"),
-				link: "/settings",
+				link: "settings",
 			},
 		],
 	];

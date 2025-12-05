@@ -9,7 +9,10 @@ export function TestPage() {
 	return (
 		<AppContainer>
 			<Routes>
-				<Route element={<TestLayout />}>
+				<Route
+					path=""
+					element={<TestLayout />}
+				>
 					<Route
 						index
 						element={<TestDisplayAll />}

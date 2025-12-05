@@ -19,8 +19,8 @@ export function SatisfactoryPage() {
 	const language = useCombinedStore((state) => state.language);
 
 	const filesContexts = {
-		...import.meta.glob("../assets/translations/**/*.ts"),
-		...import.meta.glob("../../nexus/src/assets/translations/**/*.ts"),
+		...import.meta.glob("./assets/translations/**/*.ts"),
+		...import.meta.glob("./nexus/src/assets/translations/**/*.ts"),
 	};
 	return (
 		<TranslationProvider
@@ -31,21 +31,24 @@ export function SatisfactoryPage() {
 			<ThemeProvider theme={theme}>
 				<AppContainer>
 					<Routes>
-						<Route element={<SatisfactoryLayout />}>
+						<Route
+							path="/"
+							element={<SatisfactoryLayout />}
+						>
 							<Route
-								path="/"
+								index
 								element={<Homepage />}
 							/>
 							<Route
-								path="/recipes"
+								path="recipes"
 								element={<RecipesList />}
 							/>
 							<Route
-								path="/calculator"
+								path="calculator"
 								element={<FactoryLineCalculator />}
 							/>
 							<Route
-								path="/frm/allMachines"
+								path="frm/allMachines"
 								element={<FRMAllMachines />}
 							/>
 							<Route
