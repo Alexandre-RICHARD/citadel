@@ -5,7 +5,6 @@ import { GraphFactoryLineSizeEnum as GraphSize } from "../../../enums/graphFacto
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
 import { IconTokenEnum } from "../../../nexus/enums/iconToken.enum";
 import { IconContainer } from "../../../nexus/react/components/IconContainer";
-import { theme } from "../../../styles/theme";
 import styles from "./styles.module.scss";
 
 type PropsType = {
@@ -49,21 +48,23 @@ export function GraphHandlerButtons({
 	return (
 		<div className={styles.graph_button_container}>
 			<button
+				className={styles.graph_button}
 				aria-label="fullscreen graph button"
 				type="button"
 				onClick={setNewGraphSize}
 			>
 				<IconContainer
-					size={2 * stringRemoveEndPxHelper(theme.spaceXL)}
+					size={2 * stringRemoveEndPxHelper("20px")}
 					iconToken={
 						graphSize === GraphSize.FULLSCREEN
 							? IconTokenEnum.Collapse
 							: IconTokenEnum.Expand
 					}
-					color={theme.colorSecondaryContent}
+					color="#eeeeee"
 				/>
 			</button>
 			<button
+				className={styles.graph_button}
 				aria-label="fullscreen graph button"
 				type="button"
 				onClick={setNewGraphDirection}
@@ -73,9 +74,9 @@ export function GraphHandlerButtons({
 					data-direction={graphDirection}
 				>
 					<IconContainer
-						size={2 * stringRemoveEndPxHelper(theme.spaceXL)}
+						size={2 * stringRemoveEndPxHelper("20px")}
 						iconToken={IconTokenEnum.Arrow}
-						color={theme.colorSecondaryContent}
+						color="#eeeeee"
 					/>
 				</div>
 			</button>

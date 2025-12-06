@@ -1,4 +1,4 @@
-import type { ThemeType } from "../../types/react/theme.type";
+import type { ThemeType } from "./theme.type";
 
 export const themeApplicator = (theme: ThemeType) => {
 	const root = document.documentElement;

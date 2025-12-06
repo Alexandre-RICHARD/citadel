@@ -14,7 +14,7 @@ export function LanguageSelectorFlag({
 			alt={`Country flag of ${country}`}
 			src={
 				new URL(
-					`/src/assets/images/languagesFlags/${country}.png`,
+					`/src/projects/satisfactory/assets/images/languagesFlags/${country}.png`,
 					import.meta.url,
 				).href
 			}

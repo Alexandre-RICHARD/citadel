@@ -1,15 +1,17 @@
 @use "../../../styles/variables.scss";
 
 .recipe_calculator_container {
+  padding: 1rem;
   display: flex;
-  gap: var(--theme-spaceXL);
+  justify-content: center;
+  gap: 4rem;
 
   .item_minute_input {
     width: 100px;
-    border: var(--theme-spaceXXS) solid var(--theme-colorNeutralContent);
-    color: var(--theme-colorNeutralContent);
-    background-color: var(--theme-colorNeutralHue);
-    border-radius: var(--theme-spaceXS);
-    padding: var(--theme-spaceXS) var(--theme-spaceS);
+    border: 0.2rem solid #222222;
+    color: #eeeeee;
+    background-color: #40413c;
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.8rem;
   }
 }

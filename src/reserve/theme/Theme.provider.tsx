@@ -1,7 +1,7 @@
 import type React from "react";
 
-import { themeApplicator } from "../../../helpers/theme/themeApplicator";
-import type { ThemeType } from "../../../types/react/theme.type";
+import type { ThemeType } from "./theme.type";
+import { themeApplicator } from "./themeApplicator";
 
 type PropsType = {
 	theme: ThemeType;

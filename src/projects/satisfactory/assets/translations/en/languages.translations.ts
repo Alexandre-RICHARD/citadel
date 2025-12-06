@@ -1,4 +1,4 @@
-import { LanguageEnum } from "../../../enums/language.enum";
+import { LanguageEnum } from "../../../nexus/enums/language.enum";
 
 export default {
 	[LanguageEnum.AFRIKAANS]: "Afrikaans",

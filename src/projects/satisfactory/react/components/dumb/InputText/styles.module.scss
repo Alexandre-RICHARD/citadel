@@ -4,11 +4,11 @@
   align-items: center;
 
   .text_input {
-    background-color: var(--theme-colorNeutralLight);
-    padding: var(--theme-spaceXS) var(--theme-spaceS);
-    margin-left: var(--theme-spaceS);
-    border-radius: var(--theme-spaceXS);
-    color: var(--theme-colorNeutralDark);
+    background-color: #dedfe8;
+    padding: 0.4rem 0.8rem;
+    margin-left: 0.8rem;
+    border-radius: 0.4rem;
+    color: #252837;
     width: 150px;
   }
 }

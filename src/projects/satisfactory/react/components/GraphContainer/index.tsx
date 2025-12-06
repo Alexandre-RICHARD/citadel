@@ -59,9 +59,7 @@ export function GraphContainer(): React.JSX.Element | null {
 	);
 
 	const options = useGetDiagramOptions({
-		graphSize,
 		graphDirection,
-		graphContainer: graphContainerRef,
 		graphHorizontalSpacing,
 	});
 

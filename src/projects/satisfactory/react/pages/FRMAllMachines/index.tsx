@@ -9,6 +9,7 @@ import type { ExtractorFm } from "../../../types/satisfactory/apis/frontModel/ex
 import type { FactoryFm } from "../../../types/satisfactory/apis/frontModel/factoryFm.type";
 import type { GeneratorFm } from "../../../types/satisfactory/apis/frontModel/generatorsFm.type";
 import { useAutoRefetch } from "../../hooks/useAutoRefetch";
+import styles from "./frmAllMachine.module.scss";
 
 export function FRMAllMachines(): React.JSX.Element {
 	const [onlyNonFullEfficent, setOnlyNonFullEfficent] = useState(false);
@@ -43,23 +44,23 @@ export function FRMAllMachines(): React.JSX.Element {
 
 	return (
 		<div>
-			<div className="flex p-4">
+			<div className={styles.machinesContainer}>
 				<label
-					className="flex gap-4"
+					className={styles.nonEfficientFilterBox}
 					htmlFor="onlyNonFullEfficentCheckbox"
 				>
 					Uniquement les non efficient
 					<input
 						checked={onlyNonFullEfficent}
 						id="onlyNonFullEfficentCheckbox"
-						className="text-gray-50"
+						className={styles.input}
 						type="checkbox"
 						onClick={() => setOnlyNonFullEfficent((prev) => !prev)}
 					/>
 				</label>
 			</div>
-			<table className="w-full border border-cyan-50">
-				<thead className="sticky top-0 bg-black border border-cyan-50">
+			<table className={styles.machineTable}>
+				<thead className={styles.tableHeader}>
 					<tr>
 						<th>Name</th>
 						<th>Overclocking</th>
@@ -69,23 +70,25 @@ export function FRMAllMachines(): React.JSX.Element {
 						<th>Location</th>
 					</tr>
 				</thead>
-				<tbody className="overflow-y-auto">
+				<tbody className={styles.tableBody}>
 					{filteredData.map((oneMachine) => {
 						if ("powerConsumption" in oneMachine) {
 							return (
 								<tr key={oneMachine.id}>
-									<td className="text-center">{oneMachine.name}</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>{oneMachine.name}</td>
+									<td className={styles.textAlign}>
 										{roundNumber(oneMachine.overclocking, 2)} %
 									</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>
 										{roundNumber(oneMachine.efficiency, 2)} %
 									</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>
 										{roundNumber(oneMachine.powerConsumption, 2)} Mw
 									</td>
-									<td className="text-center">N/A</td>
-									<td className="text-center">{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
+									<td className={styles.textAlign}>N/A</td>
+									<td
+										className={styles.textAlign}
+									>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
 								</tr>
 							);
 						}
@@ -93,18 +96,20 @@ export function FRMAllMachines(): React.JSX.Element {
 						if ("powerProduction" in oneMachine) {
 							return (
 								<tr key={oneMachine.id}>
-									<td className="text-center">{oneMachine.name}</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>{oneMachine.name}</td>
+									<td className={styles.textAlign}>
 										{roundNumber(oneMachine.overclocking, 2)} %
 									</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>
 										{oneMachine.isAtFullSpeed ? "100 %" : "0 %"}
 									</td>
-									<td className="text-center">N/A</td>
-									<td className="text-center">
+									<td className={styles.textAlign}>N/A</td>
+									<td className={styles.textAlign}>
 										{roundNumber(oneMachine.powerProduction, 2)} Mw
 									</td>
-									<td className="text-center">{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
+									<td
+										className={styles.textAlign}
+									>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
 								</tr>
 							);
 						}

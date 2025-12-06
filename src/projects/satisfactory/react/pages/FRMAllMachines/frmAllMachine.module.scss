@@ -1,0 +1,33 @@
+.textAlign {
+  text-align: center;
+}
+
+.machinesContainer {
+  display: flex;
+  padding: 1.6rem;
+
+  .nonEfficientFilterBox {
+    display: flex;
+    padding: 1.6rem;
+
+    .input {
+      color: #6a7282;
+    }
+  }
+
+  .machineTable {
+    width: 100%;
+    border: 1px solid #00b8db;
+
+    .tableHeader {
+      position: sticky;
+      top: 0;
+      background-color: black;
+      border: 1px solid #00b8db;
+    }
+
+    .tableBody {
+      overflow-y: auto;
+    }
+  }
+}

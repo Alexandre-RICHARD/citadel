@@ -1,17 +1,21 @@
 @use "../../../styles/variables.scss";
 
 .input_container {
-  color: var(--theme-colorNeutralContent);
-  margin-block: var(--theme-spaceM);
+  position: sticky;
+  top: 0;
+  background-color: #000;
+  color: #eeeeee;
+  padding-block: 1.2rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: var(--theme-spaceS);
+  gap: 0.8rem;
+  z-index: 9;
 }
 
 .recipes {
   display: flex;
   flex-direction: column;
-  gap: var(--theme-spaceS);
+  gap: 0.8rem;
 }

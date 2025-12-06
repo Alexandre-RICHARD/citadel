@@ -1,47 +1,18 @@
-import { useEffect, useState } from "react";
 import type { Options } from "vis-network";
 
 import { GraphFactoryLineDirectionEnum as GraphDirection } from "../../../enums/graphFactoryLineDirection.enum";
-import { GraphFactoryLineSizeEnum as GraphSize } from "../../../enums/graphFactoryLineSize.enum";
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
-import { theme } from "../../../styles/theme";
 
 type PropsType = {
-	graphSize: GraphSize;
 	graphDirection: GraphDirection;
-	graphContainer: React.RefObject<HTMLDivElement | null>;
 	graphHorizontalSpacing: number;
 };
 
 // TODO T => Ajouter produit brutes et finis + Consommation totale de ressource et d'énergie
 export const useGetDiagramOptions = ({
-	graphSize,
 	graphDirection,
-	graphContainer,
 	graphHorizontalSpacing,
 }: PropsType): Options => {
-	const [distanceToBottom, setDistanceToBottom] = useState(0);
-	const height =
-		graphSize === GraphSize.NORMAL
-			? `${distanceToBottom - stringRemoveEndPxHelper(theme.spaceS)}px`
-			: `${window.innerHeight}px`;
-
-	useEffect(() => {
-		const updateDistance = () => {
-			if (graphContainer.current) {
-				const rect = graphContainer.current.getBoundingClientRect();
-				const distance = window.innerHeight - rect.top;
-				setDistanceToBottom(distance);
-			} else {
-				setTimeout(updateDistance, 10);
-			}
-		};
-
-		updateDistance();
-		window.addEventListener("resize", updateDistance);
-		return () => window.removeEventListener("resize", updateDistance);
-	}, [graphContainer]);
-
 	const isGraphVertical = [
 		GraphDirection.BOTTOM_TO_TOP,
 		GraphDirection.TOP_TO_BOTTOM,
@@ -49,7 +20,7 @@ export const useGetDiagramOptions = ({
 
 	return {
 		autoResize: true,
-		height,
+		// height,
 		width: "100%",
 		layout: {
 			hierarchical: {
@@ -60,21 +31,21 @@ export const useGetDiagramOptions = ({
 			},
 		},
 		nodes: {
-			color: theme.colorPrimaryHue,
+			color: "#fa9549",
 			shape: "box",
 			borderWidth: 0,
 			chosen: false,
 			font: {
-				color: theme.colorBlack,
-				size: stringRemoveEndPxHelper(theme.sizeL),
+				color: "#222222",
+				size: stringRemoveEndPxHelper("16px"),
 				multi: true,
-				bold: { size: stringRemoveEndPxHelper(theme.sizeXL) },
+				bold: { size: stringRemoveEndPxHelper("24px") },
 			},
 			margin: {
-				bottom: stringRemoveEndPxHelper(theme.spaceXS),
-				left: stringRemoveEndPxHelper(theme.spaceM),
-				right: stringRemoveEndPxHelper(theme.spaceM),
-				top: stringRemoveEndPxHelper(theme.spaceXS),
+				bottom: stringRemoveEndPxHelper("12px"),
+				left: stringRemoveEndPxHelper("12px"),
+				right: stringRemoveEndPxHelper("12px"),
+				top: stringRemoveEndPxHelper("12px"),
 			},
 			physics: false,
 		},
@@ -85,12 +56,12 @@ export const useGetDiagramOptions = ({
 				},
 			},
 			chosen: false,
-			color: theme.colorNeutralLight,
+			color: "#dadad7",
 			font: {
 				align: "horizontal",
 				strokeWidth: 0,
-				color: theme.colorPrimaryContent,
-				size: stringRemoveEndPxHelper(theme.spaceXL),
+				color: "#eeeeee",
+				size: stringRemoveEndPxHelper("20px"),
 			},
 			shadow: false,
 			smooth: false,

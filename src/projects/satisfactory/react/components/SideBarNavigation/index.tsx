@@ -69,11 +69,17 @@ export function SideBarNavigation(): React.JSX.Element {
 				link: "settings",
 			},
 		],
+		[
+			{
+				label: "Retour en page d'accueil",
+				link: "/",
+			},
+		],
 	];
 
 	return (
 		<aside
-			className={`bg-blue-900 h-screen flex flex-col gap-6 py-6 overflow-x-hidden overflow-y-auto transition-all ease-in-out duration-250 ${isSideBarLarge ? styles.sidebar_navigation_large : styles.sidebar_navigation_small}`}
+			className={`${styles.navigationContainer} ${isSideBarLarge ? styles.sidebar_navigation_large : styles.sidebar_navigation_small}`}
 		>
 			<button
 				type="button"
@@ -81,23 +87,23 @@ export function SideBarNavigation(): React.JSX.Element {
 			>
 				{isSideBarLarge ? "Collapse" : "Expand"}
 			</button>
-			<div className="flex flex-col justify-between h-full">
+			<div className={styles.navigationContentBox}>
 				{linkGroups.map((groupLink) => (
 					<div
 						key={groupLink[0].link}
-						className="flex flex-col"
+						className={styles.navigationLink}
 					>
 						{groupLink.map((link) => (
 							<NavLink
 								key={link.label}
 								to={link.link}
 							>
-								<p className="text-center">{link.label}</p>
+								<p className={styles.navigationLinkText}>{link.label}</p>
 							</NavLink>
 						))}
 					</div>
 				))}
-				<div className="flex center flex-col p-3">
+				<div className={styles.giftBox}>
 					<p>{currentGift} gift</p>
 					<p>{roundNumber(currentGift / 2025 / 60, 2)} h</p>
 					<p>

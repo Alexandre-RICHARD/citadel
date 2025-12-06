@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router";
 
 import { projects } from "../../../../appNavigation/projects.dictionnary";
 import { ProjectsEnum } from "../../../../appNavigation/projects.enum";
+import styles from "./notFound.module.scss";
 
 export function NotFound(): React.JSX.Element {
 	const [timeLeft, setTimeLeft] = useState(5);
@@ -21,9 +22,9 @@ export function NotFound(): React.JSX.Element {
 	});
 
 	return (
-		<div className="flex flex-col items-center">
+		<div className={styles.notFoundPageContainer}>
 			<NavLink to={projects[ProjectsEnum.Satisfactory].path}>
-				<p className="hover:font-bold underline">Go back to homepage</p>
+				<p className={styles.linkToHomepageText}>Go back to homepage</p>
 			</NavLink>
 			<p>404 - You ll be redirected in {timeLeft}s</p>
 		</div>

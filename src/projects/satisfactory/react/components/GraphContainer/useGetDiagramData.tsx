@@ -4,7 +4,6 @@ import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enu
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
 import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
 import { getTextSizeHelper } from "../../../nexus/helpers/data/string/getTextSize.helper";
-import { theme } from "../../../styles/theme";
 import type { FactoryLine } from "../../../types/satisfactory/factoryLine.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
 
@@ -24,8 +23,8 @@ export const useGetDiagramData = ({
 	const horizontalGraphSpacingHandler = (label: string) => {
 		const labelSize = getTextSizeHelper(
 			label,
-			stringRemoveEndPxHelper(theme.spaceXL),
-			theme.primaryFontFamily,
+			stringRemoveEndPxHelper("20px"),
+			"'Poppins', sans-serif",
 			"bold",
 		);
 		if (labelSize > graphHorizontalSpacing) {
@@ -77,12 +76,12 @@ export const useGetDiagramData = ({
 					nodes.push({
 						id: itemInId,
 						label: getRawResourceLabel(true),
-						color: theme.colorAccentLight,
+						color: "#d6e8ff",
 						margin: {
-							bottom: stringRemoveEndPxHelper(theme.spaceM),
-							left: stringRemoveEndPxHelper(theme.spaceXL),
-							right: stringRemoveEndPxHelper(theme.spaceXL),
-							top: stringRemoveEndPxHelper(theme.spaceM),
+							bottom: stringRemoveEndPxHelper("12px"),
+							left: stringRemoveEndPxHelper("20px"),
+							right: stringRemoveEndPxHelper("20px"),
+							top: stringRemoveEndPxHelper("12px"),
 						},
 					});
 					horizontalGraphSpacingHandler(getRawResourceLabel(true));

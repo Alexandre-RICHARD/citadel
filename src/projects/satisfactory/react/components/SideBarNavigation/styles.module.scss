@@ -1,14 +1,52 @@
 @use "../../../styles/variables.scss";
 
-$navSideBarWitdthSmall: 50px;
-$navSideBarWitdthLarge: 180px;
+.navigationContainer {
+  background-color: #1c398e;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  padding-inline: 2.4rem;
+  overflow-x: hidden;
+  position: fixed;
+  z-index: 10;
+  overflow-y: auto;
+  transition: all 250ms ease-in-out;
+  padding: 0.8rem;
 
-.sidebar_navigation_small {
-  min-width: $navSideBarWitdthSmall;
-  max-width: $navSideBarWitdthSmall;
-}
+  &.sidebar_navigation_small {
+    min-width: variables.$navSideBarWitdthSmall;
+    max-width: variables.$navSideBarWitdthSmall;
+  }
 
-.sidebar_navigation_large {
-  min-width: $navSideBarWitdthLarge;
-  max-width: $navSideBarWitdthLarge;
+  &.sidebar_navigation_large {
+    min-width: variables.$navSideBarWitdthLarge;
+    max-width: variables.$navSideBarWitdthLarge;
+  }
+
+  .navigationContentBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100svh;
+    color: white;
+
+    .navigationLink {
+      display: flex;
+      flex-direction: column;
+
+      .navigationLinkText {
+        text-align: center;
+        color: white;
+      }
+    }
+
+    .giftBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 1.2rem;
+    }
+  }
 }

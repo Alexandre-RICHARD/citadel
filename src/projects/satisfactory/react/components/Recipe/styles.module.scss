@@ -1,66 +1,66 @@
 @use "../../../styles/variables.scss";
 
 .one_recipe_container {
-  gap: var(--theme-spaceS);
-  padding: var(--theme-spaceS);
-  background-color: var(--theme-colorBlack);
+  gap: 0.8rem;
+  padding: 0.8rem;
+  background-color: #222222;
 
   .recipe_title {
     font-weight: 500;
-    margin-bottom: var(--theme-spaceXS);
-    color: var(--theme-colorPrimaryHue);
+    margin-bottom: 0.4rem;
+    color: #fa9549;
 
     .duplicated_recipe {
-      border-radius: var(--theme-spaceXS);
-      padding: var(--theme-spaceXXS) var(--theme-spaceS);
-      margin-inline: var(--theme-spaceS);
+      border-radius: 0.4rem;
+      padding: 0.2rem 0.8rem;
+      margin-inline: 0.8rem;
       font-weight: 500;
-      font-size: var(--theme-sizeXS);
-      background-color: var(--theme-colorDestructiveHue);
-      color: var(--theme-colorDestructiveLight);
+      font-size: 1.2rem;
+      background-color: #c13a33;
+      color: #f4d8d7;
     }
   }
 
   .one_recipe {
     display: flex;
     align-items: center;
-    gap: var(--theme-spaceM);
+    gap: 1.2rem;
 
     .resource_group {
       display: flex;
-      gap: var(--theme-spaceS);
+      gap: 0.8rem;
       flex-shrink: 0;
 
       .resource_in_out {
         position: relative;
-        padding: var(--theme-spaceXS);
-        border-radius: var(--theme-spaceXS);
+        padding: 0.4rem;
+        border-radius: 0.4rem;
         overflow: hidden;
-        background-color: var(--theme-colorNeutralLight);
+        background-color: #dedfe8;
         display: flex;
         flex-direction: column;
         justify-content: space-evenly;
 
         .resource_icon {
-          width: calc(2 * var(--theme-spaceXL));
-          height: calc(2 * var(--theme-spaceXL));
+          width: calc(2 * 2rem);
+          height: calc(2 * 2rem);
         }
 
         .resource_count {
           position: absolute;
           bottom: 0;
           right: 0;
-          height: var(--theme-spaceXL);
-          padding-inline: var(--theme-spaceXS);
+          height: 2rem;
+          padding-inline: 0.4rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--theme-colorNeutralContent);
-          background-color: var(--theme-colorNeutralHue);
+          color: #222222;
+          background-color: #5f668c;
           font-weight: 700;
-          font-size: var(--theme-sizeS);
-          line-height: var(--theme-sizeS);
-          border-top-left-radius: var(--theme-spaceXS);
+          font-size: 1.4rem;
+          line-height: 1.4rem;
+          border-top-left-radius: 0.4rem;
         }
       }
     }
@@ -72,10 +72,10 @@
     .recipe_info {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--theme-spaceXS) var(--theme-spaceXXL);
+      gap: 0.4rem 2.4rem;
 
       .recipes_one_info {
-        color: var(--theme-colorPrimaryHue);
+        color: #fa9549;
         font-weight: 500;
       }
     }
