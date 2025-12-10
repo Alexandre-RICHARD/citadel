@@ -9,7 +9,7 @@ export type CalculatorSliceType = {
 	setOverclocking: (newValue: number) => void;
 	nameFilter: string;
 	setNameFilter: (newValue: string) => void;
-	selectedFactoryLineData?: SelectedFactoryLineData;
+	selectedFactoryLineData?: SelectedFactoryLineData | undefined;
 	setSelectedFactoryLineData: (newValue?: SelectedFactoryLineData) => void;
 	factoryLine: FactoryLine | null;
 	setFactoryLine: (newValue?: FactoryLine) => void;

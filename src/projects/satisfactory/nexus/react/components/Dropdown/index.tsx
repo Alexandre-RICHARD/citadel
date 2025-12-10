@@ -17,11 +17,11 @@ const isLeft = (position: string) => {
 type PropsType<T extends string> = {
 	selectorId: string;
 	items: SelectItemsType<T>[];
-	selectedItem?: T;
+	selectedItem: T | undefined;
 	position: DropdownPositionType;
-	onSelect: (selectedItem: T) => void;
+	onSelect: (selectedItem: T | undefined) => void;
 	onClose: () => void;
-	search?: SelectSearchType;
+	search: SelectSearchType | undefined;
 };
 
 export function Dropdown<T extends string>({
@@ -171,7 +171,7 @@ export function Dropdown<T extends string>({
 						stringSearcher({
 							searchString,
 							value: item.search,
-							strictMode: search?.strictMode,
+							strictMode: !!search?.strictMode,
 						}),
 					)
 					.map((item, index) => (

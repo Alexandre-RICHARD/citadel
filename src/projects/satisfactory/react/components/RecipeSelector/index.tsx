@@ -62,8 +62,15 @@ export function RecipeSelector(): React.JSX.Element {
 					value: item,
 				}))}
 				onSelect={(newValue) => {
+					if (newValue === undefined) {
+						setSelectedFactoryLineData(undefined);
+						return;
+					}
+
 					setSelectedFactoryLineData({
-						selectedItem: gameItemsDictionnary[newValue] as GameItemResource,
+						selectedItem: gameItemsDictionnary[
+							newValue as GameItemsEnum
+						] as GameItemResource,
 					});
 				}}
 				search={{
@@ -91,13 +98,20 @@ export function RecipeSelector(): React.JSX.Element {
 						search: t(TF.SATISFACTORY_RECIPES, recipe.recipeName),
 						value: recipe.recipeName,
 					}))}
-					onSelect={(newValue) =>
+					onSelect={(newValue) => {
+						if (
+							newValue === undefined ||
+							!selectedFactoryLineData.selectedItem
+						) {
+							setSelectedFactoryLineData(undefined);
+							return;
+						}
 						setSelectedFactoryLineData({
 							selectedItem: selectedFactoryLineData.selectedItem,
 							selectedRecipeName: newValue,
 							itemPerMinute: 10,
-						})
-					}
+						});
+					}}
 				/>
 			) : null}
 			{selectedFactoryLineData?.selectedRecipeName ? (

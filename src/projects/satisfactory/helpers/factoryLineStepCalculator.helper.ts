@@ -14,15 +14,15 @@ export const factoryLineStepCalculator = ({
 }: Args): FactoryLine => {
 	const recipesInArray = Object.values(recipes);
 	const recipe = recipesInArray.find(
-		(it) => it.recipeName === currentRecipe?.selectedRecipeName,
+		(it) => it.recipeName === currentRecipe.selectedRecipeName,
 	)!;
 
 	const item = recipe.itemsOut.find(
-		(it) => it.item === currentRecipe?.selectedItem,
+		(it) => it.item === currentRecipe.selectedItem,
 	)!;
 
 	const quantityPerMinute =
-		currentRecipe?.itemPerMinute ?? item.quantityPerCycle;
+		currentRecipe.itemPerMinute ?? item.quantityPerCycle;
 	const initialQuantityPerMinute = itemPerMinute({
 		cycleDuration: recipe.initCycleDuration,
 		cycleItemCount: item.quantityPerCycle,
@@ -55,14 +55,14 @@ export const factoryLineStepCalculator = ({
 						(it) =>
 							!it.isAlternate &&
 							it.itemsOut.some((itemOut) => itemOut.item === itemIn.item),
-					);
+					)!;
 					return factoryLineStepCalculator({
 						currentRecipe: {
 							itemPerMinute:
 								(itemIn.quantityPerCycle * quantityPerMinute) /
 								item.quantityPerCycle,
 							selectedItem: itemIn.item,
-							selectedRecipeName: itemInRecipe?.recipeName,
+							selectedRecipeName: itemInRecipe.recipeName,
 						},
 					});
 				});

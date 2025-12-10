@@ -20,7 +20,7 @@ export const fetcherHelper = async <T>({
 				Accept: "application/json",
 			},
 			method,
-			body: method !== FetchMethodsEnum.GET ? JSON.stringify(body) : undefined,
+			body: method !== FetchMethodsEnum.GET ? JSON.stringify(body) : null,
 		});
 		const responseData = {
 			success: response.ok,

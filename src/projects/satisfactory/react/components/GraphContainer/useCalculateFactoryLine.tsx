@@ -7,7 +7,7 @@ import type { FactoryLineData } from "../../../types/satisfactory/factoryLineDat
 import type { SelectedFactoryLineData } from "../../../types/satisfactory/selectedFactoryLineData.type";
 
 type PropsType = {
-	selectedFactoryLineData?: SelectedFactoryLineData;
+	selectedFactoryLineData?: SelectedFactoryLineData | undefined;
 	setFactoryLine: (newValue: FactoryLine) => void;
 	setFactoryLineData: (newValue: FactoryLineData) => void;
 };

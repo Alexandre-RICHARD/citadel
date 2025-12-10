@@ -20,7 +20,8 @@ export const useCalculatorStore: StateCreator<CalculatorSliceType> = (set) => ({
 		set(() => ({ selectedFactoryLineData: newValue }));
 	},
 	factoryLine: null,
-	setFactoryLine: (newValue) => set(() => ({ factoryLine: newValue })),
+	setFactoryLine: (newValue) => set(() => ({ factoryLine: newValue ?? null })),
 	factoryLineData: null,
-	setFactoryLineData: (newValue) => set(() => ({ factoryLineData: newValue })),
+	setFactoryLineData: (newValue) =>
+		set(() => ({ factoryLineData: newValue ?? null })),
 });

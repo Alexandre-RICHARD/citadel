@@ -11,9 +11,9 @@ type PropsType<T extends string> = {
 	id: string;
 	label: string | React.JSX.Element;
 	items: SelectItemsType<T>[];
-	selectedItem?: T;
+	selectedItem: T | undefined;
 	position: DropdownPositionType;
-	onSelect: (item: T) => void;
+	onSelect: (item: T | undefined) => void;
 	search?: SelectSearchType;
 };
 
@@ -43,7 +43,7 @@ export function Selector<T extends string>({
 					items={items}
 					selectedItem={selectedItem}
 					position={position}
-					onSelect={(item) => onSelect(item)}
+					onSelect={onSelect}
 					onClose={() => setIsOpen(false)}
 					search={search}
 				/>

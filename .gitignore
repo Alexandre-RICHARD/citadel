@@ -5,7 +5,6 @@ node_modules/
 report/
 
 # Files
-.env
 .env.dev
 .env.prod
 tsBuildInfo.json
