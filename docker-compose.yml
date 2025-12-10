@@ -5,6 +5,8 @@ services:
     ports:
       - "80:80"
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx:/etc/nginx/conf.d:ro
       - front_build:/usr/share/nginx/html:ro
     depends_on:
       backend:
