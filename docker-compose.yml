@@ -10,6 +10,8 @@ services:
       - ./nginx/api.conf:/etc/nginx/conf.d/api.conf:ro
       - front_build:/usr/share/nginx/html:ro
     restart: unless-stopped
+    networks:
+      - app-network
 
   backend:
     image: ghcr.io/alexandre-richard/reunion-backend:latest
@@ -24,6 +26,8 @@ services:
     expose:
       - "${LOCAL_PORT}"
     restart: unless-stopped
+    networks:
+      - app-network
 
   frontend:
     image: ghcr.io/alexandre-richard/reunion-frontend:latest
@@ -34,6 +38,8 @@ services:
     volumes:
       - front_build:/usr/share/nginx/html
     restart: "no"
+    networks:
+      - app-network
 
   mariadb:
     image: mariadb:11
@@ -46,6 +52,12 @@ services:
     volumes:
       - ./mariadb-data:/var/lib/mysql
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   front_build:
+
+networks:
+  app-network:
+    driver: bridge
