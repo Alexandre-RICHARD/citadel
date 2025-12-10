@@ -23,6 +23,7 @@ services:
       DB_DATABASE_NAME: ${DB_DATABASE_NAME}
       DB_PORT: ${DB_PORT}
       CORS_ORIGIN: ${CORS_ORIGIN}
+      LOCAL_PORT: ${LOCAL_PORT}
     expose:
       - "${LOCAL_PORT}"
     restart: unless-stopped
