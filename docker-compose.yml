@@ -5,8 +5,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/sites:/etc/nginx/conf.d:ro
       - front_build:/usr/share/nginx/html:ro
     depends_on:
       backend:
@@ -32,9 +30,9 @@ services:
     container_name: frontend-builder
     environment:
       VITE_API_ADRESS: ${VITE_API_ADRESS}
-    command: ["sh", "-c", "cp -r /app/build/* /front-build"]
+    command: ["sh", "-c", "cp -r /app/build/* /usr/share/nginx/html"]
     volumes:
-      - front_build:/front-build
+      - front_build:/usr/share/nginx/html
     restart: "no"
 
   mariadb:
