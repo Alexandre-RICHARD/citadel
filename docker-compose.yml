@@ -23,9 +23,9 @@ services:
       DB_DATABASE_NAME: ${DB_DATABASE_NAME}
       DB_PORT: ${DB_PORT}
       CORS_ORIGIN: ${CORS_ORIGIN}
-      LOCAL_PORT: ${LOCAL_PORT}
+      LOCAL_PORT: ${API_PORT}
     expose:
-      - "${LOCAL_PORT}"
+      - "${API_PORT}"
     restart: unless-stopped
     networks:
       - app-network
@@ -55,6 +55,8 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    ports:
+      - "127.0.0.1:3306:${DB_PORT}"
 
 volumes:
   front_build:
