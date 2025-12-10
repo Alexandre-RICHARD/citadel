@@ -17,17 +17,21 @@ services:
     image: ghcr.io/alexandre-richard/reunion-backend:latest
     container_name: backend
     environment:
-      DB_HOST: mariadb
-      DB_USER: test
-      DB_PASSWORD: ibDy244WR8Qu
-      DB_NAME: reunion
+      DB_HOST: ${DB_HOST}
+      DB_USER_NAME: ${DB_USER_NAME}
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      DB_PORT: ${DB_PORT}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     expose:
-      - "3000"
+      - "${LOCAL_PORT}"
     restart: unless-stopped
 
   frontend:
     image: ghcr.io/alexandre-richard/reunion-frontend:latest
     container_name: frontend-builder
+    environment:
+      VITE_API_ADRESS: ${VITE_API_ADRESS}
     command: ["sh", "-c", "cp -r /app/build/* /front-build"]
     volumes:
       - front_build:/front-build
@@ -37,10 +41,10 @@ services:
     image: mariadb:11
     container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: 6sEz363yMmtJ
-      MYSQL_DATABASE: reunion
-      MYSQL_USER: test
-      MYSQL_PASSWORD: ibDy244WR8Qu
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE_NAME}
+      MYSQL_USER: ${DB_USER_NAME}
+      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
     volumes:
       - ./mariadb-data:/var/lib/mysql
     restart: unless-stopped
