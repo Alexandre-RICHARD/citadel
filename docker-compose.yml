@@ -1,4 +1,13 @@
 services:
+  migrations:
+    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha3
+    command: ["sh", "-c", "cp -r /migrations/* /shared-migrations"]
+    volumes:
+      - backend-migrations:/shared-migrations
+    networks:
+      - app-network
+    restart: "no"
+
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -10,35 +19,6 @@ services:
       - ./nginx/api.conf:/etc/nginx/conf.d/api.conf:ro
       - front_build:/usr/share/nginx/html:ro
     restart: unless-stopped
-    networks:
-      - app-network
-
-  backend:
-    image: ghcr.io/alexandre-richard/reunion-backend:latest
-    container_name: backend
-    environment:
-      DB_HOST: ${DB_HOST}
-      DB_USER_NAME: ${DB_USER_NAME}
-      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
-      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
-      DB_PORT: ${DB_PORT}
-      CORS_ORIGIN: ${CORS_ORIGIN}
-      LOCAL_PORT: ${API_PORT}
-    expose:
-      - "${API_PORT}"
-    restart: unless-stopped
-    networks:
-      - app-network
-
-  frontend:
-    image: ghcr.io/alexandre-richard/reunion-frontend:latest
-    container_name: frontend-builder
-    environment:
-      VITE_API_ADRESS: ${VITE_API_ADRESS}
-    command: ["sh", "-c", "cp -r /app/build/* /usr/share/nginx/html"]
-    volumes:
-      - front_build:/usr/share/nginx/html
-    restart: "no"
     networks:
       - app-network
 
@@ -58,8 +38,58 @@ services:
     ports:
       - "127.0.0.1:3306:${DB_PORT}"
 
+  flyway:
+    image: flyway/flyway:latest
+    container_name: flyway
+    depends_on:
+      - migrations
+      - mariadb
+    volumes:
+      - backend-migrations:/flyway/sql
+    command: >
+      migrate
+      -connectRetries=10
+      -url=jdbc:mariadb://mariadb:${DB_PORT}/${DB_DATABASE_NAME}
+      -user=${DB_USER_NAME}
+      -password=${DB_USER_PASSWORD}
+    networks:
+      - app-network
+    restart: "no"
+
+  backend:
+    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha3
+    container_name: backend
+    depends_on:
+      - flyway
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USER_NAME: ${DB_USER_NAME}
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      DB_PORT: ${DB_PORT}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      LOCAL_PORT: ${API_PORT}
+    expose:
+      - "${API_PORT}"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    image: ghcr.io/alexandre-richard/reunification-frontend:v0.0.1_alpha1
+    container_name: frontend-builder
+    environment:
+      VITE_API_ADRESS: ${VITE_API_ADRESS}
+    command: ["sh", "-c", "cp -r /app/build/* /usr/share/nginx/html"]
+    volumes:
+      - front_build:/usr/share/nginx/html
+    restart: "no"
+    networks:
+      - app-network
+
 volumes:
   front_build:
+  backend-migrations:
 
 networks:
   app-network:
