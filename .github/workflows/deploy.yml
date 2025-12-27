@@ -11,14 +11,13 @@ jobs:
 
     steps:
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/alex/alex-deploy
-            git fetch
-            git pull
-            docker compose pull
-            docker compose up -d --force-recreate
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+
+          ssh -i key.pem -o StrictHostKeyChecking=no \
+          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "cd ${{ secrets.SSH_TARGET_FOLDER }} && \
+          git fetch && \
+          git pull && \
+          docker compose pull && \
+          docker compose up -d --force-recreate"
