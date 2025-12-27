@@ -11,7 +11,8 @@ jobs:
 
     steps:
       - name: Deploy via SSH
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
 
           ssh -i key.pem -o StrictHostKeyChecking=no \
