@@ -13,7 +13,14 @@ services:
 
   migrations:
     image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha4
-    command: ["sh", "-c", "cp -r /app/migrations/* /shared-migrations"]
+    command: >
+      sh -c "
+      if [ -d /app/migrations ] && [ \"$(ls -A /app/migrations)\" ]; then
+        cp -r /app/migrations/* /shared-migrations;
+      else
+        echo 'No migrations found';
+      fi
+      "
     volumes:
       - backend-migrations:/shared-migrations
     networks:
