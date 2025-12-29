@@ -57,12 +57,15 @@ services:
           "mysqladmin",
           "ping",
           "-h",
-          "localhost",
+          "127.0.0.1",
+          "-P",
+          "3306",
           "-p${MYSQL_ROOT_PASSWORD}",
         ]
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 15s
     networks:
       - app-network
     ports:
