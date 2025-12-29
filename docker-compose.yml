@@ -1,4 +1,16 @@
 services:
+  db-init:
+    image: alpine:3.19
+    env_file:
+      - .env
+    volumes:
+      - ./db-init:/templates:ro
+      - ./db-init-generated:/generated
+    command: >
+      sh -c "apk add --no-cache gettext &&
+             envsubst < /templates/00-init.sql.template > /generated/00-init.sql"
+    restart: "no"
+
   migrations:
     image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha4
     command: ["sh", "-c", "cp -r /migrations/* /shared-migrations"]
@@ -27,24 +39,14 @@ services:
     container_name: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
-      DB_USER_NAME: ${DB_USER_NAME}
-      DB_USER_PASSWORD: ${DB_USER_PASSWORD}
-      DB_HOST: ${DB_HOST}
     volumes:
       - ./mariadb-data:/var/lib/mysql
-      - ./db-init:/templates:ro
+      - ./db-init-generated:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
     networks:
       - app-network
     ports:
       - "127.0.0.1:3306:${DB_PORT}"
-    entrypoint:
-      - sh
-      - -c
-      - |
-        envsubst < /templates/00-init.sql.template > /docker-entrypoint-initdb.d/00-init.sql
-        exec docker-entrypoint.sh mysqld
 
   flyway:
     image: flyway/flyway:latest
