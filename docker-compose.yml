@@ -43,6 +43,19 @@ services:
       - ./mariadb-data:/var/lib/mysql
       - ./db-init-generated:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - app-network
     ports:
@@ -52,8 +65,10 @@ services:
     image: flyway/flyway:latest
     container_name: flyway
     depends_on:
-      - migrations
-      - mariadb
+      mariadb:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     volumes:
       - backend-migrations:/flyway/sql
     command: >
@@ -70,7 +85,8 @@ services:
     image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha4
     container_name: backend
     depends_on:
-      - flyway
+      flyway:
+        condition: service_completed_successfully
     environment:
       DB_HOST: ${DB_HOST}
       DB_USER_NAME: ${DB_USER_NAME}
