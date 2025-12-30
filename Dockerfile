@@ -2,6 +2,10 @@ FROM node:22 AS builder
 
 WORKDIR /app
 
+ARG VITE_API_ADRESS
+
+ENV VITE_API_ADRESS=$VITE_API_ADRESS
+
 COPY package.json pnpm-lock.yaml ./
 
 RUN npm install -g pnpm
