@@ -93,7 +93,7 @@ services:
       - app-network
 
   frontend:
-    image: ghcr.io/alexandre-richard/reunification-frontend:v0.0.1_alpha4
+    image: ghcr.io/alexandre-richard/reunification-frontend:v0.0.1_alpha6
     container_name: frontend-builder
     environment:
       VITE_API_ADRESS: ${VITE_API_ADRESS}
