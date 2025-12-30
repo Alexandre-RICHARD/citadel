@@ -27,8 +27,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push
-        env:
-          VITE_API_ADRESS: ${{ secrets.VITE_API_ADRESS }}
         run: |
           IMAGE=ghcr.io/alexandre-richard/reunification-frontend:${GITHUB_REF_NAME}
           docker build -t $IMAGE .

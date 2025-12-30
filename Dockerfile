@@ -20,6 +20,8 @@ FROM alpine:3.19
 
 WORKDIR /app
 
+RUN echo "VITE_API_ADRESS=$VITE_API_ADRESS"
+
 COPY --from=builder /app/build ./build
 
 CMD ["sh", "-c", "echo 'Build ready'"]
