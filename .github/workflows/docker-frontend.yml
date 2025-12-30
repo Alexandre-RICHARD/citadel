@@ -31,7 +31,7 @@ jobs:
           VITE_API_ADRESS: ${{ secrets.VITE_API_ADRESS }}
         run: |
           IMAGE=ghcr.io/alexandre-richard/reunification-frontend:${GITHUB_REF_NAME}
-          docker build
-            --build-arg VITE_API_ADRESS="${{ secrets.VITE_API_ADRESS }}" \  
+          docker build \
+            --build-arg VITE_API_ADRESS="${{ secrets.VITE_API_ADRESS }}" \
             -t $IMAGE .
           docker push $IMAGE
