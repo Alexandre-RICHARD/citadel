@@ -1,15 +1,15 @@
 import { Route, Routes } from "react-router";
 
 import { AppContainer } from "../AppContainer";
-import { TranslationsContext } from "./nexus/react/contexts/translations/Translations.context";
-import { TranslationProvider } from "./nexus/react/contexts/translations/Translations.provider";
-import { FactoryLineCalculator } from "./react/pages/FactoryLineCalculator";
-import { FRMAllMachines } from "./react/pages/FRMAllMachines";
-import { Homepage } from "./react/pages/Homepage";
-import { NotFound } from "./react/pages/NotFound";
-import { RecipesList } from "./react/pages/RecipesList";
-import { SatisfactoryLayout } from "./react/SatisfactoryLayout";
-import { useCombinedStore } from "./store/combined.store";
+import { TranslationsContext } from "./toRework/nexus/react/contexts/translations/Translations.context";
+import { TranslationProvider } from "./toRework/nexus/react/contexts/translations/Translations.provider";
+import { FactoryLineCalculator } from "./toRework/react/pages/FactoryLineCalculator";
+import { FRMAllMachines } from "./toRework/react/pages/FRMAllMachines";
+import { Homepage } from "./toRework/react/pages/Homepage";
+import { NotFound } from "./toRework/react/pages/NotFound";
+import { RecipesList } from "./toRework/react/pages/RecipesList";
+import { SatisfactoryLayout } from "./toRework/react/SatisfactoryLayout";
+import { useCombinedStore } from "./toRework/store/combined.store";
 
 export function SatisfactoryPage() {
 	const language = useCombinedStore((state) => state.language);

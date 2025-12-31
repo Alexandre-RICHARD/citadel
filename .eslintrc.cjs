@@ -149,7 +149,7 @@ module.exports = {
     },
     {
       files: [
-        "src/projects/satisfactory/store/combined.store.ts",
+        "src/projects/satisfactory/**/combined.store.ts",
       ],
       rules: {
         "import/no-default-export": "off",

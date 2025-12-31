@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
 
-import { projects } from "../../../../appNavigation/projects.dictionnary";
-import { ProjectsEnum } from "../../../../appNavigation/projects.enum";
+import { projects } from "../../../../../appNavigation/projects.dictionnary";
+import { ProjectsEnum } from "../../../../../appNavigation/projects.enum";
 import styles from "./notFound.module.scss";
 
 export function NotFound(): React.JSX.Element {

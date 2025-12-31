@@ -1,5 +1,5 @@
-import { getIsPrimitiveHelper } from "../projects/satisfactory/nexus/helpers/data/getIsPrimitive.helper";
-import { areStrictlyDeeplyEqualsHelper } from "../projects/satisfactory/nexus/helpers/data/object/areStrictlyDeeplyEquals.helper";
+import { getIsPrimitiveHelper } from "../projects/satisfactory/toRework/nexus/helpers/data/getIsPrimitive.helper";
+import { areStrictlyDeeplyEqualsHelper } from "../projects/satisfactory/toRework/nexus/helpers/data/object/areStrictlyDeeplyEquals.helper";
 
 export const getAllCommonElementInArraysHelper = <T>(
 	array1: T[],
