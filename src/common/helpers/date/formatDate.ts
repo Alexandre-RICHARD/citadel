@@ -1,5 +1,5 @@
-import { languageDictionnary } from "../../dictionnaries/language";
-import { LanguageEnum } from "../../enum/language.enum";
+import { languageDictionnary } from "../../language/language.dictionnary";
+import { LanguageEnum } from "../../language/language.enum";
 
 export function formatDate(dateString: Date, locale: LanguageEnum): string {
 	const date = new Date(dateString);

@@ -7,6 +7,7 @@ import { useGetAllTest } from "../../actions/useGetAllTest";
 import { OneTestDataLine } from "../../components/oneTestDataLine/OneTestDataLine";
 import { CreateTest } from "../../components/testDataForm/CreateTest";
 import { UpdateTest } from "../../components/testDataForm/UpdateTest";
+import { TranslationTest } from "../../components/TranslationTest/TranslationTest";
 import styles from "./testDisplayAll.module.scss";
 
 export function TestDisplayAll() {
@@ -96,6 +97,7 @@ export function TestDisplayAll() {
 					onUpdateSuccess={handleCreateTest}
 				/>
 			) : null}
+			<TranslationTest />
 		</div>
 	);
 }

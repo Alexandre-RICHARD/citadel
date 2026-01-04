@@ -2,8 +2,8 @@ import type { TestDto } from "@specs/project/test/dto/test.dto";
 import { NavLink } from "react-router";
 
 import { Button } from "../../../../common/components/button/Button";
-import { LanguageEnum } from "../../../../common/enum/language.enum";
 import { formatDate } from "../../../../common/helpers/date/formatDate";
+import { LanguageEnum } from "../../../../common/language/language.enum";
 import styles from "./oneDataLine.module.scss";
 
 type Props = {
