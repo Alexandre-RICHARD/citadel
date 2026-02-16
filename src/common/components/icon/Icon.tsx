@@ -1,7 +1,7 @@
 import React from "react";
 
-import { IconsList } from "../../../dictionnaries/iconsList.dictionnary";
-import type { IconTokenEnum } from "../../../enums/iconToken.enum";
+import { IconsList } from "./iconsList.dictionnary";
+import type { IconTokenEnum } from "./iconToken.enum";
 
 type PropsType = {
 	iconToken: IconTokenEnum;

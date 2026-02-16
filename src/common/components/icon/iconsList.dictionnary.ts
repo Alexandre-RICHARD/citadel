@@ -1,11 +1,11 @@
 import type React from "react";
 
-import { IconTokenEnum } from "../enums/iconToken.enum";
-import { Arrow } from "../react/icons/Arrow";
-import { Collapse } from "../react/icons/Collapse";
-import { DropdownArrow } from "../react/icons/DropdownArrow";
-import { Expand } from "../react/icons/Expand";
-import { TriangleArrow } from "../react/icons/TriangleArrow";
+import { Arrow } from "./icons/Arrow";
+import { Collapse } from "./icons/Collapse";
+import { DropdownArrow } from "./icons/DropdownArrow";
+import { Expand } from "./icons/Expand";
+import { TriangleArrow } from "./icons/TriangleArrow";
+import { IconTokenEnum } from "./iconToken.enum";
 
 export const IconsList: Record<
 	IconTokenEnum,
