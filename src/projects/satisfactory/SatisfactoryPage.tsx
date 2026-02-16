@@ -1,57 +1,28 @@
 import { Route, Routes } from "react-router";
 
 import { AppContainer } from "../AppContainer";
-import { TranslationsContext } from "./toRework/nexus/react/contexts/translations/Translations.context";
-import { TranslationProvider } from "./toRework/nexus/react/contexts/translations/Translations.provider";
-import { FactoryLineCalculator } from "./toRework/react/pages/FactoryLineCalculator";
-import { FRMAllMachines } from "./toRework/react/pages/FRMAllMachines";
-import { Homepage } from "./toRework/react/pages/Homepage";
-import { NotFound } from "./toRework/react/pages/NotFound";
-import { RecipesList } from "./toRework/react/pages/RecipesList";
-import { SatisfactoryLayout } from "./toRework/react/SatisfactoryLayout";
-import { useCombinedStore } from "./toRework/store/combined.store";
+import { SatisfactoryHomepage } from "./pages/SatisfactoryHomepage/SatisfactoryHomepage";
+import { SatisfactoryLayout } from "./pages/SatisfactoryLayout/SatisfactoryLayout";
+import { SatisfactoryRecipeList } from "./pages/SatisfactoryRecipeList/SatisfactoryRecipeList";
 
 export function SatisfactoryPage() {
-	const language = useCombinedStore((state) => state.language);
-
-	const filesContexts = {
-		...import.meta.glob("./assets/translations/**/*.ts"),
-	};
 	return (
-		<TranslationProvider
-			TranslationsContext={TranslationsContext}
-			filesContexts={filesContexts}
-			language={language}
-		>
-			<AppContainer>
-				<Routes>
+		<AppContainer>
+			<Routes>
+				<Route
+					path=""
+					element={<SatisfactoryLayout />}
+				>
 					<Route
-						path="/"
-						element={<SatisfactoryLayout />}
-					>
-						<Route
-							index
-							element={<Homepage />}
-						/>
-						<Route
-							path="recipes"
-							element={<RecipesList />}
-						/>
-						<Route
-							path="calculator"
-							element={<FactoryLineCalculator />}
-						/>
-						<Route
-							path="frm/allMachines"
-							element={<FRMAllMachines />}
-						/>
-						<Route
-							path="*"
-							element={<NotFound />}
-						/>
-					</Route>
-				</Routes>
-			</AppContainer>
-		</TranslationProvider>
+						index
+						element={<SatisfactoryHomepage />}
+					/>
+					<Route
+						path="recipe"
+						element={<SatisfactoryRecipeList />}
+					/>
+				</Route>
+			</Routes>
+		</AppContainer>
 	);
 }

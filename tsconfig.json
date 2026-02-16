@@ -53,6 +53,7 @@
 	"exclude": [
 		"build",
 		"node_modules",
-		"report"
+		"report",
+		"src/projects/satisfactory/toRework" // TODO 
 	]
 }

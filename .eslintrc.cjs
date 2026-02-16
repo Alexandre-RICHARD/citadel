@@ -14,6 +14,7 @@ module.exports = {
     "vitest.config.ts",
     "vitest.setup.ts",
     "alex-specs",
+    "src/projects/satisfactory/toRework" // TODO
   ],
   extends: [
     "eslint:recommended",
