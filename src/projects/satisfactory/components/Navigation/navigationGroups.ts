@@ -5,19 +5,19 @@ export const navigationGroups: NavigationItems = [
 		naviItem: [
 			{
 				label: "homepage",
-				link: "",
+				link: "/satisfactory",
 			},
 			{
 				label: "recipes",
-				link: "recipes",
+				link: "/satisfactory/recipes",
 			},
 			{
 				label: "calculator",
-				link: "calculator",
+				link: "/satisfactory/calculator",
 			},
 			{
 				label: "machines",
-				link: "frm/allMachines",
+				link: "/satisfactory/frm/allMachines",
 			},
 		],
 	},
@@ -25,7 +25,7 @@ export const navigationGroups: NavigationItems = [
 		naviItem: [
 			{
 				label: "settings",
-				link: "settings",
+				link: "/satisfactory/settings",
 			},
 			{
 				label: "Retour en page d'accueil",
