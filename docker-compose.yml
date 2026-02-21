@@ -12,7 +12,7 @@ services:
     restart: "no"
 
   migrations:
-    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha4
+    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.2
     command: >
       sh -c "
       if [ -d /app/migrations ] && [ \"$(ls -A /app/migrations)\" ]; then
@@ -74,7 +74,7 @@ services:
     restart: "no"
 
   backend:
-    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.1_alpha4
+    image: ghcr.io/alexandre-richard/reunification-backend:v0.0.2
     container_name: backend
     depends_on:
       - flyway
@@ -93,7 +93,7 @@ services:
       - app-network
 
   frontend:
-    image: ghcr.io/alexandre-richard/reunification-frontend:v0.0.1_alpha9
+    image: ghcr.io/alexandre-richard/reunification-frontend:v0.0.2
     container_name: frontend-builder
     environment:
       VITE_API_ADRESS: ${VITE_API_ADRESS}
