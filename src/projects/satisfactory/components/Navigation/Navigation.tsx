@@ -1,5 +1,7 @@
 import { NavLink } from "react-router";
 
+import { IconContainer } from "../../../../common/components/icon/Icon";
+import { IconTokenEnum } from "../../../../common/components/icon/iconToken.enum";
 import styles from "./navigation.module.scss";
 import { navigationGroups } from "./navigationGroups";
 
@@ -36,7 +38,11 @@ export function Navigation() {
 								<div
 									className={`${styles.navbarItemInnerIconWrapper} ${styles.flexbox}`}
 								>
-									p
+									<IconContainer
+										iconToken={IconTokenEnum[navItem.icon]}
+										size={20}
+										color="#fefefe"
+									/>
 								</div>
 								<span className={styles.linkText}>{navItem.label}</span>
 							</NavLink>
