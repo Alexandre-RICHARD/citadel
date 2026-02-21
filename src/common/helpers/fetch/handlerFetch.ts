@@ -16,14 +16,15 @@ class HttpStatusError extends Error {
 
 export async function fetchHandler<Spec extends EndpointModel>(
 	args: Spec["request"],
+	urlDomain?: string,
 ): Promise<Spec["response"]> {
-	const urlDomain = import.meta.env.VITE_API_ADRESS;
+	const determinedUrlDomain = urlDomain ?? import.meta.env.VITE_API_ADRESS;
 	const urlWithPathParams = insertParamsInRequestUrl({
 		baseUrl: args.url,
 		params: args.pathParams,
 	});
 	const urlQueryString = buildQueryString(args.queryParams);
-	const finalUrl = `${urlDomain}${urlWithPathParams}${urlQueryString}`;
+	const finalUrl = `${determinedUrlDomain}${urlWithPathParams}${urlQueryString}`;
 
 	const isBody =
 		![HttpMethodEnum.GET, HttpMethodEnum.DELETE].includes(args.method) &&

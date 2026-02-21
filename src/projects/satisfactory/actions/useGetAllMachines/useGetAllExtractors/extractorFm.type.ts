@@ -1,4 +1,4 @@
-import type { GameClassNamesEnum } from "../../../../enums/gameClassNames.enum";
+import type { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 
 export type ExtractorFm = {
 	id: string;
@@ -10,5 +10,6 @@ export type ExtractorFm = {
 	location: {
 		x: number;
 		y: number;
+		z: number;
 	};
 };
