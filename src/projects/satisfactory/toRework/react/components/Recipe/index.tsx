@@ -2,9 +2,9 @@ import React from "react";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { powerCalculation } from "../../../helpers/powerCalculation.helper";
-import { IconTokenEnum } from "../../../nexus/enums/iconToken.enum";
+import { IconTokenEnum } from "../../../../../../common/components/icon/iconToken.enum";
 import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
-import { IconContainer } from "../../../nexus/react/components/IconContainer";
+import { IconContainer } from "../../../../../../common/components/icon/Icon";
 import { useCombinedStore } from "../../../store/combined.store";
 import type { RecipeType } from "../../../types/satisfactory/recipe.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";

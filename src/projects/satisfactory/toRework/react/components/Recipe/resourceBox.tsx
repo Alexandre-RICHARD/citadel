@@ -37,7 +37,7 @@ export function ResourceBox({
 				alt={`Icon of ${t(TF.SATISFACTORY_ITEMS, resource.item.name)} satisfactory resource`}
 				src={
 					new URL(
-						`/src/projects/satisfactory/assets/images/satisfactory/gameItems/Resource/${resource.item.name}.png`,
+						`/src/projects/satisfactory/toRework/assets/images/satisfactory/gameItems/Resource/${resource.item.name}.png`,
 						import.meta.url,
 					).href
 				}
