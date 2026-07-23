@@ -6,7 +6,7 @@ import type { TestDto } from "../dto/test.dto.ts";
 
 export interface GetOneTest extends EndpointModel {
 	request: {
-		url: "/test/:id";
+		url: "/test/test/:id";
 		method: HttpMethodEnum.GET;
 		protected: false;
 		pathParams: {

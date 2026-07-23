@@ -3,10 +3,9 @@ import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { GeneratorDto } from "../dto/generator.dto.ts";
 
-
 export interface GetAllGenerators extends EndpointModel {
 	request: {
-		url: "/getGenerators";
+		url: "/satisfactory/getGenerators";
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};

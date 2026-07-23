@@ -6,7 +6,7 @@ import type { TestDto } from "../dto/test.dto.ts";
 
 export interface CreateTest extends EndpointModel {
 	request: {
-		url: "/test";
+		url: "/test/test";
 		method: HttpMethodEnum.POST;
 		protected: false;
 		body: {

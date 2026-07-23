@@ -5,7 +5,7 @@ import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCod
 
 export interface DeleteTest extends EndpointModel {
 	request: {
-		url: "/test/:id";
+		url: "/test/test/:id";
 		method: HttpMethodEnum.DELETE;
 		protected: false;
 		pathParams: {

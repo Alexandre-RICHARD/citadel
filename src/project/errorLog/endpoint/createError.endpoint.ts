@@ -5,7 +5,7 @@ import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCod
 
 export interface CreateErrorLog extends EndpointModel {
 	request: {
-		url: "/error";
+		url: "/error/error";
 		method: HttpMethodEnum.POST;
 		protected: false;
 		body: {
