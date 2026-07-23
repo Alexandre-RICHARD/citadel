@@ -1,4 +1,6 @@
-// Grouped type from BiomassGeneratorDto ; CoalGeneratorDto ; FuelGeneratorDto ; NuclearGeneratorDto but not Geothermal wich have specifications
+/*
+	Grouped type from BiomassGeneratorDto ; CoalGeneratorDto ; FuelGeneratorDto ; NuclearGeneratorDto but not Geothermal wich have specifications
+*/
 type Location = {
 	x: number;
 	y: number;
