@@ -19,7 +19,7 @@ export function useGetAllFactories() {
 		queryFn: async () => {
 			return fetchHandler<GetAllFactories>(
 				{
-					url: "/getFactory",
+					url: "/satisfactory/getFactory",
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

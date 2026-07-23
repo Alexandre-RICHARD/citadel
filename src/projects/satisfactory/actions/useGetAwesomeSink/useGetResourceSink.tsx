@@ -12,7 +12,7 @@ export function useGetResourceSink() {
 			queryFn: async () => {
 				return fetchHandler<GetResourceSink>(
 					{
-						url: "/getResourceSink",
+						url: "/satisfactory/getResourceSink",
 						method: HttpMethodEnum.GET,
 						protected: false,
 					},

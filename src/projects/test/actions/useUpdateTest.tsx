@@ -39,7 +39,7 @@ export function useUpdateTest({
 			isActive: boolean;
 		}) =>
 			fetchHandler<UpdateTest>({
-				url: "/test/:id",
+				url: "/test/test/:id",
 				method: HttpMethodEnum.PUT,
 				protected: false,
 				pathParams: {

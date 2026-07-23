@@ -17,7 +17,7 @@ export function useGetOneTest({ payload }: Props) {
 			queryKey: ["oneTest", payload.id],
 			queryFn: async () =>
 				fetchHandler<GetOneTest>({
-					url: "/test/:id",
+					url: "/test/test/:id",
 					method: HttpMethodEnum.GET,
 					protected: false,
 					pathParams: { id: payload.id ?? "-1" },

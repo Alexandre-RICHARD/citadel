@@ -29,7 +29,7 @@ export function useDeleteTest({
 		mutationKey: ["createTest"],
 		mutationFn: async ({ id }) =>
 			fetchHandler<DeleteTest>({
-				url: "/test/:id",
+				url: "/test/test/:id",
 				method: HttpMethodEnum.DELETE,
 				protected: false,
 				pathParams: {

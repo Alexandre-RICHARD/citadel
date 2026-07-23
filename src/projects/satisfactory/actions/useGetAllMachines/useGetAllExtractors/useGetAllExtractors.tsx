@@ -19,7 +19,7 @@ export function useGetAllExtractors() {
 		queryFn: async () => {
 			return fetchHandler<GetAllExtractors>(
 				{
-					url: "/getExtractor",
+					url: "/satisfactory/getExtractor",
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

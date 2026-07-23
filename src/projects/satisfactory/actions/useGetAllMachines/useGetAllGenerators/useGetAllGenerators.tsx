@@ -19,7 +19,7 @@ export function useGetAllGenerators() {
 		queryFn: async () => {
 			return fetchHandler<GetAllGenerators>(
 				{
-					url: "/getGenerators",
+					url: "/satisfactory/getGenerators",
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

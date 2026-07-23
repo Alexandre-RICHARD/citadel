@@ -12,7 +12,7 @@ export function useGetExplorationSink() {
 			queryFn: async () => {
 				return fetchHandler<GetExplorationSink>(
 					{
-						url: "/getExplorationSink",
+						url: "/satisfactory/getExplorationSink",
 						method: HttpMethodEnum.GET,
 						protected: false,
 					},

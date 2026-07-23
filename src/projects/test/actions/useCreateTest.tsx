@@ -29,7 +29,7 @@ export function useCreateTest({
 		mutationKey: ["createTest"],
 		mutationFn: async ({ name }) =>
 			fetchHandler<CreateTest>({
-				url: "/test",
+				url: "/test/test",
 				method: HttpMethodEnum.POST,
 				protected: false,
 				body: { name },

@@ -10,7 +10,7 @@ export function useGetAllTest() {
 			queryKey: ["allTest"],
 			queryFn: async () => {
 				return fetchHandler<GetAllTest>({
-					url: "/test",
+					url: "/test/test",
 					method: HttpMethodEnum.GET,
 					protected: false,
 				});
