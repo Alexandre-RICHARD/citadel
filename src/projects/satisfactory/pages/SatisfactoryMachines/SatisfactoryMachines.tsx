@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useMemo, useState } from "react";
-
 import { writeCountdown } from "../../../../common/helpers/date/writeCountdown";
 import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces";
 import { roundNumber } from "../../../../common/helpers/number/roundNumber";
 import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines";
 import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
 import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink";
-import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
+import { MachineLine } from "./MachineLine";
 import styles from "./SatisfactoryMachines.module.scss";
+import { useMachines } from "./useMachines";
 
 function getCouponLevelCost(level: number): number {
 	const ceil = Math.ceil(level / 3) - 1;
@@ -72,64 +70,20 @@ function getGoldenNutInfo(awesomeSink: AwesomeSinkFm): {
 }
 
 export function SatisfactoryMachines() {
-	const [onlyNonFullEfficent, setOnlyNonFullEfficent] = useState(false);
-	const [removedHubBiomassGenerators, setRemovedHubBiomassGenerators] =
-		useState(false);
-
 	const allMachines = useGetAllMachines();
 	const awesomeSink = useGetAwesomeSink();
 	const goldenNutInfo = getGoldenNutInfo(awesomeSink);
 
-	const firstFilterMachines = allMachines.filter((machine) => {
-		const machineType = machine.className;
-		if (
-			machineType === GameClassNamesEnum.Build_GeneratorIntegratedBiomass_C &&
-			removedHubBiomassGenerators
-		)
-			return false;
-		return true;
+	const {
+		machines,
+		averageEfficiency,
+		onlyNonFullEfficent,
+		setOnlyNonFullEfficent,
+		removedHubBiomassGenerators,
+		setRemovedHubBiomassGenerators,
+	} = useMachines({
+		allMachines,
 	});
-
-	const ping = (x: number, y: number, z: number) => {
-		fetch("http://localhost:8080/createPing", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"X-FRM-Authorization": "WtnMighIqufSUyvmvYWIob0OHTrkiRNX",
-			},
-			body: JSON.stringify({
-				x,
-				y,
-				z,
-			}),
-		}).catch((error) => console.error(error));
-	};
-
-	const filteredData = useMemo(() => {
-		return firstFilterMachines.filter((oneMachine) => {
-			const efficientFilter = (): boolean => {
-				if (!onlyNonFullEfficent) return true;
-				if ("powerConsumption" in oneMachine)
-					return oneMachine.efficiency !== 100;
-				if ("powerProduction" in oneMachine) return !oneMachine.isAtFullSpeed;
-				return false;
-			};
-			return !!efficientFilter();
-		});
-	}, [firstFilterMachines, onlyNonFullEfficent]);
-
-	const totalMachinesEfficencies = firstFilterMachines.reduce<number>(
-		(acc, machine) => {
-			if ("powerProduction" in machine) {
-				return acc + (machine.isAtFullSpeed ? 100 : 0);
-			}
-			return acc + machine.efficiency;
-		},
-		0,
-	);
-	const averageEfficiency = firstFilterMachines.length
-		? totalMachinesEfficencies / firstFilterMachines.length
-		: undefined;
 
 	return (
 		<div>
@@ -144,7 +98,7 @@ export function SatisfactoryMachines() {
 						id="onlyNonFullEfficentCheckbox"
 						className={styles.inputCheckbox}
 						type="checkbox"
-						onChange={() => setOnlyNonFullEfficent((prev) => !prev)}
+						onChange={() => setOnlyNonFullEfficent(!onlyNonFullEfficent)}
 					/>
 				</label>
 				<label
@@ -157,7 +111,9 @@ export function SatisfactoryMachines() {
 						id="removedHubBiomassGenerators"
 						className={styles.inputCheckbox}
 						type="checkbox"
-						onChange={() => setRemovedHubBiomassGenerators((prev) => !prev)}
+						onChange={() =>
+							setRemovedHubBiomassGenerators(!removedHubBiomassGenerators)
+						}
 					/>
 				</label>
 				<p>
@@ -184,52 +140,7 @@ export function SatisfactoryMachines() {
 						</tr>
 					</thead>
 					<tbody className={styles.tableBody}>
-						{filteredData.map((oneMachine) => {
-							if ("powerConsumption" in oneMachine) {
-								return (
-									<tr key={oneMachine.id}>
-										<td>{oneMachine.name}</td>
-										<td>{roundNumber(oneMachine.overclocking, 2)} %</td>
-										<td>{roundNumber(oneMachine.efficiency, 2)} %</td>
-										<td>{roundNumber(oneMachine.powerConsumption, 2)} Mw</td>
-										<td>N/A</td>
-										<td
-											className={styles.locationPingButton}
-											onClick={() => {
-												ping(
-													oneMachine.location.x,
-													oneMachine.location.y,
-													oneMachine.location.z,
-												);
-											}}
-										>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
-									</tr>
-								);
-							}
-
-							if ("powerProduction" in oneMachine) {
-								return (
-									<tr key={oneMachine.id}>
-										<td>{oneMachine.name}</td>
-										<td>{roundNumber(oneMachine.overclocking, 2)} %</td>
-										<td>{oneMachine.isAtFullSpeed ? "100 %" : "0 %"}</td>
-										<td>N/A</td>
-										<td>{roundNumber(oneMachine.powerProduction, 2)} Mw</td>
-										<td
-											className={styles.locationPingButton}
-											onClick={() => {
-												ping(
-													oneMachine.location.x,
-													oneMachine.location.y,
-													oneMachine.location.z,
-												);
-											}}
-										>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
-									</tr>
-								);
-							}
-							return null;
-						})}
+						<MachineLine machines={machines} />
 					</tbody>
 				</table>
 			</div>
