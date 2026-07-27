@@ -63,7 +63,7 @@ module.exports = {
     "import/no-unused-modules": ["warn", { "missingExports ": true, "unusedExports": true }],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "import/extensions": ["error", "always"],
+    "import/extensions": ["error", "ignorePackages"],
 
     // Typescript
     "@typescript-eslint/consistent-type-imports": "error",
