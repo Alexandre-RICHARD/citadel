@@ -17,6 +17,7 @@ export interface DeleteTest extends EndpointModel {
 		data: null;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};

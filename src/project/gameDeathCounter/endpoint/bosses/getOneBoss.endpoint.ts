@@ -16,6 +16,7 @@ export interface GetOneBoss extends EndpointModel {
 		data: BossDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 	};
 }

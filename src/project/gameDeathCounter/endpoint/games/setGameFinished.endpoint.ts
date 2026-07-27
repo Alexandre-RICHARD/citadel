@@ -19,6 +19,7 @@ export interface SetGameFinished extends EndpointModel {
 		data: GameSummaryDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};

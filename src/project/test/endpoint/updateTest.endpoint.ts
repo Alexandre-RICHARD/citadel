@@ -22,6 +22,7 @@ export interface UpdateTest extends EndpointModel {
 		data: TestDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 		[HttpStatutCodeErrorEnum.CONFLICT_WITH_SERVER]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;

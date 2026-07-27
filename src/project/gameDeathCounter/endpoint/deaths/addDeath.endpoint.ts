@@ -16,6 +16,7 @@ export interface AddDeath extends EndpointModel {
 		data: DeathDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 	};
 }

@@ -19,6 +19,7 @@ export interface CreateErrorLog extends EndpointModel {
 		data: null;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};
 }

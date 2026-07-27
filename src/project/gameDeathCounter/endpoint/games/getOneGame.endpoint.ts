@@ -16,6 +16,7 @@ export interface GetOneGame extends EndpointModel {
 		data: GameDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 	};
 }

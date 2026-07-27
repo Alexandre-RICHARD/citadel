@@ -19,6 +19,7 @@ export interface CreateBoss extends EndpointModel {
 		data: BossSummaryDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 	};

@@ -18,6 +18,7 @@ export interface GetOneTest extends EndpointModel {
 		data: TestDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};

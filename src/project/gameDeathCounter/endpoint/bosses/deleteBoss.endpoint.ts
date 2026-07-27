@@ -15,6 +15,7 @@ export interface DeleteBoss extends EndpointModel {
 		data: null;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
 	};
 }

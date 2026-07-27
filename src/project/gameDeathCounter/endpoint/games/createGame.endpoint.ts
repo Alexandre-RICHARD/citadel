@@ -17,6 +17,7 @@ export interface CreateGame extends EndpointModel {
 		data: GameSummaryDto;
 	};
 	error: {
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};
 }
