@@ -15,30 +15,6 @@
     align-items: center;
     gap: 10px;
     padding: 12px 14px;
-
-    .gameTitleBlock {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      flex: 1;
-      min-width: 0;
-
-      .gameName {
-        font-family: "Cinzel", serif;
-        font-weight: 600;
-        font-size: 16px;
-        color: variables.$bone;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .gameMeta {
-        font-size: 11.5px;
-        color: variables.$ashDim;
-      }
-    }
   }
 
   .gameBody {

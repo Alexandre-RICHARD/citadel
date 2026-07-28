@@ -15,18 +15,6 @@
     align-items: center;
     gap: 8px;
     padding: 9px 10px;
-
-    .bossName {
-      font-weight: 600;
-      font-size: 14px;
-      color: variables.$bone;
-      cursor: pointer;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
   }
 
   .bossBody {

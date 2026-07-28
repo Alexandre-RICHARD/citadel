@@ -1,0 +1,26 @@
+@use "../../../../variables.scss";
+
+.nameAndMetaBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1;
+	min-width: 0;
+
+	.name {
+		font-family: "Cinzel", serif;
+		font-weight: 600;
+		font-size: 16px;
+		color: variables.$bone;
+		cursor: pointer;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		text-align: start;
+	}
+
+	.meta {
+		font-size: 11.5px;
+		color: variables.$ashDim;
+	}
+}

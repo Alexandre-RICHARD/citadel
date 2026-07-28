@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Boss } from "../../game.type";
+import { BlockTitle } from "../BlockTitle/BlockTitle";
 import { Count } from "../Count/Count";
 import { DeathRow } from "../DeathRow/DeathRow";
 import { IconButton } from "../IconButton/IconButton";
@@ -77,22 +78,17 @@ export function BossRow({
 					{expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
 				</button>
 
-				{editing ? (
-					<input
-						type="text"
-						value={draftName}
-						onChange={(e) => setDraftName(e.target.value)}
-						className={`${globalStyles.fieldInput} ${globalStyles.fieldInputInlineTitle}`}
-						autoFocus
-					/>
-				) : (
-					<span
-						className={styles.bossName}
-						onClick={onToggleExpand}
-					>
-						{boss.name}
-					</span>
-				)}
+				<BlockTitle
+					editing={editing}
+					draftName={draftName}
+					setDraftName={setDraftName}
+					onToggleExpand={onToggleExpand}
+					element={{
+						name: boss.name,
+						startedAt: sorted[sorted.length - 1].date,
+						endedAt: boss.defeatedAt,
+					}}
+				/>
 
 				{boss.defeatedAt && (
 					<span className={globalStyles.finishedPill}>

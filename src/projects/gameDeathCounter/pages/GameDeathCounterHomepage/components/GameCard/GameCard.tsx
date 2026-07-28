@@ -11,8 +11,8 @@ import {
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import { formatDate } from "../../formatDate";
 import type { Game } from "../../game.type";
+import { BlockTitle } from "../BlockTitle/BlockTitle";
 import { BossRow } from "../BossRow/BossRow";
 import { Count } from "../Count/Count";
 import { IconButton } from "../IconButton/IconButton";
@@ -103,28 +103,17 @@ export function GameCard({
 					{expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
 				</button>
 
-				<div className={styles.gameTitleBlock}>
-					{editing ? (
-						<input
-							type="text"
-							value={draftName}
-							onChange={(e) => setDraftName(e.target.value)}
-							className={`${globalStyles.fieldInput} ${globalStyles.fieldInputInlineTitle} ${globalStyles.fieldInputGame}`}
-							autoFocus
-						/>
-					) : (
-						<span
-							className={styles.gameName}
-							onClick={onToggleExpand}
-						>
-							{game.name}
-						</span>
-					)}
-					<span className={styles.gameMeta}>
-						débuté le {formatDate(game.startedAt)}
-						{isFinished && <> · terminé le {formatDate(game.endedAt)}</>}
-					</span>
-				</div>
+				<BlockTitle
+					editing={editing}
+					draftName={draftName}
+					setDraftName={setDraftName}
+					onToggleExpand={onToggleExpand}
+					element={{
+						name: game.name,
+						startedAt: game.startedAt,
+						endedAt: game.endedAt,
+					}}
+				/>
 
 				{isFinished && (
 					<span className={globalStyles.finishedPill}>
