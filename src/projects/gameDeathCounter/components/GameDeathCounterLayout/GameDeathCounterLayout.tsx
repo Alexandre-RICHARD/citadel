@@ -1,8 +1,10 @@
 import { Outlet } from "react-router";
 
+import styles from "./gameDeathCounterLayout.module.scss";
+
 export function GameDeathCounterLayout() {
 	return (
-		<div>
+		<div className={styles.gameDeathCounterLayout}>
 			<Outlet />
 		</div>
 	);

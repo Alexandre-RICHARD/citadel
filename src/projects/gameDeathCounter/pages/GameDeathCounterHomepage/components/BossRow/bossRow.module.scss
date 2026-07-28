@@ -1,0 +1,47 @@
+@use "../../../../variables.scss";
+
+.bossCard {
+  background: variables.$panelRaised;
+  border: 1px solid variables.$lineSoft;
+  border-radius: 11px;
+  overflow: hidden;
+
+  &Defeated {
+    border-color: #c9a2274d;
+  }
+
+  .bossHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+
+    .bossName {
+      font-weight: 600;
+      font-size: 14px;
+      color: variables.$bone;
+      cursor: pointer;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .bossBody {
+    padding: 2px 10px 12px 34px;
+    border-top: 1px solid variables.$lineSoft;
+
+    .deathList {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+  }
+}

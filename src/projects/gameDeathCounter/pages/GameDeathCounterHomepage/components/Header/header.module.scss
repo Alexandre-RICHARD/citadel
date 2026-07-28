@@ -1,0 +1,78 @@
+@use "../../../../variables.scss";
+
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(11, 11, 14, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid variables.$line;
+
+  .topBarTitle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    h1 {
+      font-family: "Cinzel", serif;
+      font-weight: 600;
+      font-size: 19px;
+      letter-spacing: 0.04em;
+      margin: 0;
+      color: variables.$bone;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: variables.$emberBright;
+      font-weight: 600;
+    }
+  }
+
+  .topBarRight {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .headerButtonPrimary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid variables.$ember;
+      background: variables.$emberDim;
+      color: variables.$emberBright;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+      min-height: 40px;
+
+      &:hover {
+        background: #c1531f47;
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+  }
+}
+
+.addGameBar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid variables.$lineSoft;
+  background: variables.$panelSunken;
+}

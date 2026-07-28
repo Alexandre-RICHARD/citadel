@@ -1,0 +1,76 @@
+@use "../../../../variables.scss";
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: variables.$ash;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+  flex-shrink: 0;
+
+  &[data-size="sm"] {
+    width: 32px;
+    height: 32px;
+  }
+
+  &[data-variant="gold"] {
+    background: variables.$goldDim;
+    border-color: #c9a22766;
+    color: variables.$goldBright;
+
+    &:hover {
+      background: #c9a22747;
+    }
+  }
+
+  &[data-variant="gold-active"] {
+    background: variables.$goldDim;
+    border-color: #c9a22780;
+    color: variables.$goldBright;
+  }
+
+  &[data-variant="ghost"] {
+    &:hover {
+      background: variables.$panelRaised;
+      color: variables.$bone;
+    }
+  }
+
+  &[data-variant="danger"] {
+    &:hover {
+      background: #9c314038;
+      color: variables.$dangerBright;
+    }
+  }
+
+  &[data-variant="ember"] {
+    background: variables.$emberDim;
+    border-color: #c1531f66;
+    color: variables.$emberBright;
+
+    &:hover {
+      background: #c1531f52;
+    }
+  }
+}
+
+@media (pointer: coarse) {
+  .iconButton {
+    width: 42px;
+    height: 42px;
+
+    &[data-size="sm"] {
+      width: 36px;
+      height: 36px;
+    }
+  }
+}

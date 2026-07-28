@@ -1,0 +1,52 @@
+@use "../../../../variables.scss";
+
+.emberBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: variables.$emberDim;
+  border: 1px solid #c1531f59;
+  color: variables.$bone;
+  font-size: 13px;
+  flex-shrink: 0;
+
+  &[data-variant="dark"] {
+    gap: 6px;
+    padding: 7px 12px;
+    background: variables.$panelRaised;
+    border: 1px solid variables.$line;
+
+    .mono {
+      color: variables.$emberBright;
+      font-size: 14px;
+    }
+  }
+
+  &sm {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  .emberFlame {
+    color: variables.$emberBright;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .emberFlame {
+    animation: flicker 2.6s ease-in-out infinite;
+  }
+}
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 2px #ff7a3d80);
+  }
+  50% {
+    opacity: 0.72;
+    filter: drop-shadow(0 0 5px #ff7a3dbf);
+  }
+}
