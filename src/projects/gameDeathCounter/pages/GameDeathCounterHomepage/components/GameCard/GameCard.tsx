@@ -11,13 +11,12 @@ import {
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import { BossRow } from "../BossRow/BossRow";
-import { Count } from "../Count/Count";
 import { formatDate } from "../../formatDate";
 import type { Game } from "../../game.type";
+import { BossRow } from "../BossRow/BossRow";
+import { Count } from "../Count/Count";
 import { IconButton } from "../IconButton/IconButton";
-
-import styles from './gameCard.module.scss'
+import styles from "./gameCard.module.scss";
 
 type Props = {
 	game: Game;
@@ -90,7 +89,9 @@ export function GameCard({
 	};
 
 	return (
-		<li className={`${styles.gameCard} ${isFinished ? styles.gameCardFinished : ""}`}>
+		<li
+			className={`${styles.gameCard} ${isFinished ? styles.gameCardFinished : ""}`}
+		>
 			<div className={styles.gameHeader}>
 				<button
 					type="button"
@@ -181,7 +182,9 @@ export function GameCard({
 			{expanded && (
 				<div className={styles.gameBody}>
 					{game.bosses.length === 0 && !addingBoss ? (
-						<p className={globalStyles.emptyHint}>Aucun boss enregistré pour ce jeu.</p>
+						<p className={globalStyles.emptyHint}>
+							Aucun boss enregistré pour ce jeu.
+						</p>
 					) : (
 						<ul className={styles.bossList}>
 							{game.bosses.map((boss) => (

@@ -11,11 +11,11 @@ import {
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import styles from './bossRow.module.scss';
+import type { Boss } from "../../game.type";
 import { Count } from "../Count/Count";
 import { DeathRow } from "../DeathRow/DeathRow";
-import type { Boss } from "../../game.type";
 import { IconButton } from "../IconButton/IconButton";
+import styles from "./bossRow.module.scss";
 
 type Props = {
 	boss: Boss;
@@ -63,7 +63,9 @@ export function BossRow({
 	};
 
 	return (
-		<li className={`${styles.bossCard} ${boss.defeatedAt ? styles.bossCardDefeated : ""}`}>
+		<li
+			className={`${styles.bossCard} ${boss.defeatedAt ? styles.bossCardDefeated : ""}`}
+		>
 			<div className={styles.bossHeader}>
 				<button
 					type="button"

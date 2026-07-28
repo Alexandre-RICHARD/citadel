@@ -4,9 +4,8 @@ import { useState } from "react";
 import globalStyles from "../../../../globalStyles.module.scss";
 import { formatDateTime } from "../../formatDateTime";
 import type { Death } from "../../game.type";
-import { IconButton } from "../IconButton/IconButton";
 import { toDateInputValue } from "../../toDateInputValue";
-
+import { IconButton } from "../IconButton/IconButton";
 import styles from "./deathRow.module.scss";
 
 type Props = {
@@ -39,7 +38,7 @@ export function DeathRow({ death, onUpdate, onDelete }: Props) {
 			<li className={`${styles.deathRow} ${styles.deathRowEditing}`}>
 				<div className={styles.deathEditFields}>
 					<input
-						type="date"
+						type="datetime-local"
 						value={draftDate}
 						onChange={(e) => setDraftDate(e.target.value)}
 						className={`${globalStyles.fieldInput} ${globalStyles.fieldInputDate}`}
@@ -76,7 +75,9 @@ export function DeathRow({ death, onUpdate, onDelete }: Props) {
 				strokeWidth={2}
 				className={styles.deathIcon}
 			/>
-			<span className={`${styles.deathDate} ${globalStyles.mono}`}>{formatDateTime(death.date)}</span>
+			<span className={`${styles.deathDate} ${globalStyles.mono}`}>
+				{formatDateTime(death.date)}
+			</span>
 			<span className={styles.deathComment}>
 				{death.comment ?? <em className={styles.muted}>sans commentaire</em>}
 			</span>

@@ -1,7 +1,7 @@
 import type { LucideProps } from "lucide-react";
 import type { RefAttributes } from "react";
 
-import styles from "./iconButton.module.scss"
+import styles from "./iconButton.module.scss";
 
 type Props = {
 	icon: React.ForwardRefExoticComponent<
