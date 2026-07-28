@@ -32,4 +32,15 @@ export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 		documentTitle: "Satisfactory Calculator",
 		favicon: "/favicon/satisfactory.ico",
 	},
+	[ProjectsEnum.GameDeathCount]: {
+		id: "gameDeathCounter",
+		path: "/gameDeathCounter",
+		name: "Game Death Counter",
+		description:
+			"Projet de suivi du nombre de morts dans les jeux de type Souls",
+		buildPath: "/projects/gameDeathCounter",
+		outputFile: "projects/gameDeathCounter",
+		documentTitle: "Game Death Counter",
+		favicon: "/favicon/gameDeathCounter.ico",
+	},
 };

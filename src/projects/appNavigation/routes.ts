@@ -48,6 +48,22 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		} satisfies RouteMeta,
 		index: true,
 	},
+	[ProjectsEnum.GameDeathCount]: {
+		path: `${projects[ProjectsEnum.GameDeathCount].path}/*`,
+		lazy: async () => {
+			const { GameDeathCounterPage } = await import(
+				"../gameDeathCounter/GameDeathCounterPage"
+			);
+			return { Component: GameDeathCounterPage };
+		},
+		handle: {
+			project: ProjectsEnum.GameDeathCount,
+			documentTitle: projects[ProjectsEnum.GameDeathCount].documentTitle,
+			favicon: projects[ProjectsEnum.GameDeathCount].favicon,
+			basePath: projects[ProjectsEnum.GameDeathCount].path,
+		} satisfies RouteMeta,
+		index: true,
+	},
 };
 
 export const router = createBrowserRouter([

@@ -3,7 +3,6 @@
 		"allowImportingTsExtensions": true,
 		"allowJs": false,
 		"allowSyntheticDefaultImports": true,
-		"baseUrl": ".",
 		"esModuleInterop": true,
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
@@ -35,13 +34,13 @@
 		],
 		"paths": {
 			"@/*": [
-				"src/*"
+				"./src/*"
 			],
 			"@styles/*": [
-				"src/styles/*"
+				"./src/styles/*"
 			],
 			"@specs/*": [
-				"alex-specs/src/*"
+				"./alex-specs/src/*"
 			]
 		}
 	},

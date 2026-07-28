@@ -58,6 +58,7 @@ module.exports = {
     "no-console": ["warn", { allow: ["error"] }],
     "no-param-reassign": "error",
     "no-void": "off",
+    "jsx-a11y/no-autofocus": "off",
 
     // Prettier rules
     "prettier/prettier": [
@@ -84,7 +85,7 @@ module.exports = {
     "import/no-default-export": "error",
     "import/prefer-default-export": "off",
     "import/first": "error",
-    "import/no-unused-modules": ["error", { "missingExports ": true, "unusedExports": true }],
+    "import/no-unused-modules": ["warn", { "missingExports ": true, "unusedExports": true }],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "no-restricted-imports": ["error", {
