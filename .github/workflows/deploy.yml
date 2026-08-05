@@ -15,5 +15,5 @@ jobs:
           cd ${{ secrets.SSH_TARGET_FOLDER }}
           git fetch
           git pull
-          docker compose pull
-          docker compose up -d --force-recreate
+          docker-compose pull
+          docker-compose up -d --force-recreate
