@@ -10,15 +10,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Deploy via SSH
+      - name: Deploy locally on NAS
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
-          chmod 600 key.pem
-
-          ssh -i key.pem -o StrictHostKeyChecking=no \
-          ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "cd ${{ secrets.SSH_TARGET_FOLDER }} && \
-          git fetch && \
-          git pull && \
-          docker compose pull && \
-          docker compose up -d --force-recreate"
+          cd ${{ secrets.SSH_TARGET_FOLDER }}
+          git fetch
+          git pull
+          docker compose pull
+          docker compose up -d --force-recreate
