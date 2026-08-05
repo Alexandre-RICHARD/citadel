@@ -54,9 +54,6 @@ services:
       - app-network
     ports:
       - "127.0.0.1:3306:${DB_PORT}"
-    depends_on:
-      db-init:
-        condition: service_completed_successfully
 
   flyway:
     image: flyway/flyway:latest
