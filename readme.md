@@ -13,6 +13,7 @@ Dans Github
 Connexion en ssh au serveur hébergeur
   -> Créer un dossier quelque part
   -> Installer git `apt-get install git`
+  -> `git config --global core.autocrlf input`
   -> `git clone https://github.com/Alexandre-RICHARD/alex-deploy .`
   -> Ajouter le .env (le même que celui du répo local qui ne sert à rien en local)
 
@@ -47,8 +48,11 @@ Sur Github, les secrets à renseigner
     -> SSH_TARGET_FOLDER (dossier dans lequel on a clone le projet)
   
   -> Tester la connexion
-    -> `cd <path du repo>`
-    -> `ssh -i ~/.ssh/id_ed25519 -p <port> -o StrictHostKeyChecking=no @IP_DE_TON_NAS "echo 'Connexion SSH OK'"`
+    -> `docker login ghcr.io -u <github user>` et renseigner le token github de la première partie
+    -> sudo `RUNNER_ALLOW_RUNASROOT=1 <path>/svc.sh status`
+
+  -> Initialisation
+    -> `cd <path> && docker-compose pull`
 
 
 
