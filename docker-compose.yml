@@ -74,7 +74,7 @@ services:
     restart: always
 
   backend:
-    image: ghcr.io/alexandre-richard/reunification-backend:${FRONTEND_VERSION}
+    image: ghcr.io/alexandre-richard/reunification-backend:${BACKEND_VERSION}
     container_name: backend
     depends_on:
       - flyway
