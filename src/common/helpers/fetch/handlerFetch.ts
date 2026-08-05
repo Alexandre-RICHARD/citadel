@@ -1,18 +1,9 @@
 import type { EndpointModel } from "@specs/specUtils/endpointModel.type";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 
+import { ApiError } from "../../error/ApiError";
 import { buildQueryString } from "./buildQueryParamsUrl";
 import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
-
-class HttpStatusError extends Error {
-	constructor(
-		public status: number,
-		message?: string,
-	) {
-		super(message ?? `HTTP ${status}`);
-		this.name = "HttpStatusError";
-	}
-}
 
 export async function fetchHandler<Spec extends EndpointModel>(
 	args: Spec["request"],
@@ -44,8 +35,13 @@ export async function fetchHandler<Spec extends EndpointModel>(
 	});
 
 	if (!response.ok) {
-		const msg = `HTTP ${response.status} ${response.statusText}`;
-		throw new HttpStatusError(response.status, msg);
+		let body: unknown = null;
+		try {
+			body = await response.json();
+		} catch {
+			throw new ApiError(500, "Unexpected error");
+		}
+		throw new ApiError(response.status, body);
 	}
 
 	return {

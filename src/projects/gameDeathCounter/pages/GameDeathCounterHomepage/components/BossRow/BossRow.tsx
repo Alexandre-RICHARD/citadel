@@ -52,6 +52,7 @@ export function BossRow({
 	const [draftName, setDraftName] = useState(boss.name);
 
 	const totalDeath = boss.deaths.length;
+	const isDefeated = Boolean(boss.defeatedAt);
 	const sorted = [...boss.deaths].sort(
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
@@ -65,7 +66,7 @@ export function BossRow({
 
 	return (
 		<li
-			className={`${styles.bossCard} ${boss.defeatedAt ? styles.bossCardDefeated : ""}`}
+			className={`${styles.bossCard} ${isDefeated ? styles.bossCardDefeated : ""}`}
 		>
 			<div className={styles.bossHeader}>
 				<button
@@ -85,12 +86,12 @@ export function BossRow({
 					onToggleExpand={onToggleExpand}
 					element={{
 						name: boss.name,
-						startedAt: sorted[sorted.length - 1].date,
+						startedAt: sorted.length ? sorted[sorted.length - 1].date : null,
 						endedAt: boss.defeatedAt,
 					}}
 				/>
 
-				{boss.defeatedAt && (
+				{isDefeated && (
 					<span className={globalStyles.finishedPill}>
 						<Shield
 							size={12}
@@ -127,11 +128,9 @@ export function BossRow({
 							<IconButton
 								icon={Shield}
 								label={
-									boss.defeatedAt
-										? "Marquer non vaincu"
-										: "Marquer comme vaincu"
+									isDefeated ? "Marquer non vaincu" : "Marquer comme vaincu"
 								}
-								variant={boss.defeatedAt ? "gold-active" : "ghost"}
+								variant={isDefeated ? "gold-active" : "ghost"}
 								size="sm"
 								onClick={() => onToggleDefeated(boss.id)}
 							/>

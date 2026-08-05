@@ -9,7 +9,7 @@ type Props = {
 	onToggleExpand: () => void;
 	element: {
 		name: string;
-		startedAt: string;
+		startedAt: string | null;
 		endedAt: string | null;
 	};
 };
@@ -41,7 +41,9 @@ export function BlockTitle({
 				</button>
 			)}
 			<span className={styles.meta}>
-				débuté le {formatDate(element.startedAt)}
+				{Boolean(element.startedAt) && (
+					<>Débuté le {formatDate(element.startedAt)}</>
+				)}
 				{Boolean(element.endedAt) && (
 					<> · terminé le {formatDate(element.endedAt)}</>
 				)}
