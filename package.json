@@ -15,6 +15,9 @@
     "install-dependencies": "pnpm i",
     "update-dependencies": "pnpm update"
   },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.3.1",
     "@types/node": "^24.3.1",
@@ -30,7 +33,6 @@
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0",
-    "zod": "^4.4.3"
+    "typescript-eslint": "^8.42.0"
   }
 }
