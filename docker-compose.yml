@@ -1,16 +1,4 @@
 services:
-  db-init:
-    image: alpine:3.19
-    env_file:
-      - .env
-    volumes:
-      - ./db-init:/templates:ro
-      - ./db-init-generated:/generated
-    command: >
-      sh -c "apk add --no-cache gettext &&
-             envsubst < /templates/00_init_database.sql.template > /generated/00-init.sql"
-    restart: "no"
-
   migrations:
     image: ghcr.io/alexandre-richard/reunification-backend:${BACKEND_VERSION}
     command: >
@@ -30,14 +18,13 @@ services:
   mariadb:
     image: mariadb:11
     container_name: mariadb
-    depends_on:
-      db-init:
-        condition: service_completed_successfully
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE_NAME}
+      MYSQL_USER: ${DB_USER_NAME}
+      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
     volumes:
       - ./mariadb-data:/var/lib/mysql
-      - ./db-init-generated:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
