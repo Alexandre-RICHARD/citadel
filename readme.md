@@ -49,7 +49,7 @@ Sur Github, les secrets à renseigner
   
   -> Tester la connexion
     -> `docker login ghcr.io -u <github user>` et renseigner le token github de la première partie
-    -> sudo `RUNNER_ALLOW_RUNASROOT=1 <path>/svc.sh status`
+    -> sudo `cd <path> && RUNNER_ALLOW_RUNASROOT=1 ./svc.sh status`
 
   -> Initialisation
     -> `cd <path> && docker-compose pull`
