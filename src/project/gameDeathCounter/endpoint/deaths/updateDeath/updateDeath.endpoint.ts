@@ -1,8 +1,8 @@
-import type { EndpointModel } from "../../../../specUtils/endpointModel.type.ts";
-import type { HttpMethodEnum } from "../../../../specUtils/httpMethod.enum.ts";
-import type { HttpStatutCodeErrorEnum } from "../../../../specUtils/httpStatutCodeError.enum.ts";
-import type { HttpStatutCodeSuccessEnum } from "../../../../specUtils/httpStatutCodeSuccess.enum.ts";
-import type { DeathDto } from "../../dto/death/death.dto.ts";
+import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
+import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
+import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
+import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
+import type { DeathDto } from "../../../dto/death/death.dto.ts";
 
 export interface UpdateDeath extends EndpointModel {
 	request: {
