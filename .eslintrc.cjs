@@ -1,3 +1,15 @@
+const projectsName = ["gameDeathCounter", "homepage", "satisfactory", "test"];
+
+const restrictedZones = projectsName.flatMap((targetProject) =>
+  projectsName
+    .filter((fromProject) => fromProject !== targetProject)
+    .map((fromProject) => ({
+      target: `./src/projects/${targetProject}`,
+      from: `./src/projects/${fromProject}`,
+      message: `Ce fichier appartenant au projet "${targetProject}" n'a pas le droit d'importer une ressource provenant du projet "${fromProject}".`,
+    }))
+);
+
 module.exports = {
   root: true,
   env: {
@@ -96,6 +108,13 @@ module.exports = {
         },
       ],
     }],
+    // Restricted import for Projects
+    "import/no-restricted-paths": [
+      "error",
+      {
+        zones: restrictedZones,
+      },
+    ],
 
     // React rules
     "react/react-in-jsx-scope": "off",
