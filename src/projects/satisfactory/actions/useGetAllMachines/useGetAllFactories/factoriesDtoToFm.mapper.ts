@@ -1,4 +1,4 @@
-import type { FactoryDto } from "@specs/project/satisfactory/dto/factory.dto";
+import type { FactoryDto } from "@specs/projects/satisfactory/dto/factory.dto";
 
 import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";

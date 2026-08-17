@@ -1,4 +1,4 @@
-import type { GetResourceSink } from "@specs/project/satisfactory/endpoint/getResourceSink.endpoint";
+import type { GetResourceSink } from "@specs/projects/satisfactory/endpoint/getResourceSink.endpoint";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,4 +1,4 @@
-import type { CreateTest } from "@specs/project/test/endpoint/createTest.endpoint";
+import type { CreateTest } from "@specs/projects/test/endpoint/createTest.endpoint";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 

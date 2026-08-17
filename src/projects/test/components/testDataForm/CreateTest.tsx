@@ -1,4 +1,4 @@
-import type { TestDto } from "@specs/project/test/dto/test.dto";
+import type { TestDto } from "@specs/projects/test/dto/test.dto";
 import { useState } from "react";
 
 import { InputText } from "../../../../common/components/inputText/InputText";

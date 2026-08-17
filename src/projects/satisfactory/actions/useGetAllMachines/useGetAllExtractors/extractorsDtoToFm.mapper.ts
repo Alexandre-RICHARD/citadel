@@ -1,4 +1,4 @@
-import type { ExtractorDto } from "@specs/project/satisfactory/dto/extractor.dto";
+import type { ExtractorDto } from "@specs/projects/satisfactory/dto/extractor.dto";
 
 import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";

@@ -1,4 +1,4 @@
-import type { GetOneTest } from "@specs/project/test/endpoint/getOneTest.endpoint";
+import type { GetOneTest } from "@specs/projects/test/endpoint/getOneTest.endpoint";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 

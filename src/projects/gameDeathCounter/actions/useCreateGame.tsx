@@ -1,7 +1,7 @@
-// project/gameDeathCounter/actions/useCreateGame.ts
-import type { GameSummaryDto } from "@specs/project/gameDeathCounter/dto/game/gameSummary.dto";
-import type { CreateGame } from "@specs/project/gameDeathCounter/endpoint/games/createGame.endpoint";
-import type { CreateGameBodyDto } from "@specs/project/gameDeathCounter/endpoint/games/createGameBody.dto";
+// projects/gameDeathCounter/actions/useCreateGame.ts
+import type { GameSummaryDto } from "@specs/projects/gameDeathCounter/dto/game/gameSummary.dto";
+import type { CreateGame } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint";
+import type { CreateGameBodyDto } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 
 import type { ApiError } from "../../../common/error/ApiError";

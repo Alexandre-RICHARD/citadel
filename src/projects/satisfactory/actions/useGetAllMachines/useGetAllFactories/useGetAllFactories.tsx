@@ -1,4 +1,4 @@
-import type { GetAllFactories } from "@specs/project/satisfactory/endpoint/getAllFactories.endpoint";
+import type { GetAllFactories } from "@specs/projects/satisfactory/endpoint/getAllFactories.endpoint";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 

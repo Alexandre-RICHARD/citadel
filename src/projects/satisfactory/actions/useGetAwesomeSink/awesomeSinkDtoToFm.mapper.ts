@@ -1,4 +1,4 @@
-import type { AwesomeSinkDto } from "@specs/project/satisfactory/dto/awesomeSink.dto";
+import type { AwesomeSinkDto } from "@specs/projects/satisfactory/dto/awesomeSink.dto";
 
 import type { AwesomeSinkFm } from "./awesomeSinkFm.type";
 

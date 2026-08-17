@@ -1,4 +1,4 @@
-import type { GetAllExtractors } from "@specs/project/satisfactory/endpoint/getAllExtractors.endpoint";
+import type { GetAllExtractors } from "@specs/projects/satisfactory/endpoint/getAllExtractors.endpoint";
 import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
