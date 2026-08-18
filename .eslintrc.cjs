@@ -26,7 +26,7 @@ module.exports = {
     "vitest.config.ts",
     "vitest.setup.ts",
     "alex-specs",
-    "src/projects/satisfactory/toRework" // TODO
+    "src/reserve" // TODO
   ],
   extends: [
     "eslint:recommended",
@@ -112,7 +112,14 @@ module.exports = {
     "import/no-restricted-paths": [
       "error",
       {
-        zones: restrictedZones,
+        zones: [
+          ...restrictedZones,
+          {
+            from: "**/*",
+            target: "./src/reserve",
+            message: "Interdiction d'importer quoi que ce soit se trouvant dans la réserve",
+          }
+        ],
       },
     ],
 
@@ -167,15 +174,6 @@ module.exports = {
       rules: {
         "import/no-unused-modules": "off",
       },
-    },
-    {
-      files: [
-        "src/projects/satisfactory/**/combined.store.ts",
-      ],
-      rules: {
-        "import/no-default-export": "off",
-        "import/no-unused-modules": "off",
-      }
     },
   ],
 };

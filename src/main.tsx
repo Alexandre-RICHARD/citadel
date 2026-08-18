@@ -7,7 +7,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 
 import { tanStackQueryClient } from "./configuration/tanStackQueryClient";
-import { router } from "./projects/appNavigation/routes";
+import { router } from "./react/appNavigation/routes";
 
 createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
