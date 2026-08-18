@@ -1,6 +1,6 @@
 import { roundNumber } from "../../../../common/helpers/number/roundNumber";
 import type { DisplayableMachines } from "./DisplayableMachines.type";
-import styles from "./SatisfactoryMachines.module.scss";
+import styles from "./machines.module.scss";
 
 type Props = {
 	machines: DisplayableMachines[];
