@@ -1,5 +1,3 @@
-@use "../../../../variables.scss";
-
 .iconButton {
   display: flex;
   align-items: center;
@@ -9,7 +7,7 @@
   border-radius: 9px;
   border: 1px solid transparent;
   background: transparent;
-  color: variables.$ash;
+  color: vars.$ash;
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -23,9 +21,9 @@
   }
 
   &[data-variant="gold"] {
-    background: variables.$goldDim;
+    background: vars.$goldDim;
     border-color: #c9a22766;
-    color: variables.$goldBright;
+    color: vars.$goldBright;
 
     &:hover {
       background: #c9a22747;
@@ -33,29 +31,29 @@
   }
 
   &[data-variant="gold-active"] {
-    background: variables.$goldDim;
+    background: vars.$goldDim;
     border-color: #c9a22780;
-    color: variables.$goldBright;
+    color: vars.$goldBright;
   }
 
   &[data-variant="ghost"] {
     &:hover {
-      background: variables.$panelRaised;
-      color: variables.$bone;
+      background: vars.$panelRaised;
+      color: vars.$bone;
     }
   }
 
   &[data-variant="danger"] {
     &:hover {
       background: #9c314038;
-      color: variables.$dangerBright;
+      color: vars.$dangerBright;
     }
   }
 
   &[data-variant="ember"] {
-    background: variables.$emberDim;
+    background: vars.$emberDim;
     border-color: #c1531f66;
-    color: variables.$emberBright;
+    color: vars.$emberBright;
 
     &:hover {
       background: #c1531f52;

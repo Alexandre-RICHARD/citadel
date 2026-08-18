@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import { projects } from "./src/react/appNavigation/projects.dictionnary";
+import { existsSync } from "fs";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -46,18 +47,47 @@ export default defineConfig(({ mode }) => {
                 return project.outputFile;
               }
             }
-      // TODO
-      //       const translationsFilesRegex =
-      //         /src\/.*\/translations\/.*\.translations\.ts/;
-      //       if (translationsFilesRegex.test(fileName)) {
-      //         const language = fileName.split("translations/")[1].split("/")[0];
-      //         return `translations-${language}`;
-      //       }
-      //       if (fileName.includes("/src/")) return "satisfactoryProject";
-      //       return "app";
+            // TODO
+            //       const translationsFilesRegex =
+            //         /src\/.*\/translations\/.*\.translations\.ts/;
+            //       if (translationsFilesRegex.test(fileName)) {
+            //         const language = fileName.split("translations/")[1].split("/")[0];
+            //         return `translations-${language}`;
+            //       }
+            //       if (fileName.includes("/src/")) return "satisfactoryProject";
+            //       return "app";
           },
         },
       },
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+          additionalData: (content, filename) => {
+            if (filename.endsWith('variables.scss')) {
+              return content
+            }
+
+            // Recherche le sous-dossier juste après "src/projects/"
+            const match = filename.match(/[\\/]src[\\/]projects[\\/]([^\\/]+)/)
+
+            if (match) {
+              const projectName = match[1]
+
+              const projectSCSSVariablesFilePath = path.resolve(__dirname, `src/projects/${projectName}/variables.scss`)
+
+              if (existsSync(projectSCSSVariablesFilePath)) {
+                // Convertit le chemin Windows en slashs Unix pour SCSS
+                const normalizedPath = projectSCSSVariablesFilePath.replace(/\\/g, '/')
+                return `@use "${normalizedPath}" as vars;\n${content}`
+              }
+            }
+
+            return content
+          },
+        },
+      }
+    }
   };
 });

@@ -1,8 +1,6 @@
-@use "../../../../variables.scss";
-
 .gameCard {
-  background: variables.$panel;
-  border: 1px solid variables.$line;
+  background: vars.$panel;
+  border: 1px solid vars.$line;
   border-radius: 14px;
   overflow: hidden;
 
@@ -19,7 +17,7 @@
 
   .gameBody {
     padding: 4px 14px 16px 44px;
-    border-top: 1px solid variables.$lineSoft;
+    border-top: 1px solid vars.$lineSoft;
 
     .bossList {
       list-style: none;
@@ -37,9 +35,9 @@
       margin-top: 10px;
       padding: 8px 12px;
       border-radius: 9px;
-      border: 1px dashed variables.$line;
+      border: 1px dashed vars.$line;
       background: transparent;
-      color: variables.$ash;
+      color: vars.$ash;
       font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
@@ -48,8 +46,8 @@
         color 0.15s ease;
 
       &:hover {
-        border-color: variables.$ember;
-        color: variables.$emberBright;
+        border-color: vars.$ember;
+        color: vars.$emberBright;
       }
     }
   }

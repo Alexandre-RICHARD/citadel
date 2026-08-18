@@ -1,11 +1,9 @@
-@use "./variables.scss";
-
 .fieldInput {
-  background: variables.$panelSunken;
-  border: 1px solid variables.$line;
+  background: vars.$panelSunken;
+  border: 1px solid vars.$line;
   border-radius: 8px;
   padding: 8px 10px;
-  color: variables.$bone;
+  color: vars.$bone;
   font-family: "Inter", sans-serif;
   font-size: 13px;
   outline: none;
@@ -13,8 +11,8 @@
   min-width: 0;
 }
 .fieldInput:focus {
-  border-color: variables.$ember;
-  box-shadow: 0 0 0 3px variables.$emberDim;
+  border-color: vars.$ember;
+  box-shadow: 0 0 0 3px vars.$emberDim;
 }
 .fieldInputInlineTitle {
   font-family: "Cinzel", serif;
@@ -41,13 +39,13 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: variables.$ash;
+  color: vars.$ash;
   cursor: pointer;
   flex-shrink: 0;
 
   &:hover {
-    background: variables.$panelRaised;
-    color: variables.$bone;
+    background: vars.$panelRaised;
+    color: vars.$bone;
   }
 
   &Lg {
@@ -66,8 +64,8 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: variables.$goldDim;
-  color: variables.$goldBright;
+  background: vars.$goldDim;
+  color: vars.$goldBright;
   border: 1px solid rgba(201, 162, 39, 0.4);
   flex-shrink: 0;
 }

@@ -1,11 +1,10 @@
-@use "../../variables.scss";
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap");
 
 .gameDeathCounterLayout {
   min-height: 100vh;
   width: 100%;
-  background-color: variables.$void;
-  color: variables.$bone;
+  background-color: vars.$void;
+  color: vars.$bone;
   font-family: "Inter", system-ui, sans-serif;
   padding: 0;
 }

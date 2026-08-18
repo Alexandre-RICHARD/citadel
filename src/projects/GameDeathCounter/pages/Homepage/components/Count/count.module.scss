@@ -1,25 +1,23 @@
-@use "../../../../variables.scss";
-
 .emberBadge {
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 5px 10px;
   border-radius: 999px;
-  background: variables.$emberDim;
+  background: vars.$emberDim;
   border: 1px solid #c1531f59;
-  color: variables.$bone;
+  color: vars.$bone;
   font-size: 13px;
   flex-shrink: 0;
 
   &[data-variant="dark"] {
     gap: 6px;
     padding: 7px 12px;
-    background: variables.$panelRaised;
-    border: 1px solid variables.$line;
+    background: vars.$panelRaised;
+    border: 1px solid vars.$line;
 
     .mono {
-      color: variables.$emberBright;
+      color: vars.$emberBright;
       font-size: 14px;
     }
   }
@@ -30,7 +28,7 @@
   }
 
   .emberFlame {
-    color: variables.$emberBright;
+    color: vars.$emberBright;
   }
 }
 
