@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 
-import { ReturnToHomepageButton } from "../../../../react/appNavigation/ReturnToHomepageButton.tsx";
+import { ReturnToHomepageButton } from "../../../../react/appNavigation/ReturnToHomepageButton";
 import styles from "./testLayout.module.scss";
 
 export function Layout() {
