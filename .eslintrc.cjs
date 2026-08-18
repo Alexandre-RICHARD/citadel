@@ -115,8 +115,8 @@ module.exports = {
         zones: [
           ...restrictedZones,
           {
-            from: "**/*",
-            target: "./src/reserve",
+            from: "./src/reserve",
+            target: "**/*",
             message: "Interdiction d'importer quoi que ce soit se trouvant dans la réserve",
           }
         ],

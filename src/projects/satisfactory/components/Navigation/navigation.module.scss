@@ -1,0 +1,143 @@
+@use "../../../../styles/zIndex.scss";
+
+$navSideBarWitdthSmall: 50px;
+$navSideBarWitdthLarge: 180px;
+
+.navigationMenuContainer {
+  /* Local CSS variables scoped to the navigation */
+  --primary: 237, 94%, 81%;
+  --background: 266, 16%, 92%;
+  --background-secondary: 256, 12%, 12%;
+  --background-secondary-dark: 256, 10%, 10%;
+  --background-secondary-light: 257, 11%, 16%;
+  --black: 0, 0%, 0%;
+  --white: 0, 0%, 100%;
+  --quite-gray: 0, 0%, 50%;
+  --navbar-buttons: 2.4rem;
+
+  top: 0;
+  padding: 0;
+  width: $navSideBarWitdthSmall;
+  height: 100vh;
+  position: fixed;
+  background-color: hsl(var(--background-secondary));
+  transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: zIndex.$navigationBarZIndex;
+
+  &:hover {
+    width: $navSideBarWitdthLarge;
+  }
+
+  /* Scrollbar styling scoped to the nav */
+  &::-webkit-scrollbar-track {
+    background-color: hsl(var(--background-secondary));
+  }
+  &::-webkit-scrollbar {
+    width: 8px;
+    background-color: hsl(var(--background-secondary));
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary));
+  }
+}
+
+@media only screen and (max-width: 756px) {
+  .navigationMenuContainer {
+    --navbar-buttons: 2.2rem;
+  }
+}
+
+.navbarItems {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+/* Navbar Logo */
+.navbarLogo {
+  margin: 0 0 2em 0;
+  width: 100%;
+  height: 5em;
+  background: hsl(var(--background-secondary-dark));
+
+  > .navbarItemInner {
+    width: calc(#{$navSideBarWitdthSmall} - 8px);
+  }
+  > .navbarItemInner:hover {
+    background-color: transparent;
+  }
+  > .navbarItemInner > svg {
+    height: 2em;
+    fill: hsl(var(--white));
+  }
+}
+
+/* Navbar Items */
+.navbarItem {
+  padding: 0 0.5em;
+  width: 100%;
+  cursor: pointer;
+}
+
+.navbarItemInner {
+  padding: 1em 0;
+  width: 100%;
+  position: relative;
+  color: hsl(var(--quite-gray));
+  border-radius: 0.25em;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.175, 0.685, 0.32, 1);
+
+  &:hover {
+    color: hsl(var(--white));
+    background: hsl(var(--background-secondary-light));
+    box-shadow: 0 17px 30px -10px hsla(var(--black), 0.25);
+  }
+}
+
+.navbarItemInnerIconWrapper {
+  width: calc(#{$navSideBarWitdthSmall} - 1em - 8px);
+  position: relative;
+
+  ion-icon {
+    position: absolute;
+    font-size: calc(var(--navbar-buttons) - 1rem);
+  }
+}
+
+.linkText {
+  margin: 0;
+  width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
+  overflow: hidden;
+  opacity: 0;
+}
+
+.navigationMenuContainer:hover .linkText {
+  width: calc(100% - (#{$navSideBarWitdthSmall} - 8px));
+  opacity: 1;
+}
+
+/* Minimal local flex utility classes used by the component */
+.flexbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flexboxLeft {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.flexboxCol {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}

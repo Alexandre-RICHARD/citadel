@@ -8,7 +8,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../projects/homepage/Homepage");
+			const { Homepage } = await import("../../projects/homepage/Homepage");
 			return { Component: Homepage };
 		},
 		handle: {
@@ -21,7 +21,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Test]: {
 		path: `${projects[ProjectsEnum.Test].path}/*`,
 		lazy: async () => {
-			const { TestPage } = await import("../projects/test/TestPage");
+			const { TestPage } = await import("../../projects/test/TestPage");
 			return { Component: TestPage };
 		},
 		handle: {
@@ -36,7 +36,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		path: `${projects[ProjectsEnum.Satisfactory].path}/*`,
 		lazy: async () => {
 			const { SatisfactoryPage } = await import(
-				"../projects/satisfactory/SatisfactoryPage"
+				"../../projects/satisfactory/SatisfactoryPage"
 			);
 			return { Component: SatisfactoryPage };
 		},
@@ -52,7 +52,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		path: `${projects[ProjectsEnum.GameDeathCount].path}/*`,
 		lazy: async () => {
 			const { GameDeathCounterPage } = await import(
-				"../projects/gameDeathCounter"
+				"../../projects/gameDeathCounter"
 			);
 			return { Component: GameDeathCounterPage };
 		},
