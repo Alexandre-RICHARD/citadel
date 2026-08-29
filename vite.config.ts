@@ -7,8 +7,12 @@ import { projects } from "./src/react/appNavigation/projects.dictionnary";
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), "");
+
 	return {
-		server: { port: parseInt(env.VITE_LOCAL_PORT, 10), strictPort: true },
+		server: {
+			port: parseInt(env.VITE_LOCAL_PORT, 10),
+			strictPort: true,
+		},
 		resolve: {
 			alias: {
 				"@": path.resolve(__dirname, "src"),
@@ -27,36 +31,51 @@ export default defineConfig(({ mode }) => {
 				input: { app: "./index.html" },
 				output: {
 					assetFileNames: (assetInfo) => {
-						const fileName = assetInfo.names?.[0];
-						if (fileName) {
-							const extType = fileName.split(".").pop();
-							if (extType === "png") {
-								return "assets/images/[name]-[hash][extname]";
-							}
-							if (extType === "ico") {
-								return "assets/[name][extname]";
-							}
-							return "[name]-[hash][extname]";
+						const fileName =
+							assetInfo.names?.[0] ?? assetInfo.originalFileNames?.[0] ?? "";
+						const extType = fileName.split(".").pop()?.toLowerCase();
+
+						if (extType === "png") {
+							return "assets/images/[name]-[hash][extname]";
 						}
-						return "assets/others/[name]-[hash][extname]";
+						if (extType === "ico") {
+							return "assets/[name][extname]";
+						}
+						return "[name]-[hash][extname]";
 					},
-					manualChunks: (fileName) => {
-						if (fileName.includes("node_modules")) return "vendor";
-						if (fileName.includes("components")) return "common/";
+					manualChunks: (id) => {
+						// Normalisation des séparateurs de chemin (compatible Windows / Linux)
+						const normalizedId = id.replace(/\\/g, "/");
+
+						if (normalizedId.includes("node_modules")) {
+							return "vendor";
+						}
+
+						// Découpage des traductions
+						const translationMatch =
+							/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/.exec(
+								normalizedId,
+							);
+						if (translationMatch) {
+							const language = translationMatch[1];
+							return `translations-${language}`;
+						}
+
+						if (normalizedId.includes("/src/components/")) {
+							return "common";
+						}
+
 						for (const project of Object.values(projects)) {
-							if (fileName.includes(project.buildPath)) {
+							if (normalizedId.includes(project.buildPath)) {
 								return project.outputFile;
 							}
 						}
-						// TODO
-						//       const translationsFilesRegex =
-						//         /src\/.*\/translations\/.*\.translations\.ts/;
-						//       if (translationsFilesRegex.test(fileName)) {
-						//         const language = fileName.split("translations/")[1].split("/")[0];
-						//         return `translations-${language}`;
-						//       }
-						//       if (fileName.includes("/src/")) return "satisfactoryProject";
-						return "app";
+
+						if (normalizedId.includes("/src/")) {
+							return "app";
+						}
+
+						return "other";
 					},
 				},
 			},
@@ -66,23 +85,23 @@ export default defineConfig(({ mode }) => {
 				scss: {
 					api: "modern-compiler",
 					additionalData: (content, filename) => {
-						if (filename.endsWith("variables.scss")) {
+						const normalizedFilename = filename.replace(/\\/g, "/");
+
+						if (normalizedFilename.endsWith("variables.scss")) {
 							return content;
 						}
 
-						// Recherche le sous-dossier juste après "src/projects/"
-						const match = /[\\/]src[\\/]projects[\\/]([^\\/]+)/.exec(filename);
+						// Recherche le nom du projet dans le chemin
+						const match = /\/src\/projects\/([^/]+)/.exec(normalizedFilename);
 
 						if (match) {
 							const projectName = match[1];
-
 							const projectSCSSVariablesFilePath = path.resolve(
 								__dirname,
 								`src/projects/${projectName}/variables.scss`,
 							);
 
 							if (existsSync(projectSCSSVariablesFilePath)) {
-								// Convertit le chemin Windows en slashs Unix pour SCSS
 								const normalizedPath = projectSCSSVariablesFilePath.replace(
 									/\\/g,
 									"/",
