@@ -7,8 +7,8 @@
   "packageManager": "pnpm@10.15.1",
   "scripts": {
     "=== Lint & Tests ===": "",
-    "lint": "eslint .",
-    "lint-fix": "eslint . --fix",
+    "lint": "eslint",
+    "lint-fix": "eslint --fix",
     "check-types": "tsc --noEmit",
     "validate-all": "pnpm check-types && pnpm lint-fix",
     "=== Packages ===": "",
@@ -19,20 +19,20 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^5.3.1",
-    "@types/node": "^24.3.1",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^24.13.3",
+    "@typescript-eslint/eslint-plugin": "^8.68.0",
+    "@typescript-eslint/parser": "^8.68.0",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "globals": "^16.3.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0"
+    "globals": "^16.5.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.68.0"
   }
 }
