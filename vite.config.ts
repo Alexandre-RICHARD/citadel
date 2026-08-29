@@ -1,11 +1,14 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+
 import react from "@vitejs/plugin-react-swc";
-import { existsSync } from "fs";
-import path from "path";
 import { defineConfig, loadEnv } from "vite";
 
-import { projects } from "./src/react/appNavigation/projects.dictionnary";
+import { projects } from "./src/react/appNavigation/projects.dictionnary.ts";
 
 export default defineConfig(({ mode }) => {
+	const dirname = import.meta.dirname;
+
 	const env = loadEnv(mode, process.cwd(), "");
 
 	return {
@@ -15,9 +18,9 @@ export default defineConfig(({ mode }) => {
 		},
 		resolve: {
 			alias: {
-				"@": path.resolve(__dirname, "src"),
-				"@styles": path.resolve(__dirname, "src/styles"),
-				"@specs": path.resolve(__dirname, "alex-specs/src"),
+				"@": path.resolve(dirname, "src"),
+				"@styles": path.resolve(dirname, "src/styles"),
+				"@specs": path.resolve(dirname, "alex-specs/src"),
 			},
 		},
 		plugins: [react()],
@@ -97,7 +100,7 @@ export default defineConfig(({ mode }) => {
 						if (match) {
 							const projectName = match[1];
 							const projectSCSSVariablesFilePath = path.resolve(
-								__dirname,
+								dirname,
 								`src/projects/${projectName}/variables.scss`,
 							);
 

@@ -46,8 +46,10 @@
 	},
 	"include": [
 		"src",
+		"alex-specs/src",
 		"vite.config.ts",
 		"vitest.config.ts",
+		"vitest.setup.ts",
 		"**/*.d.ts"
 	],
 	"exclude": [

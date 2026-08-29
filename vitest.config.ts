@@ -20,6 +20,7 @@ export default defineConfig({
 				"src/**/*.d.ts",
 				"src/**/*.enum.ts",
 				"src/**/*.test.*",
+				"src/reserve/**",
 			],
 		},
 	},
