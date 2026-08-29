@@ -3,6 +3,7 @@
 ## Prérequis
 - Remplir le .env à partir du .env.example en cohérence avec le projet back
 - Installer Node
+- Activer corepack avec `corepack enable`
 
 ## Démarrage
 - Installer les dépendances

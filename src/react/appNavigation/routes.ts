@@ -49,9 +49,8 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.GameDeathCount]: {
 		path: `${projects[ProjectsEnum.GameDeathCount].path}/*`,
 		lazy: async () => {
-			const { GameDeathCounter } = await import(
-				"../../projects/GameDeathCounter"
-			);
+			const { GameDeathCounter } =
+				await import("../../projects/GameDeathCounter");
 			return { Component: GameDeathCounter };
 		},
 		handle: {

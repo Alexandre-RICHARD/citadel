@@ -88,17 +88,11 @@ export function useSessionStorage<T>(
 		};
 
 		window.addEventListener(standardSessionEvent, handleStorageChange);
-		window.addEventListener(
-			customSessionEvent,
-			handleStorageChange as EventListener,
-		);
+		window.addEventListener(customSessionEvent, handleStorageChange);
 
 		return () => {
 			window.removeEventListener(standardSessionEvent, handleStorageChange);
-			window.removeEventListener(
-				customSessionEvent,
-				handleStorageChange as EventListener,
-			);
+			window.removeEventListener(customSessionEvent, handleStorageChange);
 		};
 	}, [key, readValue]);
 
