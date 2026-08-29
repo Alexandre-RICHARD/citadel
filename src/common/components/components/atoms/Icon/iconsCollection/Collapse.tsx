@@ -1,10 +1,10 @@
-import React from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 type Props = {
-	styles: React.CSSProperties;
+	styles: CSSProperties;
 };
 
-export function Collapse({ styles }: Props): React.JSX.Element {
+export function Collapse({ styles }: Props): ReactNode {
 	return (
 		<svg
 			style={styles}

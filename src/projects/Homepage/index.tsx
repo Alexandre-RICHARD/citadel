@@ -1,9 +1,9 @@
-import { AppContainer } from "../../react/AppContainer";
-import { projects } from "../../react/appNavigation/projects.dictionnary";
-import { Footer } from "./Footer";
-import { Header } from "./Header";
+import { AppContainer } from "../../react/AppContainer.tsx";
+import { projects } from "../../react/appNavigation/projects.dictionnary.ts";
+import { Footer } from "./Footer/index.tsx";
+import { Header } from "./Header/index.tsx";
 import styles from "./homepage.module.scss";
-import { ProjectsShowcase } from "./ProjectsShowcase";
+import { ProjectsShowcase } from "./ProjectsShowcase/index.tsx";
 
 export function Homepage() {
 	const projectsInList = Object.values(projects);

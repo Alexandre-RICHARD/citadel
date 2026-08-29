@@ -1,6 +1,6 @@
-import React from "react";
+import { type ReactNode } from "react";
 
-import { IconsList } from "./iconsList.dictionnary";
+import { IconsList } from "./iconsList.dictionnary.ts";
 import type { IconTokenEnum } from "./iconToken.enum";
 
 type PropsType = {
@@ -9,7 +9,7 @@ type PropsType = {
 	color?: string;
 };
 
-export function Icon({ iconToken, size, color }: PropsType): React.JSX.Element {
+export function Icon({ iconToken, size, color }: PropsType): ReactNode {
 	const IconToDisplay = IconsList[iconToken];
 
 	const styles = {

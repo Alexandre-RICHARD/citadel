@@ -1,4 +1,6 @@
-import { formatDate } from "../../../../../../common/helpers/date/formatDateBis";
+import { useEffect, useRef } from "react";
+
+import { formatDate } from "../../../../../../common/helpers/date/formatDateBis.ts";
 import globalStyles from "../../../../globalStyles.module.scss";
 import styles from "./blockTitle.module.scss";
 
@@ -21,15 +23,23 @@ export function BlockTitle({
 	onToggleExpand,
 	element,
 }: Props) {
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		if (editing) {
+			inputRef.current?.focus();
+		}
+	}, [editing]);
+
 	return (
 		<div className={styles.nameAndMetaBlock}>
 			{editing ? (
 				<input
+					ref={inputRef}
 					type="text"
 					value={draftName}
 					onChange={(e) => setDraftName(e.target.value)}
 					className={`${globalStyles.fieldInput} ${globalStyles.fieldInputInlineTitle} ${globalStyles.fieldInputGame}`}
-					autoFocus
 				/>
 			) : (
 				<button

@@ -1,10 +1,10 @@
-import React from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 type Props = {
-	styles: React.CSSProperties;
+	styles: CSSProperties;
 };
 
-export function Expand({ styles }: Props): React.JSX.Element {
+export function Expand({ styles }: Props): ReactNode {
 	return (
 		<svg
 			style={styles}

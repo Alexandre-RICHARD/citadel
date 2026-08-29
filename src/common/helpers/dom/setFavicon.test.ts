@@ -1,7 +1,7 @@
 /* @vitest-environment jsdom */
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { setFavicon } from "./setFavicon";
+import { setFavicon } from "./setFavicon.ts";
 
 describe("setFavicon", () => {
 	beforeEach(() => {

@@ -1,4 +1,4 @@
-import { roundNumber } from "../../../../common/helpers/number/roundNumber";
+import { roundNumber } from "../../../../common/helpers/number/roundNumber.ts";
 import type { DisplayableMachines } from "./DisplayableMachines.type";
 import styles from "./machines.module.scss";
 
@@ -19,6 +19,8 @@ export function MachineLine({ machines }: Props) {
 				y,
 				z,
 			}),
+			// TODO
+			// eslint-disable-next-line no-console
 		}).catch((error) => console.error(error));
 	};
 

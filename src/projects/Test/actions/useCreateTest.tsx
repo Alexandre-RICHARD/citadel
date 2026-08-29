@@ -1,8 +1,8 @@
 import type { CreateTest } from "@specs/projects/test/endpoint/createTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 import { useMutation } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch";
+import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";
 
 type MutationArgs = {
 	name: string;

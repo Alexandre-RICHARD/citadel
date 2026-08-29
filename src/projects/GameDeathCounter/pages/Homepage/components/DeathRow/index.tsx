@@ -1,11 +1,11 @@
 import { Pencil, Save, Skull, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
-import { formatDateTime } from "../../../../../../common/helpers/date/formatDateTime";
-import { toDateInputValue } from "../../../../../../common/helpers/date/toDateInputValue";
+import { formatDateTime } from "../../../../../../common/helpers/date/formatDateTime.ts";
+import { toDateInputValue } from "../../../../../../common/helpers/date/toDateInputValue.ts";
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Death } from "../../game.type";
-import { IconButton } from "../IconButton";
+import { IconButton } from "../IconButton/index.tsx";
 import styles from "./deathRow.module.scss";
 
 type Props = {

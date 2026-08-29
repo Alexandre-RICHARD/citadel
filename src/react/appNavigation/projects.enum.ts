@@ -1,6 +1,8 @@
-export enum ProjectsEnum {
-	Homepage = "Homepage",
-	Test = "Test",
-	Satisfactory = "Satisfactory",
-	GameDeathCount = "GameDeathCount",
-}
+export const ProjectsEnum = {
+	GameDeathCount: "gameDeathCounter",
+	Homepage: "homepage",
+	Satisfactory: "satisfactory",
+	Test: "test",
+} as const;
+
+export type ProjectsEnumType = (typeof ProjectsEnum)[keyof typeof ProjectsEnum];

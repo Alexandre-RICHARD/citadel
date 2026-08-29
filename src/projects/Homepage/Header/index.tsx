@@ -1,5 +1,5 @@
 import styles from "./header.module.scss";
-import { HeaderLogo } from "./HeaderLogo";
+import { HeaderLogo } from "./HeaderLogo/index.tsx";
 
 export function Header() {
 	return (

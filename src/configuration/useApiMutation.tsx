@@ -2,7 +2,7 @@ import type { EndpointModel } from "@specs/specUtils/endpointModel.type";
 import { useMutation } from "@tanstack/react-query";
 
 import type { ApiError } from "../common/error/ApiError";
-import { fetchHandler } from "../common/helpers/fetch/handlerFetch";
+import { fetchHandler } from "../common/helpers/fetch/handlerFetch.ts";
 
 type Props<Endpoint extends EndpointModel, Args> = {
 	mutationKey: unknown[];

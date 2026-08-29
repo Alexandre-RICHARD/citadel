@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { Button } from "../../atoms/Button";
-import { CacheOverlay } from "../../atoms/CacheOverlay";
+import { Button } from "../../atoms/Button/index.tsx";
+import { CacheOverlay } from "../../atoms/CacheOverlay/index.tsx";
 import styles from "./modal.module.scss";
 
 type Props = {

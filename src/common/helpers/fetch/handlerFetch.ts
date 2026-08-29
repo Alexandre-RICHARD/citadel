@@ -1,9 +1,9 @@
 import type { EndpointModel } from "@specs/specUtils/endpointModel.type";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 
-import { ApiError } from "../../error/ApiError";
-import { buildQueryString } from "./buildQueryParamsUrl";
-import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
+import { ApiError } from "../../error/ApiError.ts";
+import { buildQueryString } from "./buildQueryParamsUrl.ts";
+import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl.ts";
 
 export async function fetchHandler<Spec extends EndpointModel>(
 	args: Spec["request"],
@@ -35,7 +35,7 @@ export async function fetchHandler<Spec extends EndpointModel>(
 	});
 
 	if (!response.ok) {
-		let body: unknown = null;
+		let body: unknown;
 		try {
 			body = await response.json();
 		} catch {

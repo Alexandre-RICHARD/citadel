@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { exponentielInterval } from "../common/helpers/interval/exponentielInterval";
+import { exponentielInterval } from "../common/helpers/interval/exponentielInterval.ts";
 
 export const tanStackQueryClient = new QueryClient({
 	defaultOptions: {

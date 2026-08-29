@@ -1,12 +1,12 @@
-import { writeCountdown } from "../../../../common/helpers/date/writeCountdown";
-import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces";
-import { roundNumber } from "../../../../common/helpers/number/roundNumber";
-import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines";
+import { writeCountdown } from "../../../../common/helpers/date/writeCountdown.ts";
+import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces.ts";
+import { roundNumber } from "../../../../common/helpers/number/roundNumber.ts";
+import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines.tsx";
 import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
-import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink";
-import { MachineLine } from "./MachineLine";
+import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink.tsx";
+import { MachineLine } from "./MachineLine.tsx";
 import styles from "./machines.module.scss";
-import { useMachines } from "./useMachines";
+import { useMachines } from "./useMachines.tsx";
 
 function getCouponLevelCost(level: number): number {
 	const ceil = Math.ceil(level / 3) - 1;

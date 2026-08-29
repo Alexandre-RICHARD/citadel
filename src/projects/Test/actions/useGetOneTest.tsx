@@ -1,8 +1,8 @@
 import type { GetOneTest } from "@specs/projects/test/endpoint/getOneTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch";
+import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";
 
 type Props = {
 	payload: {

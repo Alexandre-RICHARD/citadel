@@ -1,14 +1,14 @@
 import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 
-import { projects } from "./projects.dictionnary";
-import { ProjectsEnum } from "./projects.enum";
+import { projects } from "./projects.dictionnary.ts";
+import { ProjectsEnum, type ProjectsEnumType } from "./projects.enum.ts";
 import type { RouteMeta } from "./routeMeta.type";
 
-const routes: Record<ProjectsEnum, RouteObject> = {
+const routes: Record<ProjectsEnumType, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../../projects/Homepage");
+			const { Homepage } = await import("../../projects/Homepage/index.tsx");
 			return { Component: Homepage };
 		},
 		handle: {
@@ -21,7 +21,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Test]: {
 		path: `${projects[ProjectsEnum.Test].path}/*`,
 		lazy: async () => {
-			const { Test } = await import("../../projects/Test");
+			const { Test } = await import("../../projects/Test/index.tsx");
 			return { Component: Test };
 		},
 		handle: {
@@ -35,7 +35,8 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Satisfactory]: {
 		path: `${projects[ProjectsEnum.Satisfactory].path}/*`,
 		lazy: async () => {
-			const { Satisfactory } = await import("../../projects/Satisfactory");
+			const { Satisfactory } =
+				await import("../../projects/Satisfactory/index.tsx");
 			return { Component: Satisfactory };
 		},
 		handle: {
@@ -50,7 +51,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		path: `${projects[ProjectsEnum.GameDeathCount].path}/*`,
 		lazy: async () => {
 			const { GameDeathCounter } =
-				await import("../../projects/GameDeathCounter");
+				await import("../../projects/GameDeathCounter/index.tsx");
 			return { Component: GameDeathCounter };
 		},
 		handle: {

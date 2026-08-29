@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router";
 
-import { AppContainer } from "../../react/AppContainer";
-import { Layout } from "./components/Layout";
-import { Calculator } from "./pages/Calculator";
-import { Homepage } from "./pages/Homepage";
-import { Machines } from "./pages/Machines";
-import { RecipeList } from "./pages/RecipeList";
-import { Settings } from "./pages/Settings";
+import { AppContainer } from "../../react/AppContainer.tsx";
+import { Layout } from "./components/Layout/index.tsx";
+import { Calculator } from "./pages/Calculator/index.tsx";
+import { Homepage } from "./pages/Homepage/index.tsx";
+import { Machines } from "./pages/Machines/index.tsx";
+import { RecipeList } from "./pages/RecipeList/index.tsx";
+import { Settings } from "./pages/Settings/index.tsx";
 
 export function Satisfactory() {
 	return (

@@ -1,9 +1,9 @@
 import { Plus, Save, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import { Count } from "../Count";
-import { IconButton } from "../IconButton";
+import { Count } from "../Count/index.tsx";
+import { IconButton } from "../IconButton/index.tsx";
 import styles from "./header.module.scss";
 
 type Props = {
@@ -12,6 +12,8 @@ type Props = {
 };
 
 export function Header({ submitNewGame, grandTotal }: Props) {
+	const inputRef = useRef<HTMLInputElement>(null);
+
 	const [addingGame, setAddingGame] = useState(false);
 	const [newGameName, setNewGameName] = useState("");
 
@@ -21,6 +23,12 @@ export function Header({ submitNewGame, grandTotal }: Props) {
 			setAddingGame(false);
 		});
 	};
+
+	useEffect(() => {
+		if (addingGame) {
+			inputRef.current?.focus();
+		}
+	}, [addingGame]);
 
 	return (
 		<>
@@ -54,12 +62,12 @@ export function Header({ submitNewGame, grandTotal }: Props) {
 			{addingGame && (
 				<div className={styles.addGameBar}>
 					<input
+						ref={inputRef}
 						type="text"
 						value={newGameName}
 						onChange={(e) => setNewGameName(e.target.value)}
 						placeholder="Nom du jeu (ex : Bloodborne)"
 						className={globalStyles.fieldInput}
-						autoFocus
 						onKeyDown={(e) => e.key === "Enter" && submit(newGameName)}
 					/>
 					<IconButton

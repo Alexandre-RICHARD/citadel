@@ -1,13 +1,13 @@
 import type { TestDto } from "@specs/projects/test/dto/test.dto";
 import { useState } from "react";
 
-import { Button } from "../../../../common/components/components/atoms/Button";
-import { useDeleteTest } from "../../actions/useDeleteTest";
-import { useGetAllTest } from "../../actions/useGetAllTest";
-import { CreateTest } from "../../components/dataForms/CreateTest";
-import { UpdateTest } from "../../components/dataForms/UpdateTest";
-import { OneTestDataLine } from "../../components/OneTestDataLine";
-import { TranslationTest } from "../../components/TranslationTest";
+import { Button } from "../../../../common/components/components/atoms/Button/index.tsx";
+import { useDeleteTest } from "../../actions/useDeleteTest.tsx";
+import { useGetAllTest } from "../../actions/useGetAllTest.tsx";
+import { CreateTest } from "../../components/dataForms/CreateTest.tsx";
+import { UpdateTest } from "../../components/dataForms/UpdateTest.tsx";
+import { OneTestDataLine } from "../../components/OneTestDataLine/index.tsx";
+import { TranslationTest } from "../../components/TranslationTest/index.tsx";
 import styles from "./testDisplayAll.module.scss";
 
 export function TestDisplayAll() {

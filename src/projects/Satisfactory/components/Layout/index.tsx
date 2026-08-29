@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 
-import { Navigation } from "../Navigation";
+import { Navigation } from "../Navigation/index.tsx";
 import styles from "./layout.module.scss";
 
 export function Layout() {

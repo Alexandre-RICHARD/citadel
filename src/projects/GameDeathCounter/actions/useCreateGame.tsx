@@ -1,10 +1,10 @@
 import type { GameSummaryDto } from "@specs/projects/gameDeathCounter/dto/game/gameSummary.dto";
 import type { CreateGame } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint";
 import type { CreateGameBodyDto } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 
 import type { ApiError } from "../../../common/error/ApiError";
-import { useApiMutation } from "../../../configuration/useApiMutation";
+import { useApiMutation } from "../../../configuration/useApiMutation.tsx";
 
 type Props = {
 	onSuccess?: ((game: GameSummaryDto) => void) | undefined;

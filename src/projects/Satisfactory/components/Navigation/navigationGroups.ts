@@ -1,4 +1,4 @@
-import { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum";
+import { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum.ts";
 import type { NavigationItems } from "./navigationItems.type";
 
 export const navigationGroups: NavigationItems = [

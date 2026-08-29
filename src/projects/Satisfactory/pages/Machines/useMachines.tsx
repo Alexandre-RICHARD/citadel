@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import type { ExtractorFm } from "../../actions/useGetAllMachines/useGetAllExtractors/extractorFm.type";
 import type { GeneratorFm } from "../../actions/useGetAllMachines/useGetAllGenerators/generatorFm.type";
-import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
+import { GameClassNamesEnum } from "../../enums/gameClassNames.enum.ts";
 import type { DisplayableMachines } from "./DisplayableMachines.type";
 
 type Args = {

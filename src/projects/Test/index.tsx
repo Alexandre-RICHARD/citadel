@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router";
 
-import { AppContainer } from "../../react/AppContainer";
-import { Layout } from "./components/Layout";
-import { TestDisplayAll } from "./pages/TestDisplayAll";
-import { TestDisplayOne } from "./pages/TestDisplayOne";
+import { AppContainer } from "../../react/AppContainer.tsx";
+import { Layout } from "./components/Layout/index.tsx";
+import { TestDisplayAll } from "./pages/TestDisplayAll/index.tsx";
+import { TestDisplayOne } from "./pages/TestDisplayOne/index.tsx";
 
 export function Test() {
 	return (

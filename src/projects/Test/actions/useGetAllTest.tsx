@@ -1,8 +1,8 @@
 import type { GetAllTest } from "@specs/projects/test/endpoint/getAllTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch";
+import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";
 
 export function useGetAllTest() {
 	const { data, error, isPending, isFetching, isRefetching, refetch } =

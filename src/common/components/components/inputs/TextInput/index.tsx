@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 
-import { generateUuid } from "../../../../helpers/uuid/generateUuid";
+import { generateUuid } from "../../../../helpers/uuid/generateUuid.ts";
 import styles from "./textInput.module.scss";
 
 type Props = {

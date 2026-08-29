@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMatches } from "react-router";
 
-import { setFavicon } from "../../common/helpers/dom/setFavicon";
+import { setFavicon } from "../../common/helpers/dom/setFavicon.ts";
 import type { RouteMeta } from "./routeMeta.type";
 
 export function useAppNavigation() {

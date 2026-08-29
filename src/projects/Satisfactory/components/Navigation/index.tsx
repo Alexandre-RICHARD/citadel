@@ -1,9 +1,9 @@
 import { NavLink } from "react-router";
 
-import { Icon } from "../../../../common/components/components/atoms/Icon";
-import { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum";
+import { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum.ts";
+import { Icon } from "../../../../common/components/components/atoms/Icon/index.tsx";
 import styles from "./navigation.module.scss";
-import { navigationGroups } from "./navigationGroups";
+import { navigationGroups } from "./navigationGroups.ts";
 
 export function Navigation() {
 	return (

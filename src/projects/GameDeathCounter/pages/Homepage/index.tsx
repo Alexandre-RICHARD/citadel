@@ -1,9 +1,9 @@
 import { Flame } from "lucide-react";
 
-import { GameCard } from "./components/GameCard";
-import { Header } from "./components/Header";
+import { GameCard } from "./components/GameCard/index.tsx";
+import { Header } from "./components/Header/index.tsx";
 import styles from "./homepage.module.scss";
-import { useHomepage } from "./useHomepage";
+import { useHomepage } from "./useHomepage.tsx";
 
 export function Homepage() {
 	const {

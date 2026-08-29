@@ -1,10 +1,10 @@
 import type { LucideProps } from "lucide-react";
-import type { RefAttributes } from "react";
+import type { ForwardRefExoticComponent, RefAttributes } from "react";
 
 import styles from "./iconButton.module.scss";
 
 type Props = {
-	icon: React.ForwardRefExoticComponent<
+	icon: ForwardRefExoticComponent<
 		Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
 	>;
 	label: string;

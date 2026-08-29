@@ -1,7 +1,7 @@
-import type { ProjectDictionnary } from "./projectDictionnary.type";
-import { ProjectsEnum } from "./projects.enum";
+import type { ProjectDictionnary } from "./projectDictionnary.type.ts";
+import { ProjectsEnum, type ProjectsEnumType } from "./projects.enum.ts";
 
-export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
+export const projects: Record<ProjectsEnumType, ProjectDictionnary> = {
 	[ProjectsEnum.Homepage]: {
 		id: "homepage",
 		path: "/homepage",

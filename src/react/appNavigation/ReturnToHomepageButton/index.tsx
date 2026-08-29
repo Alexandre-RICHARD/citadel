@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
 
-import { Button } from "../../../common/components/components/atoms/Button";
-import { projects } from "../projects.dictionnary";
-import { ProjectsEnum } from "../projects.enum";
+import { Button } from "../../../common/components/components/atoms/Button/index.tsx";
+import { projects } from "../projects.dictionnary.ts";
+import { ProjectsEnum } from "../projects.enum.ts";
 import styles from "./returnToHomepageButton.module.scss";
 
 export function ReturnToHomepageButton() {

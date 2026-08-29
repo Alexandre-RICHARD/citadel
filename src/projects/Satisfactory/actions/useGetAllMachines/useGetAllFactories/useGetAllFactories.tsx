@@ -1,10 +1,10 @@
 import type { GetAllFactories } from "@specs/projects/satisfactory/endpoint/getAllFactories.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch";
-import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay";
-import { factoryDtoToFmMapper } from "./factoriesDtoToFm.mapper";
+import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch.ts";
+import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay.ts";
+import { factoryDtoToFmMapper } from "./factoriesDtoToFm.mapper.ts";
 
 export function useGetAllFactories() {
 	const {

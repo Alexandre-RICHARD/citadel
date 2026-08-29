@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router";
 
-import { formatDate } from "../../../../common/helpers/date/formatDate";
-import { LanguageEnum } from "../../../../common/language/language.enum";
-import { useGetOneTest } from "../../actions/useGetOneTest";
+import { formatDate } from "../../../../common/helpers/date/formatDate.ts";
+import { LanguageEnum } from "../../../../common/language/language.enum.ts";
+import { useGetOneTest } from "../../actions/useGetOneTest.tsx";
 import styles from "./testDisplayOne.module.scss";
 
 export function TestDisplayOne() {

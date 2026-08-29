@@ -8,14 +8,14 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Game } from "../../game.type";
-import { BlockTitle } from "../BlockTitle";
-import { BossRow } from "../BossRow";
-import { Count } from "../Count";
-import { IconButton } from "../IconButton";
+import { BlockTitle } from "../BlockTitle/index.tsx";
+import { BossRow } from "../BossRow/index.tsx";
+import { Count } from "../Count/index.tsx";
+import { IconButton } from "../IconButton/index.tsx";
 import styles from "./gameCard.module.scss";
 
 type Props = {
@@ -65,6 +65,8 @@ export function GameCard({
 	onUpdateDeath,
 	onDeleteDeath,
 }: Props) {
+	const inputRef = useRef<HTMLInputElement>(null);
+
 	const [editing, setEditing] = useState(false);
 	const [draftName, setDraftName] = useState(game.name);
 	const [addingBoss, setAddingBoss] = useState(false);
@@ -79,6 +81,12 @@ export function GameCard({
 		onUpdateGame(game.id, { name: trimmed });
 		setEditing(false);
 	};
+
+	useEffect(() => {
+		if (addingBoss) {
+			inputRef.current?.focus();
+		}
+	}, [addingBoss]);
 
 	const submitNewBoss = () => {
 		const trimmed = newBossName.trim();
@@ -209,12 +217,12 @@ export function GameCard({
 					{addingBoss ? (
 						<div className={styles.addBossForm}>
 							<input
+								ref={inputRef}
 								type="text"
 								value={newBossName}
 								onChange={(e) => setNewBossName(e.target.value)}
 								placeholder="Nom du boss"
 								className={globalStyles.fieldInput}
-								autoFocus
 								onKeyDown={(e) => e.key === "Enter" && submitNewBoss()}
 							/>
 							<IconButton

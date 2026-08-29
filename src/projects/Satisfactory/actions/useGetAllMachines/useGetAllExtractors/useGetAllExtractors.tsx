@@ -1,10 +1,10 @@
 import type { GetAllExtractors } from "@specs/projects/satisfactory/endpoint/getAllExtractors.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum";
+import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch";
-import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay";
-import { extractorsDtoToFmMapper } from "./extractorsDtoToFm.mapper";
+import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch.ts";
+import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay.ts";
+import { extractorsDtoToFmMapper } from "./extractorsDtoToFm.mapper.ts";
 
 export function useGetAllExtractors() {
 	const {
