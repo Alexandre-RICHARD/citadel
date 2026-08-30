@@ -38,9 +38,6 @@
 			],
 			"@styles/*": [
 				"./src/styles/*"
-			],
-			"@specs/*": [
-				"./alex-specs/src/*"
 			]
 		}
 	},

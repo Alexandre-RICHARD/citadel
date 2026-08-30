@@ -1,4 +1,4 @@
-import type { EndpointModel } from "@specs/specUtils/endpointModel.type";
+import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type";
 import { useMutation } from "@tanstack/react-query";
 
 import type { ApiError } from "../common/error/ApiError";

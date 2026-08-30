@@ -107,7 +107,6 @@ export default defineConfig([
 					map: [
 						["@", path.resolve("./src")],
 						["@styles", path.resolve("./src/styles")],
-						["@specs", path.resolve("./alex-specs/src")],
 					],
 					extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
 				},

@@ -1,4 +1,4 @@
-import type { PathParams } from "@specs/specUtils/pathParams.type";
+import type { PathParams } from "@citadel/specs/src/specUtils/pathParams.type";
 
 type Args = {
 	baseUrl: string;

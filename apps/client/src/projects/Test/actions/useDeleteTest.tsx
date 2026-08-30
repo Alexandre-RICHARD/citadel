@@ -1,5 +1,5 @@
-import type { DeleteTest } from "@specs/projects/test/endpoint/deleteTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTest.endpoint";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import { useMutation } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";

@@ -1,4 +1,4 @@
-import type { EndpointModel } from "@specs/specUtils/endpointModel.type.ts";
+import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type.ts";
 import type { RequestHandler } from "express";
 
 import type { ResponseMap } from "./responseMap.type.ts";

@@ -1,9 +1,9 @@
-import type { GameSummaryDto } from "@specs/projects/gameDeathCounter/dto/game/gameSummary.dto.ts";
+import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummary.dto.ts";
 
 import { mapDateToString } from "../../../common/date/mapDateToString.ts";
 import { mapNullableDateToStringOrNull } from "../../../common/date/mapNullableDateToStringOrNull.ts";
-import type { GameSummaryBean } from "../bean/gameSummaryBean";
-import type { Game } from "../models/Game";
+import type { GameSummaryBean } from "../bean/gameSummaryBean.ts";
+import type { Game } from "../models/Game.ts";
 
 export const gameMapper = {
 	fromGameEntityToGameSummaryBean: (game: Game): GameSummaryBean => {

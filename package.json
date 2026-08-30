@@ -1,16 +1,29 @@
 {
   "name": "citadel-monorepo",
-  "private": true,
   "type": "module",
+  "author": "Alexandre RICHARD",
+  "private": true,
+  "version": "1.0.0",
+  "license": "ISC",
   "packageManager": "pnpm@11.24.0+sha512.bd27e345e976dcb0be0b7a1228217b049a817e21b1f355c90dbe7dc46671895a8bc1e6d06c24554505ea93ea0b45f489a27ec1bfbc8de6a9659fca0f16fa0000",
   "scripts": {
-    "dev:client": "pnpm --filter client dev",
-    "dev:server": "pnpm --filter server dev",
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "=== Dev ===": "",
+    "dev-all": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:client": "pnpm --filter @citadel/client dev",
+    "dev:server": "pnpm --filter @citadel/server dev",
+    "=== Validation ===": "",
+    "lint": "pnpm -r lint",
+    "lint-fix": "pnpm -r lint-fix",
+    "check-types": "pnpm -r check-types",
+    "unit-test-once": "pnpm -r unit-test-once",
+    "unit-test-watch": "pnpm -r unit-test-watch",
+    "unit-test-report": "pnpm -r unit-test-report",
+    "validate-all": "pnpm check-types && pnpm lint && pnpm unit-test-once && pnpm build",
+    "=== Build & Production ===": "",
     "build": "pnpm --filter \"./apps/*\" build",
-    "lint": "pnpm --recursive lint"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0"
+    "=== Packages ===": "",
+    "install-dependencies": "pnpm i",
+    "update-dep-minor": "pnpm update",
+    "update-dep-major": "pnpm update --interactive --latest"
   }
 }

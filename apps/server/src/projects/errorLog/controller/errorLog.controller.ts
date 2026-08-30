@@ -1,6 +1,6 @@
-import type { CreateErrorLog } from "@specs/projects/errorLog/endpoint/createError.endpoint.ts";
-import { HttpStatutCodeErrorEnum } from "@specs/specUtils/httpStatutCodeError.enum.ts";
-import { HttpStatutCodeSuccessEnum } from "@specs/specUtils/httpStatutCodeSuccess.enum.ts";
+import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/createError.endpoint.ts";
+import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
+import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { assertString } from "../../../common/asserts/assertString.ts";
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

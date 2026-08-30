@@ -1,4 +1,4 @@
-import type { EndpointModel } from "@specs/specUtils/endpointModel.type.ts";
+import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type.ts";
 import type { NextFunction, Response as ExpressResponse } from "express";
 
 import type { CustomEndpointHandler } from "./customEndpointHandler.type.ts";

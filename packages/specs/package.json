@@ -1,18 +1,12 @@
 {
   "name": "@citadel/specs",
   "type": "module",
-  "version": "0.0.0",
-  "author": "Alexandre RICHARD",
-  "license": "ISC",
   "scripts": {
-    "=== Lint & Tests ===": "",
-    "lint": "eslint",
-    "lint-fix": "eslint --fix",
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "validate-all": "pnpm check-types && pnpm lint-fix",
-    "=== Packages ===": "",
-    "install-dependencies": "pnpm i",
-    "update-dependencies": "pnpm update"
+    "validate-all": "pnpm check-types && pnpm lint-fix"
   },
   "dependencies": {
     "zod": "^4.4.3"

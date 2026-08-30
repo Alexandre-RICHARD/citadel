@@ -1,5 +1,5 @@
-import type { GetOneTest } from "@specs/projects/test/endpoint/getOneTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTest.endpoint";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";

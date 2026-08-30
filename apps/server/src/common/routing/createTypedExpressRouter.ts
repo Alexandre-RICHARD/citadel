@@ -1,5 +1,5 @@
-import type { EndpointModel } from "@specs/specUtils/endpointModel.type.ts";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type.ts";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import type { RequestHandler, Router as ExpressRouter } from "express";
 
 import type { CustomEndpointHandler } from "./customEndpointHandler.type.ts";

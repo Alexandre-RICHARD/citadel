@@ -1,4 +1,4 @@
-import type { TestDto } from "@specs/projects/test/dto/test.dto";
+import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { NavLink } from "react-router";
 
 import { Button } from "../../../../common/components/components/atoms/Button/index.tsx";

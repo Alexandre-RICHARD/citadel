@@ -1,10 +1,10 @@
-import type { CreateTest } from "@specs/projects/test/endpoint/createTest.endpoint.ts";
-import type { DeleteTest } from "@specs/projects/test/endpoint/deleteTest.endpoint.ts";
-import type { GetAllTest } from "@specs/projects/test/endpoint/getAllTest.endpoint.ts";
-import type { GetOneTest } from "@specs/projects/test/endpoint/getOneTest.endpoint.ts";
-import type { UpdateTest } from "@specs/projects/test/endpoint/updateTest.endpoint.ts";
-import { HttpStatutCodeErrorEnum } from "@specs/specUtils/httpStatutCodeError.enum.ts";
-import { HttpStatutCodeSuccessEnum } from "@specs/specUtils/httpStatutCodeSuccess.enum.ts";
+import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTest.endpoint.ts";
+import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTest.endpoint.ts";
+import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTest.endpoint.ts";
+import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTest.endpoint.ts";
+import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint.ts";
+import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
+import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { assertBoolean } from "../../../common/asserts/assertBoolean.ts";
 import { assertNumber } from "../../../common/asserts/assertNumber.ts";

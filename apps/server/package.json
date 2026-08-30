@@ -1,16 +1,12 @@
 {
   "name": "@citadel/server",
-  "type": "commonjs",
-  "version": "0.0.0",
-  "main": "src/index.ts",
-  "author": "Alexandre RICHARD",
-  "license": "ISC",
+  "type": "module",
   "scripts": {
     "=== Dev ===": "",
     "dev": "tsx watch ./src/index.ts",
     "init-db": "bash ./scripts/init_db.sh",
     "migrate": "bash ./scripts/flyway_local.sh",
-    "=== Lint & Tests ===": "",
+    "=== Validation ===": "",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
@@ -20,10 +16,7 @@
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once",
     "=== Build & Production ===": "",
     "build": "node esbuild.config.mjs",
-    "start": "node ./build/build.server.js",
-    "=== Packages ===": "",
-    "install-dependencies": "pnpm i",
-    "update-dependencies": "pnpm update"
+    "start": "node ./build/build.server.js"
   },
   "dependencies": {
     "@citadel/specs": "workspace:*",

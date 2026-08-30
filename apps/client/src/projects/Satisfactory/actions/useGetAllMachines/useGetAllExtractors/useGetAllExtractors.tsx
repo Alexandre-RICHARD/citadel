@@ -1,5 +1,5 @@
-import type { GetAllExtractors } from "@specs/projects/satisfactory/endpoint/getAllExtractors.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { GetAllExtractors } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllExtractors.endpoint";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch.ts";

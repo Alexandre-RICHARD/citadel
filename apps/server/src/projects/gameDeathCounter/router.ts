@@ -1,5 +1,5 @@
-import { createGameBodySchema } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
-import type { GameDeathCounterEndpointRegistry } from "@specs/specs.ts";
+import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
+import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/specs.ts";
 import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";

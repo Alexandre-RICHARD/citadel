@@ -1,5 +1,5 @@
-import type { GetResourceSink } from "@specs/projects/satisfactory/endpoint/getResourceSink.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { GetResourceSink } from "@citadel/specs/src/projects/satisfactory/endpoint/getResourceSink.endpoint";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../../common/helpers/fetch/handlerFetch.ts";
