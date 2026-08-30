@@ -1,4 +1,4 @@
-import type { QueryParams } from "@specs/specUtils/queryParams.type";
+import type { QueryParams } from "@citadel/specs/src/specUtils/queryParams.type";
 
 export const buildQueryString = (query?: QueryParams): string => {
 	if (!query) return "";

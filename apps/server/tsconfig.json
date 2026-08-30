@@ -26,12 +26,7 @@
     ],
     "types": [
       "node"
-    ],
-    "paths": {
-      "@specs/*": [
-        "./alex-specs/src/*"
-      ],
-    },
+    ]
   },
   "include": [
     "src",

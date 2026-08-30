@@ -1,4 +1,4 @@
-import type { GeneratorDto } from "@specs/projects/satisfactory/dto/generator.dto";
+import type { GeneratorDto } from "@citadel/specs/src/projects/satisfactory/dto/generator.dto";
 
 import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm.ts";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum.ts";

@@ -20,7 +20,6 @@ export default defineConfig(({ mode }) => {
 			alias: {
 				"@": path.resolve(dirname, "src"),
 				"@styles": path.resolve(dirname, "src/styles"),
-				"@specs": path.resolve(dirname, "alex-specs/src"),
 			},
 		},
 		plugins: [react()],

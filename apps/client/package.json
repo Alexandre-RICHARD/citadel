@@ -1,18 +1,12 @@
 {
   "name": "@citadel/client",
   "type": "module",
-  "version": "0.0.0",
-  "main": "src/main.tsx",
-  "author": "Alexandre RICHARD",
-  "license": "ISC",
-  "types": "module",
   "scripts": {
     "=== Dev ===": "",
     "dev": "vite --open",
-    "dev-host": "vite --open --host",
-    "=== Lint & Tests ===": "",
-    "lint": "eslint",
-    "lint-fix": "eslint --fix",
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
     "unit-test-once": "vitest run",
     "unit-test-watch": "vitest watch",
@@ -20,11 +14,7 @@
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm build",
     "=== Build & Production ===": "",
     "build": "tsc --build && vite build",
-    "start": "vite preview --open",
-    "=== Packages ===": "",
-    "install-dependencies": "pnpm i",
-    "update-dep-minor": "pnpm update",
-    "update-dep-major": "pnpm update --interactive --latest"
+    "start": "vite preview --open"
   },
   "dependencies": {
     "@citadel/specs": "workspace:*",

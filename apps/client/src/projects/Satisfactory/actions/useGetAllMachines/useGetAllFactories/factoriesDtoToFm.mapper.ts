@@ -1,4 +1,4 @@
-import type { FactoryDto } from "@specs/projects/satisfactory/dto/factory.dto";
+import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/factory.dto";
 
 import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm.ts";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum.ts";

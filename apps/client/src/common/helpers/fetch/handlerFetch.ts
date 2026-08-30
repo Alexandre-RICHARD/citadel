@@ -1,5 +1,5 @@
-import type { EndpointModel } from "@specs/specUtils/endpointModel.type";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 
 import { ApiError } from "../../error/ApiError.ts";
 import { buildQueryString } from "./buildQueryParamsUrl.ts";

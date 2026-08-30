@@ -1,7 +1,7 @@
-import type { GameSummaryDto } from "@specs/projects/gameDeathCounter/dto/game/gameSummary.dto";
-import type { CreateGame } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint";
-import type { CreateGameBodyDto } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummary.dto";
+import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint";
+import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 
 import type { ApiError } from "../../../common/error/ApiError";
 import { useApiMutation } from "../../../configuration/useApiMutation.tsx";

@@ -1,4 +1,4 @@
-import type { TestDto } from "@specs/projects/test/dto/test.dto";
+import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { useState } from "react";
 
 import { CheckboxInput } from "../../../../common/components/components/inputs/CheckboxInput/index.tsx";

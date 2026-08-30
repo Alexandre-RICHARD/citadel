@@ -1,4 +1,4 @@
-import type { TestEndpointRegistry } from "@specs/specs.ts";
+import type { TestEndpointRegistry } from "@citadel/specs/src/specs.ts";
 import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";

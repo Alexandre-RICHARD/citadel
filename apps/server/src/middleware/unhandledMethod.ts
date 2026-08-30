@@ -1,4 +1,4 @@
-import { HttpStatutCodeErrorEnum } from "@specs/specUtils/httpStatutCodeError.enum.ts";
+import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import type { NextFunction, Request, Response } from "express";
 
 export function unhandledMethod(

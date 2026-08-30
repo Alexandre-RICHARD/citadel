@@ -1,5 +1,5 @@
-import type { UpdateTest } from "@specs/projects/test/endpoint/updateTest.endpoint";
-import { HttpMethodEnum } from "@specs/specUtils/httpMethod.enum.ts";
+import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import { useMutation } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";

@@ -1,6 +1,6 @@
-import type { CreateGame } from "@specs/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint.ts";
-import { HttpStatutCodeErrorEnum } from "@specs/specUtils/httpStatutCodeError.enum.ts";
-import { HttpStatutCodeSuccessEnum } from "@specs/specUtils/httpStatutCodeSuccess.enum.ts";
+import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint.ts";
+import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
+import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
 import { DatabaseError } from "../../../error/DatabaseError.ts";
