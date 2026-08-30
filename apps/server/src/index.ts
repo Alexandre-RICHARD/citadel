@@ -1,0 +1,44 @@
+import "dotenv/config.js";
+
+import cors from "cors";
+import express from "express";
+
+import { globalRouter } from "./globalRouter.ts";
+import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
+import { notFound } from "./middleware/notFound.ts";
+import { unhandledMethod } from "./middleware/unhandledMethod.ts";
+import { sequelize } from "./sequelize.ts";
+
+const corsOptions = {
+	origin: process.env.CORS_ORIGIN.split("|"),
+	methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+	allowedHeaders: ["Content-Type", "Authorization"],
+	credentials: true,
+};
+
+const app = express();
+app.use(express.json());
+app.disable("etag");
+app.use(express.urlencoded({ extended: false }));
+app.use(cors(corsOptions));
+
+app.use(unhandledMethod);
+app.use(globalRouter);
+app.use(notFound);
+app.use(globalErrorHandler);
+
+const port = process.env.LOCAL_PORT;
+
+async function start() {
+	await sequelize.authenticate();
+
+	app.listen(port, () => {
+		/* eslint-disable-next-line no-console */
+		console.log(`API démarré sur le port \x1b[36m\x1b[1m${port}\x1b[0m`);
+	});
+}
+
+start().catch((error) => {
+	console.error("Échec du démarrage du serveur :", error);
+	process.exit(1);
+});
