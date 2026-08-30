@@ -1,10 +1,9 @@
 {
-  "name": "alex_specs",
+  "name": "@citadel/specs",
   "type": "module",
   "version": "0.0.0",
   "author": "Alexandre RICHARD",
   "license": "ISC",
-  "packageManager": "pnpm@10.15.1",
   "scripts": {
     "=== Lint & Tests ===": "",
     "lint": "eslint",

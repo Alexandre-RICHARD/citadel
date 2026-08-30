@@ -1,14 +1,13 @@
 {
-  "name": "alex-back",
+  "name": "@citadel/server",
   "type": "commonjs",
   "version": "0.0.0",
   "main": "src/index.ts",
   "author": "Alexandre RICHARD",
   "license": "ISC",
-  "packageManager": "pnpm@10.15.0",
   "scripts": {
     "=== Dev ===": "",
-    "start": "tsx watch ./src/index.ts",
+    "dev": "tsx watch ./src/index.ts",
     "init-db": "bash ./scripts/init_db.sh",
     "migrate": "bash ./scripts/flyway_local.sh",
     "=== Lint & Tests ===": "",
@@ -21,13 +20,13 @@
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once",
     "=== Build & Production ===": "",
     "build": "node esbuild.config.mjs",
-    "build-start": "node ./build/build.server.js",
+    "start": "node ./build/build.server.js",
     "=== Packages ===": "",
     "install-dependencies": "pnpm i",
-    "update-dependencies": "pnpm update",
-    "update-submodules": "git submodule update --init --recursive"
+    "update-dependencies": "pnpm update"
   },
   "dependencies": {
+    "@citadel/specs": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
