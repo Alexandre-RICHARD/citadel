@@ -34,7 +34,7 @@ async function start() {
 
 	app.listen(port, () => {
 		/* eslint-disable-next-line no-console */
-		console.log(`API démarré sur le port \x1b[36m\x1b[1m${port}\x1b[0m`);
+		console.log(`API démarrée sur \x1b[36m\x1b[1mhttp://localhost:${port}/\x1b[0m`);
 	});
 }
 
