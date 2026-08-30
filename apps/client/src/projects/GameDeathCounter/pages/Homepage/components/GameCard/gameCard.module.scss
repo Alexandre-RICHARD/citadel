@@ -1,0 +1,60 @@
+.gameCard {
+  background: vars.$panel;
+  border: 1px solid vars.$line;
+  border-radius: 14px;
+  overflow: hidden;
+
+  &Finished {
+    border-color: #c9a22759;
+  }
+
+  .gameHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .gameBody {
+    padding: 4px 14px 16px 44px;
+    border-top: 1px solid vars.$lineSoft;
+
+    .bossList {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .addBossTrigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      border: 1px dashed vars.$line;
+      background: transparent;
+      color: vars.$ash;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+
+      &:hover {
+        border-color: vars.$ember;
+        color: vars.$emberBright;
+      }
+    }
+  }
+}
+
+.addBossForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}

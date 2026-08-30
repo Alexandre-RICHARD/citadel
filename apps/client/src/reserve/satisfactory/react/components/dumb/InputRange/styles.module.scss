@@ -1,0 +1,53 @@
+.range_input_container {
+  display: flex;
+  width: 500px;
+  align-items: center;
+
+  .range_slider_container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    cursor: default;
+
+    .range_input {
+      $rangeTrackHeight: 0.8rem;
+      $rangeSliderSize: 2rem;
+
+      width: calc(100% - 2rem);
+      height: 2.4rem;
+      margin-left: 2rem;
+
+      &::-webkit-slider-runnable-track {
+        background-color: #fa9549;
+        border-radius: calc(0.5 * $rangeTrackHeight);
+        height: $rangeTrackHeight;
+      }
+
+      &::-webkit-slider-thumb {
+        appearance: none;
+        appearance: none;
+        background-color: #eeeeee;
+        border-radius: calc(0.5 * $rangeSliderSize);
+        height: $rangeSliderSize;
+        width: $rangeSliderSize;
+        margin-top: calc(-0.5 * $rangeSliderSize + $rangeTrackHeight / 2);
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      &:active::-webkit-slider-thumb {
+        background-color: #5f668c;
+      }
+    }
+
+    .range_slider_value {
+      position: absolute;
+      bottom: 1.6rem;
+      background-color: transparent;
+    }
+  }
+}

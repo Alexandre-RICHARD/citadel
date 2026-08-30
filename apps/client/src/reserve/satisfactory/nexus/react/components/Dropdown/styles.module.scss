@@ -1,0 +1,45 @@
+@use "../../../styles/index.scss";
+
+.dropdown {
+  // TODO T => Gérer le thème dans le design system avec les variantes etc
+  z-index: 10;
+  position: absolute;
+  background-color: #444444;
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  padding-block: 8px;
+  gap: 8px;
+
+  .dropdown_search_input {
+    width: 100%;
+    padding: 5px 10px;
+    background-color: #d6d6d6;
+    color: black;
+  }
+
+  .select_item {
+    width: 100%;
+    padding: 4px 13px;
+
+    &:focus,
+    &:hover {
+      background-color: #252525;
+    }
+
+    &:focus {
+      background-color: #1f1818;
+    }
+
+    &.selected_item {
+      background-color: #1b2777;
+
+      &:focus,
+      &:hover {
+        background-color: #111949;
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+.text_input_container {
+  width: 300px;
+  display: flex;
+  align-items: center;
+
+  .text_input {
+    background-color: #dedfe8;
+    padding: 0.4rem 0.8rem;
+    margin-left: 0.8rem;
+    border-radius: 0.4rem;
+    color: #252837;
+    width: 150px;
+  }
+}

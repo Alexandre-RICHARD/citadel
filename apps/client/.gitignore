@@ -1,0 +1,9 @@
+# Folder
+.vscode/
+build
+node_modules/
+report/
+
+# Files
+.env
+tsBuildInfo.json
