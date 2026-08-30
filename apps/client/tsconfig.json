@@ -1,0 +1,61 @@
+{
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"allowJs": false,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"exactOptionalPropertyTypes": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"jsx": "react-jsx",
+		"module": "esnext",
+		"moduleDetection": "force",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"noUncheckedSideEffectImports": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "esnext",
+		"tsBuildInfoFile": "tsBuildInfo.json",
+		"useDefineForClassFields": true,
+		"verbatimModuleSyntax": true,
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext"
+		],
+		"types": [
+			"vite/client"
+		],
+		"paths": {
+			"@/*": [
+				"./src/*"
+			],
+			"@styles/*": [
+				"./src/styles/*"
+			],
+			"@specs/*": [
+				"./alex-specs/src/*"
+			]
+		}
+	},
+	"include": [
+		"src",
+		"alex-specs/src",
+		"vite.config.ts",
+		"vitest.config.ts",
+		"vitest.setup.ts",
+		"**/*.d.ts"
+	],
+	"exclude": [
+		"build",
+		"node_modules",
+		"report",
+		"src/reserve" // TODO 
+	]
+}

@@ -1,0 +1,9 @@
+.inputCheckboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  .inputCheckbox {
+    margin-inline: 0.8rem;
+  }
+}

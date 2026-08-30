@@ -1,0 +1,122 @@
+import React, { useMemo, useState } from "react";
+
+import { EndpointEnum } from "../../../enums/endpoint.enum";
+import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
+import type { ExtractorDto } from "../../../types/satisfactory/apis/dataTransferObject/extractorDto.type";
+import type { FactoryDto } from "../../../types/satisfactory/apis/dataTransferObject/factoryDto.type";
+import type { GeneratorDto } from "../../../types/satisfactory/apis/dataTransferObject/generatorsDto.type";
+import type { ExtractorFm } from "../../../types/satisfactory/apis/frontModel/extractorFm.type";
+import type { FactoryFm } from "../../../types/satisfactory/apis/frontModel/factoryFm.type";
+import type { GeneratorFm } from "../../../types/satisfactory/apis/frontModel/generatorsFm.type";
+import { useAutoRefetch } from "../../hooks/useAutoRefetch";
+import styles from "./frmAllMachine.module.scss";
+
+export function FRMAllMachines(): React.JSX.Element {
+	const [onlyNonFullEfficent, setOnlyNonFullEfficent] = useState(false);
+
+	const { data: extractors } = useAutoRefetch<ExtractorDto[], ExtractorFm[]>(
+		EndpointEnum.EXTRACTOR,
+	);
+	const { data: factories } = useAutoRefetch<FactoryDto[], FactoryFm[]>(
+		EndpointEnum.FACTORY,
+	);
+	const { data: generators } = useAutoRefetch<GeneratorDto[], GeneratorFm[]>(
+		EndpointEnum.GENERATOR,
+	);
+
+	const allData = useMemo(
+		() => [...(extractors ?? []), ...(factories ?? []), ...(generators ?? [])],
+		[extractors, factories, generators],
+	);
+
+	const filteredData = useMemo(() => {
+		return allData.filter((oneMachine) => {
+			const efficientFilter = (): boolean => {
+				if (!onlyNonFullEfficent) return true;
+				if ("powerConsumption" in oneMachine)
+					return oneMachine.efficiency !== 100;
+				if ("powerProduction" in oneMachine) return !oneMachine.isAtFullSpeed;
+				return false;
+			};
+			return !!efficientFilter();
+		});
+	}, [allData, onlyNonFullEfficent]);
+
+	return (
+		<div>
+			<div className={styles.machinesContainer}>
+				<label
+					className={styles.nonEfficientFilterBox}
+					htmlFor="onlyNonFullEfficentCheckbox"
+				>
+					Uniquement les non efficient
+					<input
+						checked={onlyNonFullEfficent}
+						id="onlyNonFullEfficentCheckbox"
+						className={styles.input}
+						type="checkbox"
+						onClick={() => setOnlyNonFullEfficent((prev) => !prev)}
+					/>
+				</label>
+			</div>
+			<table className={styles.machineTable}>
+				<thead className={styles.tableHeader}>
+					<tr>
+						<th>Name</th>
+						<th>Overclocking</th>
+						<th>Efficiency</th>
+						<th>Power Consumption</th>
+						<th>Power Production</th>
+						<th>Location</th>
+					</tr>
+				</thead>
+				<tbody className={styles.tableBody}>
+					{filteredData.map((oneMachine) => {
+						if ("powerConsumption" in oneMachine) {
+							return (
+								<tr key={oneMachine.id}>
+									<td className={styles.textAlign}>{oneMachine.name}</td>
+									<td className={styles.textAlign}>
+										{roundNumber(oneMachine.overclocking, 2)} %
+									</td>
+									<td className={styles.textAlign}>
+										{roundNumber(oneMachine.efficiency, 2)} %
+									</td>
+									<td className={styles.textAlign}>
+										{roundNumber(oneMachine.powerConsumption, 2)} Mw
+									</td>
+									<td className={styles.textAlign}>N/A</td>
+									<td
+										className={styles.textAlign}
+									>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
+								</tr>
+							);
+						}
+
+						if ("powerProduction" in oneMachine) {
+							return (
+								<tr key={oneMachine.id}>
+									<td className={styles.textAlign}>{oneMachine.name}</td>
+									<td className={styles.textAlign}>
+										{roundNumber(oneMachine.overclocking, 2)} %
+									</td>
+									<td className={styles.textAlign}>
+										{oneMachine.isAtFullSpeed ? "100 %" : "0 %"}
+									</td>
+									<td className={styles.textAlign}>N/A</td>
+									<td className={styles.textAlign}>
+										{roundNumber(oneMachine.powerProduction, 2)} Mw
+									</td>
+									<td
+										className={styles.textAlign}
+									>{`${roundNumber(oneMachine.location.x / 100, 2)}, ${roundNumber(oneMachine.location.y / 100, 2)}`}</td>
+								</tr>
+							);
+						}
+						return null;
+					})}
+				</tbody>
+			</table>
+		</div>
+	);
+}

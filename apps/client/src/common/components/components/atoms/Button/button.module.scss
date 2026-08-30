@@ -1,0 +1,10 @@
+.button {
+  width: fit-content;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+
+  &.fullWidth {
+    width: 100%;
+  }
+}

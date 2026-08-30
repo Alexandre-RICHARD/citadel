@@ -1,0 +1,53 @@
+:root {
+  // Base colors
+  --theme-colorBlack: #0c0c0c;
+  --theme-colorWhite: #fefefe;
+  // Primary
+  --theme-colorPrimaryContent: #fefefe;
+  --theme-colorPrimaryLight: #d8e6f8;
+  --theme-colorPrimaryHue: #327fdc;
+  --theme-colorPrimaryDark: #10325b;
+  // Secondary
+  --theme-colorSecondaryContent: #fefefe;
+  --theme-colorSecondaryLight: #e3e3e3;
+  --theme-colorSecondaryHue: #787878;
+  --theme-colorSecondaryDark: #262626;
+  // Neutral
+  --theme-colorNeutralContent: #0c0c0c;
+  --theme-colorNeutralLight: #e3e3e3;
+  --theme-colorNeutralHue: #787878;
+  --theme-colorNeutralDark: #262626;
+  // Destructive
+  --theme-colorDestructiveContent: #fefefe;
+  --theme-colorDestructiveLight: #ffeceb;
+  --theme-colorDestructiveHue: #ff4136;
+  --theme-colorDestructiveDark: #ff554d;
+  // Constructive
+  --theme-colorConstructiveContent: #fefefe;
+  --theme-colorConstructiveLight: #e3f6d5;
+  --theme-colorConstructiveHue: #72d12e;
+  --theme-colorConstructiveDark: #2e5412;
+  // Accent
+  --theme-colorAccentContent: #fefefe;
+  --theme-colorAccentLight: #d6e8ff;
+  --theme-colorAccentHue: #388eff;
+  --theme-colorAccentDark: #001b3d;
+  // Fonts
+  --theme-primaryFontFamily: "Arial", sans-serif;
+  --theme-secondaryFontFamily: "Arial", sans-serif;
+  // Font size
+  --theme-sizeXXS: 10px;
+  --theme-sizeXS: 12px;
+  --theme-sizeS: 14px;
+  --theme-sizeM: 16px;
+  --theme-sizeL: 20px;
+  --theme-sizeXL: 24px;
+  // Padding and marging size
+  --theme-spaceXXS: 2px;
+  --theme-spaceXS: 4px;
+  --theme-spaceS: 8px;
+  --theme-spaceM: 12px;
+  --theme-spaceL: 16px;
+  --theme-spaceXL: 20px;
+  --theme-spaceXXL: 24px;
+}

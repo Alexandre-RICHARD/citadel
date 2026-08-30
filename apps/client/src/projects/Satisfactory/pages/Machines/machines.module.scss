@@ -1,0 +1,45 @@
+.machinesContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem;
+
+  .inputCheckboxContainer {
+    width: fit-content;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    .inputCheckbox {
+      color: #6a7282;
+      margin-inline: 1rem;
+    }
+  }
+
+  .machinesTable {
+    width: 100%;
+
+    .tableHeader {
+      position: sticky;
+      top: 0;
+      background-color: white;
+    }
+
+    .tableBody {
+      max-height: 800px;
+      overflow-y: auto;
+
+      .locationPingButton {
+        color: blue;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
+    th,
+    td {
+      margin: 0.2rem 0.5rem;
+      padding: 0.2rem 0.5rem;
+    }
+  }
+}

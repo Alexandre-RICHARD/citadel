@@ -1,0 +1,12 @@
+.inputTextContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  .inputText {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 0.1rem solid black;
+    font-size: 1.6rem;
+  }
+}
