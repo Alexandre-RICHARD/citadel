@@ -5,6 +5,7 @@ import type { GameSummaryBean } from "../bean/gameSummaryBean.ts";
 import { gameMapper } from "../mapper/game.mapper.ts";
 import { createGameQuery } from "../query/game/createGame.query.ts";
 import { deleteGameQuery } from "../query/game/deleteGame.query.ts";
+import { getAllGamesQuery } from "../query/game/getAllGamesQuery.ts";
 import { getGameByIdQuery } from "../query/game/getGameById.query.ts";
 
 export class GameService {
@@ -12,6 +13,12 @@ export class GameService {
 		const gameEntity = await getGameByIdQuery(id);
 		if (gameEntity === null) return null;
 		return gameMapper.fromGameEntityToGameSummaryBean(gameEntity);
+	}
+
+	async getAllGames(): Promise<GameSummaryBean[]> {
+		return gameMapper.fromGameEntityListToGameSummaryBeanList(
+			await getAllGamesQuery(),
+		);
 	}
 
 	async createGame(createGameBean: CreateGameBean): Promise<GameSummaryBean> {

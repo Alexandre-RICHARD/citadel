@@ -8,23 +8,23 @@ import {
 } from "sequelize";
 
 import { sequelize } from "../../../sequelize.ts";
-import type { Boss } from "./Boss.ts";
+import { Boss } from "./Boss.ts";
 
-export class Game extends Model<
-	InferAttributes<Game>,
-	InferCreationAttributes<Game>
+export class Death extends Model<
+	InferAttributes<Death>,
+	InferCreationAttributes<Death>
 > {
 	declare id: CreationOptional<number>;
-	declare name: string;
-	declare endedAt: CreationOptional<Date | null>;
+	declare bossId: number;
+	declare date: Date;
+	declare comment: CreationOptional<string | null>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 
-	// Inclu uniquement si la requête utilise `include: { model: Boss }`
-	declare bosses?: NonAttribute<Boss[]>;
+	declare boss?: NonAttribute<Boss>;
 }
 
-Game.init(
+Death.init(
 	{
 		id: {
 			type: DataTypes.INTEGER,
@@ -33,14 +33,19 @@ Game.init(
 			autoIncrement: true,
 			allowNull: false,
 		},
-		name: {
-			type: DataTypes.STRING,
-			field: "name",
+		bossId: {
+			type: DataTypes.INTEGER,
+			field: "boss_id",
 			allowNull: false,
 		},
-		endedAt: {
+		date: {
 			type: DataTypes.DATE,
-			field: "ended_at",
+			field: "date",
+			allowNull: false,
+		},
+		comment: {
+			type: DataTypes.STRING(1000),
+			field: "comment",
 			allowNull: true,
 		},
 		createdAt: {
@@ -56,8 +61,11 @@ Game.init(
 	},
 	{
 		sequelize,
-		tableName: "game",
-		modelName: "Game",
+		tableName: "death",
+		modelName: "Death",
 		timestamps: true,
 	},
 );
+
+Boss.hasMany(Death, { foreignKey: "bossId", as: "deaths" });
+Death.belongsTo(Boss, { foreignKey: "bossId", as: "boss" });

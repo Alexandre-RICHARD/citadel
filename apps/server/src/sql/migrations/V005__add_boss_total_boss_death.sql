@@ -1,0 +1,2 @@
+ALTER TABLE boss
+    ADD COLUMN total_death INT NOT NULL DEFAULT 0;

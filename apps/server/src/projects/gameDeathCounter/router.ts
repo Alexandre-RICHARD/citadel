@@ -12,6 +12,8 @@ const expressRouter = ExpressRouter();
 const typedRouter =
 	createTypedExpressRouter<GameDeathCounterEndpointRegistry>(expressRouter);
 
+typedRouter.GET("/gameDeathCounter/games", gameController.getAll);
+
 typedRouter.POST(
 	"/gameDeathCounter/games",
 	gameController.create,

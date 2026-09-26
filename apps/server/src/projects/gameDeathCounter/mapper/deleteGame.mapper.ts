@@ -6,8 +6,9 @@ export const deleteGameMapper = {
 	fromDeleteGameDtoToDeleteGameBean: (
 		deleteGamePathParamDto: DeleteGamePathParamDto,
 	): DeleteGameBean => {
-		return {
+		const deleteGameBean = {
 			id: deleteGamePathParamDto.id,
 		};
+		return deleteGameBean;
 	},
 };
