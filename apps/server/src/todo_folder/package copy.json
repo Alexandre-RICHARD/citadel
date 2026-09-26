@@ -29,16 +29,9 @@
         "@types/node": "^22.15.29",
         "autoprefixer": "^10.4.21",
         "eslint": "^8.57.1",
-        "eslint-config-prettier": "^9.1.0",
-        "eslint-plugin-jsx-a11y": "^6.10.2",
-        "eslint-plugin-prettier": "^5.4.1",
-        "eslint-plugin-promise": "^7.2.1",
-        "eslint-plugin-simple-import-sort": "^12.1.1",
         "kill-port": "^2.0.1",
         "nodemon": "^3.1.10",
-        "prettier": "^3.5.3",
         "sqlite3": "^5.1.7",
-        "typescript-eslint": "^8.33.1",
         "vitest": "^3.2.1"
     }
 }

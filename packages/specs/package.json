@@ -16,12 +16,7 @@
     "@citadel/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-plugin-prettier": "catalog:",
-    "eslint-plugin-simple-import-sort": "catalog:",
     "globals": "catalog:",
-    "prettier": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript": "catalog:"
   }
 }
