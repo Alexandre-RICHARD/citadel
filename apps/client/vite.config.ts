@@ -1,4 +1,6 @@
+// eslint-disable-next-line import-x/no-nodejs-modules
 import { existsSync } from "node:fs";
+// eslint-disable-next-line import-x/no-nodejs-modules
 import path from "node:path";
 
 import react from "@vitejs/plugin-react-swc";
