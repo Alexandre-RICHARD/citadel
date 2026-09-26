@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "allowJs": false,
+    "allowJs": true,
+    "checkJs": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "exactOptionalPropertyTypes": true,

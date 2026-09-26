@@ -31,6 +31,8 @@ export function asyncRequestHandler<Endpoint extends EndpointModel>(
 	return (req, res, next) => {
 		Promise.resolve(
 			fn(req, res as unknown as TypedResponse<ResponseMap<Endpoint>>, next),
+			// Recommandé par Express
+			// eslint-disable-next-line promise/no-callback-in-promise
 		).catch(next);
 	};
 }

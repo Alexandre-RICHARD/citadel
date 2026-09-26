@@ -9,9 +9,7 @@
 		],
 	},
 	"include": [
-		"src",
-		"**/*.d.ts",
-		"eslint.config.js",
+		"eslint.config.**js",
 	],
 	"exclude": [
 		"node_modules",

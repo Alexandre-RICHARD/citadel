@@ -14,11 +14,12 @@
     "vite.config.ts",
     "vitest.config.ts",
     "vitest.setup.ts",
+    "eslint.config.js",
   ],
   "exclude": [
     "build",
     "node_modules",
     "report",
-    "src/toDo" // TODO 
+    "src/todo_folder" // TODO 
   ],
 }
