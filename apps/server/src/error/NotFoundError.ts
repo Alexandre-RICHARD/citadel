@@ -2,6 +2,6 @@ import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatut
 
 import { AppError } from "./AppError.ts";
 
-export class DatabaseError extends AppError {
-	readonly statusCode = HttpStatutCodeErrorEnum.SERVER_ERROR;
+export class NotFoundError extends AppError {
+	readonly statusCode = HttpStatutCodeErrorEnum.NOT_FOUND;
 }

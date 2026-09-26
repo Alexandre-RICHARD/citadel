@@ -1,1 +1,1 @@
-export type PathParams = Record<string, string>;
+export type PathParams = Record<string, string | number>;

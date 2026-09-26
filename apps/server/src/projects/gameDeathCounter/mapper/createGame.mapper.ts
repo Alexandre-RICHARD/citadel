@@ -4,10 +4,10 @@ import type { CreateGameBean } from "../bean/createGameBean.ts";
 
 export const createGameMapper = {
 	fromCreateGameDtoToCreateGameBean: (
-		createGame: CreateGameBodyDto,
+		createGameBodyDto: CreateGameBodyDto,
 	): CreateGameBean => {
 		return {
-			name: createGame.name,
+			name: createGameBodyDto.name,
 		};
 	},
 };
