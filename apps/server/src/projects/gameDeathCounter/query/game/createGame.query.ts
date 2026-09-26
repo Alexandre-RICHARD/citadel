@@ -1,6 +1,5 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import { handleBaseError } from "../../../../error/handleBaseError.ts";
-import type { CreateGameBean } from "../../bean/createGameBean.ts";
+import type { CreateGameBean } from "../../bean/createGame.bean.ts";
 import { Game } from "../../models/Game.ts";
 
 export async function createGameQuery(
@@ -10,8 +9,7 @@ export async function createGameQuery(
 		return await Game.create({
 			name: createGameBean.name,
 		});
-	} catch (error) {
-		await handleBaseError(error);
+	} catch {
 		throw new DatabaseError("Failed to insert new game");
 	}
 }
