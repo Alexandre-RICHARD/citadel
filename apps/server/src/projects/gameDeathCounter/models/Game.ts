@@ -4,9 +4,11 @@ import {
 	type InferAttributes,
 	type InferCreationAttributes,
 	Model,
+	type NonAttribute,
 } from "sequelize";
 
 import { sequelize } from "../../../sequelize.ts";
+import type { Boss } from "./Boss.ts";
 
 export class Game extends Model<
 	InferAttributes<Game>,
@@ -14,35 +16,48 @@ export class Game extends Model<
 > {
 	declare id: CreationOptional<number>;
 	declare name: string;
-	declare startedAt: Date;
 	declare endedAt: CreationOptional<Date | null>;
+	declare createdAt: CreationOptional<Date>;
+	declare updatedAt: CreationOptional<Date>;
+
+	// Inclu uniquement si la requête utilise `include: { model: Boss }`
+	declare bosses?: NonAttribute<Boss[]>;
 }
 
 Game.init(
 	{
 		id: {
 			type: DataTypes.INTEGER,
+			field: "id",
 			primaryKey: true,
 			autoIncrement: true,
 			allowNull: false,
 		},
 		name: {
 			type: DataTypes.STRING,
-			allowNull: false,
-		},
-		startedAt: {
-			type: DataTypes.DATE,
+			field: "name",
 			allowNull: false,
 		},
 		endedAt: {
 			type: DataTypes.DATE,
+			field: "ended_at",
 			allowNull: true,
+		},
+		createdAt: {
+			type: DataTypes.DATE,
+			field: "created_at",
+			allowNull: false,
+		},
+		updatedAt: {
+			type: DataTypes.DATE,
+			field: "updated_at",
+			allowNull: false,
 		},
 	},
 	{
 		sequelize,
 		tableName: "game",
 		modelName: "Game",
-		timestamps: false,
+		timestamps: true,
 	},
 );

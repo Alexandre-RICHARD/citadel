@@ -1,4 +1,3 @@
-import { dateNow } from "../../../../common/date/dateNow.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { handleBaseError } from "../../../../error/handleBaseError.ts";
 import type { CreateGameBean } from "../../bean/createGameBean.ts";
@@ -10,7 +9,6 @@ export async function createGameQuery(
 	try {
 		return await Game.create({
 			name: createGameBean.name,
-			startedAt: dateNow(),
 		});
 	} catch (error) {
 		await handleBaseError(error);

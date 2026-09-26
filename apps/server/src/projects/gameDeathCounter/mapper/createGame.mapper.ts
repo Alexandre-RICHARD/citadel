@@ -6,8 +6,9 @@ export const createGameMapper = {
 	fromCreateGameDtoToCreateGameBean: (
 		createGameBodyDto: CreateGameBodyDto,
 	): CreateGameBean => {
-		return {
+		const createGameBean = {
 			name: createGameBodyDto.name,
 		};
+		return createGameBean;
 	},
 };
