@@ -1,4 +1,4 @@
-import type z from "zod";
+import type { z } from "zod";
 
 import type { createGameBodySchema } from "./createGameBody.schema.ts";
 

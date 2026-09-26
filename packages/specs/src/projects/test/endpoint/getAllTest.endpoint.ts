@@ -12,8 +12,7 @@ export interface GetAllTest extends EndpointModel {
 	};
 	response: {
 		status:
-			| HttpStatutCodeSuccessEnum.SUCCESS
-			| HttpStatutCodeSuccessEnum.NO_CONTENT;
+			HttpStatutCodeSuccessEnum.SUCCESS | HttpStatutCodeSuccessEnum.NO_CONTENT;
 		data: TestDto[];
 	};
 	error: {
