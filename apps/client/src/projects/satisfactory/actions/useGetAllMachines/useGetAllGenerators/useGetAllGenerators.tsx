@@ -1,10 +1,10 @@
 import type { GetAllGenerators } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllGenerators.endpoint";
-import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch.ts";
-import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay.ts";
-import { generatorsDtoToFmMapper } from "./generatorsDtoToFm.mapper.ts";
+import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch";
+import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay";
+import { generatorsDtoToFmMapper } from "./generatorsDtoToFm.mapper";
 
 export function useGetAllGenerators() {
 	const {

@@ -1,8 +1,8 @@
 import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/factory.dto";
 
-import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm.ts";
-import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum.ts";
-import type { FactoryFm } from "./factoryFm.type.ts";
+import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm";
+import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
+import type { FactoryFm } from "./factoryFm.type";
 
 export const factoryDtoToFmMapper = (dto: FactoryDto[]): FactoryFm[] => {
 	return dto.map((factoryDto) => {

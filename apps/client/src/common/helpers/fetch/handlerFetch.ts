@@ -1,9 +1,9 @@
 import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type";
-import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { ApiError } from "../../error/ApiError.ts";
-import { buildQueryString } from "./buildQueryParamsUrl.ts";
-import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl.ts";
+import { ApiError } from "../../error/ApiError";
+import { buildQueryString } from "./buildQueryParamsUrl";
+import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
 
 export async function fetchHandler<Spec extends EndpointModel>(
 	args: Spec["request"],

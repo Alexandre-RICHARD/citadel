@@ -1,6 +1,6 @@
 import type { ChangeEvent } from "react";
 
-import { generateUuid } from "../../../../helpers/uuid/generateUuid.ts";
+import { generateUuid } from "../../../../helpers/uuid/generateUuid";
 import styles from "./checkboxInput.module.scss";
 
 type Props = {

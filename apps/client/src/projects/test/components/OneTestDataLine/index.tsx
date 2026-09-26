@@ -1,9 +1,9 @@
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { NavLink } from "react-router";
 
-import { Button } from "../../../../common/components/components/atoms/Button/index.tsx";
-import { formatDate } from "../../../../common/helpers/date/formatDate.ts";
-import { LanguageEnum } from "../../../../common/language/language.enum.ts";
+import { Button } from "../../../../common/components/components/atoms/Button";
+import { formatDate } from "../../../../common/helpers/date/formatDate";
+import { LanguageEnum } from "../../../../common/language/language.enum";
 import styles from "./oneTestDataLine.module.scss";
 
 type Props = {

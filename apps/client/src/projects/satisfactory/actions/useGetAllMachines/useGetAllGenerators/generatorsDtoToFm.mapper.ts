@@ -1,8 +1,8 @@
 import type { GeneratorDto } from "@citadel/specs/src/projects/satisfactory/dto/generator.dto";
 
-import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm.ts";
-import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum.ts";
-import type { GeneratorFm } from "./generatorFm.type.ts";
+import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm";
+import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
+import type { GeneratorFm } from "./generatorFm.type";
 
 export const generatorsDtoToFmMapper = (dto: GeneratorDto[]): GeneratorFm[] => {
 	return dto.map((generatorDto) => {

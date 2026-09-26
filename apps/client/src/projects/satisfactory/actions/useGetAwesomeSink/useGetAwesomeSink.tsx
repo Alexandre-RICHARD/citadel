@@ -1,6 +1,6 @@
-import { awesomeSinkDtoToFmMapper } from "./awesomeSinkDtoToFm.mapper.ts";
-import { useGetExplorationSink } from "./useGetExplorationSink.tsx";
-import { useGetResourceSink } from "./useGetResourceSink.tsx";
+import { awesomeSinkDtoToFmMapper } from "./awesomeSinkDtoToFm.mapper";
+import { useGetExplorationSink } from "./useGetExplorationSink";
+import { useGetResourceSink } from "./useGetResourceSink";
 
 export function useGetAwesomeSink() {
 	const { data: explorationSinkDto } = useGetExplorationSink();

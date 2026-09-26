@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 
-import { IconsList } from "./iconsList.dictionnary.ts";
+import { IconsList } from "./iconsList.dictionnary";
 import type { IconTokenEnum } from "./iconToken.enum";
 
 type PropsType = {

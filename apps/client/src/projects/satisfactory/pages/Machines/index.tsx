@@ -1,12 +1,12 @@
-import { writeCountdown } from "../../../../common/helpers/date/writeCountdown.ts";
-import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces.ts";
-import { roundNumber } from "../../../../common/helpers/number/roundNumber.ts";
-import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines.tsx";
-import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type.ts";
-import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink.tsx";
-import { MachineLine } from "./MachineLine.tsx";
+import { writeCountdown } from "../../../../common/helpers/date/writeCountdown";
+import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces";
+import { roundNumber } from "../../../../common/helpers/number/roundNumber";
+import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines";
+import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
+import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink";
+import { MachineLine } from "./MachineLine";
 import styles from "./machines.module.scss";
-import { useMachines } from "./useMachines.tsx";
+import { useMachines } from "./useMachines";
 
 function getCouponLevelCost(level: number): number {
 	const ceil = Math.ceil(level / 3) - 1;

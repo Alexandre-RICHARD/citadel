@@ -1,10 +1,10 @@
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { useState } from "react";
 
-import { CheckboxInput } from "../../../../common/components/components/inputs/CheckboxInput/index.tsx";
-import { TextInput } from "../../../../common/components/components/inputs/TextInput/index.tsx";
-import { useUpdateTest } from "../../actions/useUpdateTest.tsx";
-import { TestDataForm } from "./TestDataForm.tsx";
+import { CheckboxInput } from "../../../../common/components/components/inputs/CheckboxInput";
+import { TextInput } from "../../../../common/components/components/inputs/TextInput";
+import { useUpdateTest } from "../../actions/useUpdateTest";
+import { TestDataForm } from "./TestDataForm";
 
 type Props = {
 	selectedTestData: TestDto;

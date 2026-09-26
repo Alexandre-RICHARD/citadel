@@ -1,9 +1,9 @@
 import type { GetExplorationSink } from "@citadel/specs/src/projects/satisfactory/endpoint/getExplorationSink.endpoint";
-import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../../common/helpers/fetch/handlerFetch.ts";
-import { loopRequestDelay } from "../../dictionnaries/loopRequestDelay.ts";
+import { fetchHandler } from "../../../../common/helpers/fetch/handlerFetch";
+import { loopRequestDelay } from "../../dictionnaries/loopRequestDelay";
 
 export function useGetExplorationSink() {
 	const { data, error, isPending, isFetching, isRefetching, refetch } =
