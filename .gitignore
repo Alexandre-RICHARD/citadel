@@ -1,24 +1,25 @@
 
 # === Globals ===
-/node_modules/
+node_modules/
+.vscode
 
 # === Client ===
 # Folder
-/apps/client/.vscode/
-/apps/client/build
-/apps/client/node_modules/
-/apps/client/report/
+apps/client/.vscode/
+apps/client/build
+apps/client/node_modules/
+apps/client/report/
 
 # Files
-/apps/client/.env
-/apps/client/tsBuildInfo.json
+apps/client/.env
+apps/client/tsBuildInfo.json
 
 # === Server ===
 # Folders
-/apps/server/.vscode/
-/apps/server/build/
-/apps/server/node_modules/
-/apps/server/report/
+apps/server/.vscode/
+apps/server/build/
+apps/server/node_modules/
+apps/server/report/
 
 # Env Files
-/apps/server/.env
+apps/server/.env

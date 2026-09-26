@@ -23,7 +23,6 @@
     "build": "pnpm --filter \"./apps/*\" build",
     "=== Packages ===": "",
     "install-dependencies": "pnpm i",
-    "update-dep-minor": "pnpm update",
-    "update-dep-major": "pnpm update --interactive --latest"
+    "update": "pnpm update --recursive --interactive --latest"
   }
 }
