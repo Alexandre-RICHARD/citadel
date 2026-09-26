@@ -6,6 +6,11 @@
     "./server": "./eslint.config.server.js",
     "./specs": "./eslint.config.specs.js"
   },
+  "scripts": {
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix"
+  },
   "devDependencies": {
     "@citadel/typescript-config": "workspace:*",
     "@eslint/js": "catalog:",
@@ -18,6 +23,7 @@
     "eslint-config-airbnb-base": "catalog:",
     "eslint-config-airbnb-typescript": "catalog:",
     "eslint-config-prettier": "catalog:",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "catalog:",
     "eslint-plugin-import-x": "catalog:",
     "eslint-plugin-jsx-a11y": "catalog:",

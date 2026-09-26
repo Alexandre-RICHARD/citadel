@@ -26,11 +26,12 @@
 		"vite.config.ts",
 		"vitest.config.ts",
 		"vitest.setup.ts",
+		"eslint.config.js",
 	],
 	"exclude": [
 		"build",
 		"node_modules",
 		"report",
-		"src/reserve" // TODO 
+		"src/todo_folder" // TODO 
 	]
 }

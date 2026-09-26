@@ -1,5 +1,3 @@
-import clientConfig from '@citadel/eslint-config/client';
+import clientConfig from "@citadel/eslint-config/client";
 
-export default [
-  ...clientConfig,
-];
+export default [...clientConfig];

@@ -17,6 +17,8 @@ export function requestValidator(schemas: RequestSchemas) {
 		if (schemas.params) {
 			const result = schemas.params.safeParse(request.params);
 			if (result.success) {
+				// Manière correcte de gérer les requêtes avec Express
+				// eslint-disable-next-line no-param-reassign
 				request.params = result.data as Record<string, string>;
 			} else {
 				combinedError.issues.push(...result.error.issues);
@@ -27,6 +29,8 @@ export function requestValidator(schemas: RequestSchemas) {
 			const result = schemas.query.safeParse(request.query);
 			if (result.success) {
 				Object.keys(request.query).forEach((key) => {
+					// Manière correcte de gérer les requêtes avec Express
+					// eslint-disable-next-line no-param-reassign
 					delete (request.query as Record<string, unknown>)[key];
 				});
 
@@ -39,6 +43,8 @@ export function requestValidator(schemas: RequestSchemas) {
 		if (schemas.body) {
 			const result = schemas.body.safeParse(request.body);
 			if (result.success) {
+				// Manière correcte de gérer les requêtes avec Express
+				// eslint-disable-next-line no-param-reassign
 				request.body = result.data;
 			} else {
 				combinedError.issues.push(...result.error.issues);
