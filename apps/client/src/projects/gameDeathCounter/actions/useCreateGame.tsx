@@ -3,7 +3,7 @@ import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/en
 import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 
-import type { ApiError } from "../../../common/error/ApiError";
+import type { ApiError } from "../../../common/error/ApiError.ts";
 import { useApiMutation } from "../../../configuration/useApiMutation.tsx";
 
 type Props = {

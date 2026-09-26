@@ -2,7 +2,7 @@ import type { ExtractorDto } from "@citadel/specs/src/projects/satisfactory/dto/
 
 import { enumDtoToFmMapper } from "../../../../../common/helpers/enum/enumDtoToFm.ts";
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum.ts";
-import type { ExtractorFm } from "./extractorFm.type";
+import type { ExtractorFm } from "./extractorFm.type.ts";
 
 export const extractorsDtoToFmMapper = (dto: ExtractorDto[]): ExtractorFm[] => {
 	return dto.map((extractorDto) => {

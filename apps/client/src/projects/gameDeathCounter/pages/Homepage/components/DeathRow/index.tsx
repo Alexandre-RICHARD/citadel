@@ -4,7 +4,7 @@ import { useState } from "react";
 import { formatDateTime } from "../../../../../../common/helpers/date/formatDateTime.ts";
 import { toDateInputValue } from "../../../../../../common/helpers/date/toDateInputValue.ts";
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Death } from "../../game.type";
+import type { Death } from "../../game.type.ts";
 import { IconButton } from "../IconButton/index.tsx";
 import styles from "./deathRow.module.scss";
 

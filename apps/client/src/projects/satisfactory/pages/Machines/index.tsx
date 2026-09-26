@@ -2,7 +2,7 @@ import { writeCountdown } from "../../../../common/helpers/date/writeCountdown.t
 import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces.ts";
 import { roundNumber } from "../../../../common/helpers/number/roundNumber.ts";
 import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines.tsx";
-import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
+import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type.ts";
 import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink.tsx";
 import { MachineLine } from "./MachineLine.tsx";
 import styles from "./machines.module.scss";
