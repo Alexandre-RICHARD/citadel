@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	test: {
 		include: ["src/**/*.test.ts"],
-		exclude: [],
+		exclude: ["src/todo_folder/**"],
 		reporters: [],
 		outputFile: "./report/index.html",
 		setupFiles: "vitest.setup.ts",

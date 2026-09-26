@@ -37,17 +37,10 @@
     "@vitest/ui": "catalog:",
     "esbuild": "^0.28.2",
     "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-plugin-prettier": "catalog:",
-    "eslint-plugin-promise": "catalog:",
-    "eslint-plugin-simple-import-sort": "catalog:",
-    "eslint-plugin-vitest": "0.5.4",
     "globals": "catalog:",
-    "prettier": "catalog:",
     "sequelize-cli": "^6.6.3",
     "tsx": "^4.23.15",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   }

@@ -17,12 +17,12 @@
     "check-types": "pnpm -r check-types",
     "unit-test-once": "pnpm -r unit-test-once",
     "unit-test-watch": "pnpm -r unit-test-watch",
-    "unit-test-report": "pnpm -r unit-test-report",
     "validate-all": "pnpm check-types && pnpm lint && pnpm unit-test-once && pnpm build",
     "=== Build & Production ===": "",
     "build": "pnpm --filter \"./apps/*\" build",
     "=== Packages ===": "",
     "install-dependencies": "pnpm i",
-    "update": "pnpm update --recursive --interactive --latest"
+    "update-minor": "pnpm update --recursive --interactive",
+    "update-major": "pnpm update --recursive --interactive --latest"
   }
 }
