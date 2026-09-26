@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Boss } from "../../game.type";
+import type { Boss } from "../../game.type.ts";
 import { BlockTitle } from "../BlockTitle/index.tsx";
 import { Count } from "../Count/index.tsx";
 import { DeathRow } from "../DeathRow/index.tsx";

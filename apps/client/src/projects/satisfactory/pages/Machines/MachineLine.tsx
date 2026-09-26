@@ -1,5 +1,5 @@
 import { roundNumber } from "../../../../common/helpers/number/roundNumber.ts";
-import type { DisplayableMachines } from "./DisplayableMachines.type";
+import type { DisplayableMachines } from "./DisplayableMachines.type.ts";
 import styles from "./machines.module.scss";
 
 type Props = {

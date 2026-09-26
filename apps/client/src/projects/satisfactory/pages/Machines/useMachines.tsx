@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import type { ExtractorFm } from "../../actions/useGetAllMachines/useGetAllExtractors/extractorFm.type";
-import type { GeneratorFm } from "../../actions/useGetAllMachines/useGetAllGenerators/generatorFm.type";
+import type { ExtractorFm } from "../../actions/useGetAllMachines/useGetAllExtractors/extractorFm.type.ts";
+import type { GeneratorFm } from "../../actions/useGetAllMachines/useGetAllGenerators/generatorFm.type.ts";
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum.ts";
-import type { DisplayableMachines } from "./DisplayableMachines.type";
+import type { DisplayableMachines } from "./DisplayableMachines.type.ts";
 
 type Args = {
 	allMachines: (ExtractorFm | GeneratorFm)[];

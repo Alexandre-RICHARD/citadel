@@ -11,7 +11,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Game } from "../../game.type";
+import type { Game } from "../../game.type.ts";
 import { BlockTitle } from "../BlockTitle/index.tsx";
 import { BossRow } from "../BossRow/index.tsx";
 import { Count } from "../Count/index.tsx";
