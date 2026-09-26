@@ -11,12 +11,6 @@ const restrictedZones = projectsName.flatMap((targetProject) =>
 );
 
 module.exports = {
-  root: true,
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
-  },
   ignorePatterns: [
     "node_modules",
     "report",
@@ -56,28 +50,6 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   rules: {
-    // Classic rules
-    "no-console": ["warn", { allow: ["error"] }],
-    "no-param-reassign": "error",
-
-    // Prettier rules
-    "prettier/prettier": [
-      "error",
-      {
-        printWidth: 80,
-        tabWidth: 2,
-        useTabs: true,
-        semi: true,
-        singleQuote: false,
-        quoteProps: "consistent",
-        trailingComma: "all",
-        bracketSpacing: true,
-        bracketSameLine: false,
-        arrowParens: "always",
-        endOfLine: "auto",
-        singleAttributePerLine: true,
-      },
-    ],
 
     // Import rules
     "import/no-extraneous-dependencies": "off",
@@ -103,17 +75,5 @@ module.exports = {
         zones: restrictedZones,
       },
     ],
-
-    // Typescript
-    "@typescript-eslint/consistent-type-imports": "error",
-    "@typescript-eslint/consistent-type-exports": "error",
-    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
-    "@typescript-eslint/no-use-before-define": "error",
-
-    // Disable old and depreciated rules
-    "@typescript-eslint/lines-between-class-members": "off",
-    "@typescript-eslint/no-throw-literal": "off",
-
-    "react/jsx-filename-extension": "off"
   },
 };

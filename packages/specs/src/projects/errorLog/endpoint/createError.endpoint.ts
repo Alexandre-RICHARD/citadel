@@ -3,7 +3,7 @@ import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
 
-export interface CreateErrorLog extends EndpointModel {
+export type CreateErrorLog = {
 	request: {
 		url: "/error/error";
 		method: HttpMethodEnum.POST;
@@ -22,4 +22,4 @@ export interface CreateErrorLog extends EndpointModel {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
 	};
-}
+} & EndpointModel;

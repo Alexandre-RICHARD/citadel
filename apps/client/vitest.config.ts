@@ -14,7 +14,7 @@ export default defineConfig({
 			enabled: false,
 			provider: "v8",
 			reporter: "html",
-			include: ["src/**/*.{ts,tsx,js,jsx}"],
+			include: ["src/**/*.{ts,tsx}"],
 			exclude: [
 				"src/**/*.type.ts",
 				"src/**/*.d.ts",

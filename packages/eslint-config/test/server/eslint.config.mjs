@@ -55,9 +55,10 @@ export default defineConfig([
 	globalIgnores([
 		"node_modules/**",
 		"alex-specs/**",
-		"src/reserve/**", // TODO
 		"build/**",
 		"report/**",
+		"toDo/**", // TODO Gérer le dossier todo
+		"src/reserve/**", // TODO
 	]),
 
 	// 2. TypeScript (Strict + Stylistique)
@@ -77,7 +78,7 @@ export default defineConfig([
 
 	// Plugins and rules
 	{
-		files: ["**/*.{js,jsx,ts,tsx}"],
+		files: ["**/*.{ts,tsx}"],
 		languageOptions: {
 			ecmaVersion: "latest",
 			sourceType: "module",
@@ -108,10 +109,10 @@ export default defineConfig([
 						["@", path.resolve("./src")],
 						["@styles", path.resolve("./src/styles")],
 					],
-					extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+					extensions: [".ts", ".tsx", ".json"],
 				},
 				node: {
-					extensions: [".ts", ".tsx", ".js", ".jsx"],
+					extensions: [".ts", ".tsx"],
 				},
 			},
 		},
