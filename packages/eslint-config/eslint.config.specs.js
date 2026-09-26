@@ -7,9 +7,9 @@ export default [
 	//
 	// Override
 	{
-		files: ["src/projects/**/*.ts"],
+		files: ["src/projects/**/*endpoint.ts"],
 		rules: {
-			"@typescript-eslint/consistent-type-definitions": ["off"],
+			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
 		},
 	},
 ];

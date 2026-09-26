@@ -148,28 +148,15 @@ export default defineConfig([
 		...tseslint.configs.disableTypeChecked,
 	},
 	{
-		files: ["vite.config.ts"],
+		files: ["vite.config.ts", "vitest.config.ts"],
 		rules: {
-			"import-x/no-nodejs-modules": "off",
+			"import-x/no-default-export": "off",
 		},
 	},
 	{
-		files: ["vitest-setup.ts"],
+		files: ["eslint.config.**js"],
 		rules: {
-			"@typescript-eslint/no-empty-function": "off",
-		},
-	},
-	{
-		files: ["src/middleware.ts", "src/infra/config/configApi.ts"],
-		rules: {
-			"no-param-reassign": "off",
-		},
-	},
-	{
-		files: ["src/vite-env.d.ts"],
-		rules: {
-			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-			"@typescript-eslint/no-empty-object-type": "off",
+			"import-x/no-default-export": "off",
 		},
 	},
 	// Configuration isolée pour VITEST
@@ -190,90 +177,6 @@ export default defineConfig([
 			"@typescript-eslint/no-empty-function": "off",
 			"promise/always-return": "off",
 			"promise/catch-or-return": "off",
-		},
-	},
-	{
-		files: ["vite.config.ts", "vitest.config.ts"],
-		rules: {
-			"import-x/no-default-export": "off",
-		},
-	},
-	{
-		files: ["eslint.config.**js"],
-		rules: {
-			"import-x/no-default-export": "off",
-		},
-	},
-	{
-		files: ["vitest-setup.ts"],
-		rules: {
-			"@typescript-eslint/no-empty-function": "off",
-		},
-	},
-	{
-		files: ["src/middleware.ts", "src/infra/config/configApi.ts"],
-		rules: {
-			"no-param-reassign": "off",
-		},
-	},
-	{
-		files: ["vite.config.ts"],
-		rules: {
-			"import-x/no-nodejs-modules": "off",
-		},
-	},
-	{
-		files: ["src/vite-env.d.ts"],
-		rules: {
-			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-			"@typescript-eslint/no-empty-object-type": "off",
-		},
-	},
-	{
-		files: ["vite.config.ts", "vitest.config.ts"],
-		rules: {
-			"import-x/no-default-export": "off",
-		},
-	},
-	// We want to work with zustand reducer without return (mutable state)
-	{
-		files: [
-			"src/store/utils/**",
-			"src/feature/auth/connectedUser/connectedUser.slice.ts",
-			"src/feature/notification/notification.slice.ts",
-		],
-		rules: {
-			"no-param-reassign": [
-				"error",
-				{
-					props: true,
-					ignorePropertyModificationsFor: ["state"],
-				},
-			],
-		},
-	},
-	{
-		files: ["src/common/helper/log/appropriateLog.ts"],
-		rules: {
-			"no-console": "off",
-		},
-	},
-	{
-		files: ["src/feature/auth/keycloak/initializeKeycloak.ts"],
-		rules: {
-			"no-param-reassign": "off",
-		},
-	},
-	{
-		files: ["**/*endpoint.ts"],
-		rules: {
-			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-		},
-	},
-	{
-		files: ["./src/specs.ts"],
-		rules: {
-			"import/no-unused-modules": "off",
 		},
 	},
 
