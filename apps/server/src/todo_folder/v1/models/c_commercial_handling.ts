@@ -1,8 +1,8 @@
 import { DataTypes, type ModelDefined } from "sequelize";
 
-import { database as db } from "../../database.ts";
-import type { CommercialHandlingModelAttributes } from "../types/models/c_commercial_handling.type.ts";
-import type { CommercialHandlingCreationAttributes } from "../types/modelsCreationAttributes/c_commercial_handling.sequelizeAttributes.type.ts";
+import { database as db } from "../../database";
+import type { CommercialHandlingModelAttributes } from "../types/models/c_commercial_handling.type";
+import type { CommercialHandlingCreationAttributes } from "../types/modelsCreationAttributes/c_commercial_handling.sequelizeAttributes.type";
 
 export const CommercialHandlingModel: ModelDefined<
   CommercialHandlingModelAttributes,

@@ -1,4 +1,4 @@
-import type { InternalMessagesModelAttributes } from "../models/i_internal_message.type.ts";
+import type { InternalMessagesModelAttributes } from "../models/i_internal_message.type";
 
 export type InternalMessagesCreationAttributes = Omit<
   InternalMessagesModelAttributes,

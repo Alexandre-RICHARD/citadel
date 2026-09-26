@@ -1,4 +1,4 @@
-import type { HasSpecificationsModelAttributes } from "../models/h_has_specifications.type.ts";
+import type { HasSpecificationsModelAttributes } from "../models/h_has_specifications.type";
 
 export type HasSpecificationsCreationAttributes = Omit<
   HasSpecificationsModelAttributes,

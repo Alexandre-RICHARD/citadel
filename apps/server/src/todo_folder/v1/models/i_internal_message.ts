@@ -1,9 +1,9 @@
 import { DataTypes, type ModelDefined } from "sequelize";
 
-import { database as db } from "../../database.ts";
-import type { InternalMessagesModelAttributes } from "../types/models/i_internal_message.type.ts";
-import type { InternalMessagesCreationAttributes } from "../types/modelsCreationAttributes/i_internal_message.sequelizeAttributes.type.ts";
-import { UsersModel } from "./u_user.ts";
+import { database as db } from "../../database";
+import type { InternalMessagesModelAttributes } from "../types/models/i_internal_message.type";
+import type { InternalMessagesCreationAttributes } from "../types/modelsCreationAttributes/i_internal_message.sequelizeAttributes.type";
+import { UsersModel } from "./u_user";
 
 export const InternalMessagesModel: ModelDefined<
   InternalMessagesModelAttributes,

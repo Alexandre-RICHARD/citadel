@@ -1,8 +1,8 @@
 import { DataTypes, type ModelDefined } from "sequelize";
 
-import { database as db } from "../../database.ts";
-import type { DeliveryModelAttributes } from "../types/models/d_delivery.type.ts";
-import type { DeliveryCreationAttributes } from "../types/modelsCreationAttributes/d_delivery.sequelizeAttributes.type.ts";
+import { database as db } from "../../database";
+import type { DeliveryModelAttributes } from "../types/models/d_delivery.type";
+import type { DeliveryCreationAttributes } from "../types/modelsCreationAttributes/d_delivery.sequelizeAttributes.type";
 
 export const DeliveryModel: ModelDefined<
   DeliveryModelAttributes,

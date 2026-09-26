@@ -1,4 +1,4 @@
-import type { ProductHasSpecificationModelAttributes } from "../models/p_product_has_specification.type.ts";
+import type { ProductHasSpecificationModelAttributes } from "../models/p_product_has_specification.type";
 
 export type ProductHasSpecificationCreationAttributes = Omit<
   ProductHasSpecificationModelAttributes,

@@ -1,4 +1,4 @@
-import type { DeliveryTourModelAttributes } from "../models/d_delivery_tour.type.ts";
+import type { DeliveryTourModelAttributes } from "../models/d_delivery_tour.type";
 
 export type DeliveryTourCreationAttributes = Omit<
   DeliveryTourModelAttributes,

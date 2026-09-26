@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 
-import { jwtDecoder } from "../../helpers/jwtDecoder.helper.ts";
-import { jwtGenerator } from "../../helpers/jwtGenerator.helper.ts";
-import { RoleEnum } from "../../v1/enum/role.enum.ts";
-import type { JWTCreate } from "../../v1/types/jwtCreate.type.ts";
+import { jwtDecoder } from "../../helpers/jwtDecoder.helper";
+import { jwtGenerator } from "../../helpers/jwtGenerator.helper";
+import { RoleEnum } from "../../v1/enum/role.enum";
+import type { JWTCreate } from "../../v1/types/jwtCreate.type";
 
 test("JWT encode/decode well", () => {
   const userData: JWTCreate = {

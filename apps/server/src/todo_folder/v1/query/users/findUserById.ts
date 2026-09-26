@@ -1,6 +1,6 @@
-import { UsersModel } from "../../models/u_user.ts";
-import type { FindUserByIdArgs } from "../../types/query/users/args/findUserById.args.type.ts";
-import type { FindUserByIdReturn } from "../../types/query/users/return/findUserById.return.type.ts";
+import { UsersModel } from "../../models/u_user";
+import type { FindUserByIdArgs } from "../../types/query/users/args/findUserById.args.type";
+import type { FindUserByIdReturn } from "../../types/query/users/return/findUserById.return.type";
 
 export const findUserById = async ({
   id,

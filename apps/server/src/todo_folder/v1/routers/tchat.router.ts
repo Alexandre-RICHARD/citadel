@@ -1,7 +1,7 @@
 import { Router as createRouter } from "express";
 
-import { asyncHandler } from "../../middlewares/asyncRequestHandler.ts";
-import { tchatController } from "../controllers/tchatController.ts";
+import { asyncHandler } from "../../middlewares/asyncRequestHandler";
+import { tchatController } from "../controllers/tchatController";
 
 export const tchatRouter = createRouter();
 

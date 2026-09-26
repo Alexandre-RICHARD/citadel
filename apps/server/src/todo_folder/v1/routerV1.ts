@@ -1,7 +1,7 @@
 import { Router as createRouter } from "express";
 
-import { tchatRouter } from "./routers/tchat.router.ts";
-import { usersRouter } from "./routers/users.router.ts";
+import { tchatRouter } from "./routers/tchat.router";
+import { usersRouter } from "./routers/users.router";
 
 export const routerV1 = createRouter();
 

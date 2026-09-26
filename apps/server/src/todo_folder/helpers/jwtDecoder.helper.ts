@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import type { JWTCustomPayload } from "../v1/types/jwtPayload.type.ts";
+import type { JWTCustomPayload } from "../v1/types/jwtPayload.type";
 
 export const jwtDecoder = (token: string): JWTCustomPayload | null => {
   const secretKey = process.env.JWT_SECRET_KEY;

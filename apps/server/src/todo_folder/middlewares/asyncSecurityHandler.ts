@@ -1,7 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 
-import { jwtDecoder } from "../helpers/jwtDecoder.helper.ts";
-import { jwtGenerator } from "../helpers/jwtGenerator.helper.ts";
+import { jwtDecoder } from "../helpers/jwtDecoder.helper";
+import { jwtGenerator } from "../helpers/jwtGenerator.helper";
 
 // Typage de la fonction asyncHandler avec prise en charge de la sécurité du JWT
 export const asyncSecurityHandler = <T>(

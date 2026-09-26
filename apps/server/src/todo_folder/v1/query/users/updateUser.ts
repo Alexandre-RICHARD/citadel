@@ -1,5 +1,5 @@
-import type { UpdateUserArgs } from "../../types/query/users/args/updateUser.args.type.ts";
-import type { UpdateUserReturn } from "../../types/query/users/return/updateUser.return.type.ts";
+import type { UpdateUserArgs } from "../../types/query/users/args/updateUser.args.type";
+import type { UpdateUserReturn } from "../../types/query/users/return/updateUser.return.type";
 
 export const updateUser = async ({
   user,
