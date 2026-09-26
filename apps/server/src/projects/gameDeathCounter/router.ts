@@ -1,4 +1,5 @@
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
+import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
 import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/specs.ts";
 import { Router as ExpressRouter } from "express";
 
@@ -15,6 +16,12 @@ typedRouter.POST(
 	"/gameDeathCounter/games",
 	gameController.create,
 	requestValidator({ body: createGameBodySchema }),
+);
+
+typedRouter.DELETE(
+	"/gameDeathCounter/games/:id",
+	gameController.delete,
+	requestValidator({ params: deleteGamePathParamSchema }),
 );
 
 export const gameDeathCounterRouter = expressRouter;

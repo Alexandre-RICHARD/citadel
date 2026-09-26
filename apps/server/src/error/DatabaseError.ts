@@ -3,5 +3,5 @@ import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatut
 import { AppError } from "./AppError.ts";
 
 export class DatabaseError extends AppError {
-	readonly statusCode = HttpStatutCodeErrorEnum.BAD_REQUEST;
+	readonly statusCode = HttpStatutCodeErrorEnum.SERVER_ERROR;
 }
