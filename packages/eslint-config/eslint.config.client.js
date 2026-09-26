@@ -1,34 +1,45 @@
+import { importX } from "eslint-plugin-import-x";
 import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import { reactRefresh } from "eslint-plugin-react-refresh";
+import globals from "globals";
 
 import baseConfig from "./eslint.config.base.js";
 
 export default [
 	...baseConfig,
 
-	reactRefresh.configs.vite(),
+	importX.flatConfigs.recommended,
 
-	// Main rules
 	{
-		files: ["**/*.{ts,tsx}"],
-		plugins: {
-			"react": reactPlugin,
-			"react-hooks": reactHooksPlugin,
-			"jsx-a11y": jsxA11yPlugin,
-		},
 		settings: {
 			react: {
 				version: "19",
 			},
 		},
-		rules: {
-			...reactPlugin.configs.recommended.rules,
-			...reactPlugin.configs["jsx-runtime"].rules,
-			...jsxA11yPlugin.configs.recommended.rules,
-			...reactHooksPlugin.configs.recommended.rules,
+	},
 
+	reactPlugin.configs.flat.recommended,
+	reactPlugin.configs.flat["jsx-runtime"],
+	jsxA11yPlugin.flatConfigs.recommended,
+	reactHooksPlugin.configs.flat.recommended,
+	reactRefresh.configs.vite(),
+
+	// Main rules
+	{
+		files: ["**/*.{js,jsx,ts,tsx,cjs,mjs,mts,cts}"],
+		languageOptions: {
+			parserOptions: {
+				ecmaFeatures: {
+					jsx: true,
+				},
+			},
+			globals: {
+				...globals.browser,
+			},
+		},
+		rules: {
 			// React
 			"react/no-danger": "error",
 			"react/function-component-definition": "error",
@@ -40,6 +51,8 @@ export default [
 					exceptions: [],
 				},
 			],
+
+			"import-x/no-nodejs-modules": "warn",
 		},
 	},
 	// Override
