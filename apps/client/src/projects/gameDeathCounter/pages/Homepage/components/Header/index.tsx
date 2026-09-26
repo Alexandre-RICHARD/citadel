@@ -2,8 +2,8 @@ import { Plus, Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import { Count } from "../Count/index.tsx";
-import { IconButton } from "../IconButton/index.tsx";
+import { Count } from "../Count";
+import { IconButton } from "../IconButton";
 import styles from "./header.module.scss";
 
 type Props = {

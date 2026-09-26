@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useSessionStorage } from "./useSessionStorage.tsx";
+import { useSessionStorage } from "./useSessionStorage";
 
 const TEST_KEY = "testKey";
 const defaultValue = "defaultValue";

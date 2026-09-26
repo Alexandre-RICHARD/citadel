@@ -1,8 +1,8 @@
 import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint";
-import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
+import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch.ts";
+import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch";
 
 type MutationArgs = {
 	id: string;

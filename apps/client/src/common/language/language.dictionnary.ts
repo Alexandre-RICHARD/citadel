@@ -1,6 +1,6 @@
-import { LanguageEnum } from "./language.enum.ts";
-import { LanguageLongCodeEnum } from "./languageLongCode.enum.ts";
-import { LanguageShortCodeEnum } from "./languageShortCode.enum.ts";
+import { LanguageEnum } from "./language.enum";
+import { LanguageLongCodeEnum } from "./languageLongCode.enum";
+import { LanguageShortCodeEnum } from "./languageShortCode.enum";
 
 export const languageDictionnary: Record<
 	LanguageEnum,

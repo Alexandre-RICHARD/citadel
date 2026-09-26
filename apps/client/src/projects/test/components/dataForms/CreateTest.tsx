@@ -1,9 +1,9 @@
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { useState } from "react";
 
-import { TextInput } from "../../../../common/components/components/inputs/TextInput/index.tsx";
-import { useCreateTest } from "../../actions/useCreateTest.tsx";
-import { TestDataForm } from "./TestDataForm.tsx";
+import { TextInput } from "../../../../common/components/components/inputs/TextInput";
+import { useCreateTest } from "../../actions/useCreateTest";
+import { TestDataForm } from "./TestDataForm";
 
 type Props = {
 	onClose: () => void;

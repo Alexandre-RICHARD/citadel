@@ -1,4 +1,4 @@
-import { LanguageEnum } from "../../../../common/language/language.enum.ts";
+import { LanguageEnum } from "../../../../common/language/language.enum";
 
 type Translations = {
 	a: string;

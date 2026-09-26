@@ -1,5 +1,5 @@
-import { useTranslation } from "../../../../react/hook/useTranslation.tsx";
-import { translations } from "./translations.ts";
+import { useTranslation } from "../../../../react/hook/useTranslation";
+import { translations } from "./translations";
 
 export function TranslationTest() {
 	const t = useTranslation(translations);

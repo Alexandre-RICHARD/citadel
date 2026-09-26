@@ -11,11 +11,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Game } from "../../game.type.ts";
-import { BlockTitle } from "../BlockTitle/index.tsx";
-import { BossRow } from "../BossRow/index.tsx";
-import { Count } from "../Count/index.tsx";
-import { IconButton } from "../IconButton/index.tsx";
+import type { Game } from "../../game.type";
+import { BlockTitle } from "../BlockTitle";
+import { BossRow } from "../BossRow";
+import { Count } from "../Count";
+import { IconButton } from "../IconButton";
 import styles from "./gameCard.module.scss";
 
 type Props = {

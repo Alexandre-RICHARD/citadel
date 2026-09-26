@@ -1,11 +1,11 @@
 import type { CSSProperties, JSXElementConstructor } from "react";
 
-import { Arrow } from "./iconsCollection/Arrow.tsx";
-import { Collapse } from "./iconsCollection/Collapse.tsx";
-import { DropdownArrow } from "./iconsCollection/DropdownArrow.tsx";
-import { Expand } from "./iconsCollection/Expand.tsx";
-import { TriangleArrow } from "./iconsCollection/TriangleArrow.tsx";
-import { IconTokenEnum } from "./iconToken.enum.ts";
+import { Arrow } from "./iconsCollection/Arrow";
+import { Collapse } from "./iconsCollection/Collapse";
+import { DropdownArrow } from "./iconsCollection/DropdownArrow";
+import { Expand } from "./iconsCollection/Expand";
+import { TriangleArrow } from "./iconsCollection/TriangleArrow";
+import { IconTokenEnum } from "./iconToken.enum";
 
 export const IconsList: Record<
 	IconTokenEnum,

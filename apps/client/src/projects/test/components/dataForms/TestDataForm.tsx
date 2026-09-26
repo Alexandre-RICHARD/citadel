@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Modal } from "../../../../common/components/components/molecules/Modal/index.tsx";
+import { Modal } from "../../../../common/components/components/molecules/Modal";
 
 type Props = {
 	children: ReactNode;

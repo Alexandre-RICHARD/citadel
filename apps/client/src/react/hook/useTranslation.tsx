@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { LanguageEnum } from "../../common/language/language.enum.ts";
+import { LanguageEnum } from "../../common/language/language.enum";
 
 type TranslationRecord<T> = Record<LanguageEnum, T>;
 
