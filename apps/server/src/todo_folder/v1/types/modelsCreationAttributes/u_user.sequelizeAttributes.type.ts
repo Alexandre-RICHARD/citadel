@@ -1,6 +1,6 @@
 import type { Optional } from "sequelize";
 
-import type { UserModelAttributes } from "../models/u_user.type.ts";
+import type { UserModelAttributes } from "../models/u_user.type";
 
 export type UserCreationAttributes = Optional<
   UserModelAttributes,

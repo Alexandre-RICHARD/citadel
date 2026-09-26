@@ -1,4 +1,4 @@
-import type { OrdersModelAttributes } from "../models/o_order.type.ts";
+import type { OrdersModelAttributes } from "../models/o_order.type";
 
 export type OrdersCreationAttributes = Omit<
   OrdersModelAttributes,

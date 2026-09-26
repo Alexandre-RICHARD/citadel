@@ -1,8 +1,8 @@
 import { DataTypes, type ModelDefined } from "sequelize";
 
-import { database as db } from "../../database.ts";
-import type { OrdersModelAttributes } from "../types/models/o_order.type.ts";
-import type { OrdersCreationAttributes } from "../types/modelsCreationAttributes/o_order.sequelizeAttributes.type.ts";
+import { database as db } from "../../database";
+import type { OrdersModelAttributes } from "../types/models/o_order.type";
+import type { OrdersCreationAttributes } from "../types/modelsCreationAttributes/o_order.sequelizeAttributes.type";
 
 export const OrdersModel: ModelDefined<
   OrdersModelAttributes,

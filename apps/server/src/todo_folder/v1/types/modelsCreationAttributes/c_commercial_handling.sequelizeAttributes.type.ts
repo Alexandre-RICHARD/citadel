@@ -1,4 +1,4 @@
-import type { CommercialHandlingModelAttributes } from "../models/c_commercial_handling.type.ts";
+import type { CommercialHandlingModelAttributes } from "../models/c_commercial_handling.type";
 
 export type CommercialHandlingCreationAttributes = Omit<
   CommercialHandlingModelAttributes,

@@ -1,21 +1,21 @@
 import type { Request, Response } from "express";
 
-import { bcryptComparatorHelper } from "../../helpers/bcryptComparator.helper.ts";
-import { bcryptEncoderHelper } from "../../helpers/bcryptEncoder.helper.ts";
-import { jwtGenerator } from "../../helpers/jwtGenerator.helper.ts";
-import { RoleEnum } from "../enum/role.enum.ts";
-import { createUser } from "../query/users/createUser.ts";
-import { deleteUser as deleteUserQuery } from "../query/users/deleteUser.ts";
-import { findUserByEmail } from "../query/users/findUserByEmail.ts";
-import { findUserById } from "../query/users/findUserById.ts";
-import { getAllUsers } from "../query/users/getAllUsers.ts";
-import { getUsersByRole } from "../query/users/getUsersByRole.ts";
-import { updateUser } from "../query/users/updateUser.ts";
-import type { LoginEndpointBody } from "../types/endpointBody/users/login.endpointBody.type.ts";
-import type { RegisterEndpointBody } from "../types/endpointBody/users/register.endpointBody.type.ts";
-import type { UpdateMailEndpointBody } from "../types/endpointBody/users/updateMail.endpointBody.type.ts";
-import type { UpdatePasswordEndpointBody } from "../types/endpointBody/users/updatePassword.endpointBody.type.ts";
-import type { UpdateUserEndpointBody } from "../types/endpointBody/users/updateUser.endpointBody.type.ts";
+import { bcryptComparatorHelper } from "../../helpers/bcryptComparator.helper";
+import { bcryptEncoderHelper } from "../../helpers/bcryptEncoder.helper";
+import { jwtGenerator } from "../../helpers/jwtGenerator.helper";
+import { RoleEnum } from "../enum/role.enum";
+import { createUser } from "../query/users/createUser";
+import { deleteUser as deleteUserQuery } from "../query/users/deleteUser";
+import { findUserByEmail } from "../query/users/findUserByEmail";
+import { findUserById } from "../query/users/findUserById";
+import { getAllUsers } from "../query/users/getAllUsers";
+import { getUsersByRole } from "../query/users/getUsersByRole";
+import { updateUser } from "../query/users/updateUser";
+import type { LoginEndpointBody } from "../types/endpointBody/users/login.endpointBody.type";
+import type { RegisterEndpointBody } from "../types/endpointBody/users/register.endpointBody.type";
+import type { UpdateMailEndpointBody } from "../types/endpointBody/users/updateMail.endpointBody.type";
+import type { UpdatePasswordEndpointBody } from "../types/endpointBody/users/updatePassword.endpointBody.type";
+import type { UpdateUserEndpointBody } from "../types/endpointBody/users/updateUser.endpointBody.type";
 
 export const usersController = {
   getUsers: async (_req: Request, res: Response) => {

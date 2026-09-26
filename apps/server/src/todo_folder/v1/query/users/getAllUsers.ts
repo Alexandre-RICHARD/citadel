@@ -1,5 +1,5 @@
-import { UsersModel } from "../../models/u_user.ts";
-import type { GetAllUsersReturn } from "../../types/query/users/return/getAllUsers.return.type.ts";
+import { UsersModel } from "../../models/u_user";
+import type { GetAllUsersReturn } from "../../types/query/users/return/getAllUsers.return.type";
 
 export const getAllUsers = async (): GetAllUsersReturn => {
   try {

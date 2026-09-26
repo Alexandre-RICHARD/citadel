@@ -1,4 +1,4 @@
-import type { DeliveryModelAttributes } from "../models/d_delivery.type.ts";
+import type { DeliveryModelAttributes } from "../models/d_delivery.type";
 
 export type DeliveryCreationAttributes = Omit<
   DeliveryModelAttributes,

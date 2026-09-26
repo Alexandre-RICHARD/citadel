@@ -1,4 +1,4 @@
-import type { CustomerReviewModelAttributes } from "../models/c_customer_review.type.ts";
+import type { CustomerReviewModelAttributes } from "../models/c_customer_review.type";
 
 export type CustomerReviewCreationAttributes = Omit<
   CustomerReviewModelAttributes,

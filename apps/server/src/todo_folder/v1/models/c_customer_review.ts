@@ -1,8 +1,8 @@
 import { DataTypes, type ModelDefined } from "sequelize";
 
-import { database as db } from "../../database.ts";
-import type { CustomerReviewModelAttributes } from "../types/models/c_customer_review.type.ts";
-import type { CustomerReviewCreationAttributes } from "../types/modelsCreationAttributes/c_customer_review.sequelizeAttributes.type.ts";
+import { database as db } from "../../database";
+import type { CustomerReviewModelAttributes } from "../types/models/c_customer_review.type";
+import type { CustomerReviewCreationAttributes } from "../types/modelsCreationAttributes/c_customer_review.sequelizeAttributes.type";
 
 export const CustomerReviewModel: ModelDefined<
   CustomerReviewModelAttributes,

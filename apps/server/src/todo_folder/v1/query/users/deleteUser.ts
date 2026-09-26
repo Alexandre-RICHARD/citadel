@@ -1,7 +1,7 @@
 import type { Model } from "sequelize";
 
-import type { DeleteUserArgs } from "../../types/query/users/args/deleteUser.args.type.ts";
-import type { DeleteUserReturn } from "../../types/query/users/return/deleteUser.return.type.ts";
+import type { DeleteUserArgs } from "../../types/query/users/args/deleteUser.args.type";
+import type { DeleteUserReturn } from "../../types/query/users/return/deleteUser.return.type";
 
 export const deleteUser = async ({
   user,
