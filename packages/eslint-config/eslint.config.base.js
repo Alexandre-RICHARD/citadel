@@ -181,7 +181,7 @@ export default defineConfig([
 					jsxSingleQuote: false,
 					bracketSpacing: true,
 					bracketSameLine: false,
-					endOfLine: "lf",
+					endOfLine: "auto",
 					quoteProps: "consistent",
 					arrowParens: "always",
 					singleAttributePerLine: true,
