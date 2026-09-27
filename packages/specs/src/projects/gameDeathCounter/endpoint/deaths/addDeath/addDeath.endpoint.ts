@@ -9,7 +9,7 @@ import type { AddDeathPathParamDto } from "./addDeathPathParam.dto.ts";
 
 export interface AddDeath extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/bosses/:id/deaths";
+		url: "/gameDeathCounter/bosses/:bossId/deaths";
 		method: HttpMethodEnum.POST;
 		protected: false;
 		pathParams: AddDeathPathParamDto;

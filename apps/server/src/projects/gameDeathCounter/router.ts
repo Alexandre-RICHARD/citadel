@@ -1,4 +1,5 @@
 import { createBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBody.schema.ts";
+import { createBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossPathParam.schema.ts";
 import { deleteBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossPathParam.schema.ts";
 import { getOneBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossPathParam.schema.ts";
 import { setBossDefeatedBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedBody.schema.ts";
@@ -111,7 +112,7 @@ typedRouter.DELETE(
 
 // ==== DEATHS ====
 typedRouter.POST(
-	"/gameDeathCounter/bosses/:id/deaths",
+	"/gameDeathCounter/bosses/:bossId/deaths",
 	deathController.add,
 	requestValidator({ params: addDeathPathParamSchema }),
 );
