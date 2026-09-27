@@ -8,6 +8,7 @@ export async function createGameQuery(
 	try {
 		return await Game.create({
 			name: createGameBean.name,
+			endedAt: null,
 		});
 	} catch {
 		throw new DatabaseError("Failed to insert new game");

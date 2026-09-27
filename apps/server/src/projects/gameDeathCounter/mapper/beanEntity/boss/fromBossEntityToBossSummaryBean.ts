@@ -8,13 +8,13 @@ export function fromBossEntityToBossSummaryBean(
 	deathDateRange: BossDeathDateRangeRow | null,
 ): BossSummaryBean {
 	const candidateFirstDates = [
-		deathDateRange?.firstDeathDate ?? null,
 		boss.defeatedAt,
+		deathDateRange?.firstDeathDate ?? null,
 	].filter((date): date is Date => date !== null);
 
 	const candidateLastDates = [
-		deathDateRange?.lastDeathDate ?? null,
 		boss.defeatedAt,
+		deathDateRange?.lastDeathDate ?? null,
 	].filter((date): date is Date => date !== null);
 
 	const firstTry =
