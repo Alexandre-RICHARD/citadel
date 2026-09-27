@@ -5,7 +5,6 @@ import { mapNullableDateToStringOrNull } from "../../../../../common/date/mapNul
 import type { GameBean } from "../../../bean/game.bean.ts";
 import { fromBossSummaryBeanToBossSummaryDto } from "../boss/fromBossSummaryBeanToBossSummaryDto.ts";
 
-// TODO Analyse
 export function fromGameBeanToGameDto(gameBean: GameBean): GameDto {
 	const gameDto = {
 		id: gameBean.id,
