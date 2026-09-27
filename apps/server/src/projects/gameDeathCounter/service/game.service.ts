@@ -19,7 +19,7 @@ import { getGameWithBossesByIdQuery } from "../query/game/getGameWithBossesById.
 import { updateGameQuery } from "../query/game/updateGame.query.ts";
 import { updateGameEndedAtQuery } from "../query/game/updateGameEndedAt.query.ts";
 
-export class GameService {
+class GameService {
 	async getAllGames(): Promise<GameSummaryBean[]> {
 		const gameEntities = await getAllGamesQuery();
 

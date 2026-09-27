@@ -17,7 +17,7 @@ import { updateBossQuery } from "../query/boss/updateBoss.query.ts";
 import { updateBossDefeatedAtQuery } from "../query/boss/updateBossDefeatedAt.query.ts";
 import { gameExistsByIdQuery } from "../query/game/gameExistsById.query.ts";
 
-export class BossService {
+class BossService {
 	async getOneBoss(getOneBossBean: GetOneBossBean): Promise<BossBean> {
 		const bossEntity = await getBossWithDeathsByIdQuery(getOneBossBean.id);
 		if (bossEntity === null)
