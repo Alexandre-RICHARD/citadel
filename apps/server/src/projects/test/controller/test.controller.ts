@@ -14,7 +14,7 @@ import { toTestDtoMapper } from "../dto/toTestDto.mapper.ts";
 import { toTestsDtoMapper } from "../dto/toTestsDto.mapper.ts";
 import { createTest } from "../query/createTest.ts";
 import { deleteTest } from "../query/deleteTest.ts";
-import { getAllTests } from "../query/getAllTests.ts";
+import { getAllTest } from "../query/getAllTest.ts";
 import { getOneTest } from "../query/getOneTest.ts";
 import { updateTest } from "../query/updateTest.ts";
 
@@ -36,7 +36,7 @@ export const testController = {
 	}),
 
 	getAll: asyncRequestHandler<GetAllTest>(async (_r, response) => {
-		const result = await getAllTests();
+		const result = await getAllTest();
 
 		if (!result) {
 			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).json([]);
