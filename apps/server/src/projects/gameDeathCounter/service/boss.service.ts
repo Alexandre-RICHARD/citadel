@@ -11,11 +11,11 @@ import { fromBossEntityToBossBean } from "../mapper/beanEntity/boss/fromBossEnti
 import { fromBossEntityToBossSummaryBean } from "../mapper/beanEntity/boss/fromBossEntityToBossSummaryBean.ts";
 import { createBossQuery } from "../query/boss/createBoss.query.ts";
 import { deleteBossQuery } from "../query/boss/deleteBoss.query.ts";
+import { getBossesDeathDateRangeQuery } from "../query/boss/getBossesDeathDateRange.query.ts";
 import { getBossWithDeathsByIdQuery } from "../query/boss/getBossWithDeathsById.query.ts";
 import { updateBossQuery } from "../query/boss/updateBoss.query.ts";
 import { updateBossDefeatedAtQuery } from "../query/boss/updateBossDefeatedAt.query.ts";
 import { gameExistsByIdQuery } from "../query/game/gameExistsById.query.ts";
-import { getBossesDeathDateRangeQuery } from "../query/game/getBossesDeathDateRange.query.ts";
 
 export class BossService {
 	async getOneBoss(getOneBossBean: GetOneBossBean): Promise<BossBean> {
