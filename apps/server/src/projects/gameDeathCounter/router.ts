@@ -77,9 +77,12 @@ typedRouter.GET(
 );
 
 typedRouter.POST(
-	"/gameDeathCounter/bosses",
+	"/gameDeathCounter/games/:gameId/bosses",
 	bossController.create,
-	requestValidator({ body: createBossBodySchema }),
+	requestValidator({
+		params: createBossPathParamSchema,
+		body: createBossBodySchema,
+	}),
 );
 
 typedRouter.PUT(

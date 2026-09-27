@@ -27,7 +27,10 @@ export const bossController = {
 	}),
 
 	create: asyncRequestHandler<CreateBoss>(async (request, response) => {
-		const createBossBean = fromCreateBossDtoToCreateBossBean(request.body);
+		const createBossBean = fromCreateBossDtoToCreateBossBean(
+			request.params,
+			request.body,
+		);
 
 		const boss = await bossService.createBoss(createBossBean);
 
