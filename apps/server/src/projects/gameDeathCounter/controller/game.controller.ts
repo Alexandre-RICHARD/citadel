@@ -79,6 +79,6 @@ export const gameController = {
 
 		await gameService.deleteGame(deleteGameBean);
 
-		return response.status(HttpStatutCodeSuccessEnum.SUCCESS).json(null);
+		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 	}),
 };

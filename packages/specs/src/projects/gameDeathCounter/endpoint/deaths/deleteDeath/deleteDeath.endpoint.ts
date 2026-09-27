@@ -14,7 +14,7 @@ export interface DeleteDeath extends EndpointModel {
 		pathParams: DeleteDeathPathParamDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.SUCCESS;
+		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
 		data: null;
 	};
 	error: {

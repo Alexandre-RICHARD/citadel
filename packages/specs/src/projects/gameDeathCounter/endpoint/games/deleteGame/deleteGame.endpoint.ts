@@ -14,7 +14,7 @@ export interface DeleteGame extends EndpointModel {
 		pathParams: DeleteGamePathParamDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.SUCCESS;
+		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
 		data: null;
 	};
 	error: {

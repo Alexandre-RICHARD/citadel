@@ -14,7 +14,7 @@ export interface DeleteBoss extends EndpointModel {
 		pathParams: DeleteBossPathParamDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.SUCCESS;
+		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
 		data: null;
 	};
 	error: {

@@ -39,6 +39,6 @@ export const deathController = {
 
 		await deathService.deleteDeath(deleteDeathBean);
 
-		return response.status(HttpStatutCodeSuccessEnum.SUCCESS).json(null);
+		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 	}),
 };
