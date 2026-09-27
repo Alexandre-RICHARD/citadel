@@ -1,4 +1,5 @@
 import type { GetAllFactories } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllFactories.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,7 +20,7 @@ export function useGetAllFactories() {
 		queryFn: async () => {
 			return fetchHandler<GetAllFactories>(
 				{
-					url: "/satisfactory/getFactory",
+					url: `${ApiPrefixEnum.SATISFACTORY}/getFactory`,
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

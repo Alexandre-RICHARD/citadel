@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -9,7 +10,7 @@ import type { GetOneBossPathParamDto } from "./getOneBossPathParam.dto.ts";
 
 export interface GetOneBoss extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/bosses/:id";
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 		pathParams: GetOneBossPathParamDto;

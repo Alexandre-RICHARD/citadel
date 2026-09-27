@@ -1,4 +1,5 @@
 import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTest.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,7 +18,7 @@ export function useGetOneTest({ payload }: Props) {
 			queryKey: ["oneTest", payload.id],
 			queryFn: async () =>
 				fetchHandler<GetOneTest>({
-					url: "/test/test/:id",
+					url: `${ApiPrefixEnum.TEST}/test/:id`,
 					method: HttpMethodEnum.GET,
 					protected: false,
 					pathParams: { id: payload.id ?? "-1" },

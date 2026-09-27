@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
@@ -7,7 +8,7 @@ import type { FactoryDto } from "../dto/factory.dto.ts";
 
 export interface GetAllFactories extends EndpointModel {
 	request: {
-		url: "/satisfactory/getFactory";
+		url: `${ApiPrefixEnum.SATISFACTORY}/getFactory`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};

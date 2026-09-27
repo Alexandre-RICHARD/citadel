@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -8,7 +9,7 @@ import type { DeleteDeathPathParamDto } from "./deleteDeathPathParam.dto.ts";
 
 export interface DeleteDeath extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/deaths/:id";
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`;
 		method: HttpMethodEnum.DELETE;
 		protected: false;
 		pathParams: DeleteDeathPathParamDto;

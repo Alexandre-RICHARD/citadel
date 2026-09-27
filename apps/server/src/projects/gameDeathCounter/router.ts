@@ -18,6 +18,7 @@ import { setGameFinishedPathParamSchema } from "@citadel/specs/src/projects/game
 import { updateGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGameBody.schema.ts";
 import { updateGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGamePathParam.schema.ts";
 import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/projects/gameDeathCounter/gameDeathCounterEndpointRegistry.type.ts";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";
@@ -32,22 +33,25 @@ const typedRouter =
 	createTypedExpressRouter<GameDeathCounterEndpointRegistry>(expressRouter);
 
 // ==== GAMES ====
-typedRouter.GET("/gameDeathCounter/games", gameController.getAll);
+typedRouter.GET(
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`,
+	gameController.getAll,
+);
 
 typedRouter.GET(
-	"/gameDeathCounter/games/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 	gameController.getOne,
 	requestValidator({ params: getOneGamePathParamSchema }),
 );
 
 typedRouter.POST(
-	"/gameDeathCounter/games",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`,
 	gameController.create,
 	requestValidator({ body: createGameBodySchema }),
 );
 
 typedRouter.PUT(
-	"/gameDeathCounter/games/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 	gameController.update,
 	requestValidator({
 		params: updateGamePathParamSchema,
@@ -56,7 +60,7 @@ typedRouter.PUT(
 );
 
 typedRouter.PATCH(
-	"/gameDeathCounter/games/:id/finished",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id/finished`,
 	gameController.setFinished,
 	requestValidator({
 		params: setGameFinishedPathParamSchema,
@@ -65,20 +69,20 @@ typedRouter.PATCH(
 );
 
 typedRouter.DELETE(
-	"/gameDeathCounter/games/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 	gameController.delete,
 	requestValidator({ params: deleteGamePathParamSchema }),
 );
 
 // ==== BOSSES ====
 typedRouter.GET(
-	"/gameDeathCounter/bosses/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`,
 	bossController.getOne,
 	requestValidator({ params: getOneBossPathParamSchema }),
 );
 
 typedRouter.POST(
-	"/gameDeathCounter/games/:gameId/bosses",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:gameId/bosses`,
 	bossController.create,
 	requestValidator({
 		params: createBossPathParamSchema,
@@ -87,7 +91,7 @@ typedRouter.POST(
 );
 
 typedRouter.PUT(
-	"/gameDeathCounter/bosses/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`,
 	bossController.update,
 	requestValidator({
 		params: updateBossPathParamSchema,
@@ -96,7 +100,7 @@ typedRouter.PUT(
 );
 
 typedRouter.PATCH(
-	"/gameDeathCounter/bosses/:id/defeated",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id/defeated`,
 	bossController.setDefeated,
 	requestValidator({
 		params: setBossDefeatedPathParamSchema,
@@ -105,20 +109,20 @@ typedRouter.PATCH(
 );
 
 typedRouter.DELETE(
-	"/gameDeathCounter/bosses/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`,
 	bossController.delete,
 	requestValidator({ params: deleteBossPathParamSchema }),
 );
 
 // ==== DEATHS ====
 typedRouter.POST(
-	"/gameDeathCounter/bosses/:bossId/deaths",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`,
 	deathController.add,
 	requestValidator({ params: addDeathPathParamSchema }),
 );
 
 typedRouter.PATCH(
-	"/gameDeathCounter/deaths/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`,
 	deathController.update,
 	requestValidator({
 		params: updateDeathPathParamSchema,
@@ -127,7 +131,7 @@ typedRouter.PATCH(
 );
 
 typedRouter.DELETE(
-	"/gameDeathCounter/deaths/:id",
+	`${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`,
 	deathController.delete,
 	requestValidator({ params: deleteDeathPathParamSchema }),
 );

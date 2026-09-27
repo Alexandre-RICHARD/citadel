@@ -1,4 +1,5 @@
 import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTest.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -10,7 +11,7 @@ export function useGetAllTest() {
 			queryKey: ["allTest"],
 			queryFn: async () => {
 				return fetchHandler<GetAllTest>({
-					url: "/test/test",
+					url: `${ApiPrefixEnum.TEST}/test`,
 					method: HttpMethodEnum.GET,
 					protected: false,
 				});

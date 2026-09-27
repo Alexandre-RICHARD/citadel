@@ -1,4 +1,5 @@
 import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTest.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 
@@ -29,7 +30,7 @@ export function useCreateTest({
 		mutationKey: ["createTest"],
 		mutationFn: async ({ name }) =>
 			fetchHandler<CreateTest>({
-				url: "/test/test",
+				url: `${ApiPrefixEnum.TEST}/test`,
 				method: HttpMethodEnum.POST,
 				protected: false,
 				body: { name },

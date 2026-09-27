@@ -1,4 +1,5 @@
 import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 
@@ -39,7 +40,7 @@ export function useUpdateTest({
 			isActive: boolean;
 		}) =>
 			fetchHandler<UpdateTest>({
-				url: "/test/test/:id",
+				url: `${ApiPrefixEnum.TEST}/test/:id`,
 				method: HttpMethodEnum.PUT,
 				protected: false,
 				pathParams: {

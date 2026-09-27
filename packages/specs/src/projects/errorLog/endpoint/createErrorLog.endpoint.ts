@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -7,7 +8,7 @@ import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCod
 
 export interface CreateErrorLog extends EndpointModel {
 	request: {
-		url: "/error/error";
+		url: `${ApiPrefixEnum.ERROR_LOG}/error`;
 		method: HttpMethodEnum.POST;
 		protected: false;
 		body: {

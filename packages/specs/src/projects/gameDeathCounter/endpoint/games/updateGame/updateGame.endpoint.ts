@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -10,7 +11,7 @@ import type { UpdateGamePathParamDto } from "./updateGamePathParam.dto.ts";
 
 export interface UpdateGame extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/games/:id";
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
 		method: HttpMethodEnum.PUT;
 		protected: false;
 		pathParams: UpdateGamePathParamDto;

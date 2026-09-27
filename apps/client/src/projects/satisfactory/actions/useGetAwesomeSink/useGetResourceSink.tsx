@@ -1,4 +1,5 @@
 import type { GetResourceSink } from "@citadel/specs/src/projects/satisfactory/endpoint/getResourceSink.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,7 +13,7 @@ export function useGetResourceSink() {
 			queryFn: async () => {
 				return fetchHandler<GetResourceSink>(
 					{
-						url: "/satisfactory/getResourceSink",
+						url: `${ApiPrefixEnum.SATISFACTORY}/getResourceSink`,
 						method: HttpMethodEnum.GET,
 						protected: false,
 					},
