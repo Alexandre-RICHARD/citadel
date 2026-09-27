@@ -2,10 +2,12 @@ import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { BossBean } from "../bean/boss.bean.ts";
 import type { BossSummaryBean } from "../bean/bossSummary.bean.ts";
 import type { CreateBossBean } from "../bean/createBoss.bean.ts";
+import type { DeleteBossBean } from "../bean/deleteBoss.bean.ts";
 import type { GetOneBossBean } from "../bean/getOneBoss.bean.ts";
 import { fromBossEntityToBossBean } from "../mapper/beanEntity/boss/fromBossEntityToBossBean.ts";
 import { fromBossEntityToBossSummaryBean } from "../mapper/beanEntity/boss/fromBossEntityToBossSummaryBean.ts";
 import { createBossQuery } from "../query/boss/createBoss.query.ts";
+import { deleteBossQuery } from "../query/boss/deleteBoss.query.ts";
 import { getBossWithDeathsByIdQuery } from "../query/boss/getBossWithDeathsById.query.ts";
 import { gameExistsByIdQuery } from "../query/game/gameExistsById.query.ts";
 
@@ -27,6 +29,12 @@ export class BossService {
 		const bossEntity = await createBossQuery(createBossBean);
 
 		return fromBossEntityToBossSummaryBean(bossEntity, null);
+	}
+
+	async deleteBoss(deleteBossBean: DeleteBossBean): Promise<void> {
+		const wasDeleted = await deleteBossQuery(deleteBossBean.id);
+		if (!wasDeleted)
+			throw new NotFoundError(`No boss with id : ${deleteBossBean.id}`);
 	}
 }
 
