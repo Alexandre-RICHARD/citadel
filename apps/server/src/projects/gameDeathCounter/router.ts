@@ -2,7 +2,7 @@ import { createBossBodySchema } from "@citadel/specs/src/projects/gameDeathCount
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
 import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
 import { getOneGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGamePathParam.schema.ts";
-import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/specs.ts";
+import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/projects/gameDeathCounter/gameDeathCounterEndpointRegistry.type.ts";
 import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";
