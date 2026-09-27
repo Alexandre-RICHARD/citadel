@@ -4,6 +4,7 @@ import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeE
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { TestDto } from "../dto/test.dto.ts";
 
+// TODO Implémenter la nouvelle manière de faire avec zod
 export interface UpdateTest extends EndpointModel {
 	request: {
 		url: "/test/test/:id";

@@ -3,6 +3,7 @@ import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
 
+// TODO Implémenter la nouvelle manière de faire avec zod
 export interface DeleteTest extends EndpointModel {
 	request: {
 		url: "/test/test/:id";

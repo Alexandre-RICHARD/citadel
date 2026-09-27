@@ -3,7 +3,7 @@ import { QueryTypes } from "sequelize";
 import { sequelize } from "../../../sequelize.ts";
 import { Test } from "../models/Test.ts";
 
-export async function getAllTests(): Promise<Test[]> {
+export async function getAllTest(): Promise<Test[]> {
 	const sql = `
       SELECT t.*
       FROM tests t
