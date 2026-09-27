@@ -26,7 +26,9 @@ export async function getBossesDeathDateRangeQuery(
 			},
 		);
 		return bossDeathDateRange;
-	} catch {
-		throw new DatabaseError("Failed to fetch death date range for bosses");
+	} catch (error) {
+		throw new DatabaseError("Failed to fetch death date range for bosses", {
+			cause: error,
+		});
 	}
 }

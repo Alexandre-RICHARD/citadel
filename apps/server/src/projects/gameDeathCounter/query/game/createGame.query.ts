@@ -11,7 +11,7 @@ export async function createGameQuery(
 			endedAt: null,
 		});
 		return newGame;
-	} catch {
-		throw new DatabaseError("Failed to insert new game");
+	} catch (error) {
+		throw new DatabaseError("Failed to insert new game", { cause: error });
 	}
 }

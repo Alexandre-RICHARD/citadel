@@ -28,7 +28,9 @@ export async function getGamesTotalDeathQuery(
 				type: QueryTypes.SELECT,
 			},
 		);
-	} catch {
-		throw new DatabaseError("Failed to fetch total death for games");
+	} catch (error) {
+		throw new DatabaseError("Failed to fetch total death for games", {
+			cause: error,
+		});
 	}
 }

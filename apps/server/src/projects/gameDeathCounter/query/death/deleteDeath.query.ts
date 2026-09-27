@@ -28,7 +28,7 @@ export async function deleteDeathQuery(id: number): Promise<boolean> {
 
 			return true;
 		});
-	} catch {
-		throw new DatabaseError("Failed to delete death");
+	} catch (error) {
+		throw new DatabaseError("Failed to delete death", { cause: error });
 	}
 }

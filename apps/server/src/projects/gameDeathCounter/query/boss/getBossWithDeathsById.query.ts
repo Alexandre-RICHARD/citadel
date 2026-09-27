@@ -15,7 +15,9 @@ export async function getBossWithDeathsByIdQuery(
 			],
 		});
 		return bossWithDeaths;
-	} catch {
-		throw new DatabaseError("Failed to fetch boss with deaths");
+	} catch (error) {
+		throw new DatabaseError("Failed to fetch boss with deaths", {
+			cause: error,
+		});
 	}
 }

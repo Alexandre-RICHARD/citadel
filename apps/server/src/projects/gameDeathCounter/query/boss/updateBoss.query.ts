@@ -16,7 +16,7 @@ export async function updateBossQuery(
 			gameId: updateBossBean.gameId,
 		});
 		return updatedBoss;
-	} catch {
-		throw new DatabaseError("Failed to update boss");
+	} catch (error) {
+		throw new DatabaseError("Failed to update boss", { cause: error });
 	}
 }

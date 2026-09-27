@@ -1,4 +1,3 @@
-import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import type { NextFunction, Request, Response } from "express";
 import { ZodError, type ZodType } from "zod";
 
@@ -11,7 +10,7 @@ type RequestSchemas = {
 };
 
 export function requestValidator(schemas: RequestSchemas) {
-	return (request: Request, response: Response, next: NextFunction) => {
+	return (request: Request, _response: Response, next: NextFunction) => {
 		const combinedError = new ZodError([]);
 
 		if (schemas.params) {
@@ -52,12 +51,10 @@ export function requestValidator(schemas: RequestSchemas) {
 		}
 
 		if (combinedError.issues.length > 0) {
-			response.status(HttpStatutCodeErrorEnum.BAD_REQUEST).json({
-				message: "Parsing of request failed",
-				issues: combinedError.issues,
-			});
-
-			throw new BadRequestError("Parsing of request failed", combinedError);
+			next(
+				new BadRequestError("Parsing of request failed", combinedError.issues),
+			);
+			return;
 		}
 
 		next();

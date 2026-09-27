@@ -10,7 +10,7 @@ export async function updateGameEndedAtQuery(
 		if (game === null) return null;
 
 		return await game.update({ endedAt });
-	} catch {
-		throw new DatabaseError("Failed to update game end date");
+	} catch (error) {
+		throw new DatabaseError("Failed to update game end date", { cause: error });
 	}
 }

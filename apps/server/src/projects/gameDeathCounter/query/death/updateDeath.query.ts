@@ -19,7 +19,7 @@ export async function updateDeathQuery(
 			changes.comment = updateDeathBean.comment;
 
 		return await death.update(changes);
-	} catch {
-		throw new DatabaseError("Failed to update death");
+	} catch (error) {
+		throw new DatabaseError("Failed to update death", { cause: error });
 	}
 }
