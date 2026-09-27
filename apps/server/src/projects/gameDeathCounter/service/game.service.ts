@@ -41,7 +41,7 @@ export class GameService {
 		if (gameEntity === null)
 			throw new NotFoundError(`No game with id : ${getOneGameBean.id}`);
 
-		const bossIds = (gameEntity.bosses ?? []).map((boss) => boss.id);
+		const bossIds = gameEntity.bosses.map((boss) => boss.id);
 		const deathDateRanges = await getBossesDeathDateRangeQuery(bossIds);
 
 		const deathDateRangeByBossId = new Map(

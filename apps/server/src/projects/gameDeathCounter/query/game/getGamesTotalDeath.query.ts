@@ -2,7 +2,7 @@ import { QueryTypes } from "sequelize";
 
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { sequelize } from "../../../../sequelize.ts";
-import type { GameTotalDeathRow } from "../../dbType/gameTotalDeath.entity.ts";
+import type { GameTotalDeathRow } from "../../dbType/gameTotalDeath.row.ts";
 
 /**
  * Game.totalDeath n'est pas stocké : c'est la somme des Boss.totalDeath du jeu
