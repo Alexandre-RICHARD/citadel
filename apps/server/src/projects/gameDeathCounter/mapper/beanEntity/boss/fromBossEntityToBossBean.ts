@@ -1,21 +1,13 @@
 import { getEarliestDate } from "../../../../../common/date/getEarliestDate.ts";
 import { getLatestDate } from "../../../../../common/date/getLatestDate.ts";
 import type { BossBean } from "../../../bean/boss.bean.ts";
-import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.entity.ts";
-import type { Boss } from "../../../models/Boss.ts";
+import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.row.ts";
+import type { BossWithDeathsEntity } from "../../../dbType/bossWithDeaths.entity.ts";
 import { fromDeathEntityToDeathBean } from "../death/fromDeathEntityToDeathBean.ts";
 import { fromBossEntityToBossSummaryBean } from "./fromBossEntityToBossSummaryBean.ts";
 
-/**
- * @param boss Doit avoir été chargé avec ses morts (`include: deaths`)
- */
-export function fromBossEntityToBossBean(boss: Boss): BossBean {
-	if (boss.deaths === undefined)
-		throw new Error(`Boss ${boss.id} was loaded without includes its deaths`);
-
-	const deathEntities = boss.deaths;
-
-	const deathDates = deathEntities.map((deathEntity) => deathEntity.date);
+export function fromBossEntityToBossBean(boss: BossWithDeathsEntity): BossBean {
+	const deathDates = boss.deaths.map((deathEntity) => deathEntity.date);
 	const firstDeathDate = getEarliestDate(deathDates);
 	const lastDeathDate = getLatestDate(deathDates);
 
@@ -26,7 +18,7 @@ export function fromBossEntityToBossBean(boss: Boss): BossBean {
 
 	const bossBean = {
 		...fromBossEntityToBossSummaryBean(boss, bossDeathDateRange),
-		deaths: deathEntities.map(fromDeathEntityToDeathBean),
+		deaths: boss.deaths.map(fromDeathEntityToDeathBean),
 	};
 	return bossBean;
 }
