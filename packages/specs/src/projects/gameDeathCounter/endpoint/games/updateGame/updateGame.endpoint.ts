@@ -11,7 +11,7 @@ import type { UpdateGamePathParamDto } from "./updateGamePathParam.dto.ts";
 export interface UpdateGame extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/games/:id";
-		method: HttpMethodEnum.PATCH;
+		method: HttpMethodEnum.PUT;
 		protected: false;
 		pathParams: UpdateGamePathParamDto;
 		body: UpdateGameBodyDto;
