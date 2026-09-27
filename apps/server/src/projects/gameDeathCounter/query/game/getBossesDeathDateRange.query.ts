@@ -11,7 +11,7 @@ export async function getBossesDeathDateRangeQuery(
 	if (bossIds.length === 0) return [];
 
 	try {
-		return await sequelize.query<BossDeathDateRangeRow>(
+		const bossDeathDateRange = await sequelize.query<BossDeathDateRangeRow>(
 			`
 				SELECT
 					boss_id AS bossId,
@@ -26,6 +26,7 @@ export async function getBossesDeathDateRangeQuery(
 				type: QueryTypes.SELECT,
 			},
 		);
+		return bossDeathDateRange;
 	} catch {
 		throw new DatabaseError("Failed to fetch death date range for bosses");
 	}

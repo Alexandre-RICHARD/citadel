@@ -1,4 +1,4 @@
-import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/createError.endpoint.ts";
+import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/createErrorLog.endpoint.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 

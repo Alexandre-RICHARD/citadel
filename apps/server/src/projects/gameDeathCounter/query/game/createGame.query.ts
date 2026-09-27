@@ -6,10 +6,11 @@ export async function createGameQuery(
 	createGameBean: CreateGameBean,
 ): Promise<Game> {
 	try {
-		return await Game.create({
+		const newGame = await Game.create({
 			name: createGameBean.name,
 			endedAt: null,
 		});
+		return newGame;
 	} catch {
 		throw new DatabaseError("Failed to insert new game");
 	}

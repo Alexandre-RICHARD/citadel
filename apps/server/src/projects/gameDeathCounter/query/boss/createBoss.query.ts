@@ -6,11 +6,12 @@ export async function createBossQuery(
 	createBossBean: CreateBossBean,
 ): Promise<Boss> {
 	try {
-		return await Boss.create({
+		const newBoss = await Boss.create({
 			name: createBossBean.name,
 			gameId: createBossBean.gameId,
 			defeatedAt: null,
 		});
+		return newBoss;
 	} catch {
 		throw new DatabaseError("Failed to insert new boss");
 	}
