@@ -6,12 +6,14 @@ import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatu
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { BossSummaryDto } from "../../../dto/boss/bossSummary.dto.ts";
 import type { CreateBossBodyDto } from "./createBossBody.dto.ts";
+import type { CreateBossPathParamDto } from "./createBossPathParam.dto.ts";
 
 export interface CreateBoss extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/bosses";
+		url: "/gameDeathCounter/games/:gameId/bosses";
 		method: HttpMethodEnum.POST;
 		protected: false;
+		pathParams: CreateBossPathParamDto;
 		body: CreateBossBodyDto;
 	};
 	response: {
