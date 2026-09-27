@@ -15,33 +15,37 @@ export class ErrorLog extends Model<
 	declare id: CreationOptional<number>;
 	declare errorType: string;
 	declare message: string;
-	declare stack: string;
+	declare stack: string | null;
 	declare createdAt: CreationOptional<Date>;
 }
 
 ErrorLog.init(
 	{
 		id: {
-			type: DataTypes.BIGINT,
+			type: DataTypes.INTEGER,
+			field: "id",
 			primaryKey: true,
 			autoIncrement: true,
 			allowNull: false,
-			unique: true,
 		},
 		errorType: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(100),
+			field: "error_type",
 			allowNull: false,
 		},
 		message: {
-			type: DataTypes.STRING,
+			type: DataTypes.TEXT,
+			field: "message",
 			allowNull: false,
 		},
 		stack: {
-			type: DataTypes.STRING,
-			allowNull: false,
+			type: DataTypes.TEXT("long"),
+			field: "stack",
+			allowNull: true,
 		},
 		createdAt: {
 			type: DataTypes.DATE(3),
+			field: "created_at",
 			allowNull: false,
 		},
 	},
@@ -49,6 +53,7 @@ ErrorLog.init(
 		sequelize,
 		tableName: "error_log",
 		modelName: "ErrorLog",
-		timestamps: false,
+		timestamps: true,
+		updatedAt: false,
 	},
 );

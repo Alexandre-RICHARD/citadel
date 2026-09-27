@@ -1,6 +1,6 @@
 import { inspect } from "node:util";
 
-import { createErrorLog } from "../projects/errorLog/query/createErrorLog.ts";
+import { errorLogService } from "../projects/errorLog/service/errorLog.service.ts";
 
 /**
  * Ne throw jamais pour ne pas freeze le serveur
@@ -11,7 +11,7 @@ export async function logError(error: unknown, context: string): Promise<void> {
 	console.error(`[${context}]`, errorDetail);
 
 	try {
-		await createErrorLog({
+		await errorLogService.createErrorLog({
 			errorType: error instanceof Error ? error.name : typeof error,
 			message: `[${context}] ${error instanceof Error ? error.message : String(error)}`,
 			stack: errorDetail,

@@ -9,7 +9,7 @@ import { addDeathQuery } from "../query/death/addDeath.query.ts";
 import { deleteDeathQuery } from "../query/death/deleteDeath.query.ts";
 import { updateDeathQuery } from "../query/death/updateDeath.query.ts";
 
-export class DeathService {
+class DeathService {
 	async addDeath(addDeathBean: AddDeathBean): Promise<DeathBean> {
 		const deathEntity = await addDeathQuery(addDeathBean.bossId, dateNow());
 		if (deathEntity === null)

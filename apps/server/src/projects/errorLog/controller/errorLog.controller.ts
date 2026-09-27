@@ -1,24 +1,21 @@
-import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/createErrorLog.endpoint.ts";
+import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLog.endpoint.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { assertString } from "../../../common/asserts/assertString.ts";
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
-import { BadRequestError } from "../../../error/BadRequestError.ts";
-import { createErrorLog } from "../query/createErrorLog.ts";
+import { fromCreateErrorLogDtoToCreateErrorLogBean } from "../mapper/dtoBean/errorLog/fromCreateErrorLogDtoToCreateErrorLogBean.ts";
+import { fromErrorLogBeanToErrorLogDto } from "../mapper/dtoBean/errorLog/fromErrorLogBeanToErrorLogDto.ts";
+import { errorLogService } from "../service/errorLog.service.ts";
 
 export const errorLogController = {
 	create: asyncRequestHandler<CreateErrorLog>(async (request, response) => {
-		const { errorType, message, stack } = request.body;
-		assertString(errorType, "errorController::create> errorType");
-		assertString(message, "errorController::create> message");
-		assertString(stack, "errorController::create> stack");
+		const createErrorLogBean = fromCreateErrorLogDtoToCreateErrorLogBean(
+			request.body,
+		);
 
-		const result = await createErrorLog({ errorType, message, stack });
+		const errorLog = await errorLogService.createErrorLog(createErrorLogBean);
 
-		if (!result) {
-			throw new BadRequestError("Error log could not be created");
-		}
-
-		return response.status(HttpStatutCodeSuccessEnum.CREATED).json(null);
+		return response
+			.status(HttpStatutCodeSuccessEnum.CREATED)
+			.json(fromErrorLogBeanToErrorLogDto(errorLog));
 	}),
 };
