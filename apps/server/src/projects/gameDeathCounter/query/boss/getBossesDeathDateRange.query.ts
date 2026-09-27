@@ -4,7 +4,6 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { sequelize } from "../../../../sequelize.ts";
 import type { BossDeathDateRangeRow } from "../../dbType/bossDeathDateRange.entity.ts";
 
-// TODO Point de vigilence ici. A revenir pour confirmer que ça fait ce qu'il faut
 export async function getBossesDeathDateRangeQuery(
 	bossIds: number[],
 ): Promise<BossDeathDateRangeRow[]> {
