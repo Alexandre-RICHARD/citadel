@@ -39,17 +39,17 @@ Game.init(
 			allowNull: false,
 		},
 		endedAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "ended_at",
 			allowNull: true,
 		},
 		createdAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "created_at",
 			allowNull: false,
 		},
 		updatedAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "updated_at",
 			allowNull: false,
 		},
