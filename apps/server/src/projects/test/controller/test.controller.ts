@@ -3,13 +3,14 @@ import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/delet
 import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTest.endpoint.ts";
 import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTest.endpoint.ts";
 import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint.ts";
-import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { assertBoolean } from "../../../common/asserts/assertBoolean.ts";
 import { assertNumber } from "../../../common/asserts/assertNumber.ts";
 import { assertString } from "../../../common/asserts/assertString.ts";
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { BadRequestError } from "../../../error/BadRequestError.ts";
+import { NotFoundError } from "../../../error/NotFoundError.ts";
 import { toTestDtoMapper } from "../dto/toTestDto.mapper.ts";
 import { toTestsDtoMapper } from "../dto/toTestsDto.mapper.ts";
 import { createTest } from "../query/createTest.ts";
@@ -27,7 +28,7 @@ export const testController = {
 		const result = await getOneTest({ id: parsedId });
 
 		if (!result) {
-			return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+			throw new NotFoundError(`No test with id : ${parsedId}`);
 		}
 
 		return response
@@ -54,7 +55,7 @@ export const testController = {
 		const result = await createTest({ name });
 
 		if (!result) {
-			return response.status(HttpStatutCodeErrorEnum.BAD_REQUEST).json(null);
+			throw new BadRequestError("Test could not be created");
 		}
 
 		return response
@@ -77,7 +78,7 @@ export const testController = {
 		});
 
 		if (!result) {
-			return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+			throw new NotFoundError(`No test with id : ${parsedId}`);
 		}
 
 		return response

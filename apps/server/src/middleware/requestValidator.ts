@@ -52,7 +52,15 @@ export function requestValidator(schemas: RequestSchemas) {
 
 		if (combinedError.issues.length > 0) {
 			next(
-				new BadRequestError("Parsing of request failed", combinedError.issues),
+				new BadRequestError(
+					"Parsing of request failed",
+					combinedError.issues.map((issue) => ({
+						path: issue.path.map((key) =>
+							typeof key === "symbol" ? key.toString() : key,
+						),
+						message: issue.message,
+					})),
+				),
 			);
 			return;
 		}
