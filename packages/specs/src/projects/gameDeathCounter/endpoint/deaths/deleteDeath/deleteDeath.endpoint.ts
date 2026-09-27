@@ -2,13 +2,14 @@ import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.
 import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
+import type { DeleteDeathPathParamDto } from "./deleteDeathPathParam.dto.ts";
 
 export interface DeleteDeath extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/deaths/:id";
 		method: HttpMethodEnum.DELETE;
 		protected: false;
-		pathParams: { id: string };
+		pathParams: DeleteDeathPathParamDto;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;

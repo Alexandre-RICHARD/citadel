@@ -6,6 +6,7 @@ import { setBossDefeatedPathParamSchema } from "@citadel/specs/src/projects/game
 import { updateBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBody.schema.ts";
 import { updateBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossPathParam.schema.ts";
 import { addDeathPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathPathParam.schema.ts";
+import { deleteDeathPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeathPathParam.schema.ts";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
 import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
 import { getOneGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGamePathParam.schema.ts";
@@ -86,6 +87,12 @@ typedRouter.POST(
 	"/gameDeathCounter/bosses/:id/deaths",
 	deathController.add,
 	requestValidator({ params: addDeathPathParamSchema }),
+);
+
+typedRouter.DELETE(
+	"/gameDeathCounter/deaths/:id",
+	deathController.delete,
+	requestValidator({ params: deleteDeathPathParamSchema }),
 );
 
 export const gameDeathCounterRouter = expressRouter;
