@@ -72,6 +72,6 @@ export const bossController = {
 
 		await bossService.deleteBoss(deleteBossBean);
 
-		return response.status(HttpStatutCodeSuccessEnum.SUCCESS).json(null);
+		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 	}),
 };
