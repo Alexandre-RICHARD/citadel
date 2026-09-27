@@ -11,11 +11,24 @@ import { createGameQuery } from "../query/game/createGame.query.ts";
 import { deleteGameQuery } from "../query/game/deleteGame.query.ts";
 import { getAllGamesQuery } from "../query/game/getAllGames.query.ts";
 import { getBossesDeathDateRangeQuery } from "../query/game/getBossesDeathDateRange.query.ts";
+import { getGamesTotalDeathQuery } from "../query/game/getGamesTotalDeath.query.ts";
 import { getGameWithBossesByIdQuery } from "../query/game/getGameWithBossesById.query.ts";
 
 export class GameService {
 	async getAllGames(): Promise<GameSummaryBean[]> {
-		return fromGameEntityListToGameSummaryBeanList(await getAllGamesQuery());
+		const gameEntities = await getAllGamesQuery();
+
+		const gameIds = gameEntities.map((game) => game.id);
+		const gamesTotalDeath = await getGamesTotalDeathQuery(gameIds);
+
+		const totalDeathByGameId = new Map(
+			gamesTotalDeath.map((row) => [row.gameId, row.totalDeath]),
+		);
+
+		return fromGameEntityListToGameSummaryBeanList(
+			gameEntities,
+			totalDeathByGameId,
+		);
 	}
 
 	async getOneGame(getOneGameBean: GetOneGameBean): Promise<GameBean> {
@@ -35,7 +48,7 @@ export class GameService {
 
 	async createGame(createGameBean: CreateGameBean): Promise<GameSummaryBean> {
 		const gameEntity = await createGameQuery(createGameBean);
-		return fromGameEntityToGameSummaryBean(gameEntity);
+		return fromGameEntityToGameSummaryBean(gameEntity, 0);
 	}
 
 	async deleteGame(deleteGameBean: DeleteGameBean): Promise<void> {
