@@ -1,9 +1,11 @@
+import { dateNow } from "../../../common/date/dateNow.ts";
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { CreateGameBean } from "../bean/createGame.bean.ts";
 import type { DeleteGameBean } from "../bean/deleteGame.bean.ts";
 import type { GameBean } from "../bean/game.bean.ts";
 import type { GameSummaryBean } from "../bean/gameSummary.bean.ts";
 import type { GetOneGameBean } from "../bean/getOneGame.bean.ts";
+import type { SetGameFinishedBean } from "../bean/setGameFinished.bean.ts";
 import { fromGameEntityListToGameSummaryBeanList } from "../mapper/beanEntity/game/fromGameEntityListToGameSummaryBeanList.ts";
 import { fromGameEntityToGameBean } from "../mapper/beanEntity/game/fromGameEntityToGameBean.ts";
 import { fromGameEntityToGameSummaryBean } from "../mapper/beanEntity/game/fromGameEntityToGameSummaryBean.ts";
@@ -13,6 +15,7 @@ import { getAllGamesQuery } from "../query/game/getAllGames.query.ts";
 import { getBossesDeathDateRangeQuery } from "../query/game/getBossesDeathDateRange.query.ts";
 import { getGamesTotalDeathQuery } from "../query/game/getGamesTotalDeath.query.ts";
 import { getGameWithBossesByIdQuery } from "../query/game/getGameWithBossesById.query.ts";
+import { updateGameEndedAtQuery } from "../query/game/updateGameEndedAt.query.ts";
 
 export class GameService {
 	async getAllGames(): Promise<GameSummaryBean[]> {
@@ -49,6 +52,24 @@ export class GameService {
 	async createGame(createGameBean: CreateGameBean): Promise<GameSummaryBean> {
 		const gameEntity = await createGameQuery(createGameBean);
 		return fromGameEntityToGameSummaryBean(gameEntity, 0);
+	}
+
+	async setGameFinished(
+		setGameFinishedBean: SetGameFinishedBean,
+	): Promise<GameSummaryBean> {
+		const endedAt = setGameFinishedBean.finished ? dateNow() : null;
+
+		const gameEntity = await updateGameEndedAtQuery(
+			setGameFinishedBean.id,
+			endedAt,
+		);
+		if (gameEntity === null)
+			throw new NotFoundError(`No game with id : ${setGameFinishedBean.id}`);
+
+		const gamesTotalDeath = await getGamesTotalDeathQuery([gameEntity.id]);
+		const gameTotalDeath = gamesTotalDeath.at(0)?.totalDeath ?? 0;
+
+		return fromGameEntityToGameSummaryBean(gameEntity, gameTotalDeath);
 	}
 
 	async deleteGame(deleteGameBean: DeleteGameBean): Promise<void> {
