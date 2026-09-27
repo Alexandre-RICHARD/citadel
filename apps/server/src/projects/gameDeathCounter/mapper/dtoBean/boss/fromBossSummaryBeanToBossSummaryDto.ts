@@ -3,7 +3,6 @@ import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounte
 import { mapNullableDateToStringOrNull } from "../../../../../common/date/mapNullableDateToStringOrNull.ts";
 import type { BossSummaryBean } from "../../../bean/bossSummary.bean.ts";
 
-// TODO Analyse
 export function fromBossSummaryBeanToBossSummaryDto(
 	bossSummaryBean: BossSummaryBean,
 ): BossSummaryDto {
