@@ -8,7 +8,6 @@ export function fromBossSummaryBeanToBossSummaryDto(
 ): BossSummaryDto {
 	const bossSummaryDto = {
 		id: bossSummaryBean.id,
-		gameId: bossSummaryBean.gameId,
 		name: bossSummaryBean.name,
 		firstTry: mapNullableDateToStringOrNull(bossSummaryBean.firstTry),
 		lastTry: mapNullableDateToStringOrNull(bossSummaryBean.lastTry),

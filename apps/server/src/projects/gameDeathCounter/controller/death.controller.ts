@@ -1,5 +1,6 @@
 import type { AddDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeath.endpoint.ts";
 import type { DeleteDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeath.endpoint.ts";
+import type { UpdateDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeath.endpoint.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
@@ -10,6 +11,7 @@ import { NotFoundError } from "../../../error/NotFoundError.ts";
 import { fromAddDeathDtoToAddDeathBean } from "../mapper/dtoBean/death/fromAddDeathDtoToAddDeathBean.ts";
 import { fromDeathBeanToDeathDto } from "../mapper/dtoBean/death/fromDeathBeanToDeathDto.ts";
 import { fromDeleteDeathDtoToDeleteDeathBean } from "../mapper/dtoBean/death/fromDeleteDeathDtoToDeleteDeathBean.ts";
+import { fromUpdateDeathDtoToUpdateDeathBean } from "../mapper/dtoBean/death/fromUpdateDeathDtoToUpdateDeathBean.ts";
 import { deathService } from "../service/death.service.ts";
 
 export const deathController = {
@@ -23,6 +25,31 @@ export const deathController = {
 
 			return response
 				.status(HttpStatutCodeSuccessEnum.CREATED)
+				.json(fromDeathBeanToDeathDto(death));
+		} catch (error) {
+			void handleBaseError(error);
+			switch (true) {
+				case error instanceof NotFoundError:
+					return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+				case error instanceof DatabaseError:
+				default:
+					return response
+						.status(HttpStatutCodeErrorEnum.SERVER_ERROR)
+						.json(null);
+			}
+		}
+	}),
+
+	update: asyncRequestHandler<UpdateDeath>(async (request, response) => {
+		const { params, body } = request;
+
+		try {
+			const updateDeathBean = fromUpdateDeathDtoToUpdateDeathBean(params, body);
+
+			const death = await deathService.updateDeath(updateDeathBean);
+
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
 				.json(fromDeathBeanToDeathDto(death));
 		} catch (error) {
 			void handleBaseError(error);

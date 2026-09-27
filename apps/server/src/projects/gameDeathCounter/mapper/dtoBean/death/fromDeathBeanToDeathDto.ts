@@ -4,9 +4,8 @@ import { mapDateToString } from "../../../../../common/date/mapDateToString.ts";
 import type { DeathBean } from "../../../bean/death.bean.ts";
 
 export function fromDeathBeanToDeathDto(deathBean: DeathBean): DeathDto {
-	const deathDto = {
+	const deathDto: DeathDto = {
 		id: deathBean.id,
-		bossId: deathBean.bossId,
 		date: mapDateToString(deathBean.date),
 		comment: deathBean.comment,
 	};

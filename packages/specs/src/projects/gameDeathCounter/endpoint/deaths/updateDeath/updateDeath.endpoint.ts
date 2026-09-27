@@ -3,17 +3,16 @@ import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { DeathDto } from "../../../dto/death/death.dto.ts";
+import type { UpdateDeathBodyDto } from "./updateDeathBody.dto.ts";
+import type { UpdateDeathPathParamDto } from "./updateDeathPathParam.dto.ts";
 
 export interface UpdateDeath extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/deaths/:id";
 		method: HttpMethodEnum.PATCH;
 		protected: false;
-		pathParams: { id: string };
-		body: {
-			comment?: string | null;
-			date?: string;
-		};
+		pathParams: UpdateDeathPathParamDto;
+		body: UpdateDeathBodyDto;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;
