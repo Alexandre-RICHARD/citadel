@@ -1,6 +1,5 @@
 import { QueryTypes } from "sequelize";
 
-import { dateNow } from "../../../common/date/dateNow.ts";
 import { sequelize } from "../../../sequelize.ts";
 import { Test } from "../models/Test.ts";
 import { getOneTest } from "./getOneTest.ts";
@@ -20,7 +19,7 @@ export async function updateTest({
       UPDATE tests
 			SET name = :name,
 				is_active = :isActive,
-				updated_at = :updatedAt
+				updated_at = CURRENT_TIMESTAMP(3)
 			WHERE id = :id;
     `;
 
@@ -31,7 +30,6 @@ export async function updateTest({
 			replacements: {
 				name,
 				isActive,
-				updatedAt: dateNow(),
 				id,
 			},
 		});

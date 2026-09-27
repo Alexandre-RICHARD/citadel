@@ -1,6 +1,5 @@
 import { QueryTypes } from "sequelize";
 
-import { dateNow } from "../../../common/date/dateNow.ts";
 import { sequelize } from "../../../sequelize.ts";
 import { Test } from "../models/Test.ts";
 
@@ -20,7 +19,7 @@ export async function createTest({ name }: Args): Promise<Test | null> {
 			VALUES (
 				:name,
 				:isActive,
-				:createdAt,
+				CURRENT_TIMESTAMP(3),
 				:updatedAt
 			)
 			RETURNING *;
@@ -35,7 +34,6 @@ export async function createTest({ name }: Args): Promise<Test | null> {
 			replacements: {
 				name,
 				isActive: false,
-				createdAt: dateNow(),
 				updatedAt: null,
 			},
 		});

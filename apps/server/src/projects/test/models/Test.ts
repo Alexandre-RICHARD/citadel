@@ -37,11 +37,11 @@ Test.init(
 			allowNull: false,
 		},
 		createdAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			allowNull: false,
 		},
 		updatedAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			allowNull: true,
 		},
 	},

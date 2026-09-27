@@ -48,7 +48,7 @@ Boss.init(
 			allowNull: false,
 		},
 		defeatedAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "defeated_at",
 			allowNull: true,
 		},
@@ -59,12 +59,12 @@ Boss.init(
 			defaultValue: 0,
 		},
 		createdAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "created_at",
 			allowNull: false,
 		},
 		updatedAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			field: "updated_at",
 			allowNull: false,
 		},

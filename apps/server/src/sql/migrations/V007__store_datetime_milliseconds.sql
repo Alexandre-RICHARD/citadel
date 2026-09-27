@@ -1,0 +1,22 @@
+-- Toutes les colonnes DATETIME passent en DATETIME(3) pour conserver les millisecondes.
+-- Les valeurs existantes sont gardées telles quelles (millisecondes à .000).
+-- Nullabilité, valeurs par défaut et ON UPDATE sont reconduits à l'identique, en précision 3.
+-- `tests` est déjà en DATETIME(3) depuis V001.
+
+ALTER TABLE game
+    MODIFY COLUMN ended_at DATETIME(3) NULL,
+    MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    MODIFY COLUMN updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3);
+
+ALTER TABLE boss
+    MODIFY COLUMN defeated_at DATETIME(3) NULL,
+    MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    MODIFY COLUMN updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3);
+
+ALTER TABLE death
+    MODIFY COLUMN date DATETIME(3) NOT NULL,
+    MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    MODIFY COLUMN updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3);
+
+ALTER TABLE error_log
+    MODIFY COLUMN created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

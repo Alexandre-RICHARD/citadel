@@ -1,6 +1,5 @@
 import { QueryTypes } from "sequelize";
 
-import { dateNow } from "../../../common/date/dateNow.ts";
 import { sequelize } from "../../../sequelize.ts";
 import { ErrorLog } from "../models/errorLog.ts";
 
@@ -27,7 +26,7 @@ export async function createErrorLog({
 				:errorType,
 				:message,
 				:stack,
-				:createdAt
+				CURRENT_TIMESTAMP(3)
 			)
 			RETURNING *;
     `;
@@ -42,7 +41,6 @@ export async function createErrorLog({
 				errorType,
 				message,
 				stack,
-				createdAt: dateNow(),
 			},
 		});
 	} catch (error) {

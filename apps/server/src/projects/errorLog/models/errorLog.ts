@@ -41,7 +41,7 @@ ErrorLog.init(
 			allowNull: false,
 		},
 		createdAt: {
-			type: DataTypes.DATE,
+			type: DataTypes.DATE(3),
 			allowNull: false,
 		},
 	},
