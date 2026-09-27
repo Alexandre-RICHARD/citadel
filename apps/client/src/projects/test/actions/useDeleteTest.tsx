@@ -1,4 +1,5 @@
 import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTest.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 
@@ -29,7 +30,7 @@ export function useDeleteTest({
 		mutationKey: ["createTest"],
 		mutationFn: async ({ id }) =>
 			fetchHandler<DeleteTest>({
-				url: "/test/test/:id",
+				url: `${ApiPrefixEnum.TEST}/test/:id`,
 				method: HttpMethodEnum.DELETE,
 				protected: false,
 				pathParams: {

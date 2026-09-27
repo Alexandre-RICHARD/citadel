@@ -4,7 +4,7 @@ import { createErrorLog } from "../projects/errorLog/query/createErrorLog.ts";
 
 /**
  * Ne throw jamais pour ne pas freeze le serveur
- * @param context Où l'erreur s'est produite (ex : "GET /gameDeathCounter/games/3")
+ * @param context Où l'erreur s'est produite
  */
 export async function logError(error: unknown, context: string): Promise<void> {
 	const errorDetail = inspect(error, { depth: 5 });

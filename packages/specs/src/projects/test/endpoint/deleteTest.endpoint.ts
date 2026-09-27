@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -8,7 +9,7 @@ import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCod
 // TODO Implémenter la nouvelle manière de faire avec zod
 export interface DeleteTest extends EndpointModel {
 	request: {
-		url: "/test/test/:id";
+		url: `${ApiPrefixEnum.TEST}/test/:id`;
 		method: HttpMethodEnum.DELETE;
 		protected: false;
 		pathParams: {

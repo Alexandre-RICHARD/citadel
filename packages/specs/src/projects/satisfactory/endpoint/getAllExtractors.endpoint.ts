@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
@@ -7,7 +8,7 @@ import type { ExtractorDto } from "../dto/extractor.dto.ts";
 
 export interface GetAllExtractors extends EndpointModel {
 	request: {
-		url: "/satisfactory/getExtractor";
+		url: `${ApiPrefixEnum.SATISFACTORY}/getExtractor`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};

@@ -1,6 +1,7 @@
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummary.dto";
 import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint";
 import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.dto";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
 import type { ApiError } from "../../../common/error/ApiError";
@@ -15,7 +16,7 @@ export function useCreateGame(props: Props = {}) {
 	return useApiMutation<CreateGame, CreateGameBodyDto>({
 		mutationKey: ["createGame"],
 		buildRequest: (body) => ({
-			url: "/gameDeathCounter/games",
+			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`,
 			method: HttpMethodEnum.POST,
 			protected: false,
 			body,

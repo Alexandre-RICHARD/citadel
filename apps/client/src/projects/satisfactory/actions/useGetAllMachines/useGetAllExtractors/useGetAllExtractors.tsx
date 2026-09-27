@@ -1,4 +1,5 @@
 import type { GetAllExtractors } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllExtractors.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,7 +20,7 @@ export function useGetAllExtractors() {
 		queryFn: async () => {
 			return fetchHandler<GetAllExtractors>(
 				{
-					url: "/satisfactory/getExtractor",
+					url: `${ApiPrefixEnum.SATISFACTORY}/getExtractor`,
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

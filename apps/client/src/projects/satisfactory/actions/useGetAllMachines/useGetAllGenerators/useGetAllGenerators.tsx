@@ -1,4 +1,5 @@
 import type { GetAllGenerators } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllGenerators.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,7 +20,7 @@ export function useGetAllGenerators() {
 		queryFn: async () => {
 			return fetchHandler<GetAllGenerators>(
 				{
-					url: "/satisfactory/getGenerators",
+					url: `${ApiPrefixEnum.SATISFACTORY}/getGenerators`,
 					method: HttpMethodEnum.GET,
 					protected: false,
 				},

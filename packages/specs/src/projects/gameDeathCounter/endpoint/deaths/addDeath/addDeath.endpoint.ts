@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponse.dto.ts";
 import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponse.dto.ts";
@@ -9,7 +10,7 @@ import type { AddDeathPathParamDto } from "./addDeathPathParam.dto.ts";
 
 export interface AddDeath extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/bosses/:bossId/deaths";
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`;
 		method: HttpMethodEnum.POST;
 		protected: false;
 		pathParams: AddDeathPathParamDto;

@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
@@ -7,7 +8,7 @@ import type { GeneratorDto } from "../dto/generator.dto.ts";
 
 export interface GetAllGenerators extends EndpointModel {
 	request: {
-		url: "/satisfactory/getGenerators";
+		url: `${ApiPrefixEnum.SATISFACTORY}/getGenerators`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};

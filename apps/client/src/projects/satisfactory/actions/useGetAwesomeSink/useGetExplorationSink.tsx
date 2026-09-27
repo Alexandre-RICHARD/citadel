@@ -1,4 +1,5 @@
 import type { GetExplorationSink } from "@citadel/specs/src/projects/satisfactory/endpoint/getExplorationSink.endpoint";
+import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,7 +13,7 @@ export function useGetExplorationSink() {
 			queryFn: async () => {
 				return fetchHandler<GetExplorationSink>(
 					{
-						url: "/satisfactory/getExplorationSink",
+						url: `${ApiPrefixEnum.SATISFACTORY}/getExplorationSink`,
 						method: HttpMethodEnum.GET,
 						protected: false,
 					},

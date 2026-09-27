@@ -1,3 +1,4 @@
+import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
 import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
@@ -7,7 +8,7 @@ import type { GameListDto } from "../../../dto/game/gameList.dto.ts";
 
 export interface GetAllGames extends EndpointModel {
 	request: {
-		url: "/gameDeathCounter/games";
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};
