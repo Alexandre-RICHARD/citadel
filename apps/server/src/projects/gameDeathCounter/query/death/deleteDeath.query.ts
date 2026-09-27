@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { sequelize } from "../../../../sequelize.ts";
 import { Boss } from "../../models/Boss.ts";
@@ -22,7 +24,7 @@ export async function deleteDeathQuery(id: number): Promise<boolean> {
 
 			await Boss.decrement("totalDeath", {
 				by: 1,
-				where: { id: death.bossId },
+				where: { id: death.bossId, totalDeath: { [Op.gt]: 0 } },
 				transaction,
 			});
 

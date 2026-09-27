@@ -8,6 +8,10 @@ export async function getGameWithBossesByIdQuery(
 	try {
 		const gameWithBosses = await Game.findByPk(id, {
 			include: { model: Boss, as: "bosses" },
+			order: [
+				[{ model: Boss, as: "bosses" }, "createdAt", "ASC"],
+				[{ model: Boss, as: "bosses" }, "id", "ASC"],
+			],
 		});
 		return gameWithBosses;
 	} catch (error) {
