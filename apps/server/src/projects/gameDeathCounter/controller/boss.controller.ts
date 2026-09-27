@@ -1,4 +1,5 @@
 import type { CreateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBoss.endpoint.ts";
+import type { DeleteBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBoss.endpoint.ts";
 import type { GetOneBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBoss.endpoint.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
@@ -10,6 +11,7 @@ import { NotFoundError } from "../../../error/NotFoundError.ts";
 import { fromBossBeanToBossDto } from "../mapper/dtoBean/boss/fromBossBeanToBossDto.ts";
 import { fromBossSummaryBeanToBossSummaryDto } from "../mapper/dtoBean/boss/fromBossSummaryBeanToBossSummaryDto.ts";
 import { fromCreateBossDtoToCreateBossBean } from "../mapper/dtoBean/boss/fromCreateBossDtoToCreateBossBean.ts";
+import { fromDeleteBossDtoToDeleteBossBean } from "../mapper/dtoBean/boss/fromDeleteBossDtoToDeleteBossBean.ts";
 import { fromGetOneBossDtoToGetOneBossBean } from "../mapper/dtoBean/boss/fromGetOneBossDtoToGetOneBossBean.ts";
 import { bossService } from "../service/boss.service.ts";
 
@@ -56,6 +58,30 @@ export const bossController = {
 			switch (true) {
 				case error instanceof NotFoundError:
 					return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+				case error instanceof DatabaseError:
+				default:
+					return response
+						.status(HttpStatutCodeErrorEnum.SERVER_ERROR)
+						.json(null);
+			}
+		}
+	}),
+
+	delete: asyncRequestHandler<DeleteBoss>(async (request, response) => {
+		const { params } = request;
+
+		try {
+			const deleteBossBean = fromDeleteBossDtoToDeleteBossBean(params);
+
+			await bossService.deleteBoss(deleteBossBean);
+
+			return response.status(HttpStatutCodeSuccessEnum.SUCCESS).json(null);
+		} catch (error) {
+			void handleBaseError(error);
+			switch (true) {
+				case error instanceof NotFoundError:
+					return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+
 				case error instanceof DatabaseError:
 				default:
 					return response

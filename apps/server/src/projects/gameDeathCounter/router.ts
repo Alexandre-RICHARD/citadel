@@ -1,4 +1,5 @@
 import { createBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBody.schema.ts";
+import { deleteBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossPathParam.schema.ts";
 import { getOneBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossPathParam.schema.ts";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
 import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
@@ -48,6 +49,12 @@ typedRouter.POST(
 	"/gameDeathCounter/bosses",
 	bossController.create,
 	requestValidator({ body: createBossBodySchema }),
+);
+
+typedRouter.DELETE(
+	"/gameDeathCounter/bosses/:id",
+	bossController.delete,
+	requestValidator({ params: deleteBossPathParamSchema }),
 );
 
 export const gameDeathCounterRouter = expressRouter;
