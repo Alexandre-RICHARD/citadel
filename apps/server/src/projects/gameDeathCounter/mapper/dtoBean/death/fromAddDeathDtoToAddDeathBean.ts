@@ -6,7 +6,7 @@ export function fromAddDeathDtoToAddDeathBean(
 	addDeathPathParamDto: AddDeathPathParamDto,
 ): AddDeathBean {
 	const addDeathBean = {
-		bossId: addDeathPathParamDto.id,
+		bossId: addDeathPathParamDto.bossId,
 	};
 	return addDeathBean;
 }

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const addDeathPathParamSchema = z.object({
-	id: z.coerce
-		.number({ message: "ID should be integer" })
+	bossId: z.coerce
+		.number({ message: "Boss ID should be integer" })
 		.int()
-		.positive({ message: "ID should be positive" }),
+		.positive({ message: "Boss ID should be positive" }),
 });
