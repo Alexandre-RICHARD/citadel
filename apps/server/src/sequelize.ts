@@ -1,21 +1,27 @@
 import { Sequelize } from "sequelize";
 
-const database = process.env.DB_DATABASE_NAME;
-const username = process.env.DB_USER_NAME;
-const password = process.env.DB_USER_PASSWORD;
+import { env } from "./env.ts";
 
-export const sequelize = new Sequelize(database, username, password, {
-	dialect: process.env.DB_DRIVER,
-	host: process.env.DB_HOST,
-	port: parseInt(process.env.DB_PORT, 10),
-	define: {
-		underscored: true,
-		charset: "utf8mb4",
-		collate: "utf8mb4_unicode_520_ci",
+export const sequelize = new Sequelize(
+	env.DB_DATABASE_NAME,
+	env.DB_USER_NAME,
+	env.DB_USER_PASSWORD,
+	{
+		dialect: env.DB_DRIVER,
+		host: env.DB_HOST,
+		port: env.DB_PORT,
+		timezone: "+00:00",
+		/* eslint-disable-next-line no-console */
+		logging: env.LOG_DB ? console.log : false,
+		define: {
+			underscored: true,
+			charset: "utf8mb4",
+			collate: "utf8mb4_unicode_520_ci",
+		},
+		pool: {
+			max: 10,
+			idle: 30000,
+			acquire: 60000,
+		},
 	},
-	pool: {
-		max: 10,
-		idle: 30000,
-		acquire: 60000,
-	},
-});
+);
