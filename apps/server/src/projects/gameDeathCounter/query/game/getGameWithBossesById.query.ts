@@ -6,9 +6,10 @@ export async function getGameWithBossesByIdQuery(
 	id: number,
 ): Promise<Game | null> {
 	try {
-		return await Game.findByPk(id, {
+		const gameWithBosses = await Game.findByPk(id, {
 			include: { model: Boss, as: "bosses" },
 		});
+		return gameWithBosses;
 	} catch {
 		throw new DatabaseError("Failed to fetch game with bosses");
 	}

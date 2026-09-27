@@ -3,13 +3,14 @@ import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { BossDto } from "../../../dto/boss/boss.dto.ts";
+import type { GetOneBossPathParamDto } from "./getOneBossPathParam.dto.ts";
 
 export interface GetOneBoss extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/bosses/:id";
 		method: HttpMethodEnum.GET;
 		protected: false;
-		pathParams: { id: string };
+		pathParams: GetOneBossPathParamDto;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;

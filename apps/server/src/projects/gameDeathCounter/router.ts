@@ -1,4 +1,5 @@
 import { createBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBody.schema.ts";
+import { getOneBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossPathParam.schema.ts";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
 import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
 import { getOneGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGamePathParam.schema.ts";
@@ -15,6 +16,7 @@ const expressRouter = ExpressRouter();
 const typedRouter =
 	createTypedExpressRouter<GameDeathCounterEndpointRegistry>(expressRouter);
 
+// ==== GAMES ====
 typedRouter.GET("/gameDeathCounter/games", gameController.getAll);
 
 typedRouter.GET(
@@ -33,6 +35,13 @@ typedRouter.DELETE(
 	"/gameDeathCounter/games/:id",
 	gameController.delete,
 	requestValidator({ params: deleteGamePathParamSchema }),
+);
+
+// ==== BOSSES ====
+typedRouter.GET(
+	"/gameDeathCounter/bosses/:id",
+	bossController.getOne,
+	requestValidator({ params: getOneBossPathParamSchema }),
 );
 
 typedRouter.POST(
