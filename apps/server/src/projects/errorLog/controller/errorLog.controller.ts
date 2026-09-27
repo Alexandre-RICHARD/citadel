@@ -1,9 +1,9 @@
 import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/createErrorLog.endpoint.ts";
-import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { assertString } from "../../../common/asserts/assertString.ts";
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { BadRequestError } from "../../../error/BadRequestError.ts";
 import { createErrorLog } from "../query/createErrorLog.ts";
 
 export const errorLogController = {
@@ -16,7 +16,7 @@ export const errorLogController = {
 		const result = await createErrorLog({ errorType, message, stack });
 
 		if (!result) {
-			return response.status(HttpStatutCodeErrorEnum.BAD_REQUEST).json(null);
+			throw new BadRequestError("Error log could not be created");
 		}
 
 		return response.status(HttpStatutCodeSuccessEnum.CREATED).json(null);

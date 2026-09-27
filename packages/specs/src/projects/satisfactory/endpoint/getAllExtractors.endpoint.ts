@@ -1,4 +1,5 @@
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
+import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
@@ -15,6 +16,6 @@ export interface GetAllExtractors extends EndpointModel {
 		data: ExtractorDto[];
 	};
 	error: {
-		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;
 	};
 }

@@ -1,4 +1,6 @@
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
+import type { ErrorResponseDto } from "../../../specUtils/error/errorResponse.dto.ts";
+import type { ValidationErrorResponseDto } from "../../../specUtils/error/validationErrorResponse.dto.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
@@ -18,8 +20,8 @@ export interface DeleteTest extends EndpointModel {
 		data: null;
 	};
 	error: {
-		[HttpStatutCodeErrorEnum.SERVER_ERROR]: null;
-		[HttpStatutCodeErrorEnum.NOT_FOUND]: null;
-		[HttpStatutCodeErrorEnum.BAD_REQUEST]: null;
+		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;
+		[HttpStatutCodeErrorEnum.NOT_FOUND]: ErrorResponseDto;
+		[HttpStatutCodeErrorEnum.BAD_REQUEST]: ValidationErrorResponseDto;
 	};
 }
