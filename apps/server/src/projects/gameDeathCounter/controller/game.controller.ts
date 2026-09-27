@@ -3,6 +3,7 @@ import { type DeleteGame } from "@citadel/specs/src/projects/gameDeathCounter/en
 import type { GetAllGames } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getAllGames/getAllGames.endpoint.ts";
 import type { GetOneGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGame.endpoint.ts";
 import type { SetGameFinished } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinished.endpoint.ts";
+import type { UpdateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGame.endpoint.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
@@ -17,6 +18,7 @@ import { fromGameSummaryBeanListToGameListDto } from "../mapper/dtoBean/game/fro
 import { fromGameSummaryBeanToGameSummaryDto } from "../mapper/dtoBean/game/fromGameSummaryBeanToGameSummaryDto.ts";
 import { fromGetOneGameDtoToGetOneGameBean } from "../mapper/dtoBean/game/fromGetOneGameDtoToGetOneGameBean.ts";
 import { fromSetGameFinishedDtoToSetGameFinishedBean } from "../mapper/dtoBean/game/fromSetGameFinishedDtoToSetGameFinishedBean.ts";
+import { fromUpdateGameDtoToUpdateGameBean } from "../mapper/dtoBean/game/fromUpdateGameDtoToUpdateGameBean.ts";
 import { gameService } from "../service/game.service.ts";
 
 export const gameController = {
@@ -80,6 +82,31 @@ export const gameController = {
 			void handleBaseError(error);
 			switch (true) {
 				case error instanceof NotFoundError:
+				default:
+					return response
+						.status(HttpStatutCodeErrorEnum.SERVER_ERROR)
+						.json(null);
+			}
+		}
+	}),
+
+	update: asyncRequestHandler<UpdateGame>(async (request, response) => {
+		const { params, body } = request;
+
+		try {
+			const updateGameBean = fromUpdateGameDtoToUpdateGameBean(params, body);
+
+			const game = await gameService.updateGame(updateGameBean);
+
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromGameSummaryBeanToGameSummaryDto(game));
+		} catch (error) {
+			void handleBaseError(error);
+			switch (true) {
+				case error instanceof NotFoundError:
+					return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+				case error instanceof DatabaseError:
 				default:
 					return response
 						.status(HttpStatutCodeErrorEnum.SERVER_ERROR)
