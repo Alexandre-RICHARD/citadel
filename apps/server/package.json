@@ -38,7 +38,6 @@
     "esbuild": "^0.28.2",
     "eslint": "catalog:",
     "globals": "catalog:",
-    "sequelize-cli": "^6.6.3",
     "tsx": "^4.23.15",
     "typescript": "catalog:",
     "vite": "catalog:",
