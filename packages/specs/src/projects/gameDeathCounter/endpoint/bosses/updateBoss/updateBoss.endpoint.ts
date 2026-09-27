@@ -11,7 +11,7 @@ import type { UpdateBossPathParamDto } from "./updateBossPathParam.dto.ts";
 export interface UpdateBoss extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/bosses/:id";
-		method: HttpMethodEnum.PATCH;
+		method: HttpMethodEnum.PUT;
 		protected: false;
 		pathParams: UpdateBossPathParamDto;
 		body: UpdateBossBodyDto;

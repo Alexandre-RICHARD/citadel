@@ -45,7 +45,7 @@ typedRouter.POST(
 	requestValidator({ body: createGameBodySchema }),
 );
 
-typedRouter.PATCH(
+typedRouter.PUT(
 	"/gameDeathCounter/games/:id",
 	gameController.update,
 	requestValidator({
@@ -82,7 +82,7 @@ typedRouter.POST(
 	requestValidator({ body: createBossBodySchema }),
 );
 
-typedRouter.PATCH(
+typedRouter.PUT(
 	"/gameDeathCounter/bosses/:id",
 	bossController.update,
 	requestValidator({
