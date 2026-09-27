@@ -5,6 +5,7 @@ import { setBossDefeatedBodySchema } from "@citadel/specs/src/projects/gameDeath
 import { setBossDefeatedPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedPathParam.schema.ts";
 import { updateBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBody.schema.ts";
 import { updateBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossPathParam.schema.ts";
+import { addDeathPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathPathParam.schema.ts";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
 import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.schema.ts";
 import { getOneGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGamePathParam.schema.ts";
@@ -14,6 +15,7 @@ import { Router as ExpressRouter } from "express";
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";
 import { requestValidator } from "../../middleware/requestValidator.ts";
 import { bossController } from "./controller/boss.controller.ts";
+import { deathController } from "./controller/death.controller.ts";
 import { gameController } from "./controller/game.controller.ts";
 
 const expressRouter = ExpressRouter();
@@ -77,6 +79,13 @@ typedRouter.DELETE(
 	"/gameDeathCounter/bosses/:id",
 	bossController.delete,
 	requestValidator({ params: deleteBossPathParamSchema }),
+);
+
+// ==== DEATHS ====
+typedRouter.POST(
+	"/gameDeathCounter/bosses/:id/deaths",
+	deathController.add,
+	requestValidator({ params: addDeathPathParamSchema }),
 );
 
 export const gameDeathCounterRouter = expressRouter;
