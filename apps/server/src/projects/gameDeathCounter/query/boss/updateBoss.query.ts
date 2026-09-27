@@ -11,10 +11,11 @@ export async function updateBossQuery(
 		const boss = await Boss.findByPk(updateBossBean.id);
 		if (boss === null) return null;
 
-		return await boss.update({
+		const updatedBoss = await boss.update({
 			name: updateBossBean.name,
 			gameId: updateBossBean.gameId,
 		});
+		return updatedBoss;
 	} catch {
 		throw new DatabaseError("Failed to update boss");
 	}

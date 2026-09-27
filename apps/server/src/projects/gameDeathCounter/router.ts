@@ -1,6 +1,8 @@
 import { createBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBody.schema.ts";
 import { deleteBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossPathParam.schema.ts";
 import { getOneBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossPathParam.schema.ts";
+import { setBossDefeatedBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedBody.schema.ts";
+import { setBossDefeatedPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedPathParam.schema.ts";
 import { updateBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBody.schema.ts";
 import { updateBossPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossPathParam.schema.ts";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBody.schema.ts";
@@ -59,6 +61,15 @@ typedRouter.PATCH(
 	requestValidator({
 		params: updateBossPathParamSchema,
 		body: updateBossBodySchema,
+	}),
+);
+
+typedRouter.PATCH(
+	"/gameDeathCounter/bosses/:id/defeated",
+	bossController.setDefeated,
+	requestValidator({
+		params: setBossDefeatedPathParamSchema,
+		body: setBossDefeatedBodySchema,
 	}),
 );
 
