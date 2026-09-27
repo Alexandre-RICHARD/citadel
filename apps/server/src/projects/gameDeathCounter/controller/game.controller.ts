@@ -1,6 +1,7 @@
 import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGame.endpoint.ts";
 import { type DeleteGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGame.endpoint.ts";
 import type { GetAllGames } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getAllGames/getAllGames.endpoint.ts";
+import type { GetOneGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGame.endpoint.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
@@ -8,9 +9,12 @@ import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler
 import { DatabaseError } from "../../../error/DatabaseError.ts";
 import { handleBaseError } from "../../../error/handleBaseError.ts";
 import { NotFoundError } from "../../../error/NotFoundError.ts";
-import { createGameMapper } from "../mapper/createGame.mapper.ts";
-import { deleteGameMapper } from "../mapper/deleteGame.mapper.ts";
-import { gameMapper } from "../mapper/game.mapper.ts";
+import { fromCreateGameDtoToCreateGameBean } from "../mapper/dtoBean/game/fromCreateGameDtoToCreateGameBean.ts";
+import { fromDeleteGameDtoToDeleteGameBean } from "../mapper/dtoBean/game/fromDeleteGameDtoToDeleteGameBean.ts";
+import { fromGameBeanToGameDto } from "../mapper/dtoBean/game/fromGameBeanToGameDto.ts";
+import { fromGameSummaryBeanListToGameListDto } from "../mapper/dtoBean/game/fromGameSummaryBeanListToGameListDto.ts";
+import { fromGameSummaryBeanToGameSummaryDto } from "../mapper/dtoBean/game/fromGameSummaryBeanToGameSummaryDto.ts";
+import { fromGetOneGameDtoToGetOneGameBean } from "../mapper/dtoBean/game/fromGetOneGameDtoToGetOneGameBean.ts";
 import { gameService } from "../service/game.service.ts";
 
 export const gameController = {
@@ -20,10 +24,36 @@ export const gameController = {
 
 			return response
 				.status(HttpStatutCodeSuccessEnum.SUCCESS)
-				.json(gameMapper.fromGameSummaryBeanListToGameListDto(games));
+				.json(fromGameSummaryBeanListToGameListDto(games));
 		} catch (error) {
 			void handleBaseError(error);
 			switch (true) {
+				case error instanceof DatabaseError:
+				default:
+					return response
+						.status(HttpStatutCodeErrorEnum.SERVER_ERROR)
+						.json(null);
+			}
+		}
+	}),
+
+	getOne: asyncRequestHandler<GetOneGame>(async (request, response) => {
+		const { params } = request;
+
+		try {
+			const getOneGameBean = fromGetOneGameDtoToGetOneGameBean(params);
+
+			const game = await gameService.getOneGame(getOneGameBean);
+
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromGameBeanToGameDto(game));
+		} catch (error) {
+			void handleBaseError(error);
+			switch (true) {
+				case error instanceof NotFoundError:
+					return response.status(HttpStatutCodeErrorEnum.NOT_FOUND).json(null);
+
 				case error instanceof DatabaseError:
 				default:
 					return response
@@ -37,14 +67,13 @@ export const gameController = {
 		const { body } = request;
 
 		try {
-			const createGameBean =
-				createGameMapper.fromCreateGameDtoToCreateGameBean(body);
+			const createGameBean = fromCreateGameDtoToCreateGameBean(body);
 
 			const game = await gameService.createGame(createGameBean);
 
 			return response
 				.status(HttpStatutCodeSuccessEnum.CREATED)
-				.json(gameMapper.fromGameSummaryBeanToGameSummaryDto(game));
+				.json(fromGameSummaryBeanToGameSummaryDto(game));
 		} catch (error) {
 			void handleBaseError(error);
 			switch (true) {
@@ -61,8 +90,7 @@ export const gameController = {
 		const { params } = request;
 
 		try {
-			const deleteGameBean =
-				deleteGameMapper.fromDeleteGameDtoToDeleteGameBean(params);
+			const deleteGameBean = fromDeleteGameDtoToDeleteGameBean(params);
 
 			await gameService.deleteGame(deleteGameBean);
 

@@ -3,13 +3,14 @@ import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { GameDto } from "../../../dto/game/game.dto.ts";
+import type { GetOneGamePathParamDto } from "./getOneGamePathParam.dto.ts";
 
 export interface GetOneGame extends EndpointModel {
 	request: {
 		url: "/gameDeathCounter/games/:id";
 		method: HttpMethodEnum.GET;
 		protected: false;
-		pathParams: { id: string };
+		pathParams: GetOneGamePathParamDto;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;
