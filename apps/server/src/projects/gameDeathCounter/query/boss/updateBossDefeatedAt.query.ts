@@ -13,7 +13,9 @@ export async function updateBossDefeatedAtQuery(
 
 		const updatedBoss = await boss.update({ defeatedAt });
 		return updatedBoss;
-	} catch {
-		throw new DatabaseError("Failed to update boss defeat date");
+	} catch (error) {
+		throw new DatabaseError("Failed to update boss defeat date", {
+			cause: error,
+		});
 	}
 }

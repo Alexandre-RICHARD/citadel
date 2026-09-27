@@ -10,7 +10,7 @@ export async function updateGameQuery(
 		if (game === null) return null;
 
 		return await game.update({ name: updateGameBean.name });
-	} catch {
-		throw new DatabaseError("Failed to update game");
+	} catch (error) {
+		throw new DatabaseError("Failed to update game", { cause: error });
 	}
 }

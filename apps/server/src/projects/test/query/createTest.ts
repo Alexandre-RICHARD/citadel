@@ -1,5 +1,6 @@
 import { QueryTypes } from "sequelize";
 
+import { DatabaseError } from "../../../error/DatabaseError.ts";
 import { sequelize } from "../../../sequelize.ts";
 import { Test } from "../models/Test.ts";
 
@@ -38,6 +39,6 @@ export async function createTest({ name }: Args): Promise<Test | null> {
 			},
 		});
 	} catch (error) {
-		throw new Error(error as string);
+		throw new DatabaseError("createTest failed", { cause: error });
 	}
 }

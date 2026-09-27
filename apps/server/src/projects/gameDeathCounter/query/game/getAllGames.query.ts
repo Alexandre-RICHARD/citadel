@@ -5,7 +5,7 @@ export async function getAllGamesQuery(): Promise<Game[]> {
 	try {
 		const allGames = await Game.findAll();
 		return allGames;
-	} catch {
-		throw new DatabaseError("Failed to fetch games");
+	} catch (error) {
+		throw new DatabaseError("Failed to fetch games", { cause: error });
 	}
 }

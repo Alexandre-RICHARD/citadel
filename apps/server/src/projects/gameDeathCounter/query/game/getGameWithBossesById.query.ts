@@ -10,7 +10,9 @@ export async function getGameWithBossesByIdQuery(
 			include: { model: Boss, as: "bosses" },
 		});
 		return gameWithBosses;
-	} catch {
-		throw new DatabaseError("Failed to fetch game with bosses");
+	} catch (error) {
+		throw new DatabaseError("Failed to fetch game with bosses", {
+			cause: error,
+		});
 	}
 }

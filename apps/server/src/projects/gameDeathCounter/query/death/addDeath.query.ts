@@ -37,7 +37,7 @@ export async function addDeathQuery(
 
 			return death;
 		});
-	} catch {
-		throw new DatabaseError("Failed to add death");
+	} catch (error) {
+		throw new DatabaseError("Failed to add death", { cause: error });
 	}
 }

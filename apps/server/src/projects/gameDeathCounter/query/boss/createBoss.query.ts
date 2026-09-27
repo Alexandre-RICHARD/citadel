@@ -12,7 +12,7 @@ export async function createBossQuery(
 			defeatedAt: null,
 		});
 		return newBoss;
-	} catch {
-		throw new DatabaseError("Failed to insert new boss");
+	} catch (error) {
+		throw new DatabaseError("Failed to insert new boss", { cause: error });
 	}
 }

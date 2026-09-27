@@ -5,7 +5,7 @@ export async function deleteBossQuery(id: number): Promise<boolean> {
 	try {
 		const deletedRowCount = await Boss.destroy({ where: { id } });
 		return deletedRowCount > 0;
-	} catch {
-		throw new DatabaseError("Failed to delete boss");
+	} catch (error) {
+		throw new DatabaseError("Failed to delete boss", { cause: error });
 	}
 }

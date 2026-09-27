@@ -5,10 +5,10 @@ import { AppError } from "./AppError.ts";
 export class BadRequestError extends AppError {
 	readonly statusCode = HttpStatutCodeErrorEnum.BAD_REQUEST;
 
-	public readonly details: unknown;
+	readonly issues: unknown[];
 
-	constructor(message: string, details?: unknown) {
+	constructor(message: string, issues: unknown[] = []) {
 		super(message);
-		this.details = details;
+		this.issues = issues;
 	}
 }
