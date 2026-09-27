@@ -14,6 +14,8 @@ import { deleteGamePathParamSchema } from "@citadel/specs/src/projects/gameDeath
 import { getOneGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGamePathParam.schema.ts";
 import { setGameFinishedBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedBody.schema.ts";
 import { setGameFinishedPathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedPathParam.schema.ts";
+import { updateGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGameBody.schema.ts";
+import { updateGamePathParamSchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGamePathParam.schema.ts";
 import type { GameDeathCounterEndpointRegistry } from "@citadel/specs/src/projects/gameDeathCounter/gameDeathCounterEndpointRegistry.type.ts";
 import { Router as ExpressRouter } from "express";
 
@@ -41,6 +43,15 @@ typedRouter.POST(
 	"/gameDeathCounter/games",
 	gameController.create,
 	requestValidator({ body: createGameBodySchema }),
+);
+
+typedRouter.PATCH(
+	"/gameDeathCounter/games/:id",
+	gameController.update,
+	requestValidator({
+		params: updateGamePathParamSchema,
+		body: updateGameBodySchema,
+	}),
 );
 
 typedRouter.PATCH(
