@@ -21,7 +21,7 @@ export const navigationGroups: NavigationItems = [
 			},
 			{
 				label: "machines",
-				link: "/satisfactory/frm/allMachines",
+				link: "/satisfactory/frm/all-machines",
 				icon: IconTokenEnum.TriangleArrow,
 			},
 		],
