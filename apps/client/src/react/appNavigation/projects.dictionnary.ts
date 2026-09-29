@@ -34,13 +34,13 @@ export const projects: Record<ProjectsEnum, ProjectDictionnary> = {
 	},
 	[ProjectsEnum.GameDeathCount]: {
 		id: "gameDeathCounter",
-		path: "/gameDeathCounter",
+		path: "/game-death-counter",
 		name: "Game Death Counter",
 		description:
 			"Projet de suivi du nombre de morts dans les jeux de type Souls",
 		buildPath: "/projects/gameDeathCounter",
 		outputFile: "projects/gameDeathCounter",
 		documentTitle: "Game Death Counter",
-		favicon: "/favicon/gameDeathCounter.ico",
+		favicon: "/favicon/game-death-counter.ico",
 	},
 };

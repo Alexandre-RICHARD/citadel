@@ -29,7 +29,7 @@ export function Satisfactory() {
 						element={<Calculator />}
 					/>
 					<Route
-						path="frm/allMachines"
+						path="frm/all-machines"
 						element={<Machines />}
 					/>
 					<Route
