@@ -1,9 +1,8 @@
 import { z } from "zod";
 
+import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/sqlColumnMaxLength.enum.ts";
+import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/stringSchemas.ts";
+
 export const updateGameBodySchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(1, { message: "Name should contains at least 1 character" })
-		.max(255, { message: "Name should contains less than 256 characters" }),
+	name: requiredStringSchema("Name", SqlColumnMaxLengthEnum.VARCHAR_255),
 });
