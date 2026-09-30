@@ -14,7 +14,7 @@
     "unit-test-watch": "vitest watch --project unit",
     "unit-test-report": "vitest run --project unit --reporter=html --coverage.enabled=true && vite preview --outDir report --open",
     "integration-test": "vitest run --project integration",
-    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm integration-test",
+    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm integration-test && pnpm build",
     "=== Build & Production ===": "",
     "build": "node esbuild.config.mjs",
     "start": "node ./build/build.server.js"
