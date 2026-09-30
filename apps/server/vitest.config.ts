@@ -16,6 +16,7 @@ export default defineConfig({
 				"src/**/*.d.ts",
 				"src/**/*.enum.ts",
 				"src/**/*.test.*",
+				"src/testUtils/**",
 				"src/todo_folder/**", // TODO
 			],
 		},
