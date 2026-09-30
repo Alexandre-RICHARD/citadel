@@ -1,3 +1,1 @@
-import { afterEach } from "vitest";
-
-afterEach(() => {});
+import "./src/timezone.ts";

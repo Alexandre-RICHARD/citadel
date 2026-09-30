@@ -2,11 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	test: {
-		include: ["src/**/*.test.ts"],
-		exclude: ["src/todo_folder/**"],
-		reporters: [],
 		outputFile: "./report/index.html",
-		setupFiles: "vitest.setup.ts",
 		passWithNoTests: true,
 		coverage: {
 			reportOnFailure: true,
@@ -20,7 +16,28 @@ export default defineConfig({
 				"src/**/*.d.ts",
 				"src/**/*.enum.ts",
 				"src/**/*.test.*",
+				"src/todo_folder/**", // TODO
 			],
 		},
+		projects: [
+			{
+				extends: true,
+				test: {
+					name: "unit",
+					include: ["src/**/*.unit.test.ts"],
+					setupFiles: ["vitest.setup.ts"],
+				},
+			},
+			{
+				extends: true,
+				test: {
+					name: "integration",
+					include: ["src/**/*.integration.test.ts"],
+					setupFiles: ["vitest.integration.setup.ts"],
+					// Tous les fichiers partagent la même base : en parallèle, ils videraient les tables des autres
+					fileParallelism: false,
+				},
+			},
+		],
 	},
 });
