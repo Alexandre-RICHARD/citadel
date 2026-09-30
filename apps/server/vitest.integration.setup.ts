@@ -1,7 +1,7 @@
 import "./src/configuration/timezone.ts";
 
 import { config } from "dotenv";
-import { afterAll } from "vitest";
+import { afterAll, beforeEach } from "vitest";
 
 const TEST_DATABASE_SUFFIX = "_test";
 
@@ -20,6 +20,12 @@ if (!databaseName.endsWith(TEST_DATABASE_SUFFIX))
 
 // Import dynamique : env.ts lit process.env dès son import, donc après le chargement de .env.test
 const { sequelize } = await import("./src/configuration/sequelize.ts");
+const { resetDatabase } =
+	await import("./src/testUtils/integration/resetDatabase.ts");
+
+beforeEach(async () => {
+	await resetDatabase();
+});
 
 afterAll(async () => {
 	await sequelize.close();
