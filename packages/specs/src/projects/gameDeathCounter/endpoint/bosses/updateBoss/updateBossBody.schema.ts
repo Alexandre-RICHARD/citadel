@@ -1,13 +1,10 @@
 import { z } from "zod";
 
+import { bodyIdSchema } from "../../../../../specUtils/schemaValidator/idSchemas.ts";
+import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/sqlColumnMaxLength.enum.ts";
+import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/stringSchemas.ts";
+
 export const updateBossBodySchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.min(1, { message: "Name should contains at least 1 character" })
-		.max(255, { message: "Name should contains less than 256 characters" }),
-	gameId: z
-		.number({ message: "Game ID should be integer" })
-		.int()
-		.positive({ message: "Game ID should be positive" }),
+	name: requiredStringSchema("Name", SqlColumnMaxLengthEnum.VARCHAR_255),
+	gameId: bodyIdSchema("Game ID"),
 });

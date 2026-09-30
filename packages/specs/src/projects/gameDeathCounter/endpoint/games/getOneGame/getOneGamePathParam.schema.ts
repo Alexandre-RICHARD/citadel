@@ -1,8 +1,7 @@
 import { z } from "zod";
 
+import { pathParamIdSchema } from "../../../../../specUtils/schemaValidator/idSchemas.ts";
+
 export const getOneGamePathParamSchema = z.object({
-	id: z.coerce
-		.number({ message: "ID should be integer" })
-		.int()
-		.positive({ message: "ID should be positive" }),
+	id: pathParamIdSchema("ID"),
 });

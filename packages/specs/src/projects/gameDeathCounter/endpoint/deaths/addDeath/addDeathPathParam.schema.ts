@@ -1,8 +1,7 @@
 import { z } from "zod";
 
+import { pathParamIdSchema } from "../../../../../specUtils/schemaValidator/idSchemas.ts";
+
 export const addDeathPathParamSchema = z.object({
-	bossId: z.coerce
-		.number({ message: "Boss ID should be integer" })
-		.int()
-		.positive({ message: "Boss ID should be positive" }),
+	bossId: pathParamIdSchema("Boss ID"),
 });

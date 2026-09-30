@@ -1,8 +1,7 @@
 import { z } from "zod";
 
+import { pathParamIdSchema } from "../../../../../specUtils/schemaValidator/idSchemas.ts";
+
 export const createBossPathParamSchema = z.object({
-	gameId: z.coerce
-		.number({ message: "Game ID should be integer" })
-		.int()
-		.positive({ message: "Game ID should be positive" }),
+	gameId: pathParamIdSchema("Game ID"),
 });
