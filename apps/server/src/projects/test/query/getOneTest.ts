@@ -1,7 +1,7 @@
 import { QueryTypes } from "sequelize";
 
+import { sequelize } from "../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../error/DatabaseError.ts";
-import { sequelize } from "../../../sequelize.ts";
 import { Test } from "../models/Test.ts";
 
 type Args = {

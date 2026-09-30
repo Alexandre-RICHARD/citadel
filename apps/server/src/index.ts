@@ -1,16 +1,16 @@
 import "dotenv/config.js";
-import "./timezone.ts";
+import "./configuration/timezone.ts";
 
 import cors from "cors";
 import express from "express";
 
 import { allowedHttpMethods } from "./common/http/allowedHttpMethods.ts";
-import { env } from "./env.ts";
+import { env } from "./configuration/env.ts";
+import { sequelize } from "./configuration/sequelize.ts";
 import { globalRouter } from "./globalRouter.ts";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
 import { notFound } from "./middleware/notFound.ts";
 import { unhandledMethod } from "./middleware/unhandledMethod.ts";
-import { sequelize } from "./sequelize.ts";
 
 const corsOptions = {
 	origin: env.CORS_ORIGIN,
