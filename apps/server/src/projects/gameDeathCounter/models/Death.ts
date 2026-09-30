@@ -7,7 +7,7 @@ import {
 	type NonAttribute,
 } from "sequelize";
 
-import { sequelize } from "../../../sequelize.ts";
+import { sequelize } from "../../../configuration/sequelize.ts";
 import { Boss } from "./Boss.ts";
 
 export class Death extends Model<

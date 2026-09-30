@@ -1,1 +1,1 @@
-import "./src/timezone.ts";
+import "./src/configuration/timezone.ts";

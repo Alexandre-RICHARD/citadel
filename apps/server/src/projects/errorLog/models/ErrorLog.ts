@@ -6,7 +6,7 @@ import {
 	Model,
 } from "sequelize";
 
-import { sequelize } from "../../../sequelize.ts";
+import { sequelize } from "../../../configuration/sequelize.ts";
 
 export class ErrorLog extends Model<
 	InferAttributes<ErrorLog>,

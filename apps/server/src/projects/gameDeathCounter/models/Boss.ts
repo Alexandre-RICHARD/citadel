@@ -7,7 +7,7 @@ import {
 	type NonAttribute,
 } from "sequelize";
 
-import { sequelize } from "../../../sequelize.ts";
+import { sequelize } from "../../../configuration/sequelize.ts";
 import type { Death } from "./Death.ts";
 import { Game } from "./Game.ts";
 

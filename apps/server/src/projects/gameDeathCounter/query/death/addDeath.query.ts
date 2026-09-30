@@ -1,5 +1,5 @@
+import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import { sequelize } from "../../../../sequelize.ts";
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
 
