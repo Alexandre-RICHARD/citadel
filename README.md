@@ -78,6 +78,9 @@
 - Lancer avec `start`
 
 # TODO
-- Adapter test / satisfactory / error avec le nouveau système ZOD
 - Ajouter des tests (unitaire uniquement)
-https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
+https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968 
+- On va faire des tesdt d'intégration sur toutes mes routes
+- On va enfin implémenter le front
+- On va créer le design system et un package common (ainsi que un package common par sous projet)
+- On va faire des tests end to end
