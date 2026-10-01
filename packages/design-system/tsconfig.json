@@ -13,7 +13,8 @@
 	},
 	"include": [
 		"src",
-		".storybook/*.ts",
+		".storybook/main.ts",
+		".storybook/preview.tsx",
 		"vite.config.ts",
 		"eslint.config.js",
 	],

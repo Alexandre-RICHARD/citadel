@@ -8,6 +8,14 @@ import { defineConfig, loadEnv } from "vite";
 
 import { projects } from "./src/react/appNavigation/projects.dictionnary.ts";
 
+const TRANSLATION_FILE_REGEX =
+	/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/;
+
+// Normalisation des séparateurs de chemin (compatible Windows / Linux)
+function normalizePath(id: string): string {
+	return id.replace(/\\/g, "/");
+}
+
 export default defineConfig(({ mode }) => {
 	const dirname = import.meta.dirname;
 
@@ -31,7 +39,7 @@ export default defineConfig(({ mode }) => {
 			cssCodeSplit: true,
 			manifest: true,
 			outDir: "./build",
-			rollupOptions: {
+			rolldownOptions: {
 				input: { app: "./index.html" },
 				output: {
 					assetFileNames: (assetInfo) => {
@@ -47,39 +55,50 @@ export default defineConfig(({ mode }) => {
 						}
 						return "[name]-[hash][extname]";
 					},
-					manualChunks: (id) => {
-						// Normalisation des séparateurs de chemin (compatible Windows / Linux)
-						const normalizedId = id.replace(/\\/g, "/");
-
-						if (normalizedId.includes("node_modules")) {
-							return "vendor";
-						}
-
-						// Découpage des traductions
-						const translationMatch =
-							/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/.exec(
-								normalizedId,
-							);
-						if (translationMatch) {
-							const language = translationMatch[1];
-							return `translations-${language}`;
-						}
-
-						if (normalizedId.includes("/src/components/")) {
-							return "common";
-						}
-
-						for (const project of Object.values(projects)) {
-							if (normalizedId.includes(project.buildPath)) {
-								return project.outputFile;
-							}
-						}
-
-						if (normalizedId.includes("/src/")) {
-							return "app";
-						}
-
-						return "other";
+					// Un groupe embarque aussi les dépendances des modules qu'il capture : les priorités
+					// décident qui passe en premier, sinon "app" avalerait React & co, et un projet le code partagé
+					codeSplitting: {
+						groups: [
+							{
+								name: "vendor",
+								test: /[\\/]node_modules[\\/]/,
+								priority: 5,
+							},
+							{
+								name: "design-system",
+								test: /[\\/]packages[\\/]design-system[\\/]/,
+								priority: 4,
+							},
+							{
+								name: (id) => {
+									const translationMatch = TRANSLATION_FILE_REGEX.exec(
+										normalizePath(id),
+									);
+									return translationMatch
+										? `translations-${translationMatch[1]}`
+										: null;
+								},
+								priority: 3,
+							},
+							{
+								name: "app",
+								test: (id) => {
+									const normalizedId = normalizePath(id);
+									return (
+										normalizedId.includes("/src/") &&
+										!normalizedId.includes("/src/projects/")
+									);
+								},
+								priority: 2,
+							},
+							{
+								name: (id) =>
+									Object.values(projects).find((project) =>
+										normalizePath(id).includes(project.buildPath),
+									)?.outputFile ?? null,
+								priority: 1,
+							},
+						],
 					},
 				},
 			},

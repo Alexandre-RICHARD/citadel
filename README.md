@@ -130,3 +130,5 @@ This file is being treated as an ES module because it has a '.js' file extension
     at async node:internal/modules/esm/loader:643:26
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
 ```
+- Refonte du système de traduction
+- Virer lucide-react

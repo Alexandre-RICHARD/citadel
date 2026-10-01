@@ -13,6 +13,7 @@
     "build": "storybook build --output-dir build"
   },
   "peerDependencies": {
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
@@ -24,6 +25,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react-swc": "^4.3.3",
     "eslint": "catalog:",
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "sass-embedded": "^1.105.0",
