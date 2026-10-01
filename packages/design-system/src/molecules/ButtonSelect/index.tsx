@@ -27,7 +27,7 @@ export function ButtonSelect({
 				<Icon
 					iconToken={IconTokenEnum.DropdownArrow}
 					size={15}
-					color="#ffffff"
+					color="currentColor"
 				/>
 			</div>
 		</button>

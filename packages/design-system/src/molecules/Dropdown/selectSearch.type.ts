@@ -1,5 +1,6 @@
 export type SelectSearchType = {
 	strictMode?: boolean;
+	placeholder?: string;
 } & (
 	| {
 			isHandlingCustomSearch: true;

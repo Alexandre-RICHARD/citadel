@@ -1,21 +1,21 @@
 .dropdown {
-  // TODO T => Gérer le thème dans le design system avec les variantes etc
   z-index: 10;
   position: absolute;
-  background-color: #444444;
+  background-color: var(--theme-colorSurface);
+  color: var(--theme-colorText);
   max-height: 400px;
   overflow-y: auto;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
-  padding-block: 8px;
-  gap: 8px;
+  padding-block: var(--theme-spaceS);
+  gap: var(--theme-spaceS);
 
   .dropdown_search_input {
     width: 100%;
     padding: 5px 10px;
-    background-color: #d6d6d6;
-    color: black;
+    background-color: var(--theme-colorSurfaceSunken);
+    color: var(--theme-colorText);
   }
 
   .select_item {
@@ -24,19 +24,17 @@
 
     &:focus,
     &:hover {
-      background-color: #252525;
-    }
-
-    &:focus {
-      background-color: #1f1818;
+      background-color: var(--theme-colorSurfaceRaised);
     }
 
     &.selected_item {
-      background-color: #1b2777;
+      background-color: var(--theme-colorPrimarySubtle);
+      color: var(--theme-colorPrimaryStrong);
 
       &:focus,
       &:hover {
-        background-color: #111949;
+        background-color: var(--theme-colorPrimaryHue);
+        color: var(--theme-colorPrimaryContent);
       }
     }
   }

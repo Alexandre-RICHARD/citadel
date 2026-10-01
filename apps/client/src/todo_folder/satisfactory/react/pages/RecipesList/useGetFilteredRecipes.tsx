@@ -1,5 +1,6 @@
+import { stringSearcher } from "@citadel/design-system/src/helpers/string/stringSearcher";
+
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
-import { stringSearcher } from "../../../nexus/helpers/data/string/stringSearcher.helper";
 import type { RecipeType } from "../../../types/satisfactory/recipe.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
 

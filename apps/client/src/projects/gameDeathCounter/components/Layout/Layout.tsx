@@ -1,11 +1,15 @@
+import { ThemeProvider } from "@citadel/design-system/src/theme/ThemeProvider";
 import { Outlet } from "react-router";
 
+import { gameDeathCounterTheme } from "../../theme";
 import styles from "./layout.module.scss";
 
 export function Layout() {
 	return (
-		<div className={styles.gameDeathCounterLayout}>
-			<Outlet />
-		</div>
+		<ThemeProvider theme={gameDeathCounterTheme}>
+			<div className={styles.gameDeathCounterLayout}>
+				<Outlet />
+			</div>
+		</ThemeProvider>
 	);
 }

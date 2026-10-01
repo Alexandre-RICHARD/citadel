@@ -21,3 +21,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const CustomLabels: Story = {
+	args: {
+		closeLabel: "Annuler",
+		submitLabel: "Créer le jeu",
+	},
+};

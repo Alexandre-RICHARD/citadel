@@ -3,19 +3,6 @@
   flex-direction: column;
   padding: 1.6rem;
 
-  .inputCheckboxContainer {
-    width: fit-content;
-
-    &:hover {
-      cursor: pointer;
-    }
-
-    .inputCheckbox {
-      color: #6a7282;
-      margin-inline: 1rem;
-    }
-  }
-
   .machinesTable {
     width: 100%;
 

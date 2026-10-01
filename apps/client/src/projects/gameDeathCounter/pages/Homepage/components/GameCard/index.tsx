@@ -1,21 +1,14 @@
-import {
-	Check,
-	ChevronDown,
-	ChevronRight,
-	Pencil,
-	Plus,
-	Save,
-	Trash2,
-	X,
-} from "lucide-react";
+import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
+import { ExpandToggle } from "@citadel/design-system/src/atoms/ExpandToggle";
+import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
+import { Pill } from "@citadel/design-system/src/atoms/Pill";
+import { Check, Flame, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Game } from "../../game.type";
 import { BlockTitle } from "../BlockTitle";
 import { BossRow } from "../BossRow";
-import { Count } from "../Count";
-import { IconButton } from "../IconButton";
 import styles from "./gameCard.module.scss";
 
 type Props = {
@@ -101,15 +94,13 @@ export function GameCard({
 			className={`${styles.gameCard} ${isFinished ? styles.gameCardFinished : ""}`}
 		>
 			<div className={styles.gameHeader}>
-				<button
-					type="button"
-					className={`${globalStyles.expandTrigger} ${globalStyles.expandTriggerLg}`}
-					onClick={onToggleExpand}
-					aria-expanded={expanded}
-					aria-label={expanded ? "Replier le jeu" : "Déplier le jeu"}
-				>
-					{expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-				</button>
+				<ExpandToggle
+					expanded={expanded}
+					onToggle={onToggleExpand}
+					expandLabel="Déplier le jeu"
+					collapseLabel="Replier le jeu"
+					size="lg"
+				/>
 
 				<BlockTitle
 					editing={editing}
@@ -124,16 +115,20 @@ export function GameCard({
 				/>
 
 				{isFinished && (
-					<span className={globalStyles.finishedPill}>
+					<Pill>
 						<Check
 							size={12}
 							strokeWidth={2.6}
 						/>
 						terminé
-					</span>
+					</Pill>
 				)}
 
-				<Count count={totalDeath} />
+				<CountBadge
+					count={totalDeath}
+					icon={Flame}
+					flickerIcon
+				/>
 
 				<div className={globalStyles.sectionHeaderActions}>
 					{editing ? (
@@ -141,7 +136,7 @@ export function GameCard({
 							<IconButton
 								icon={Save}
 								label="Enregistrer"
-								variant="gold"
+								variant="primary"
 								onClick={saveGameName}
 							/>
 							<IconButton
@@ -157,7 +152,7 @@ export function GameCard({
 								label={
 									isFinished ? "Marquer non terminé" : "Marquer comme terminé"
 								}
-								variant={isFinished ? "gold-active" : "ghost"}
+								pressed={isFinished}
 								onClick={() => onToggleFinished(game.id)}
 							/>
 							<IconButton
@@ -168,7 +163,7 @@ export function GameCard({
 							<IconButton
 								icon={Trash2}
 								label="Supprimer le jeu"
-								variant="danger"
+								variant="destructive"
 								onClick={() => onDeleteGame(game.id)}
 							/>
 						</>
@@ -228,7 +223,7 @@ export function GameCard({
 							<IconButton
 								icon={Save}
 								label="Ajouter"
-								variant="gold"
+								variant="primary"
 								onClick={submitNewBoss}
 							/>
 							<IconButton

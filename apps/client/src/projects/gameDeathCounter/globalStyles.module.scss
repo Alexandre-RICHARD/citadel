@@ -30,46 +30,6 @@
   flex: 1;
 }
 
-.expandTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: vars.$ash;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  &:hover {
-    background: vars.$panelRaised;
-    color: vars.$bone;
-  }
-
-  &Lg {
-    width: 34px;
-    height: 34px;
-  }
-}
-
-.finishedPill {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: vars.$goldDim;
-  color: vars.$goldBright;
-  border: 1px solid rgba(201, 162, 39, 0.4);
-  flex-shrink: 0;
-}
-
 .sectionHeaderActions {
   display: flex;
   align-items: center;

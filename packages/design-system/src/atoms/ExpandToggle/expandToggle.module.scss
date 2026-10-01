@@ -1,0 +1,23 @@
+.expandToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--theme-radiusM);
+  border: none;
+  background: transparent;
+  color: var(--theme-colorTextMuted);
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--theme-colorSurfaceRaised);
+    color: var(--theme-colorText);
+  }
+
+  &[data-size="lg"] {
+    width: 34px;
+    height: 34px;
+  }
+}

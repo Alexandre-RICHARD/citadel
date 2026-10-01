@@ -1,9 +1,9 @@
-import { Plus, Save, X } from "lucide-react";
+import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
+import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
+import { Flame, Plus, Save, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import { Count } from "../Count";
-import { IconButton } from "../IconButton";
 import styles from "./header.module.scss";
 
 type Props = {
@@ -40,10 +40,12 @@ export function Header({ submitNewGame, grandTotal }: Props) {
 					<h1>Compteur de morts</h1>
 				</div>
 				<div className={styles.topBarRight}>
-					<Count
+					<CountBadge
 						count={grandTotal}
+						icon={Flame}
+						flickerIcon
 						size="md"
-						variant="dark"
+						variant="neutral"
 					/>
 					<button
 						type="button"
@@ -73,7 +75,7 @@ export function Header({ submitNewGame, grandTotal }: Props) {
 					<IconButton
 						icon={Save}
 						label="Créer le jeu"
-						variant="gold"
+						variant="primary"
 						onClick={() => submit(newGameName)}
 					/>
 					<IconButton

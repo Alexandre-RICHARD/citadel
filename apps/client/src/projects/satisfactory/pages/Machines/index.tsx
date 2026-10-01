@@ -1,3 +1,5 @@
+import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
+
 import { writeCountdown } from "../../../../common/helpers/date/writeCountdown";
 import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces";
 import { roundNumber } from "../../../../common/helpers/number/roundNumber";
@@ -88,34 +90,18 @@ export function Machines() {
 	return (
 		<div>
 			<div className={styles.machinesContainer}>
-				<label
-					className={styles.inputCheckboxContainer}
-					htmlFor="onlyNonFullEfficentCheckbox"
-				>
-					Uniquement les non efficient
-					<input
-						checked={onlyNonFullEfficent}
-						id="onlyNonFullEfficentCheckbox"
-						className={styles.inputCheckbox}
-						type="checkbox"
-						onChange={() => setOnlyNonFullEfficent(!onlyNonFullEfficent)}
-					/>
-				</label>
-				<label
-					className={styles.inputCheckboxContainer}
-					htmlFor="removedHubBiomassGenerators"
-				>
-					Ignorer les brûleurs de biomasse du HUB
-					<input
-						checked={removedHubBiomassGenerators}
-						id="removedHubBiomassGenerators"
-						className={styles.inputCheckbox}
-						type="checkbox"
-						onChange={() =>
-							setRemovedHubBiomassGenerators(!removedHubBiomassGenerators)
-						}
-					/>
-				</label>
+				<CheckboxInput
+					id="onlyNonFullEfficentCheckbox"
+					label="Uniquement les non efficient"
+					value={onlyNonFullEfficent}
+					onChange={setOnlyNonFullEfficent}
+				/>
+				<CheckboxInput
+					id="removedHubBiomassGenerators"
+					label="Ignorer les brûleurs de biomasse du HUB"
+					value={removedHubBiomassGenerators}
+					onChange={setRemovedHubBiomassGenerators}
+				/>
 				<p>
 					Moyenne d&apos;efficacité :{" "}
 					{averageEfficiency ? `${roundNumber(averageEfficiency, 2)} %` : "//"}

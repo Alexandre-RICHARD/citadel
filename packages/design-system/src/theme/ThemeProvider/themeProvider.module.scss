@@ -1,0 +1,4 @@
+// Ne génère aucune boîte : le conteneur ne sert qu'à porter les variables, héritées par ses enfants
+.themeProvider {
+  display: contents;
+}

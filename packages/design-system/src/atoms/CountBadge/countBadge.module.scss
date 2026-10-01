@@ -1,0 +1,52 @@
+.countBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--theme-radiusFull);
+  background: var(--theme-colorAccentSubtle);
+  border: 1px solid color-mix(in srgb, var(--theme-colorAccentHue) 35%, transparent);
+  color: var(--theme-colorText);
+  font-size: 13px;
+  flex-shrink: 0;
+
+  // Avant la variante neutral : à spécificité égale, son padding doit l'emporter
+  &[data-size="sm"] {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  &[data-variant="neutral"] {
+    gap: 6px;
+    padding: 7px 12px;
+    background: var(--theme-colorSurfaceRaised);
+    border: 1px solid var(--theme-colorBorder);
+  }
+
+  .icon {
+    color: var(--theme-colorAccentStrong);
+  }
+
+  .count {
+    font-family: var(--theme-fontFamilyMono);
+    font-weight: 600;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .flickering {
+    animation: flicker 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--theme-colorAccentStrong) 50%, transparent));
+  }
+  50% {
+    opacity: 0.72;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-colorAccentStrong) 75%, transparent));
+  }
+}
