@@ -12,7 +12,7 @@ export default [
 
 	// Override
 	{
-		files: ["**/*.stories.tsx", ".storybook/*.ts"],
+		files: ["**/*.stories.tsx", ".storybook/*.{ts,tsx}"],
 		rules: {
 			"import-x/no-default-export": "off",
 			"react-refresh/only-export-components": "off",
