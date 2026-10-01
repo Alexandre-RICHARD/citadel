@@ -84,3 +84,49 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - On va enfin implémenter le front
 - On va créer le design system et un package common (ainsi que un package common par sous projet)
 - On va faire des tests end to end
+- Faire le système de tous est en 1 rem = 10px. Mais il faut y appliquer un système pour que l'utilisateur puisse "zoomer"
+- Rendre précis le undefined. ? | undefined, ou les 2 mais le sens doit être différent
+  - Préféré des valeurs null pour les input
+  - En fait, c'est déjà activé. Préféré le fait de ne jamais avoir de type en undefined explicite. Une propriété optionnelle doit être marqué en ?. Une propriété qui peut être nulle doit être marqué en null.
+- "Le build de HEAD correspond au mien (chunks identiques, CSS similaire, app à quasiment la même taille), donc l'absence de chunk vendor était déjà présente avant le design system. Je nettoie maintenant le worktree temporaire." Tu as dit ça, apparemment il y a un problème sur ou se trouve le code vendor
+- Refaire entièrement le thème
+- Client Dev = 
+```vite --open --port 3001
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./projectDictionnary.type" without a file extension (src/react/appNavigation/projects.dictionnary.ts:1:41). Add the file extension
+  - import "./projects.enum" without a file extension (src/react/appNavigation/projects.dictionnary.ts:2:30). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[vite:react-swc] We recommend switching to `@vitejs/plugin-react` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown
+```
+- Start le build du serveur provoque ceci
+```
+file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48
+    var fs = require("fs");
+             ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+This file is being treated as an ES module because it has a '.js' file extension and '\\?\C:\Users\Alex\Hub\Centre\Dev\Citadel\apps\server\package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+    at ../../node_modules/.pnpm/dotenv@17.4.2/node_modules/dotenv/lib/main.js (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48:14)
+    at __require (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:18:52)
+    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73151:3
+    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73158:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+```
+- Dev du design system
+```
+file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48
+    var fs = require("fs");
+             ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+This file is being treated as an ES module because it has a '.js' file extension and '\\?\C:\Users\Alex\Hub\Centre\Dev\Citadel\apps\server\package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+    at ../../node_modules/.pnpm/dotenv@17.4.2/node_modules/dotenv/lib/main.js (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48:14)
+    at __require (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:18:52)
+    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73151:3
+    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73158:3
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+```

@@ -1,11 +1,11 @@
+import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
+import { RangeInput } from "@citadel/design-system/src/atoms/RangeInput";
+import { TextInput } from "@citadel/design-system/src/atoms/TextInput";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { recipes } from "../../../dictionnaries/recipes.dictionnary";
 import { useCombinedStore } from "../../../store/combined.store";
-import { InputCheckbox } from "../../components/dumb/InputCheckbox";
-import { InputRange } from "../../components/dumb/InputRange";
-import { InputText } from "../../components/dumb/InputText";
 import { Recipe } from "../../components/Recipe";
 import styles from "./styles.module.scss";
 import { useGetFilteredRecipes } from "./useGetFilteredRecipes";
@@ -37,28 +37,29 @@ export function RecipesList(): React.JSX.Element {
 	return (
 		<>
 			<div className={styles.input_container}>
-				<InputCheckbox
+				<CheckboxInput
 					// TODO T => Instaurer les data-testid (pour tous les input)
 					id="checkbox_minutes"
-					checked={minuteCalculation}
-					setter={setMinuteCalculation}
+					value={minuteCalculation}
+					onChange={setMinuteCalculation}
 					// TODO T => Continuer la transition dumb/smart component
 					// TODO T => Traduire (pour tous les input)
 					label="Minutes or not"
 				/>
-				<InputRange
+				<RangeInput
 					id="range_overclocking"
 					value={overclocking}
 					min={1}
 					max={250}
 					step={1}
-					setter={setOverclocking}
+					unit="%"
+					onChange={setOverclocking}
 					label="Overclocking"
 				/>
-				<InputText
+				<TextInput
 					id="list_name_filter"
 					value={nameFilter}
-					setter={setNameFilter}
+					onChange={setNameFilter}
 					label="Filtre par nom"
 				/>
 			</div>

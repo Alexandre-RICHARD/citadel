@@ -1,10 +1,10 @@
+import { Icon } from "@citadel/design-system/src/atoms/Icon";
+import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 import React from "react";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { powerCalculation } from "../../../helpers/powerCalculation.helper";
-import { IconTokenEnum } from "../../../../../../common/components/icon/iconToken.enum";
 import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
-import { IconContainer } from "../../../../../../common/components/icon/Icon";
 import { useCombinedStore } from "../../../store/combined.store";
 import type { RecipeType } from "../../../types/satisfactory/recipe.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
@@ -48,7 +48,7 @@ export function Recipe({ recipe }: PropsType): React.JSX.Element {
 					})}
 				</div>
 				<div className={styles.arrow_container}>
-					<IconContainer
+					<Icon
 						iconToken={IconTokenEnum.TriangleArrow}
 						color="#ccc"
 						size={14}

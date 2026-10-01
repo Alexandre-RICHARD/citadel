@@ -1,0 +1,24 @@
+{
+	"extends": "@citadel/typescript-config/tsconfig.json",
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"target": "esnext",
+		"jsx": "react-jsx",
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext"
+		]
+	},
+	"include": [
+		"src",
+		".storybook/*.ts",
+		"vite.config.ts",
+		"eslint.config.js",
+	],
+	"exclude": [
+		"build",
+		"node_modules",
+	]
+}

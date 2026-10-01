@@ -1,7 +1,7 @@
+import { Button } from "@citadel/design-system/src/atoms/Button";
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { useState } from "react";
 
-import { Button } from "../../../../common/components/components/atoms/Button";
 import { useDeleteTest } from "../../actions/useDeleteTest";
 import { useGetAllTest } from "../../actions/useGetAllTest";
 import { CreateTest } from "../../components/dataForms/CreateTest";

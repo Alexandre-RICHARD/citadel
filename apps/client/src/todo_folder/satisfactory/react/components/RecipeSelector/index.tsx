@@ -1,3 +1,4 @@
+import { Selector } from "@citadel/design-system/src/organisms/Selector";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -6,7 +7,6 @@ import { recipes } from "../../../dictionnaries/recipes.dictionnary";
 import { GameItemsEnum } from "../../../enums/gameItems.enum";
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { getSortStringValue } from "../../../nexus/helpers/data/getSortStringValue.helper";
-import { Selector } from "../../../nexus/react/components/Selector";
 import { useCombinedStore } from "../../../store/combined.store";
 import type { GameItemResource } from "../../../types/satisfactory/gameItems/resource.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";

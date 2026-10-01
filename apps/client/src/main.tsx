@@ -1,5 +1,5 @@
-import "./styles/reset.scss";
-import "./styles/global.scss";
+import "@citadel/design-system/src/styles/reset.scss";
+import "@citadel/design-system/src/styles/global.scss";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
