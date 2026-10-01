@@ -1,6 +1,5 @@
+import { Modal } from "@citadel/design-system/src/molecules/Modal";
 import type { ReactNode } from "react";
-
-import { Modal } from "../../../../common/components/components/molecules/Modal";
 
 type Props = {
 	children: ReactNode;

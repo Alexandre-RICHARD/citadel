@@ -1,3 +1,6 @@
+import { LabelWithIcon } from "@citadel/design-system/src/atoms/LabelWithIcon";
+import type { SelectItemsType } from "@citadel/design-system/src/molecules/Dropdown/selectedItems.type";
+import { Selector } from "@citadel/design-system/src/organisms/Selector";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -10,9 +13,6 @@ import type { LanguageEnum } from "../../../nexus/enums/language.enum";
 import type { LanguageCodeEnum } from "../../../nexus/enums/languageCode.enum";
 import { getSortStringValue } from "../../../nexus/helpers/data/getSortStringValue.helper";
 import { getInvertObject } from "../../../nexus/helpers/data/object/getInvertObject.helper";
-import { LabelWithIcon } from "../../../nexus/react/components/LabelWithIcon";
-import { Selector } from "../../../nexus/react/components/Selector";
-import type { SelectItemsType } from "../../../nexus/types/react/selectedItems.type";
 import { useCombinedStore } from "../../../store/combined.store";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
 import { LanguageSelectorFlag } from "../LanguageSelectorFlag";

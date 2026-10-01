@@ -1,8 +1,8 @@
+import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
+import { TextInput } from "@citadel/design-system/src/atoms/TextInput";
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { useState } from "react";
 
-import { CheckboxInput } from "../../../../common/components/components/inputs/CheckboxInput";
-import { TextInput } from "../../../../common/components/components/inputs/TextInput";
 import { useUpdateTest } from "../../actions/useUpdateTest";
 import { TestDataForm } from "./TestDataForm";
 

@@ -1,4 +1,4 @@
-import type { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum";
+import type { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 
 export type NavigationItems = {
 	groupLabel?: string;

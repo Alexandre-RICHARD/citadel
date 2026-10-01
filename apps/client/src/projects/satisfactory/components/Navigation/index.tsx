@@ -1,7 +1,7 @@
+import { Icon } from "@citadel/design-system/src/atoms/Icon";
+import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 import { NavLink } from "react-router";
 
-import { Icon } from "../../../../common/components/components/atoms/Icon";
-import { IconTokenEnum } from "../../../../common/components/components/atoms/Icon/iconToken.enum";
 import styles from "./navigation.module.scss";
 import { navigationGroups } from "./navigationGroups";
 

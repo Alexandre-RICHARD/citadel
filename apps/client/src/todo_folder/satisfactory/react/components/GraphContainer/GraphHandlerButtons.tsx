@@ -1,10 +1,10 @@
+import { Icon } from "@citadel/design-system/src/atoms/Icon";
+import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 import React from "react";
 
 import { GraphFactoryLineDirectionEnum as GraphDirection } from "../../../enums/graphFactoryLineDirection.enum";
 import { GraphFactoryLineSizeEnum as GraphSize } from "../../../enums/graphFactoryLineSize.enum";
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
-import { IconTokenEnum } from "../../../nexus/enums/iconToken.enum";
-import { IconContainer } from "../../../nexus/react/components/IconContainer";
 import styles from "./styles.module.scss";
 
 type PropsType = {
@@ -53,7 +53,7 @@ export function GraphHandlerButtons({
 				type="button"
 				onClick={setNewGraphSize}
 			>
-				<IconContainer
+				<Icon
 					size={2 * stringRemoveEndPxHelper("20px")}
 					iconToken={
 						graphSize === GraphSize.FULLSCREEN
@@ -73,7 +73,7 @@ export function GraphHandlerButtons({
 					className={styles.arrow_button_rotator_container}
 					data-direction={graphDirection}
 				>
-					<IconContainer
+					<Icon
 						size={2 * stringRemoveEndPxHelper("20px")}
 						iconToken={IconTokenEnum.Arrow}
 						color="#eeeeee"
