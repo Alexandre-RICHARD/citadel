@@ -20,15 +20,14 @@
       margin-left: 2rem;
 
       &::-webkit-slider-runnable-track {
-        background-color: #fa9549;
+        background-color: var(--theme-colorPrimaryHue);
         border-radius: calc(0.5 * $rangeTrackHeight);
         height: $rangeTrackHeight;
       }
 
       &::-webkit-slider-thumb {
         appearance: none;
-        appearance: none;
-        background-color: #eeeeee;
+        background-color: var(--theme-colorPrimaryStrong);
         border-radius: calc(0.5 * $rangeSliderSize);
         height: $rangeSliderSize;
         width: $rangeSliderSize;
@@ -40,7 +39,7 @@
       }
 
       &:active::-webkit-slider-thumb {
-        background-color: #5f668c;
+        background-color: var(--theme-colorSecondaryHue);
       }
     }
 

@@ -50,3 +50,12 @@ export const WithSearch: Story = {
 		search: { isHandlingCustomSearch: false },
 	},
 };
+
+export const WithCustomPlaceholder: Story = {
+	args: {
+		search: {
+			isHandlingCustomSearch: false,
+			placeholder: "Filtrer les jeux",
+		},
+	},
+};

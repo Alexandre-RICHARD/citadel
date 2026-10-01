@@ -6,22 +6,30 @@ import styles from "./modal.module.scss";
 
 type Props = {
 	children: ReactNode;
+	closeLabel?: string;
+	submitLabel?: string;
 	onClose: () => void;
 	onSubmit: () => void;
 };
 
-export function Modal({ children, onClose, onSubmit }: Props) {
+export function Modal({
+	children,
+	closeLabel = "Fermer la modal",
+	submitLabel = "Valider",
+	onClose,
+	onSubmit,
+}: Props) {
 	return (
 		<CacheOverlay>
 			<div className={styles.modalContainer}>
 				{children}
 				<div className={styles.modalFooter}>
 					<Button
-						label="Fermer la modal"
+						label={closeLabel}
 						onClick={onClose}
 					/>
 					<Button
-						label="Valider"
+						label={submitLabel}
 						onClick={onSubmit}
 					/>
 				</div>

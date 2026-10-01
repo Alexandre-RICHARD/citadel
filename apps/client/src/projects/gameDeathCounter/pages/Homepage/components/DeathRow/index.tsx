@@ -1,3 +1,4 @@
+import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { Pencil, Save, Skull, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
@@ -5,7 +6,6 @@ import { formatDateTime } from "../../../../../../common/helpers/date/formatDate
 import { toDateInputValue } from "../../../../../../common/helpers/date/toDateInputValue";
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Death } from "../../game.type";
-import { IconButton } from "../IconButton";
 import styles from "./deathRow.module.scss";
 
 type Props = {
@@ -55,7 +55,7 @@ export function DeathRow({ death, onUpdate, onDelete }: Props) {
 					<IconButton
 						icon={Save}
 						label="Enregistrer"
-						variant="gold"
+						variant="primary"
 						onClick={save}
 					/>
 					<IconButton
@@ -92,7 +92,7 @@ export function DeathRow({ death, onUpdate, onDelete }: Props) {
 					icon={Trash2}
 					label="Supprimer cette mort"
 					size="sm"
-					variant="danger"
+					variant="destructive"
 					onClick={() => onDelete(death.id)}
 				/>
 			</div>

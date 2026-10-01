@@ -1,16 +1,14 @@
-import type { LucideProps } from "lucide-react";
-import type { ForwardRefExoticComponent, RefAttributes } from "react";
-
+import type { IconComponent } from "../../types/iconComponent.type";
 import styles from "./iconButton.module.scss";
 
 type Props = {
-	icon: ForwardRefExoticComponent<
-		Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
-	>;
+	icon: IconComponent;
 	label: string;
 	onClick: () => void;
-	variant?: "gold" | "gold-active" | "ghost" | "danger" | "ember";
+	variant?: "ghost" | "primary" | "accent" | "destructive";
 	size?: "sm" | "md";
+	// Bouton à bascule : renseigné, il affiche l'état enfoncé et alimente aria-pressed
+	pressed?: boolean;
 };
 
 export function IconButton({
@@ -19,14 +17,16 @@ export function IconButton({
 	onClick,
 	variant = "ghost",
 	size = "md",
+	pressed,
 }: Props) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
 			aria-label={label}
+			aria-pressed={pressed}
 			title={label}
-			className={`${styles.iconButton} icon-btn--${size}`}
+			className={styles.iconButton}
 			data-variant={variant}
 			data-size={size}
 		>

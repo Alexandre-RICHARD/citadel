@@ -1,12 +1,14 @@
 .inputTextContainer {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: var(--theme-spaceS);
 
   .inputText {
     padding: 0.5rem;
     border-radius: 0.5rem;
-    border: 0.1rem solid black;
-    font-size: 1.6rem;
+    border: 0.1rem solid var(--theme-colorBorder);
+    background-color: var(--theme-colorSurface);
+    color: var(--theme-colorText);
+    font-size: var(--theme-fontSizeM);
   }
 }

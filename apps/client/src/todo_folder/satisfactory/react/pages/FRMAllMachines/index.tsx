@@ -1,3 +1,4 @@
+import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
 import React, { useMemo, useState } from "react";
 
 import { EndpointEnum } from "../../../enums/endpoint.enum";
@@ -45,19 +46,14 @@ export function FRMAllMachines(): React.JSX.Element {
 	return (
 		<div>
 			<div className={styles.machinesContainer}>
-				<label
-					className={styles.nonEfficientFilterBox}
-					htmlFor="onlyNonFullEfficentCheckbox"
-				>
-					Uniquement les non efficient
-					<input
-						checked={onlyNonFullEfficent}
+				<div className={styles.nonEfficientFilterBox}>
+					<CheckboxInput
 						id="onlyNonFullEfficentCheckbox"
-						className={styles.input}
-						type="checkbox"
-						onClick={() => setOnlyNonFullEfficent((prev) => !prev)}
+						label="Uniquement les non efficient"
+						value={onlyNonFullEfficent}
+						onChange={setOnlyNonFullEfficent}
 					/>
-				</label>
+				</div>
 			</div>
 			<table className={styles.machineTable}>
 				<thead className={styles.tableHeader}>

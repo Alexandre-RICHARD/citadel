@@ -1,21 +1,14 @@
-import {
-	ChevronDown,
-	ChevronRight,
-	Pencil,
-	Plus,
-	Save,
-	Shield,
-	Trash2,
-	X,
-} from "lucide-react";
+import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
+import { ExpandToggle } from "@citadel/design-system/src/atoms/ExpandToggle";
+import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
+import { Pill } from "@citadel/design-system/src/atoms/Pill";
+import { Flame, Pencil, Plus, Save, Shield, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Boss } from "../../game.type";
 import { BlockTitle } from "../BlockTitle";
-import { Count } from "../Count";
 import { DeathRow } from "../DeathRow";
-import { IconButton } from "../IconButton";
 import styles from "./bossRow.module.scss";
 
 type Props = {
@@ -69,15 +62,12 @@ export function BossRow({
 			className={`${styles.bossCard} ${isDefeated ? styles.bossCardDefeated : ""}`}
 		>
 			<div className={styles.bossHeader}>
-				<button
-					type="button"
-					className={globalStyles.expandTrigger}
-					onClick={onToggleExpand}
-					aria-expanded={expanded}
-					aria-label={expanded ? "Replier le boss" : "Déplier le boss"}
-				>
-					{expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-				</button>
+				<ExpandToggle
+					expanded={expanded}
+					onToggle={onToggleExpand}
+					expandLabel="Déplier le boss"
+					collapseLabel="Replier le boss"
+				/>
 
 				<BlockTitle
 					editing={editing}
@@ -92,17 +82,19 @@ export function BossRow({
 				/>
 
 				{isDefeated && (
-					<span className={globalStyles.finishedPill}>
+					<Pill>
 						<Shield
 							size={12}
 							strokeWidth={2.4}
 						/>
 						vaincu
-					</span>
+					</Pill>
 				)}
 
-				<Count
+				<CountBadge
 					count={totalDeath}
+					icon={Flame}
+					flickerIcon
 					size="sm"
 				/>
 
@@ -112,7 +104,7 @@ export function BossRow({
 							<IconButton
 								icon={Save}
 								label="Enregistrer"
-								variant="gold"
+								variant="primary"
 								size="sm"
 								onClick={save}
 							/>
@@ -130,7 +122,7 @@ export function BossRow({
 								label={
 									isDefeated ? "Marquer non vaincu" : "Marquer comme vaincu"
 								}
-								variant={isDefeated ? "gold-active" : "ghost"}
+								pressed={isDefeated}
 								size="sm"
 								onClick={() => onToggleDefeated(boss.id)}
 							/>
@@ -144,13 +136,13 @@ export function BossRow({
 								icon={Trash2}
 								label="Supprimer le boss"
 								size="sm"
-								variant="danger"
+								variant="destructive"
 								onClick={() => onDelete(boss.id)}
 							/>
 							<IconButton
 								icon={Plus}
 								label="Ajouter une mort (+1)"
-								variant="ember"
+								variant="accent"
 								size="sm"
 								onClick={() => onAddDeath(boss.id)}
 							/>

@@ -7,6 +7,8 @@ import type { DropdownPositionType } from "./dropdownPosition.type";
 import type { SelectItemsType } from "./selectedItems.type";
 import type { SelectSearchType } from "./selectSearch.type";
 
+const DEFAULT_SEARCH_PLACEHOLDER = "Type to filter items";
+
 const isTop = (position: string) => {
 	return ["top-left", "top-right"].includes(position);
 };
@@ -44,10 +46,34 @@ export function Dropdown<T extends string>({
 		: [defaultSearchString, setDefaultSearchString];
 
 	const dropdownId = `${selectorId}-dropdown-container`;
+	const itemsContainerRef = useRef<HTMLDivElement>(null);
 
-	const handleChange = (event: React.MouseEvent<HTMLButtonElement>) => {
-		onSelect(event.currentTarget.value as T);
+	const filteredItems = items.filter((item) =>
+		stringSearcher({
+			searchString,
+			value: item.search,
+			strictMode: !!search?.strictMode,
+		}),
+	);
+	const filteredItemsCount = filteredItems.length;
+
+	const selectItem = (value: T) => {
+		onSelect(value);
 		onClose();
+	};
+
+	const handleSearchChange = (newSearchString: string) => {
+		setSearchString(newSearchString);
+		// L'index porte sur la liste filtrée, qui vient de changer
+		setItemFocused(-1);
+	};
+
+	const handleSearchKeyDown = (
+		event: React.KeyboardEvent<HTMLInputElement>,
+	) => {
+		if (event.key !== "Enter") return;
+		const highlightedItem = filteredItems[Math.max(itemFocused, 0)];
+		if (highlightedItem) selectItem(highlightedItem.value);
 	};
 
 	const handleAllClick = useCallback(
@@ -64,57 +90,45 @@ export function Dropdown<T extends string>({
 		[dropdownId, onClose, selectorId],
 	);
 
-	const setFocusOnItem = useCallback(() => {
-		const allItems = document.querySelectorAll(".select_item");
-		if (allItems[itemFocused]) {
-			(allItems[itemFocused] as HTMLElement).focus();
-		}
-	}, [itemFocused]);
-
+	// Entrée sur un élément focalisé est gérée nativement par le bouton
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
 			switch (event.key) {
 				case "ArrowUp": {
-					if (itemFocused > 0) {
-						setItemFocused(itemFocused - 1);
-						setFocusOnItem();
-					}
+					event.preventDefault();
+					setItemFocused((current) => Math.max(current - 1, 0));
 					break;
 				}
 				case "ArrowDown": {
-					if (itemFocused < items.length - 1) {
-						setItemFocused(itemFocused + 1);
-						setFocusOnItem();
-					}
+					event.preventDefault();
+					setItemFocused((current) =>
+						Math.min(current + 1, filteredItemsCount - 1),
+					);
 					break;
 				}
-				case "Enter": {
-					onSelect(items[itemFocused].value);
+				case "Escape": {
+					onClose();
 					break;
 				}
 				default:
 					break;
 			}
 		},
-		[items, itemFocused, onSelect, setFocusOnItem],
+		[filteredItemsCount, onClose],
 	);
 
 	useEffect(() => {
 		document.addEventListener("click", handleAllClick);
 		document.addEventListener("keydown", handleKeyDown);
-		setFocusOnItem();
 		return () => {
 			document.removeEventListener("click", handleAllClick);
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [
-		dropdownId,
-		handleAllClick,
-		handleKeyDown,
-		onClose,
-		selectorId,
-		setFocusOnItem,
-	]);
+	}, [handleAllClick, handleKeyDown]);
+
+	useEffect(() => {
+		itemsContainerRef.current?.querySelectorAll("button")[itemFocused]?.focus();
+	}, [itemFocused]);
 
 	const [selectorButtonHeight, setSelectorButtonHeight] = useState(0);
 	const [dropdownverticalPosition, setDropdownverticalPosition] =
@@ -162,31 +176,23 @@ export function Dropdown<T extends string>({
 					ref={inputRef}
 					className={styles.dropdown_search_input}
 					value={searchString}
-					onChange={(event) => setSearchString(event.target.value)}
-					// TODO T => TRAD
-					placeholder="Type to filter items"
+					onChange={(event) => handleSearchChange(event.target.value)}
+					onKeyDown={handleSearchKeyDown}
+					placeholder={search.placeholder ?? DEFAULT_SEARCH_PLACEHOLDER}
 				/>
 			) : null}
-			<div>
-				{items
-					.filter((item) =>
-						stringSearcher({
-							searchString,
-							value: item.search,
-							strictMode: !!search?.strictMode,
-						}),
-					)
-					.map((item, index) => (
-						<button
-							key={item.value || index}
-							type="button"
-							className={`${styles.select_item} ${selectedItem === item.value ? styles.selected_item : ""}`}
-							onClick={(event) => handleChange(event)}
-							value={item.value}
-						>
-							{item.label}
-						</button>
-					))}
+			<div ref={itemsContainerRef}>
+				{filteredItems.map((item, index) => (
+					<button
+						key={item.value || index}
+						type="button"
+						className={`${styles.select_item} ${selectedItem === item.value ? styles.selected_item : ""}`}
+						onClick={() => selectItem(item.value)}
+						value={item.value}
+					>
+						{item.label}
+					</button>
+				))}
 			</div>
 		</ul>
 	);

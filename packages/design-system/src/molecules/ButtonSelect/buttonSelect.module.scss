@@ -1,7 +1,7 @@
 .button_select {
-  background-color: #444444;
-  border: 2px solid #eeeeee;
-  color: #eeeeee;
+  background-color: var(--theme-colorSurfaceRaised);
+  border: 2px solid var(--theme-colorBorder);
+  color: var(--theme-colorText);
   padding: 4px 10px;
   border-radius: 5px;
   display: flex;

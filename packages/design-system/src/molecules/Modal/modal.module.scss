@@ -1,9 +1,10 @@
 .modalContainer {
-  background-color: white;
-  padding: 1.6rem;
+  background-color: var(--theme-colorSurface);
+  color: var(--theme-colorText);
+  padding: var(--theme-spaceL);
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: var(--theme-spaceS);
 
   .modalFooter {
     display: flex;
