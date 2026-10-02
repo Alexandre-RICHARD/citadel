@@ -6,10 +6,10 @@ export function buildInvalidBooleanCases(label: string): {
 }[] {
 	const message = `${label} should be a boolean`;
 	return [
-		{ reason: "absent", value: undefined, message },
+		{ reason: "missing", value: undefined, message },
 		{ reason: "null", value: null, message },
-		{ reason: 'la chaîne "true"', value: "true", message },
-		{ reason: "le nombre 1", value: 1, message },
-		{ reason: "le nombre 0", value: 0, message },
+		{ reason: 'the string "true"', value: "true", message },
+		{ reason: "the number 1", value: 1, message },
+		{ reason: "the number 0", value: 0, message },
 	];
 }

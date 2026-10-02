@@ -244,6 +244,17 @@ export default defineConfig([
 			"promise/catch-or-return": "off",
 		},
 	},
+	// Structure des tests : describe du fichier testé > describe du comportement > it "SHOULD … WHEN …"
+	{
+		files: ["**/*.unit.test.{ts,tsx}", "**/*.integration.test.ts"],
+		rules: {
+			"vitest/consistent-test-it": [
+				"error",
+				{ fn: "it", withinDescribe: "it" },
+			],
+			"citadel/test-structure": "error",
+		},
+	},
 
 	// Prettier (doit être à la fin)
 	eslintPluginPrettierRecommended,

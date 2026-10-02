@@ -2,7 +2,7 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -21,15 +21,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
 
-const DELETE_DEATH_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`;
-
 function deleteDeathUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/${id}`;
 }
 
-describe(`DELETE ${DELETE_DEATH_URL}`, () => {
-	describe("204", () => {
-		test("supprime la mort et décrémente le compteur du boss, sans corps de réponse", async () => {
+describe("deleteDeath", () => {
+	describe("204 No Content", () => {
+		it("SHOULD delete the death and decrement the boss counter, with an empty response", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 			const bossId = await insertBossRow({
@@ -60,7 +58,7 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 			);
 		});
 
-		test("ne fait jamais passer le compteur sous zéro", async () => {
+		it("SHOULD never bring the counter below zero", async () => {
 			// Arrange : compteur déjà à zéro alors qu'une mort existe, état incohérent possible en base
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({
@@ -82,7 +80,7 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(0);
 		});
 
-		test("ne décrémente qu'une fois quand la même mort est supprimée deux fois en même temps", async () => {
+		it("SHOULD decrement only once WHEN the same death is deleted twice at the same time", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({
@@ -111,7 +109,7 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(3);
 		});
 
-		test("garde un compteur exact quand des ajouts et des suppressions se croisent sur le même boss", async () => {
+		it("SHOULD keep an exact counter WHEN additions and deletions cross on the same boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({
@@ -150,9 +148,9 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app).delete(deleteDeathUrl(pathValue));
@@ -163,8 +161,8 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 		);
 	});
 
-	describe("404", () => {
-		test("répond que la mort n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the death does not exist", async () => {
 			// Act
 			const response = await request(app).delete(
 				deleteDeathUrl(NON_EXISTENT_ID),
@@ -174,7 +172,7 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 			expectNotFound(response, `No death with id : ${NON_EXISTENT_ID}`);
 		});
 
-		test("répond que la mort n'existe plus à la deuxième suppression, sans décrémenter à nouveau", async () => {
+		it("SHOULD answer that the death no longer exists without decrementing again WHEN deleted twice", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls III" });
 			const bossId = await insertBossRow({
@@ -197,31 +195,31 @@ describe(`DELETE ${DELETE_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test.each([
+	describe("500 Internal Server Error", () => {
+		it.each([
 			{
-				step: "la lecture de la mort",
+				step: "reading the death",
 				failStep: () =>
 					vi
 						.spyOn(Death, "findByPk")
 						.mockRejectedValueOnce(simulatedDatabaseFailure()),
 			},
 			{
-				step: "la suppression de la mort",
+				step: "deleting the death",
 				failStep: () =>
 					vi
 						.spyOn(Death, "destroy")
 						.mockRejectedValueOnce(simulatedDatabaseFailure()),
 			},
 			{
-				step: "la décrémentation du compteur",
+				step: "decrementing the counter",
 				failStep: () =>
 					vi
 						.spyOn(Boss, "decrement")
 						.mockRejectedValueOnce(simulatedDatabaseFailure()),
 			},
 		])(
-			"répond une erreur générique et la journalise quand $step échoue, sans rien supprimer ni décrémenter",
+			"SHOULD answer a generic error, log it and change nothing WHEN $step fails",
 			async ({ failStep }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Bloodborne" });

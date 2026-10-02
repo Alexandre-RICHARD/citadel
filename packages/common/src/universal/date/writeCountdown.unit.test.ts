@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { writeCountdown } from "./writeCountdown.ts";
 
-describe("writeCountdown", () => {
+describe("writeCountdown.ts", () => {
 	describe("format: HMS", () => {
 		it("SHOULD return raw units WHEN time is simple", () => {
 			expect(writeCountdown(3910000, "HMS")).toBe("1H 5M 10S");

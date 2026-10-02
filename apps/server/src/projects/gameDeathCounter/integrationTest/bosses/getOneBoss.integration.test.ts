@@ -2,7 +2,7 @@ import type { BossDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/b
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -17,8 +17,6 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
-const GET_ONE_BOSS_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
-
 function getOneBossUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}`;
 }
@@ -29,9 +27,9 @@ async function getOneBoss(id: number): Promise<BossDto> {
 	return response.body as BossDto;
 }
 
-describe(`GET ${GET_ONE_BOSS_URL}`, () => {
-	describe("200", () => {
-		test("renvoie le boss et ses morts triées par date, puis par id à date égale", async () => {
+describe("getOneBoss", () => {
+	describe("200 OK", () => {
+		it("SHOULD return the boss and its deaths sorted by date, then by id WHEN dates are equal", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const defeatedAt = new Date("2019-04-02T23:00:00.000Z");
@@ -96,7 +94,7 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 			});
 		});
 
-		test("renvoie un boss jamais affronté avec des essais vides", async () => {
+		it("SHOULD return empty tries WHEN the boss was never fought", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 			const bossId = await insertBossRow({
@@ -119,7 +117,7 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 			});
 		});
 
-		test("prend la date de victoire comme premier et dernier essai d'un boss vaincu sans mourir", async () => {
+		it("SHOULD use the victory date as first and last try WHEN the boss was defeated without dying", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls" });
 			const defeatedAt = new Date("2011-10-01T19:00:00.000Z");
@@ -140,7 +138,7 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 			});
 		});
 
-		test("garde comme dernier essai une mort enregistrée après la victoire", async () => {
+		it("SHOULD keep as last try a death recorded after the victory", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Bloodborne" });
 			const bossId = await insertBossRow({
@@ -159,7 +157,7 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 			expect(bossDto.lastTry).toBe(deathAfterVictory.toISOString());
 		});
 
-		test("renvoie le compteur du boss, même s'il diffère du nombre de morts enregistrées", async () => {
+		it("SHOULD return the boss counter WHEN it differs from the number of recorded deaths", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Lies of P" });
 			const bossId = await insertBossRow({
@@ -180,7 +178,7 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 			expect(bossDto.deaths).toHaveLength(1);
 		});
 
-		test("ne renvoie que les morts de ce boss", async () => {
+		it("SHOULD only return the deaths of this boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({ gameId, name: "King Dice" });
@@ -202,9 +200,9 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app).get(getOneBossUrl(pathValue));
@@ -215,8 +213,8 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 		);
 	});
 
-	describe("404", () => {
-		test("répond que le boss n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
 			const response = await request(app).get(getOneBossUrl(NON_EXISTENT_ID));
 
@@ -225,8 +223,8 @@ describe(`GET ${GET_ONE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture du boss échoue", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error and log it WHEN reading the boss fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 			const bossId = await insertBossRow({ gameId, name: "Theseus" });

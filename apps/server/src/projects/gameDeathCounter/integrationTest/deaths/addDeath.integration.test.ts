@@ -2,7 +2,7 @@ import type { DeathDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -22,15 +22,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
 
-const ADD_DEATH_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`;
-
 function addDeathUrl(bossId: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${bossId}/deaths`;
 }
 
-describe(`POST ${ADD_DEATH_URL}`, () => {
-	describe("201", () => {
-		test("enregistre une mort datée de maintenant et incrémente le compteur du boss", async () => {
+describe("addDeath", () => {
+	describe("201 Created", () => {
+		it("SHOULD record a death dated now and increment the boss counter", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 			const bossId = await insertBossRow({
@@ -67,7 +65,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(4);
 		});
 
-		test("incrémente à chaque mort ajoutée", async () => {
+		it("SHOULD increment for each added death", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({ gameId, name: "Dr. Kahl's Robot" });
@@ -82,7 +80,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect(await selectDeathRowsByBossId(bossId)).toHaveLength(3);
 		});
 
-		test("compte toutes les morts envoyées en même temps", async () => {
+		it("SHOULD count every death WHEN they are sent at the same time", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Celeste" });
 			const bossId = await insertBossRow({ gameId, name: "Badeline" });
@@ -100,7 +98,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect(await selectDeathRowsByBossId(bossId)).toHaveLength(5);
 		});
 
-		test("accepte une mort sur un boss déjà vaincu", async () => {
+		it("SHOULD accept a death WHEN the boss is already defeated", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls" });
 			const bossId = await insertBossRow({
@@ -117,7 +115,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(1);
 		});
 
-		test("ignore un corps envoyé : la date est maintenant et le commentaire vide", async () => {
+		it("SHOULD ignore a sent body, using now as date and an empty comment", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 			const bossId = await insertBossRow({
@@ -138,7 +136,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect(deathDto.date).not.toBe("2020-09-17T20:00:00.000Z");
 		});
 
-		test("n'incrémente que le compteur du boss visé", async () => {
+		it("SHOULD only increment the counter of the targeted boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({ gameId, name: "Grimm" });
@@ -159,9 +157,9 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("Boss ID"))(
-			"refuse un id de boss qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("Boss ID"))(
+			"SHOULD reject the request WHEN the boss id is $reason",
 			async ({ pathValue, message }) => {
 				// Arrange
 				const deathCountBefore = await countTableRows("death");
@@ -176,8 +174,8 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 		);
 	});
 
-	describe("404", () => {
-		test("répond que le boss n'existe pas, sans rien créer", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist, creating nothing", async () => {
 			// Arrange
 			const deathCountBefore = await countTableRows("death");
 
@@ -190,8 +188,8 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture verrouillée du boss échoue, sans rien créer", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and create nothing WHEN the locked read of the boss fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Lies of P" });
 			const bossId = await insertBossRow({ gameId, name: "Nameless Puppet" });
@@ -213,7 +211,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(0);
 		});
 
-		test("répond une erreur générique et la journalise quand l'insertion de la mort échoue, sans toucher au compteur", async () => {
+		it("SHOULD answer a generic error, log it and keep the counter WHEN inserting the death fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Bloodborne" });
 			const bossId = await insertBossRow({
@@ -239,7 +237,7 @@ describe(`POST ${ADD_DEATH_URL}`, () => {
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(6);
 		});
 
-		test("annule la mort déjà insérée quand l'incrément du compteur échoue", async () => {
+		it("SHOULD cancel the already inserted death WHEN incrementing the counter fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const bossId = await insertBossRow({

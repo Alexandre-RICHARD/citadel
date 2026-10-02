@@ -3,7 +3,7 @@ import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCou
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
@@ -21,9 +21,9 @@ import { Game } from "../../models/Game.ts";
 
 const CREATE_GAME_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 
-describe(`POST ${CREATE_GAME_URL}`, () => {
-	describe("201", () => {
-		test("crée le jeu en base et le renvoie", async () => {
+describe("createGame", () => {
+	describe("201 Created", () => {
+		it("SHOULD create the game in database and return it", async () => {
 			// Arrange
 			const createGameBody: CreateGameBodyDto = { name: "Hollow Knight" };
 
@@ -58,7 +58,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			});
 		});
 
-		test("retire les espaces autour du nom", async () => {
+		it("SHOULD remove the spaces around the name", async () => {
 			// Act
 			const response = await request(app)
 				.post(CREATE_GAME_URL)
@@ -71,7 +71,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameDto.id))?.name).toBe("Elden Ring");
 		});
 
-		test("stocke intact un nom de 255 caractères, le maximum de la colonne", async () => {
+		it("SHOULD store intact a 255 characters name, the column maximum", async () => {
 			// Arrange
 			const longestName = "Sekiro: Shadows Die Twice - "
 				.repeat(10)
@@ -89,7 +89,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameDto.id))?.name).toBe(longestName);
 		});
 
-		test("mesure la longueur du nom après avoir retiré les espaces autour", async () => {
+		it("SHOULD measure the name length after removing the surrounding spaces", async () => {
 			// Arrange
 			const longestName = "Bloodborne ".repeat(24).slice(0, 255);
 
@@ -103,7 +103,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect((response.body as GameSummaryDto).name).toBe(longestName.trim());
 		});
 
-		test("conserve les accents, idéogrammes et emojis", async () => {
+		it("SHOULD keep accents, ideograms and emojis", async () => {
 			// Arrange
 			const unicodeName = "Ōkami — 大神 🐺";
 
@@ -119,7 +119,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameDto.id))?.name).toBe(unicodeName);
 		});
 
-		test("accepte deux jeux du même nom", async () => {
+		it("SHOULD accept two games with the same name", async () => {
 			// Act
 			const firstResponse = await request(app)
 				.post(CREATE_GAME_URL)
@@ -138,7 +138,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect((await selectGameRow(secondGameId))?.name).toBe("Celeste");
 		});
 
-		test("ignore les champs inconnus du corps, dont ceux qui imitent le résultat", async () => {
+		it("SHOULD ignore unknown body fields, including those imitating the result", async () => {
 			// Arrange
 			const existingGameId = await insertGameRow({ name: "Hades II" });
 			const existingGameRow = await selectGameRow(existingGameId);
@@ -164,9 +164,9 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(INVALID_NAME_CASES)(
-			"refuse la requête quand $reason, sans rien créer",
+	describe("400 Bad Request", () => {
+		it.each(INVALID_NAME_CASES)(
+			"SHOULD reject the request without creating anything WHEN $reason",
 			async ({ name, message }) => {
 				// Arrange
 				const gameCountBefore = await countTableRows("game");
@@ -182,7 +182,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			},
 		);
 
-		test("refuse un corps absent", async () => {
+		it("SHOULD reject a missing body", async () => {
 			// Arrange
 			const gameCountBefore = await countTableRows("game");
 
@@ -199,7 +199,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect(await countTableRows("game")).toBe(gameCountBefore);
 		});
 
-		test("refuse un corps qui est un tableau", async () => {
+		it("SHOULD reject the body WHEN it is an array", async () => {
 			// Arrange
 			const gameCountBefore = await countTableRows("game");
 
@@ -218,7 +218,7 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 			expect(await countTableRows("game")).toBe(gameCountBefore);
 		});
 
-		test("refuse un JSON malformé", async () => {
+		it("SHOULD reject a malformed JSON", async () => {
 			// Arrange
 			const gameCountBefore = await countTableRows("game");
 
@@ -234,8 +234,8 @@ describe(`POST ${CREATE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand l'insertion échoue", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error and log it WHEN the insertion fails", async () => {
 			// Arrange
 			vi.spyOn(Game, "create").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),

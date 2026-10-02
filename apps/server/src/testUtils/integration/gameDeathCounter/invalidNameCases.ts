@@ -6,44 +6,43 @@ export const INVALID_NAME_CASES: {
 	message: string;
 }[] = [
 	{
-		reason: "le nom est absent",
+		reason: "the name is missing",
 		name: undefined,
 		message: "Name should be a string",
 	},
 	{
-		reason: "le nom est null",
+		reason: "the name is null",
 		name: null,
 		message: "Name should be a string",
 	},
 	{
-		reason: "le nom est un nombre",
+		reason: "the name is a number",
 		name: 42,
 		message: "Name should be a string",
 	},
 	{
-		reason: "le nom est un tableau",
+		reason: "the name is an array",
 		name: ["Cuphead"],
 		message: "Name should be a string",
 	},
 	{
-		reason: "le nom est vide",
+		reason: "the name is empty",
 		name: "",
 		message: "Name should contain at least 1 character",
 	},
 	{
-		reason:
-			"le nom ne contient que des espaces, tabulations et retours à la ligne",
+		reason: "the name only contains spaces, tabs and line breaks",
 		name: " \t\n ",
 		message: "Name should contain at least 1 character",
 	},
 	{
 		reason:
-			"le nom contient une moitié d'emoji isolée, que la base remplacerait par �",
+			"the name contains an isolated half of an emoji, that the database would replace with �",
 		name: "Elden \uD83D Ring",
 		message: "Name should not contain invalid characters",
 	},
 	{
-		reason: "le nom dépasse 255 caractères",
+		reason: "the name exceeds 255 characters",
 		name: "Dark Souls III ".repeat(18).slice(0, 256),
 		message: "Name should contain at most 255 characters",
 	},

@@ -2,7 +2,7 @@ import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounte
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -22,15 +22,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
-const UPDATE_GAME_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
-
 function updateGameUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${id}`;
 }
 
-describe(`PUT ${UPDATE_GAME_URL}`, () => {
-	describe("200", () => {
-		test("renomme le jeu et renvoie son résumé à jour", async () => {
+describe("updateGame", () => {
+	describe("200 OK", () => {
+		it("SHOULD rename the game and return its updated summary", async () => {
 			// Arrange
 			const startedAt = new Date("2011-09-22T08:00:00.000Z");
 			const endedAt = new Date("2011-12-24T23:00:00.000Z");
@@ -74,7 +72,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			);
 		});
 
-		test("renvoie un total à zéro pour un jeu sans boss", async () => {
+		it("SHOULD return a zero total WHEN the game has no boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Celest" });
 
@@ -88,7 +86,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect((response.body as GameSummaryDto).totalDeath).toBe(0);
 		});
 
-		test("ne modifie aucun autre jeu", async () => {
+		it("SHOULD not change any other game", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const otherGameId = await insertGameRow({ name: "Hollow Knight" });
@@ -105,7 +103,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			);
 		});
 
-		test("accepte de garder le même nom", async () => {
+		it("SHOULD accept keeping the same name", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 
@@ -120,7 +118,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameId))?.name).toBe("Cuphead");
 		});
 
-		test("retire les espaces autour du nom", async () => {
+		it("SHOULD remove the spaces around the name", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 
@@ -134,7 +132,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameId))?.name).toBe("Hades II");
 		});
 
-		test("stocke intact un nom de 255 caractères, le maximum de la colonne", async () => {
+		it("SHOULD store intact a 255 characters name, the column maximum", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Ori" });
 			const longestName = "Ori and the Will of the Wisps "
@@ -151,7 +149,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect((await selectGameRow(gameId))?.name).toBe(longestName);
 		});
 
-		test("ignore les champs inconnus du corps, dont la date de fin et l'id", async () => {
+		it("SHOULD ignore unknown body fields, including the end date and the id", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Blasphemous" });
 			const otherGameId = await insertGameRow({ name: "Blasphemous II" });
@@ -179,9 +177,9 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app)
@@ -193,8 +191,8 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			},
 		);
 
-		test.each(INVALID_NAME_CASES)(
-			"refuse la requête quand $reason, sans rien modifier",
+		it.each(INVALID_NAME_CASES)(
+			"SHOULD reject the request without changing anything WHEN $reason",
 			async ({ name, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Salt and Sanctuary" });
@@ -211,7 +209,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			},
 		);
 
-		test("signale à la fois l'id et le corps invalides, l'id en premier", async () => {
+		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateGameUrl("abc"))
@@ -228,7 +226,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			]);
 		});
 
-		test("valide le corps avant de chercher le jeu", async () => {
+		it("SHOULD validate the body before looking for the game", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateGameUrl(NON_EXISTENT_ID))
@@ -240,7 +238,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien modifier", async () => {
+		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Shovel Knight" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -257,8 +255,8 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que le jeu n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateGameUrl(NON_EXISTENT_ID))
@@ -269,8 +267,8 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture du jeu échoue, sans rien modifier", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN reading the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Furi" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -293,7 +291,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'écriture échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sifu" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -316,7 +314,7 @@ describe(`PUT ${UPDATE_GAME_URL}`, () => {
 			expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 		});
 
-		test("répond une erreur générique quand le calcul du total échoue, mais le nouveau nom reste enregistré", async () => {
+		it("SHOULD answer a generic error but keep the new name WHEN computing the total fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Nioh" });
 			const errorLogWatcher = await watchErrorLogs();

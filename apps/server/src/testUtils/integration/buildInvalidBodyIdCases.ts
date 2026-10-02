@@ -8,7 +8,7 @@ export function buildInvalidBodyIdCases(label: string): {
 }[] {
 	return [
 		{
-			reason: "absent",
+			reason: "missing",
 			value: undefined,
 			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
 		},
@@ -18,27 +18,27 @@ export function buildInvalidBodyIdCases(label: string): {
 			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
 		},
 		{
-			reason: "un nombre écrit en chaîne",
+			reason: "a number written as a string",
 			value: "3",
 			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
 		},
 		{
-			reason: "un décimal",
+			reason: "a decimal",
 			value: 1.5,
 			message: `${label} should be an integer (e.g. 7, not 7.5)`,
 		},
 		{
-			reason: "zéro",
+			reason: "zero",
 			value: 0,
 			message: `${label} should be at least ${IdBoundEnum.MIN}`,
 		},
 		{
-			reason: "un négatif",
+			reason: "a negative number",
 			value: -2,
 			message: `${label} should be at least ${IdBoundEnum.MIN}`,
 		},
 		{
-			reason: "au-delà du maximum d'une colonne INT",
+			reason: "beyond the maximum of an INT column",
 			value: IdBoundEnum.MAX + 1,
 			message: `${label} should be at most ${IdBoundEnum.MAX}`,
 		},

@@ -2,7 +2,7 @@ import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounte
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidBooleanCases } from "../../../../testUtils/integration/buildInvalidBooleanCases.ts";
@@ -23,15 +23,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
-const SET_BOSS_DEFEATED_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id/defeated`;
-
 function setBossDefeatedUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}/defeated`;
 }
 
-describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
-	describe("200", () => {
-		test("marque le boss vaincu maintenant et en fait son dernier essai", async () => {
+describe("setBossDefeated", () => {
+	describe("200 OK", () => {
+		it("SHOULD mark the boss as defeated now and make it its last try", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 			const bossId = await insertBossRow({
@@ -73,7 +71,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			);
 		});
 
-		test("remplace la date de victoire d'un boss déjà vaincu par maintenant", async () => {
+		it("SHOULD replace the victory date with now WHEN the boss was already defeated", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({
@@ -97,7 +95,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			);
 		});
 
-		test("prend la date de victoire comme premier et dernier essai d'un boss vaincu sans mourir", async () => {
+		it("SHOULD use the victory date as first and last try WHEN the boss was defeated without dying", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls" });
 			const bossId = await insertBossRow({ gameId, name: "Taurus Demon" });
@@ -113,7 +111,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			expect(bossDto.lastTry).toBe(bossDto.defeatedAt);
 		});
 
-		test("annule la victoire : les essais ne reposent plus que sur les morts", async () => {
+		it("SHOULD cancel the victory, basing tries on deaths only", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const bossId = await insertBossRow({
@@ -142,7 +140,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			expect((await selectBossRow(bossId))?.defeatedAt).toBeNull();
 		});
 
-		test("laisse non vaincu un boss qui ne l'était pas, sans essai s'il n'a jamais été affronté", async () => {
+		it("SHOULD leave undefeated a boss that was not defeated, without tries WHEN it was never fought", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Bloodborne" });
 			const bossId = await insertBossRow({ gameId, name: "Lady Maria" });
@@ -160,7 +158,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			});
 		});
 
-		test("ne modifie aucun autre boss", async () => {
+		it("SHOULD not change any other boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({ gameId, name: "Cagney Carnation" });
@@ -182,9 +180,9 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app)
@@ -196,8 +194,8 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			},
 		);
 
-		test.each(buildInvalidBooleanCases("Defeated"))(
-			"refuse un statut vaincu qui est $reason, sans rien modifier",
+		it.each(buildInvalidBooleanCases("Defeated"))(
+			"SHOULD reject the request without changing anything WHEN defeated is $reason",
 			async ({ value, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Celeste" });
@@ -215,7 +213,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			},
 		);
 
-		test("signale à la fois l'id et le corps invalides, l'id en premier", async () => {
+		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
 			const response = await request(app)
 				.patch(setBossDefeatedUrl("-3"))
@@ -232,7 +230,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien modifier", async () => {
+		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 			const bossId = await insertBossRow({ gameId, name: "Bone Hydra" });
@@ -250,8 +248,8 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que le boss n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
 			const response = await request(app)
 				.patch(setBossDefeatedUrl(NON_EXISTENT_ID))
@@ -262,8 +260,8 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture du boss échoue, sans rien modifier", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN reading the boss fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls II" });
 			const bossId = await insertBossRow({ gameId, name: "Fume Knight" });
@@ -287,7 +285,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'écriture échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Lords of the Fallen" });
 			const bossId = await insertBossRow({
@@ -314,7 +312,7 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("répond une erreur générique quand le calcul des essais échoue, mais la victoire reste enregistrée", async () => {
+		it("SHOULD answer a generic error but keep the victory WHEN computing the tries fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Mortal Shell" });
 			const bossId = await insertBossRow({
