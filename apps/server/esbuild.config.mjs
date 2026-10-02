@@ -2,11 +2,15 @@ import { build } from "esbuild";
 
 await build({
 	entryPoints: ["src/index.ts"],
-	outfile: "build/build.server.js",
+	outfile: "build/build.server.cjs",
 	bundle: true,
 	platform: "node",
+	format: "cjs",
 	target: "node22",
 	packages: "bundle",
+	minify: true,
+	sourcemap: true,
+	sourcesContent: false,
 
 	plugins: [
 		{

@@ -1,3 +1,4 @@
+import * as mariadb from "mariadb";
 import { Sequelize } from "sequelize";
 
 import { env } from "./env.ts";
@@ -8,6 +9,8 @@ export const sequelize = new Sequelize(
 	env.DB_USER_PASSWORD,
 	{
 		dialect: env.DB_DRIVER,
+		// Import statique : sinon Sequelize charge le driver par un require dynamique, absent du bundle esbuild
+		dialectModule: mariadb,
 		host: env.DB_HOST,
 		port: env.DB_PORT,
 		timezone: "+00:00",
