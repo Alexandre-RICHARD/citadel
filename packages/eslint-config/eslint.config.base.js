@@ -9,6 +9,17 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import { maxOneExport } from "./rules/maxOneExport.js";
+
+const ENUM_EXPORT_RESTRICTION = {
+	selector: "ExportNamedDeclaration > TSEnumDeclaration",
+	message: "Un fichier qui exporte un enum doit finir par .enum.ts",
+};
+const TYPE_EXPORT_RESTRICTION = {
+	selector: "ExportNamedDeclaration[exportKind='type']",
+	message: "Un fichier qui exporte un type doit finir par .type.ts",
+};
+
 export default defineConfig([
 	globalIgnores([
 		"node_modules/**",
@@ -39,6 +50,7 @@ export default defineConfig([
 		},
 		plugins: {
 			"simple-import-sort": simpleImportSort,
+			"citadel": { rules: { "max-one-export": maxOneExport } },
 		},
 		settings: {
 			"import-x/resolver-next": [
@@ -116,6 +128,7 @@ export default defineConfig([
 					],
 				},
 			],
+			"citadel/max-one-export": "error",
 			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": "error",
 			"@typescript-eslint/lines-between-class-members": "off",
@@ -124,6 +137,30 @@ export default defineConfig([
 	},
 
 	// Override
+	// Nommage : un export d'enum vit dans un *.enum.ts, un export de type dans un *.type.ts.
+	// Un bloc no-restricted-syntax remplace le précédent : chaque bloc redonne la liste complète
+	{
+		files: ["**/*.{ts,tsx,mts,cts}"],
+		rules: {
+			"no-restricted-syntax": [
+				"error",
+				ENUM_EXPORT_RESTRICTION,
+				TYPE_EXPORT_RESTRICTION,
+			],
+		},
+	},
+	{
+		files: ["**/*.enum.ts"],
+		rules: {
+			"no-restricted-syntax": ["error", TYPE_EXPORT_RESTRICTION],
+		},
+	},
+	{
+		files: ["**/*.type.ts", "**/*.d.ts"],
+		rules: {
+			"no-restricted-syntax": ["error", ENUM_EXPORT_RESTRICTION],
+		},
+	},
 	// Désactive le type-checking pour les fichiers JS/MJS/CJS de configuration
 	{
 		files: ["**/*.{js,jsx,mjs,cjs}"],
