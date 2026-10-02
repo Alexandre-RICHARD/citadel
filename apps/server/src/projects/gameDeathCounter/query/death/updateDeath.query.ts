@@ -2,10 +2,6 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import type { UpdateDeathBean } from "../../bean/updateDeath.bean.ts";
 import { Death } from "../../models/Death.ts";
 
-/**
- * Ne modifie que les champs renseignés (différents de `undefined`) du bean
- * @returns `null` si aucune mort n'a cet id
- */
 export async function updateDeathQuery(
 	updateDeathBean: UpdateDeathBean,
 ): Promise<Death | null> {

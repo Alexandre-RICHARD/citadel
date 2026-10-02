@@ -132,3 +132,4 @@ This file is being treated as an ES module because it has a '.js' file extension
 ```
 - Refonte du système de traduction
 - Virer lucide-react
+- Les media queries ne doivent jamais utilisées de rem, mais resté en taille d'écran abolsue à priori

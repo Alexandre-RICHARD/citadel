@@ -64,7 +64,6 @@ export function Dropdown<T extends string>({
 
 	const handleSearchChange = (newSearchString: string) => {
 		setSearchString(newSearchString);
-		// L'index porte sur la liste filtrée, qui vient de changer
 		setItemFocused(-1);
 	};
 
@@ -90,7 +89,6 @@ export function Dropdown<T extends string>({
 		[dropdownId, onClose, selectorId],
 	);
 
-	// Entrée sur un élément focalisé est gérée nativement par le bouton
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
 			switch (event.key) {

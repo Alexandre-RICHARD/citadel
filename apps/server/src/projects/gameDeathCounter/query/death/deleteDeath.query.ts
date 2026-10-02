@@ -5,10 +5,6 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
 
-/**
- * Supprime la mort et décrémente Boss.totalDeath dans une même transaction
- * @returns `false` si aucune mort n'a cet id
- */
 export async function deleteDeathQuery(id: number): Promise<boolean> {
 	try {
 		return await sequelize.transaction(async (transaction) => {

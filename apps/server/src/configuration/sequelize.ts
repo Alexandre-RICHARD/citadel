@@ -11,7 +11,7 @@ export const sequelize = new Sequelize(
 		host: env.DB_HOST,
 		port: env.DB_PORT,
 		timezone: "+00:00",
-		/* eslint-disable-next-line no-console */
+		// eslint-disable-next-line no-console
 		logging: env.LOG_DB ? console.log : false,
 		define: {
 			underscored: true,

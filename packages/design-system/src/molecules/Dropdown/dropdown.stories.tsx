@@ -16,7 +16,6 @@ const meta = {
 	component: Dropdown,
 	decorators: [
 		(Story) => (
-			// Le Dropdown est positionné en absolu : il lui faut un conteneur de référence
 			<div style={{ position: "relative", minHeight: "24rem" }}>
 				<Story />
 			</div>

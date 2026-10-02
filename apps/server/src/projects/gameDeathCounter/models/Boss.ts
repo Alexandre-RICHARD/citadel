@@ -22,9 +22,7 @@ export class Boss extends Model<
 	declare totalDeath: CreationOptional<number>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
-
 	declare game?: NonAttribute<Game>;
-	// Inclu uniquement si la requête utilise `include: { model: Death }`
 	declare deaths?: NonAttribute<Death[]>;
 }
 

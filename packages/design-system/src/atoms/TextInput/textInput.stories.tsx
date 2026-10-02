@@ -12,7 +12,6 @@ const meta = {
 		value: "",
 		onChange: fn(),
 	},
-	// Composant contrôlé : useArgs répercute la saisie sur la valeur de la story
 	render: (args) => {
 		const [, updateArgs] = useArgs<typeof args>();
 

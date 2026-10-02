@@ -20,7 +20,6 @@ export const useGetDiagramOptions = ({
 
 	return {
 		autoResize: true,
-		// height,
 		width: "100%",
 		layout: {
 			hierarchical: {

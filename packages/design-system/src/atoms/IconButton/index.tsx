@@ -7,7 +7,6 @@ type Props = {
 	onClick: () => void;
 	variant?: "ghost" | "primary" | "accent" | "destructive";
 	size?: "sm" | "md";
-	// Bouton à bascule : renseigné, il affiche l'état enfoncé et alimente aria-pressed
 	pressed?: boolean;
 };
 

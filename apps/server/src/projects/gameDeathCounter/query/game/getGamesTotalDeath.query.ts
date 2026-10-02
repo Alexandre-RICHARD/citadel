@@ -4,10 +4,6 @@ import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import type { GameTotalDeathRow } from "../../dbType/gameTotalDeath.row.ts";
 
-/**
- * Game.totalDeath n'est pas stocké : c'est la somme des Boss.totalDeath du jeu
- * @returns Les jeux sans aucun boss n'y figurent pas
- */
 export async function getGamesTotalDeathQuery(
 	gameIds: number[],
 ): Promise<GameTotalDeathRow[]> {

@@ -45,10 +45,6 @@ function buildErrorResponse(
 	return { message };
 }
 
-/**
- * Point de sortie unique des erreurs : choisit le code HTTP, construit le corps
- * de réponse et journalise les erreurs serveur.
- */
 export function globalErrorHandler(
 	error: unknown,
 	request: Request,
