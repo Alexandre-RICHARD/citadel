@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/sqlColumnMaxLength.enum.ts";
-import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/stringSchemas.ts";
+import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/string/requiredStringSchema.ts";
+import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/string/sqlColumnMaxLength.enum.ts";
 
 export const createGameBodySchema = z.object({
 	name: requiredStringSchema("Name", SqlColumnMaxLengthEnum.VARCHAR_255),
