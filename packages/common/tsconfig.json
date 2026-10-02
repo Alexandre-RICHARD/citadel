@@ -1,0 +1,23 @@
+{
+	"extends": "@citadel/typescript-config/tsconfig.json",
+	"compilerOptions": {
+		"moduleResolution": "nodenext",
+		"module": "nodenext",
+		"target": "esnext",
+		"jsx": "react-jsx",
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext"
+		],
+	},
+	"include": [
+		"src",
+		"vitest.config.ts",
+		"vitest.setup.ts",
+		"eslint.config.js",
+	],
+	"exclude": [
+		"node_modules",
+	],
+}

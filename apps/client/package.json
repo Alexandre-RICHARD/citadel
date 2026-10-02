@@ -17,6 +17,7 @@
     "start": "vite preview --open"
   },
   "dependencies": {
+    "@citadel/common": "workspace:*",
     "@citadel/design-system": "workspace:*",
     "@citadel/specs": "workspace:*",
     "@tanstack/react-query": "^5.103.2",

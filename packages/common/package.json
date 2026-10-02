@@ -1,0 +1,35 @@
+{
+  "name": "@citadel/common",
+  "type": "module",
+  "scripts": {
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "check-types": "tsc --noEmit",
+    "unit-test-once": "vitest run",
+    "unit-test-watch": "vitest watch",
+    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@citadel/eslint-config": "workspace:*",
+    "@citadel/typescript-config": "workspace:*",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "^30.1.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

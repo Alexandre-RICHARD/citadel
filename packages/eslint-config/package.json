@@ -3,6 +3,7 @@
   "type": "module",
   "exports": {
     "./client": "./eslint.config.client.js",
+    "./common": "./eslint.config.common.js",
     "./design-system": "./eslint.config.designSystem.js",
     "./server": "./eslint.config.server.js",
     "./specs": "./eslint.config.specs.js"

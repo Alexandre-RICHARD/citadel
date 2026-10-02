@@ -94,3 +94,4 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - Virer lucide-react
 - Les media queries ne doivent jamais utilisées de rem, mais resté en taille d'écran abolsue à priori
 - Faire des data-portal avec tout les éléments de type : tooltip, modal, dropdown
+- Voir si c'est possible d'avoir une seule commande pour tout le répo pour lancer la couverture des test avec coverage. Ca n'a pas trop de sens que plusieurs parties aient chacune leur coverage.

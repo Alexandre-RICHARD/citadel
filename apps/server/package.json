@@ -20,6 +20,7 @@
     "start": "node --enable-source-maps ./build/build.server.cjs"
   },
   "dependencies": {
+    "@citadel/common": "workspace:*",
     "@citadel/specs": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

@@ -1,9 +1,12 @@
-
-# === Globals ===
+# ====================
+# =     Globals      =
+# ====================
 /.vscode
 /node_modules/
 
-# === Client ===
+# ====================
+# =      Client      =
+# ====================
 # Folder
 /apps/client/build
 /apps/client/node_modules/
@@ -13,7 +16,9 @@
 /apps/client/.env
 /apps/client/tsBuildInfo.json
 
-# === Server ===
+# ====================
+# =      Server      =
+# ====================
 # Folders
 /apps/server/build/
 /apps/server/node_modules/
@@ -23,19 +28,33 @@
 /apps/server/.env
 /apps/server/.env.test
 
-# === Docker ===
+# ====================
+# =      Docker      =
+# ====================
 # Env Files
 /docker/.env
 
-# === Design system ===
+# ====================
+# =      Common      =
+# ====================
+# Folders
+/packages/common/node_modules/
+
+# ====================
+# =  Design system   =
+# ====================
 # Folders
 /packages/design-system/build/
 /packages/design-system/node_modules/
 
-# === Eslint config ===
+# ====================
+# =  Eslint config   =
+# ====================
 # Folders
 /packages/eslint-config/node_modules/
 
-# === Specs ===
+# ====================
+# =      Specs       =
+# ====================
 # Folders
 /packages/specs/node_modules/
