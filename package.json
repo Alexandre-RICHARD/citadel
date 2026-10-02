@@ -22,7 +22,7 @@
     "update-minor": "pnpm update --recursive --interactive",
     "update-major": "pnpm update --recursive --interactive --latest",
     "=== Scripts ===": "",
-    "check-extensions": "bash listExtensions.sh"
+    "tools": "bash scripts/run.sh"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.11",

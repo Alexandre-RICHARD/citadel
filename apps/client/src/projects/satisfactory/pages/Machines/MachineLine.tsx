@@ -1,6 +1,6 @@
 import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 
-import type { DisplayableMachines } from "./DisplayableMachines.type";
+import type { DisplayableMachines } from "./displayableMachines.type";
 import styles from "./machines.module.scss";
 
 type Props = {

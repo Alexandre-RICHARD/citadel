@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { useAppNavigation } from "./appNavigation/useAppNavigation";
+import { useAppNavigation } from "../appNavigation/useAppNavigation";
 
 type Props = {
 	children: ReactNode;

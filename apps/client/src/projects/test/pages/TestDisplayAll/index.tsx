@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { useDeleteTest } from "../../actions/useDeleteTest";
 import { useGetAllTest } from "../../actions/useGetAllTest";
-import { CreateTest } from "../../components/dataForms/CreateTest";
-import { UpdateTest } from "../../components/dataForms/UpdateTest";
+import { CreateTest } from "../../components/DataForms/CreateTest";
+import { UpdateTest } from "../../components/DataForms/UpdateTest";
 import { OneTestDataLine } from "../../components/OneTestDataLine";
 import { TranslationTest } from "../../components/TranslationTest";
 import styles from "./testDisplayAll.module.scss";

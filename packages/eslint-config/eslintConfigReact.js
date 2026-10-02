@@ -55,5 +55,20 @@ export default [
 			"import-x/no-nodejs-modules": "warn",
 		},
 	},
+	// Organisation des composants : nommage des fichiers, des dossiers et des .module.scss
+	{
+		files: ["src/**/*.tsx"],
+		ignores: ["src/main.tsx", "**/*.stories.tsx", "**/*.test.tsx"],
+		rules: {
+			"citadel/tsx-name-matches-export": "error",
+			"citadel/component-folder-case": "error",
+		},
+	},
+	{
+		files: ["src/**/*.{ts,tsx}"],
+		rules: {
+			"citadel/scss-module-name": "error",
+		},
+	},
 	// Override
 ];

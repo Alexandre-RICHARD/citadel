@@ -9,7 +9,7 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-import { maxOneExport } from "./rules/maxOneExport.js";
+import { citadelPlugin } from "./rules/citadelPlugin.js";
 
 // Chaque sorte d'export a son suffixe de fichier : un fichier n'est exempté que de la restriction de son suffixe
 const EXPORT_RESTRICTIONS = {
@@ -65,7 +65,7 @@ export default defineConfig([
 		},
 		plugins: {
 			"simple-import-sort": simpleImportSort,
-			"citadel": { rules: { "max-one-export": maxOneExport } },
+			"citadel": citadelPlugin,
 		},
 		settings: {
 			"import-x/resolver-next": [
@@ -153,6 +153,14 @@ export default defineConfig([
 	},
 
 	// Override
+	// Casse des fichiers hors .tsx (dont le nom suit leur export, voir la config React)
+	{
+		files: ["**/*.{ts,mts,cts,js,mjs,cjs}"],
+		ignores: ["**/*.d.ts"],
+		rules: {
+			"citadel/file-name-case": "error",
+		},
+	},
 	// Nommage : un export d'enum vit dans un *.enum.ts, de type dans un *.type.ts, d'interface dans un *.interface.ts.
 	// Un bloc no-restricted-syntax remplace le précédent : chaque bloc redonne la liste complète
 	{
