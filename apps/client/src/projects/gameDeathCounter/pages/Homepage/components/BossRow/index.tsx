@@ -6,7 +6,7 @@ import { Flame, Pencil, Plus, Save, Shield, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Boss } from "../../game.type";
+import type { Boss } from "../../../../types/boss.type";
 import { BlockTitle } from "../BlockTitle";
 import { DeathRow } from "../DeathRow";
 import styles from "./bossRow.module.scss";

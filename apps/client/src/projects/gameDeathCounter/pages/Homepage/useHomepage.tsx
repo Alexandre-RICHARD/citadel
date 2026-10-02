@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import type { Boss, GamesList } from "./game.type";
+import type { Boss } from "../../types/boss.type";
+import type { GamesList } from "../../types/gameList.type";
 
 const initialGames: GamesList = [
 	{

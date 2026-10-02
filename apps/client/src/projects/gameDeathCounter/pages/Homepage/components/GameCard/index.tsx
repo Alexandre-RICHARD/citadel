@@ -6,7 +6,7 @@ import { Check, Flame, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Game } from "../../game.type";
+import type { Game } from "../../../../types/game.type";
 import { BlockTitle } from "../BlockTitle";
 import { BossRow } from "../BossRow";
 import styles from "./gameCard.module.scss";
