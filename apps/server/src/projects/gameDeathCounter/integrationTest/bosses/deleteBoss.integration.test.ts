@@ -1,7 +1,7 @@
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -19,15 +19,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
-const DELETE_BOSS_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
-
 function deleteBossUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}`;
 }
 
-describe(`DELETE ${DELETE_BOSS_URL}`, () => {
-	describe("204", () => {
-		test("supprime le boss et ses morts, sans corps de réponse", async () => {
+describe("deleteBoss", () => {
+	describe("204 No Content", () => {
+		it("SHOULD delete the boss and its deaths, with an empty response", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls" });
 			const bossId = await insertBossRow({
@@ -55,7 +53,7 @@ describe(`DELETE ${DELETE_BOSS_URL}`, () => {
 			expect(await selectDeathRow(secondDeathId)).toBeNull();
 		});
 
-		test("garde le jeu, ses autres boss et leurs morts", async () => {
+		it("SHOULD keep the game, its other bosses and their deaths", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({ gameId, name: "False Knight" });
@@ -86,9 +84,9 @@ describe(`DELETE ${DELETE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app).delete(deleteBossUrl(pathValue));
@@ -99,8 +97,8 @@ describe(`DELETE ${DELETE_BOSS_URL}`, () => {
 		);
 	});
 
-	describe("404", () => {
-		test("répond que le boss n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
 			const response = await request(app).delete(
 				deleteBossUrl(NON_EXISTENT_ID),
@@ -110,7 +108,7 @@ describe(`DELETE ${DELETE_BOSS_URL}`, () => {
 			expectNotFound(response, `No boss with id : ${NON_EXISTENT_ID}`);
 		});
 
-		test("répond que le boss n'existe plus à la deuxième suppression", async () => {
+		it("SHOULD answer that the boss no longer exists WHEN deleted twice", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({ gameId, name: "Hilda Berg" });
@@ -124,8 +122,8 @@ describe(`DELETE ${DELETE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la suppression échoue, sans rien supprimer", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and delete nothing WHEN the deletion fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const bossId = await insertBossRow({

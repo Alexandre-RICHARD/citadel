@@ -28,7 +28,6 @@
 ## TODO
 - Ajouter des tests (unitaire uniquement)
 https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968 
-- On va faire des tesdt d'intégration sur toutes mes routes
 - On va enfin implémenter le front
 - On va faire des tests end to end
 - Faire le système de tous est en 1 rem = 10px. Mais il faut y appliquer un système pour que l'utilisateur puisse "zoomer"
@@ -43,4 +42,3 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - Claude a répéré "Un bug repéré en passant dans DeathRow, non corrigé. Le champ de date est en datetime-local, mais toDateInputValue renvoie seulement AAAA-MM-JJ, une valeur que ce type de champ refuse. Le champ s'affiche donc vide, et enregistrer une mort sans toucher à la date remet son heure à minuit UTC. C'est à régler quand tu brancheras gameDeathCounter sur l'API."
 - + point bonus : avec les collègues on a vu que c'était bien que les tests d'intégration ne nettoie pas leurs données de tests avant ou après l'exécution individuelle. La base ne doit être clean qu'au tout début des tests. Cela permet de s'assurer d'une meilleure compatibilité des endpoints les uns par rapport aux autres. Aussi, pour renforcer ça, les tests d'intégration doivent être joué dans un ordre aléatoire à chaque fois. Si un test échoue une fois, soit il est mal conçu, soit il a révélé une faille entre plusieurs endpoints.
 - Transformer tout l'infra. Avoir des base uniquement en container docker. La base dev est persisté mais facile à vider. La base de test est reset à chaque fois.
-- J'ai trouvé un vrai bug : une date 0001-01-01 renvoie une réponse 200 avec l'an 1 affiché, mais la base enregistre en réalité 2001-01-01 (les années 999 et 1000, elles, sont correctes). Je note ce bug sans figer ce comportement dans un test, et j'écris maintenant les 3 fichiers des morts.

@@ -2,7 +2,7 @@ import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounte
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -22,15 +22,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Game } from "../../models/Game.ts";
 
-const CREATE_BOSS_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:gameId/bosses`;
-
 function createBossUrl(gameId: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${gameId}/bosses`;
 }
 
-describe(`POST ${CREATE_BOSS_URL}`, () => {
-	describe("201", () => {
-		test("crée le boss dans le jeu et renvoie son résumé", async () => {
+describe("createBoss", () => {
+	describe("201 Created", () => {
+		it("SHOULD create the boss in the game and return its summary", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 
@@ -71,7 +69,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			);
 		});
 
-		test("retire les espaces autour du nom", async () => {
+		it("SHOULD remove the spaces around the name", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 
@@ -88,7 +86,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			);
 		});
 
-		test("stocke intact un nom de 255 caractères, le maximum de la colonne", async () => {
+		it("SHOULD store intact a 255 characters name, the column maximum", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls II" });
 			const longestName = "The Smelter Demon, ".repeat(14).slice(0, 255);
@@ -104,7 +102,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			expect((await selectBossRow(bossDto.id))?.name).toBe(longestName);
 		});
 
-		test("conserve les accents, idéogrammes et emojis", async () => {
+		it("SHOULD keep accents, ideograms and emojis", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Ōkami" });
 			const unicodeName = "Orochi, le serpent à huit têtes 八岐大蛇 🐍";
@@ -120,7 +118,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			expect((await selectBossRow(bossDto.id))?.name).toBe(unicodeName);
 		});
 
-		test("accepte deux boss du même nom dans le même jeu", async () => {
+		it("SHOULD accept two bosses with the same name in the same game", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls III" });
 
@@ -140,7 +138,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			);
 		});
 
-		test("accepte un boss dans un jeu déjà terminé", async () => {
+		it("SHOULD accept a boss WHEN the game is already finished", async () => {
 			// Arrange
 			const gameId = await insertGameRow({
 				name: "Celeste",
@@ -156,7 +154,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.CREATED);
 		});
 
-		test("rattache le boss au jeu du chemin et ignore les champs inconnus du corps", async () => {
+		it("SHOULD attach the boss to the game of the path and ignore unknown body fields", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 			const otherGameId = await insertGameRow({ name: "Hades II" });
@@ -181,9 +179,9 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("Game ID"))(
-			"refuse un id de jeu qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("Game ID"))(
+			"SHOULD reject the request WHEN the game id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app)
@@ -195,8 +193,8 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			},
 		);
 
-		test.each(INVALID_NAME_CASES)(
-			"refuse la requête quand $reason, sans rien créer",
+		it.each(INVALID_NAME_CASES)(
+			"SHOULD reject the request without creating anything WHEN $reason",
 			async ({ name, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Blasphemous" });
@@ -213,7 +211,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			},
 		);
 
-		test("signale à la fois l'id de jeu et le corps invalides, l'id en premier", async () => {
+		it("SHOULD report both the invalid game id and body, the id first", async () => {
 			// Act
 			const response = await request(app)
 				.post(createBossUrl("1.5"))
@@ -230,7 +228,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			]);
 		});
 
-		test("valide le corps avant de chercher le jeu", async () => {
+		it("SHOULD validate the body before looking for the game", async () => {
 			// Act
 			const response = await request(app)
 				.post(createBossUrl(NON_EXISTENT_ID))
@@ -242,7 +240,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien créer", async () => {
+		it("SHOULD reject a malformed JSON without creating anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Shovel Knight" });
 			const bossCountBefore = await countTableRows("boss");
@@ -259,8 +257,8 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que le jeu n'existe pas, sans rien créer", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist, creating nothing", async () => {
 			// Arrange
 			const bossCountBefore = await countTableRows("boss");
 
@@ -275,8 +273,8 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la vérification du jeu échoue, sans rien créer", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and create nothing WHEN checking the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Nine Sols" });
 			const bossCountBefore = await countTableRows("boss");
@@ -297,7 +295,7 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 			expect(await countTableRows("boss")).toBe(bossCountBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'insertion échoue, sans rien créer", async () => {
+		it("SHOULD answer a generic error, log it and create nothing WHEN the insertion fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Ender Magnolia" });
 			const bossCountBefore = await countTableRows("boss");

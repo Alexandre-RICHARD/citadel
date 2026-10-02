@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
@@ -13,52 +13,53 @@ const schema = requireAtLeastOneField(
 
 const MESSAGE = "At least one of comment, count should be provided";
 
-describe("requireAtLeastOneField", () => {
-	test.each([
-		{ reason: "le premier champ seul", value: { comment: "Raté" } },
-		{ reason: "le second champ seul", value: { count: 3 } },
-		{ reason: "les deux champs", value: { comment: "Raté", count: 3 } },
-		{
-			reason: "un champ à une valeur fausse mais présente (0)",
-			value: { count: 0 },
-		},
-		{ reason: "un champ à une chaîne vide", value: { comment: "" } },
-	])("accepte $reason", ({ value }) => {
-		expect(schema.safeParse(value)).toStrictEqual({
-			success: true,
-			data: value,
+describe("requireAtLeastOneField.ts", () => {
+	describe("accepted objects", () => {
+		it.each([
+			{ reason: "only the first field", value: { comment: "Missed" } },
+			{ reason: "only the second field", value: { count: 3 } },
+			{ reason: "both fields", value: { comment: "Missed", count: 3 } },
+			{ reason: "a falsy but present value (0)", value: { count: 0 } },
+			{ reason: "an empty string", value: { comment: "" } },
+		])("SHOULD accept the object WHEN it has $reason", ({ value }) => {
+			expect(schema.safeParse(value)).toStrictEqual({
+				success: true,
+				data: value,
+			});
+		});
+
+		it("SHOULD strip unknown fields", () => {
+			expect(schema.safeParse({ comment: "Missed", bossId: 3 })).toStrictEqual({
+				success: true,
+				data: { comment: "Missed" },
+			});
 		});
 	});
 
-	test("retire les champs inconnus", () => {
-		expect(schema.safeParse({ comment: "Raté", bossId: 3 })).toStrictEqual({
-			success: true,
-			data: { comment: "Raté" },
-		});
-	});
-
-	test.each([
-		{ reason: "un objet vide", value: {} },
-		{
-			reason: "des champs connus explicitement undefined",
-			value: { comment: undefined },
-		},
-		{
-			reason: "uniquement des champs inconnus, retirés avant la vérification",
-			value: { bossId: 3 },
-		},
-	])("refuse $reason, avec la liste des champs possibles", ({ value }) => {
-		expect(getIssues(schema.safeParse(value))).toStrictEqual([
-			{ path: [], message: MESSAGE },
-		]);
-	});
-
-	test("ne vérifie la présence d'un champ qu'une fois les champs valides", () => {
-		expect(getIssues(schema.safeParse({ count: "3" }))).toStrictEqual([
+	describe("rejected objects", () => {
+		it.each([
+			{ reason: "it is empty", value: {} },
 			{
-				path: ["count"],
-				message: "Invalid input: expected number, received string",
+				reason: "its known fields are explicitly undefined",
+				value: { comment: undefined },
 			},
-		]);
+			{
+				reason: "it only has unknown fields, stripped before the check",
+				value: { bossId: 3 },
+			},
+		])("SHOULD list the possible fields WHEN $reason", ({ value }) => {
+			expect(getIssues(schema.safeParse(value))).toStrictEqual([
+				{ path: [], message: MESSAGE },
+			]);
+		});
+
+		it("SHOULD only check the presence of a field WHEN every field is valid", () => {
+			expect(getIssues(schema.safeParse({ count: "3" }))).toStrictEqual([
+				{
+					path: ["count"],
+					message: "Invalid input: expected number, received string",
+				},
+			]);
+		});
 	});
 });

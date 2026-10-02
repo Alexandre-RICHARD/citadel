@@ -2,7 +2,7 @@ import type { GameListDto } from "@citadel/specs/src/projects/gameDeathCounter/d
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
@@ -23,9 +23,9 @@ async function getAllGames(): Promise<GameListDto> {
 	return response.body as GameListDto;
 }
 
-describe(`GET ${GET_ALL_GAMES_URL}`, () => {
-	describe("200", () => {
-		test("renvoie chaque jeu avec son total de morts, somme des compteurs de ses boss", async () => {
+describe("getAllGames", () => {
+	describe("200 OK", () => {
+		it("SHOULD return each game with its total of deaths, the sum of its boss counters", async () => {
 			// Arrange
 			const darkSoulsStartedAt = new Date("2011-09-22T08:00:00.000Z");
 			const darkSoulsId = await insertGameRow({
@@ -89,7 +89,7 @@ describe(`GET ${GET_ALL_GAMES_URL}`, () => {
 			});
 		});
 
-		test("additionne les compteurs des boss, même s'ils diffèrent du nombre de morts enregistrées", async () => {
+		it("SHOULD sum the boss counters WHEN they differ from the number of recorded deaths", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const bossId = await insertBossRow({
@@ -113,7 +113,7 @@ describe(`GET ${GET_ALL_GAMES_URL}`, () => {
 			expect(games.find((game) => game.id === gameId)?.totalDeath).toBe(5);
 		});
 
-		test("renvoie tous les jeux de la base", async () => {
+		it("SHOULD return every game of the database", async () => {
 			// Arrange
 			await insertGameRow({ name: "Hollow Knight" });
 
@@ -124,7 +124,7 @@ describe(`GET ${GET_ALL_GAMES_URL}`, () => {
 			expect(games).toHaveLength(await countTableRows("game"));
 		});
 
-		test("trie par nom sans tenir compte de la casse ni des accents, puis par id", async () => {
+		it("SHOULD sort by name ignoring case and accents, then by id", async () => {
 			// Arrange : insérés volontairement dans le désordre
 			const lowercaseNineSolsId = await insertGameRow({ name: "nine sols" });
 			const fezId = await insertGameRow({ name: "Fez" });
@@ -156,8 +156,8 @@ describe(`GET ${GET_ALL_GAMES_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture des jeux échoue", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error and log it WHEN reading the games fails", async () => {
 			// Arrange
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Game, "findAll").mockRejectedValueOnce(
@@ -175,7 +175,7 @@ describe(`GET ${GET_ALL_GAMES_URL}`, () => {
 			});
 		});
 
-		test("répond une erreur générique et la journalise quand le calcul des totaux échoue", async () => {
+		it("SHOULD answer a generic error and log it WHEN computing the totals fails", async () => {
 			// Arrange : sans aucun jeu en base, le calcul des totaux n'est jamais lancé
 			await insertGameRow({ name: "Blasphemous" });
 			const errorLogWatcher = await watchErrorLogs();

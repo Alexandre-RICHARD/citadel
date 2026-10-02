@@ -2,7 +2,7 @@ import type { DeathDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -21,8 +21,6 @@ import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId
 import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simulatedDatabaseFailure.ts";
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Death } from "../../models/Death.ts";
-
-const UPDATE_DEATH_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`;
 
 function updateDeathUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/${id}`;
@@ -46,9 +44,9 @@ async function insertDeathScenario({
 	return { bossId, deathId };
 }
 
-describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
-	describe("200", () => {
-		test("change seulement la date et renvoie la mort à jour", async () => {
+describe("updateDeath", () => {
+	describe("200 OK", () => {
+		it("SHOULD only change the date and return the updated death", async () => {
 			// Arrange
 			const { bossId, deathId } = await insertDeathScenario({
 				gameName: "Elden Ring",
@@ -90,7 +88,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("change seulement le commentaire", async () => {
+		it("SHOULD only change the comment", async () => {
 			// Arrange
 			const date = new Date("2016-04-15T19:00:00.000Z");
 			const { deathId } = await insertDeathScenario({
@@ -116,7 +114,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			});
 		});
 
-		test("change la date et le commentaire ensemble", async () => {
+		it("SHOULD change the date and the comment together", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Bloodborne",
@@ -138,7 +136,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			});
 		});
 
-		test("retire les espaces autour du commentaire", async () => {
+		it("SHOULD remove the spaces around the comment", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Hollow Knight",
@@ -160,11 +158,11 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			);
 		});
 
-		test.each([
+		it.each([
 			{ reason: "null", comment: null },
-			{ reason: "vide", comment: "" },
-			{ reason: "fait uniquement d'espaces", comment: "   \t " },
-		])("efface le commentaire quand il est $reason", async ({ comment }) => {
+			{ reason: "empty", comment: "" },
+			{ reason: "only made of spaces", comment: "   \t " },
+		])("SHOULD clear the comment WHEN it is $reason", async ({ comment }) => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Cuphead",
@@ -184,7 +182,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect((await selectDeathRow(deathId))?.comment).toBeNull();
 		});
 
-		test("stocke intact un commentaire de 1000 caractères, le maximum de la colonne", async () => {
+		it("SHOULD store intact a 1000 characters comment, the column maximum", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Dark Souls",
@@ -203,7 +201,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect((await selectDeathRow(deathId))?.comment).toBe(longestComment);
 		});
 
-		test("conserve les accents, idéogrammes et emojis du commentaire", async () => {
+		it("SHOULD keep accents, ideograms and emojis of the comment", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Ōkami",
@@ -221,7 +219,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect((await selectDeathRow(deathId))?.comment).toBe(unicodeComment);
 		});
 
-		test("convertit en UTC une date envoyée avec un décalage horaire", async () => {
+		it("SHOULD convert the date to UTC WHEN it has a time zone offset", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Nine Sols",
@@ -241,7 +239,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			);
 		});
 
-		test("conserve les millisecondes de la date", async () => {
+		it("SHOULD keep the milliseconds of the date", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Super Meat Boy",
@@ -260,7 +258,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			);
 		});
 
-		test("stocke intacte la plus petite date qu'un DATETIME accepte", async () => {
+		it("SHOULD store intact the smallest date a DATETIME accepts", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Age of Empires II",
@@ -280,7 +278,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			);
 		});
 
-		test("ignore les champs inconnus du corps, dont le boss", async () => {
+		it("SHOULD ignore unknown body fields, including the boss", async () => {
 			// Arrange
 			const { bossId, deathId } = await insertDeathScenario({
 				gameName: "Blasphemous",
@@ -300,7 +298,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect((await selectDeathRow(deathId))?.bossId).toBe(bossId);
 		});
 
-		test("ne modifie aucune autre mort", async () => {
+		it("SHOULD not change any other death", async () => {
 			// Arrange
 			const { bossId, deathId } = await insertDeathScenario({
 				gameName: "Hades",
@@ -326,9 +324,9 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app)
@@ -340,9 +338,9 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			},
 		);
 
-		test.each([
+		it.each([
 			{
-				reason: "le corps est vide",
+				reason: "the body is empty",
 				body: {},
 				issues: [
 					{
@@ -352,7 +350,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "le corps ne contient que des champs inconnus",
+				reason: "the body only contains unknown fields",
 				body: { bossId: 3 },
 				issues: [
 					{
@@ -362,49 +360,49 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "la date est du texte libre",
+				reason: "the date is free text",
 				body: { date: "hier soir" },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
 				],
 			},
 			{
-				reason: "la date n'a pas d'heure",
+				reason: "the date has no time",
 				body: { date: "2024-01-01" },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
 				],
 			},
 			{
-				reason: "la date n'a pas de fuseau horaire",
+				reason: "the date has no time zone",
 				body: { date: "2024-01-01T10:00:00" },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
 				],
 			},
 			{
-				reason: "la date est un nombre",
+				reason: "the date is a number",
 				body: { date: 1_700_000_000_000 },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
 				],
 			},
 			{
-				reason: "la date est null",
+				reason: "the date is null",
 				body: { date: null },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
 				],
 			},
 			{
-				reason: "la date est dans le futur",
+				reason: "the date is in the future",
 				body: { date: "2999-01-01T00:00:00.000Z" },
 				issues: [
 					{ path: ["date"], message: "Date should not be in the future" },
 				],
 			},
 			{
-				reason: "la date précède l'an 1000, hors de portée d'un DATETIME",
+				reason: "the date is before year 1000, out of DATETIME range",
 				body: { date: "0999-12-31T23:59:59.999Z" },
 				issues: [
 					{
@@ -414,7 +412,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "la date est l'an 1, que la base enregistrerait en 2001",
+				reason: "the date is year 1, that the database would store as 2001",
 				body: { date: "0001-01-01T00:00:00.000Z" },
 				issues: [
 					{
@@ -424,8 +422,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason:
-					"la date tombe avant l'an 1000 une fois ramenée en UTC par son décalage horaire",
+				reason: "the date falls before year 1000 once converted to UTC",
 				body: { date: "1000-01-01T00:30:00.000+01:00" },
 				issues: [
 					{
@@ -435,13 +432,13 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "le commentaire est un nombre",
+				reason: "the comment is a number",
 				body: { comment: 5 },
 				issues: [{ path: ["comment"], message: "Comment should be a string" }],
 			},
 			{
 				reason:
-					"le commentaire contient une moitié d'emoji isolée, que la base remplacerait par �",
+					"the comment contains an isolated half of an emoji, that the database would replace with �",
 				body: { comment: "Encore \uDC00 raté" },
 				issues: [
 					{
@@ -451,7 +448,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "le commentaire dépasse 1000 caractères",
+				reason: "the comment exceeds 1000 characters",
 				// Sans espace : le trim passe avant la mesure, une espace finale ramènerait à 1000
 				body: { comment: "Raté".repeat(251).slice(0, 1001) },
 				issues: [
@@ -462,7 +459,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 			{
-				reason: "la date et le commentaire sont tous les deux invalides",
+				reason: "both the date and the comment are invalid",
 				body: { date: 12, comment: 5 },
 				issues: [
 					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
@@ -470,7 +467,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 				],
 			},
 		])(
-			"refuse la requête quand $reason, sans rien modifier",
+			"SHOULD reject the request without changing anything WHEN $reason",
 			async ({ body, issues }) => {
 				// Arrange
 				const { deathId } = await insertDeathScenario({
@@ -492,7 +489,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			},
 		);
 
-		test("refuse un corps absent", async () => {
+		it("SHOULD reject a missing body", async () => {
 			// Act
 			const response = await request(app).patch(updateDeathUrl(1));
 
@@ -505,7 +502,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			]);
 		});
 
-		test("signale à la fois l'id et le corps invalides, l'id en premier", async () => {
+		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
 			const response = await request(app).patch(updateDeathUrl("abc")).send({});
 
@@ -523,7 +520,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			]);
 		});
 
-		test("valide le corps avant de chercher la mort", async () => {
+		it("SHOULD validate the body before looking for the death", async () => {
 			// Act
 			const response = await request(app)
 				.patch(updateDeathUrl(NON_EXISTENT_ID))
@@ -535,7 +532,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien modifier", async () => {
+		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Dead Cells",
@@ -556,8 +553,8 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que la mort n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the death does not exist", async () => {
 			// Act
 			const response = await request(app)
 				.patch(updateDeathUrl(NON_EXISTENT_ID))
@@ -568,8 +565,8 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture de la mort échoue, sans rien modifier", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN reading the death fails", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Demon's Souls",
@@ -596,7 +593,7 @@ describe(`PATCH ${UPDATE_DEATH_URL}`, () => {
 			expect(await selectDeathRow(deathId)).toStrictEqual(deathRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'écriture échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
 			const { deathId } = await insertDeathScenario({
 				gameName: "Remnant II",

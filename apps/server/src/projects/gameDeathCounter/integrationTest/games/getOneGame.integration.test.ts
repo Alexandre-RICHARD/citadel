@@ -2,7 +2,7 @@ import type { GameDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/g
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
@@ -18,8 +18,6 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
-const GET_ONE_GAME_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
-
 function getOneGameUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${id}`;
 }
@@ -30,9 +28,9 @@ async function getOneGame(id: number): Promise<GameDto> {
 	return response.body as GameDto;
 }
 
-describe(`GET ${GET_ONE_GAME_URL}`, () => {
-	describe("200", () => {
-		test("renvoie le jeu, ses boss résumés et le total de morts", async () => {
+describe("getOneGame", () => {
+	describe("200 OK", () => {
+		it("SHOULD return the game, its boss summaries and the total of deaths", async () => {
 			// Arrange
 			const startedAt = new Date("2022-02-25T00:00:00.000Z");
 			const gameId = await insertGameRow({
@@ -115,7 +113,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			});
 		});
 
-		test("renvoie un jeu terminé sans boss avec une liste vide et un total à zéro", async () => {
+		it("SHOULD return an empty list and a zero total WHEN the finished game has no boss", async () => {
 			// Arrange
 			const startedAt = new Date("2025-09-04T16:00:00.000Z");
 			const endedAt = new Date("2025-10-12T22:30:00.000Z");
@@ -139,7 +137,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			});
 		});
 
-		test("trie les boss par date de création, puis par id à date égale", async () => {
+		it("SHOULD sort the bosses by creation date, then by id WHEN dates are equal", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Bloodborne" });
 			const sameCreationDate = new Date("2015-03-24T20:00:00.000Z");
@@ -170,7 +168,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			]);
 		});
 
-		test("calcule premier et dernier essai à partir des morts et de la date de victoire", async () => {
+		it("SHOULD compute first and last try from deaths and victory date", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls III" });
 
@@ -236,7 +234,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			]);
 		});
 
-		test("additionne les compteurs des boss, même s'ils diffèrent du nombre de morts enregistrées", async () => {
+		it("SHOULD sum the boss counters WHEN they differ from the number of recorded deaths", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Nine Sols" });
 			const bossId = await insertBossRow({
@@ -257,7 +255,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			expect(gameDto.bosses[0]?.totalDeath).toBe(9);
 		});
 
-		test("ne renvoie que les boss de ce jeu", async () => {
+		it("SHOULD only return the bosses of this game", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hades" });
 			const megaeraId = await insertBossRow({ gameId, name: "Megaera" });
@@ -272,9 +270,9 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app).get(getOneGameUrl(pathValue));
@@ -285,8 +283,8 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 		);
 	});
 
-	describe("404", () => {
-		test("répond que le jeu n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist", async () => {
 			// Act
 			const response = await request(app).get(getOneGameUrl(NON_EXISTENT_ID));
 
@@ -295,8 +293,8 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture du jeu échoue", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error and log it WHEN reading the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Lies of P" });
 			const errorLogWatcher = await watchErrorLogs();
@@ -315,7 +313,7 @@ describe(`GET ${GET_ONE_GAME_URL}`, () => {
 			});
 		});
 
-		test("répond une erreur générique et la journalise quand le calcul des essais échoue", async () => {
+		it("SHOULD answer a generic error and log it WHEN computing the tries fails", async () => {
 			// Arrange : sans boss, le calcul des essais n'est jamais lancé
 			const gameId = await insertGameRow({ name: "Ender Lilies" });
 			await insertBossRow({ gameId, name: "Ulv, the Mad Knight" });

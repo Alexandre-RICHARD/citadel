@@ -2,61 +2,67 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { setFavicon } from "./setFavicon.ts";
 
-describe("setFavicon", () => {
+describe("setFavicon.ts", () => {
 	beforeEach(() => {
 		document.head.innerHTML = "";
 	});
 
-	it("add unique icon link when there isn't", () => {
-		expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(0);
+	describe("favicon link replacement", () => {
+		it("SHOULD add a single icon link WHEN the page has none", () => {
+			expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(
+				0,
+			);
 
-		setFavicon("/favicon/test.ico");
+			setFavicon("/favicon/test.ico");
 
-		const links = document.head.querySelectorAll("link[rel='icon']");
-		expect(links).toHaveLength(1);
+			const links = document.head.querySelectorAll("link[rel='icon']");
+			expect(links).toHaveLength(1);
 
-		const link = links[0] as HTMLLinkElement;
-		expect(link.getAttribute("href")).toBe("/favicon/test.ico");
-		expect(link.getAttribute("rel")).toBe("icon");
-		expect(link.getAttribute("type")).toBe("image/x-icon");
-	});
+			const link = links[0] as HTMLLinkElement;
+			expect(link.getAttribute("href")).toBe("/favicon/test.ico");
+			expect(link.getAttribute("rel")).toBe("icon");
+			expect(link.getAttribute("type")).toBe("image/x-icon");
+		});
 
-	it("delete all icon link before add new one", () => {
-		document.head.innerHTML = `
+		it("SHOULD remove every existing icon link before adding the new one", () => {
+			document.head.innerHTML = `
       <link rel="icon" href="/favicon/old1.ico" />
       <link rel="icon" href="/favicon/old2.ico" />
     `;
-		expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(2);
+			expect(document.head.querySelectorAll("link[rel='icon']")).toHaveLength(
+				2,
+			);
 
-		setFavicon("/favicon/new.ico");
+			setFavicon("/favicon/new.ico");
 
-		const icons = document.head.querySelectorAll("link[rel='icon']");
-		expect(icons).toHaveLength(1);
-		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
-			"/favicon/new.ico",
-		);
-	});
+			const icons = document.head.querySelectorAll("link[rel='icon']");
+			expect(icons).toHaveLength(1);
+			expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
+				"/favicon/new.ico",
+			);
+		});
 
-	it("do nothing if send href is falsy", () => {
-		document.head.innerHTML = `<link rel="icon" href="/favicon/existing.ico" />`;
+		it("SHOULD do nothing WHEN the href is empty", () => {
+			document.head.innerHTML = `<link rel="icon" href="/favicon/existing.ico" />`;
 
-		setFavicon("");
+			setFavicon("");
 
-		const icons = document.head.querySelectorAll("link[rel='icon']");
-		expect(icons).toHaveLength(1);
-		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
-			"/favicon/existing.ico",
-		);
-	});
+			const icons = document.head.querySelectorAll("link[rel='icon']");
+			expect(icons).toHaveLength(1);
+			expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
+				"/favicon/existing.ico",
+			);
+		});
 
-	it("replace rightly the icon when few calls submitted", () => {
-		setFavicon("/favicon/a.ico");
-		setFavicon("/favicon/b.ico");
+		it("SHOULD keep only the last icon WHEN called several times", () => {
+			setFavicon("/favicon/a.ico");
+			setFavicon("/favicon/b.ico");
 
-		const icons = document.head.querySelectorAll("link[rel='icon']");
-		expect(icons).toHaveLength(1);
-		expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
-			"/favicon/b.ico",
-		);
+			const icons = document.head.querySelectorAll("link[rel='icon']");
+			expect(icons).toHaveLength(1);
+			expect((icons[0] as HTMLLinkElement).getAttribute("href")).toBe(
+				"/favicon/b.ico",
+			);
+		});
 	});
 });

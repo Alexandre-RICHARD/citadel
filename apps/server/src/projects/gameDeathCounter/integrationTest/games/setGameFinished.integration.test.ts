@@ -2,7 +2,7 @@ import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounte
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidBooleanCases } from "../../../../testUtils/integration/buildInvalidBooleanCases.ts";
@@ -22,15 +22,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
-const SET_GAME_FINISHED_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id/finished`;
-
 function setGameFinishedUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${id}/finished`;
 }
 
-describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
-	describe("200", () => {
-		test("termine le jeu maintenant et renvoie son résumé", async () => {
+describe("setGameFinished", () => {
+	describe("200 OK", () => {
+		it("SHOULD finish the game now and return its summary", async () => {
 			// Arrange
 			const startedAt = new Date("2017-03-03T09:00:00.000Z");
 			const gameId = await insertGameRow({
@@ -63,7 +61,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			expect((await selectGameRow(gameId))?.endedAt).toStrictEqual(endedAt);
 		});
 
-		test("remplace la date de fin d'un jeu déjà terminé par maintenant", async () => {
+		it("SHOULD replace the end date with now WHEN the game was already finished", async () => {
 			// Arrange
 			const gameId = await insertGameRow({
 				name: "Super Meat Boy",
@@ -86,7 +84,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			);
 		});
 
-		test("rouvre un jeu terminé", async () => {
+		it("SHOULD reopen a finished game", async () => {
 			// Arrange
 			const gameId = await insertGameRow({
 				name: "Enter the Gungeon",
@@ -104,7 +102,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			expect((await selectGameRow(gameId))?.endedAt).toBeNull();
 		});
 
-		test("laisse ouvert un jeu qui n'était pas terminé, avec un total à zéro sans boss", async () => {
+		it("SHOULD leave open a game that was not finished, with a zero total WHEN it has no boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cult of the Lamb" });
 
@@ -119,7 +117,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			expect((await selectGameRow(gameId))?.endedAt).toBeNull();
 		});
 
-		test("ne modifie aucun autre jeu", async () => {
+		it("SHOULD not change any other game", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Mortal Shell" });
 			const otherGameId = await insertGameRow({ name: "Lords of the Fallen" });
@@ -137,9 +135,9 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Act
 				const response = await request(app)
@@ -151,8 +149,8 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			},
 		);
 
-		test.each(buildInvalidBooleanCases("Finished"))(
-			"refuse un statut terminé qui est $reason, sans rien modifier",
+		it.each(buildInvalidBooleanCases("Finished"))(
+			"SHOULD reject the request without changing anything WHEN finished is $reason",
 			async ({ value, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Remnant II" });
@@ -169,7 +167,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			},
 		);
 
-		test("signale à la fois l'id et le corps invalides, l'id en premier", async () => {
+		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
 			const response = await request(app)
 				.patch(setGameFinishedUrl("0"))
@@ -182,7 +180,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien modifier", async () => {
+		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Darkest Dungeon" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -199,8 +197,8 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que le jeu n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist", async () => {
 			// Act
 			const response = await request(app)
 				.patch(setGameFinishedUrl(NON_EXISTENT_ID))
@@ -211,8 +209,8 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la lecture du jeu échoue, sans rien modifier", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN reading the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Demon's Souls" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -235,7 +233,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'écriture échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Wo Long: Fallen Dynasty" });
 			const gameRowBefore = await selectGameRow(gameId);
@@ -258,7 +256,7 @@ describe(`PATCH ${SET_GAME_FINISHED_URL}`, () => {
 			expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 		});
 
-		test("répond une erreur générique quand le calcul du total échoue, mais la date de fin reste enregistrée", async () => {
+		it("SHOULD answer a generic error but keep the end date WHEN computing the total fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Returnal" });
 			const errorLogWatcher = await watchErrorLogs();

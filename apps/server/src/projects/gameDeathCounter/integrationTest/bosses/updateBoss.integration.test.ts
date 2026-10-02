@@ -1,7 +1,7 @@
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { buildInvalidBodyIdCases } from "../../../../testUtils/integration/buildInvalidBodyIdCases.ts";
@@ -25,15 +25,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Game } from "../../models/Game.ts";
 
-const UPDATE_BOSS_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
-
 function updateBossUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}`;
 }
 
-describe(`PUT ${UPDATE_BOSS_URL}`, () => {
-	describe("200", () => {
-		test("renomme le boss et renvoie son résumé à jour", async () => {
+describe("updateBoss", () => {
+	describe("200 OK", () => {
+		it("SHOULD rename the boss and return its updated summary", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Dark Souls III" });
 			const defeatedAt = new Date("2016-04-20T21:00:00.000Z");
@@ -83,7 +81,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			);
 		});
 
-		test("déplace le boss dans un autre jeu, avec ses morts", async () => {
+		it("SHOULD move the boss to another game, with its deaths", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Elden Ring" });
 			const shadowOfTheErdtreeId = await insertGameRow({
@@ -113,7 +111,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			);
 		});
 
-		test("renvoie des essais vides pour un boss jamais affronté", async () => {
+		it("SHOULD return empty tries WHEN the boss was never fought", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Bloodborne" });
 			const bossId = await insertBossRow({ gameId, name: "Vicar Amelia" });
@@ -132,7 +130,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			});
 		});
 
-		test("retire les espaces autour du nom et stocke intact un nom de 255 caractères", async () => {
+		it("SHOULD remove the spaces around the name and store intact a 255 characters name", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Cuphead" });
 			const bossId = await insertBossRow({ gameId, name: "Grim" });
@@ -148,7 +146,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expect((await selectBossRow(bossId))?.name).toBe(longestName.trim());
 		});
 
-		test("ignore les champs inconnus du corps, sans toucher au compteur ni à la victoire", async () => {
+		it("SHOULD ignore unknown body fields, keeping the counter and the victory", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Hollow Knight" });
 			const bossId = await insertBossRow({
@@ -173,7 +171,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			});
 		});
 
-		test("ne modifie aucun autre boss", async () => {
+		it("SHOULD not change any other boss", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
 			const bossId = await insertBossRow({ gameId, name: "Guardian Ape" });
@@ -195,9 +193,9 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("400", () => {
-		test.each(buildInvalidPathIdCases("ID"))(
-			"refuse un id qui est $reason",
+	describe("400 Bad Request", () => {
+		it.each(buildInvalidPathIdCases("ID"))(
+			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Dead Cells" });
@@ -212,8 +210,8 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			},
 		);
 
-		test.each(INVALID_NAME_CASES)(
-			"refuse la requête quand $reason, sans rien modifier",
+		it.each(INVALID_NAME_CASES)(
+			"SHOULD reject the request without changing anything WHEN $reason",
 			async ({ name, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Salt and Sanctuary" });
@@ -234,8 +232,8 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			},
 		);
 
-		test.each(buildInvalidBodyIdCases("Game ID"))(
-			"refuse un id de jeu qui est $reason, sans rien modifier",
+		it.each(buildInvalidBodyIdCases("Game ID"))(
+			"SHOULD reject the request without changing anything WHEN the game id is $reason",
 			async ({ value, message }) => {
 				// Arrange
 				const gameId = await insertGameRow({
@@ -255,7 +253,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			},
 		);
 
-		test("signale tous les champs invalides, l'id du chemin en premier", async () => {
+		it("SHOULD report every invalid field, the path id first", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateBossUrl("abc"))
@@ -277,7 +275,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			]);
 		});
 
-		test("valide le corps avant de chercher le boss et le jeu", async () => {
+		it("SHOULD validate the body before looking for the boss and the game", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateBossUrl(NON_EXISTENT_ID))
@@ -289,7 +287,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			]);
 		});
 
-		test("refuse un JSON malformé, sans rien modifier", async () => {
+		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Shovel Knight" });
 			const bossId = await insertBossRow({ gameId, name: "Black Knight" });
@@ -307,8 +305,8 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("404", () => {
-		test("répond que le boss n'existe pas", async () => {
+	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Furi" });
 
@@ -321,7 +319,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expectNotFound(response, `No boss with id : ${NON_EXISTENT_ID}`);
 		});
 
-		test("répond que le jeu de destination n'existe pas, sans rien modifier", async () => {
+		it("SHOULD answer that the target game does not exist, changing nothing", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Lies of P" });
 			const bossId = await insertBossRow({ gameId, name: "Parade Master" });
@@ -337,7 +335,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("signale d'abord le jeu quand ni le boss ni le jeu n'existent", async () => {
+		it("SHOULD report the game first WHEN neither the boss nor the game exists", async () => {
 			// Act
 			const response = await request(app)
 				.put(updateBossUrl(NON_EXISTENT_ID))
@@ -348,8 +346,8 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 		});
 	});
 
-	describe("500", () => {
-		test("répond une erreur générique et la journalise quand la vérification du jeu échoue, sans rien modifier", async () => {
+	describe("500 Internal Server Error", () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN checking the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Demon's Souls" });
 			const bossId = await insertBossRow({ gameId, name: "Flamelurker" });
@@ -371,7 +369,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand la lecture du boss échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN reading the boss fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Nioh 2" });
 			const bossId = await insertBossRow({ gameId, name: "Otakemaru" });
@@ -395,7 +393,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("répond une erreur générique et la journalise quand l'écriture échoue, sans rien modifier", async () => {
+		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Wo Long: Fallen Dynasty" });
 			const bossId = await insertBossRow({ gameId, name: "Lu Bu" });
@@ -419,7 +417,7 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
-		test("répond une erreur générique quand le calcul des essais échoue, mais la modification reste enregistrée", async () => {
+		it("SHOULD answer a generic error but keep the change WHEN computing the tries fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Blasphemous II" });
 			const bossId = await insertBossRow({ gameId, name: "Eviterno" });
