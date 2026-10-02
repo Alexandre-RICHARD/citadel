@@ -1,5 +1,5 @@
-import baseConfig from "./eslint.config.base.js";
-import reactConfig from "./eslint.config.react.js";
+import baseConfig from "./eslintConfigBase.js";
+import reactConfig from "./eslintConfigReact.js";
 
 const BROWSER_GLOBALS = [
 	"window",
