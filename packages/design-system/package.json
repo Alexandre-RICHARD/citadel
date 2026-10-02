@@ -12,6 +12,9 @@
     "=== Build ===": "",
     "build": "storybook build --output-dir build"
   },
+  "dependencies": {
+    "@citadel/common": "workspace:*"
+  },
   "peerDependencies": {
     "lucide-react": "catalog:",
     "react": "catalog:",
