@@ -1,5 +1,6 @@
 type AcceptedFormat = "HMS" | "HHMMSS";
 
+// Un temps négatif (échéance dépassée) s'affiche à zéro ; un temps infini ou NaN (vitesse nulle…) donne une chaîne vide
 export function writeCountdown(
 	timeInMilliseconds: number,
 	format: AcceptedFormat,
@@ -8,13 +9,16 @@ export function writeCountdown(
 	const minutesInMiliseconds = secondsInMiliseconds * 60;
 	const hoursInMiliseconds = minutesInMiliseconds * 60;
 
+	if (!Number.isFinite(timeInMilliseconds)) return "";
+
 	if (["HMS", "HHMMSS"].some((f) => f === format)) {
-		const h = Math.trunc(timeInMilliseconds / hoursInMiliseconds);
+		const remainingTime = Math.max(timeInMilliseconds, 0);
+		const h = Math.trunc(remainingTime / hoursInMiliseconds);
 		const m = Math.trunc(
-			(timeInMilliseconds % hoursInMiliseconds) / minutesInMiliseconds,
+			(remainingTime % hoursInMiliseconds) / minutesInMiliseconds,
 		);
 		const s = Math.trunc(
-			(timeInMilliseconds % minutesInMiliseconds) / secondsInMiliseconds,
+			(remainingTime % minutesInMiliseconds) / secondsInMiliseconds,
 		);
 
 		if (format === "HHMMSS") {

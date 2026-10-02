@@ -6,6 +6,6 @@ export function assertBoolean(
 ): asserts value is boolean {
 	assert(
 		typeof value === "boolean",
-		`${errorContext} → value is not a boolean`,
+		`${errorContext ?? "assertBoolean"} → value is not a boolean`,
 	);
 }

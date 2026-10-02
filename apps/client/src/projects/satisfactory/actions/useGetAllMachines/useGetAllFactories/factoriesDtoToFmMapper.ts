@@ -1,4 +1,4 @@
-import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
+import { enumDtoToFm } from "@citadel/common/src/universal/enum/enumDtoToFm";
 import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/factoryDto.type";
 
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
@@ -6,7 +6,7 @@ import type { FactoryFm } from "./factoryFm.type";
 
 export function factoryDtoToFmMapper(dto: FactoryDto[]): FactoryFm[] {
 	return dto.map((factoryDto) => {
-		const className = enumDtoToFmMapper(
+		const className = enumDtoToFm(
 			factoryDto.ClassName,
 			GameClassNamesEnum,
 			"GameClassNamesEnum",

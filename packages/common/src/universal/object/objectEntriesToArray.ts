@@ -1,5 +1,3 @@
-export function objectEntriesToArrayHelper<T>(
-	objectEntries: [string, T][],
-): T[] {
+export function objectEntriesToArray<T>(objectEntries: [string, T][]): T[] {
 	return objectEntries.map(([, value]) => value);
 }

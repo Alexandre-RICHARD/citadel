@@ -36,5 +36,16 @@ describe("writeCountdown.ts", () => {
 			// @ts-expect-error : Test if type is wrong
 			expect(writeCountdown(1000, "INVALID")).toBe("");
 		});
+
+		it("SHOULD display zero WHEN the time is negative", () => {
+			expect(writeCountdown(-3661000, "HHMMSS")).toBe("00H 00M 00S");
+		});
+
+		it.each([Number.POSITIVE_INFINITY, Number.NaN])(
+			"SHOULD return an empty string WHEN the time is %o",
+			(time) => {
+				expect(writeCountdown(time, "HMS")).toBe("");
+			},
+		);
 	});
 });

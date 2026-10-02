@@ -1,13 +1,18 @@
-export function getCookie(name: string): string | undefined {
-	const decodedCookies = decodeURIComponent(document.cookie);
-	const splitedCookies = decodedCookies
-		.split(";")
-		.map((cookie) => cookie.trim());
-	const foundCookie = splitedCookies.find((cookie) => {
-		return cookie.startsWith(`${name}=`);
-	});
-	if (foundCookie) {
-		return foundCookie.substring(name.length + 1);
+function decodeCookieValue(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
 	}
-	return undefined;
+}
+
+export function getCookie(name: string): string | undefined {
+	// Découpage avant décodage : une valeur encodée peut contenir un « ; » une fois décodée
+	const foundCookie = document.cookie
+		.split(";")
+		.map((cookie) => cookie.trim())
+		.find((cookie) => cookie.startsWith(`${name}=`));
+
+	if (foundCookie === undefined) return undefined;
+	return decodeCookieValue(foundCookie.substring(name.length + 1));
 }

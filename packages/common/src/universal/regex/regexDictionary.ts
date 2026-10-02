@@ -30,8 +30,8 @@ export const regexDictionary = {
 	clientTranslationFile:
 		/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/,
 
-	// Drivers de base de données que Sequelize charge à la demande et que le serveur n'utilise pas (MariaDB seul)
-	sequelizeUnusedDriver: /(pg-hstore|pg|mysql2|sqlite3|tedious)$/,
+	// Drivers de base de données que Sequelize charge à la demande et que le serveur n'utilise pas (MariaDB seul), nom exact du module importé
+	sequelizeUnusedDriver: /^(pg-hstore|pg|mysql2|sqlite3|tedious)$/,
 
 	// N'importe quel chemin, pour un filtre esbuild qui doit tout attraper
 	anyPath: /.*/,

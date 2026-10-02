@@ -1,4 +1,4 @@
-import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
+import { enumDtoToFm } from "@citadel/common/src/universal/enum/enumDtoToFm";
 
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
 import type { WorldInvDto } from "../../types/satisfactory/apis/dataTransferObject/worldInvDto.type";
@@ -8,7 +8,7 @@ export const worldInventoryDtoToFmMapper = (
 	dto: WorldInvDto[],
 ): WorldInventoryFM[] => {
 	return dto.map((worldInvDto) => {
-		const className = enumDtoToFmMapper(
+		const className = enumDtoToFm(
 			worldInvDto.ClassName,
 			GameClassNamesEnum,
 			"GameClassNamesEnum",

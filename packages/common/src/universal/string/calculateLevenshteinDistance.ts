@@ -1,104 +1,127 @@
-function getMin(
-	d0: number,
-	d1: number,
-	d2: number,
-	bx: number,
-	ay: number,
-): number {
-	if (d0 < d1 || d2 < d1) {
-		return d0 > d2 ? d2 + 1 : d0 + 1;
+/**
+ * Distance de Levenshtein : nombre minimum d'opérations sur un caractère (insertion, suppression ou substitution)
+ * pour passer d'une chaîne à l'autre. Une inversion de deux lettres voisines compte donc pour 2.
+ *
+ * Attention : les chaînes sont comparées par unités UTF-16, pas par caractères affichés.
+ * Un emoji ou un caractère rare (hors du plan multilingue de base) occupe 2 unités et peut compter pour 2 opérations,
+ * et "é" précomposé n'est pas égal à "e" suivi d'un accent combinant : normaliser avec normalize("NFC") si besoin.
+ *
+ * Algorithme : vecteurs de bits de Myers (1999), formulation de Hyyrö (2003).
+ * La matrice classique de Wagner-Fischer (case [i][j] = distance entre les i premiers caractères de la courte chaîne
+ * et les j premiers de la longue) est calculée colonne par colonne, mais 32 lignes à la fois grâce aux opérations
+ * sur les bits d'un entier : O(⌈m / 32⌉ × n) au lieu de O(m × n), avec m ≤ n les longueurs des deux chaînes.
+ * Deux cases voisines de la matrice ne diffèrent que de -1, 0 ou +1 : chaque colonne est stockée sous forme
+ * de deux masques, les lignes où la distance augmente de 1 par rapport à la ligne du dessus, et celles où elle baisse de 1.
+ */
+
+const BLOCK_SIZE = 32;
+
+// Pour chaque unité UTF-16, masque des lignes du bloc en cours où elle apparaît dans la chaîne courte.
+// Tableau partagé (256 Ko) remis à zéro après chaque bloc : plus rapide qu'une Map recréée à chaque appel
+const matchMasks = new Int32Array(0x10000);
+
+/**
+ * Calcule un bloc de 32 lignes de la matrice, sur toutes les colonnes.
+ * Une différence horizontale est l'écart (-1, 0 ou +1) entre une case et sa voisine de gauche.
+ * Reçoit celles de la ligne juste au-dessus du bloc et renvoie celles de la dernière ligne du bloc
+ */
+function computeBlock(
+	pattern: string,
+	blockStart: number,
+	text: string,
+	deltasAbove: readonly number[],
+): number[] {
+	const deltasBelow = new Array<number>(text.length);
+	const blockEnd = Math.min(blockStart + BLOCK_SIZE, pattern.length);
+	const lastRowBit = 1 << (blockEnd - blockStart - 1);
+
+	for (let row = blockStart; row < blockEnd; row += 1) {
+		matchMasks[pattern.charCodeAt(row)] |= 1 << (row - blockStart);
 	}
-	return bx === ay ? d1 : d1 + 1;
+
+	// Colonne 0 : la distance augmente de 1 à chaque ligne (supprimer un caractère de plus)
+	let verticalPlus = -1;
+	let verticalMinus = 0;
+
+	for (let column = 0; column < text.length; column += 1) {
+		let matches = matchMasks[text.charCodeAt(column)];
+		const deltaAbove = deltasAbove[column];
+
+		const verticalChanges = matches | verticalMinus;
+		if (deltaAbove < 0) matches |= 1;
+		// L'addition propage une retenue le long des suites de +1 verticaux qui suivent une correspondance :
+		// c'est elle qui calcule le minimum de chaque case pour les 32 lignes en une seule opération
+		const horizontalChanges =
+			(((matches & verticalPlus) + verticalPlus) ^ verticalPlus) | matches;
+
+		let horizontalPlus = verticalMinus | ~(horizontalChanges | verticalPlus);
+		let horizontalMinus = verticalPlus & horizontalChanges;
+
+		if (horizontalPlus & lastRowBit) deltasBelow[column] = 1;
+		else if (horizontalMinus & lastRowBit) deltasBelow[column] = -1;
+		else deltasBelow[column] = 0;
+
+		// Décalage d'une ligne vers le bas : la première ligne du bloc reçoit la différence venue du bloc au-dessus
+		horizontalPlus <<= 1;
+		horizontalMinus <<= 1;
+		if (deltaAbove < 0) horizontalMinus |= 1;
+		else if (deltaAbove > 0) horizontalPlus |= 1;
+
+		verticalPlus = horizontalMinus | ~(verticalChanges | horizontalPlus);
+		verticalMinus = horizontalPlus & verticalChanges;
+	}
+
+	for (let row = blockStart; row < blockEnd; row += 1) {
+		matchMasks[pattern.charCodeAt(row)] = 0;
+	}
+
+	return deltasBelow;
 }
 
 export function calculateLevenshteinDistance(a: string, b: string): number {
-	let c = a;
-	let d = b;
+	if (a === b) return 0;
 
-	if (c === d) {
-		return 0;
+	const [shorter, longer] = a.length <= b.length ? [a, b] : [b, a];
+
+	// Un début ou une fin communs ne coûtent jamais rien : on les retire avant le calcul
+	let start = 0;
+	while (
+		start < shorter.length &&
+		shorter.charCodeAt(start) === longer.charCodeAt(start)
+	) {
+		start += 1;
+	}
+	let shorterEnd = shorter.length;
+	let longerEnd = longer.length;
+	while (
+		shorterEnd > start &&
+		shorter.charCodeAt(shorterEnd - 1) === longer.charCodeAt(longerEnd - 1)
+	) {
+		shorterEnd -= 1;
+		longerEnd -= 1;
 	}
 
-	if (c.length > d.length) {
-		[c, d] = [d, c];
+	const pattern = shorter.slice(start, shorterEnd);
+	const text = longer.slice(start, longerEnd);
+	if (pattern.length === 0) return text.length;
+
+	// Ligne 0 : la distance augmente de 1 à chaque colonne (insérer un caractère de plus)
+	let horizontalDeltas = new Array<number>(text.length).fill(1);
+	for (
+		let blockStart = 0;
+		blockStart < pattern.length;
+		blockStart += BLOCK_SIZE
+	) {
+		horizontalDeltas = computeBlock(
+			pattern,
+			blockStart,
+			text,
+			horizontalDeltas,
+		);
 	}
 
-	let la = c.length;
-	let lb = d.length;
-
-	while (la > 0 && c.charCodeAt(la - 1) === d.charCodeAt(lb - 1)) {
-		la -= 1;
-		lb -= 1;
-	}
-
-	let offset = 0;
-
-	while (offset < la && c.charCodeAt(offset) === d.charCodeAt(offset)) {
-		offset += 1;
-	}
-
-	la -= offset;
-	lb -= offset;
-
-	if (la === 0 || lb < 3) {
-		return lb;
-	}
-
-	let x = 0;
-	let d0: number;
-	let d1: number;
-	let d2: number;
-	let d3: number;
-	let dd = 0;
-	let dy: number;
-	let ay: number;
-	let bx0: number;
-	let bx1: number;
-	let bx2: number;
-	let bx3: number;
-
-	const vector: number[] = [];
-
-	for (let y = 0; y < la; y += 1) {
-		vector.push(y + 1);
-		vector.push(c.charCodeAt(offset + y));
-	}
-
-	const len = vector.length - 1;
-
-	for (; x < lb - 3;) {
-		bx0 = d.charCodeAt(offset + (d0 = x));
-		bx1 = d.charCodeAt(offset + (d1 = x + 1));
-		bx2 = d.charCodeAt(offset + (d2 = x + 2));
-		bx3 = d.charCodeAt(offset + (d3 = x + 3));
-		x += 4;
-		dd = x;
-		for (let y = 0; y < len; y += 2) {
-			dy = vector[y];
-			ay = vector[y + 1];
-			d0 = getMin(dy, d0, d1, bx0, ay);
-			d1 = getMin(d0, d1, d2, bx1, ay);
-			d2 = getMin(d1, d2, d3, bx2, ay);
-			dd = getMin(d2, d3, dd, bx3, ay);
-			vector[y] = dd;
-			d3 = d2;
-			d2 = d1;
-			d1 = d0;
-			d0 = dy;
-		}
-	}
-
-	for (; x < lb;) {
-		bx0 = d.charCodeAt(offset + (d0 = x));
-		x += 1;
-		dd = x;
-		for (let y = 0; y < len; y += 2) {
-			dy = vector[y];
-			dd = getMin(dy, d0, dd, bx0, vector[y + 1]);
-			vector[y] = dd;
-			d0 = dy;
-		}
-	}
-
-	return dd;
+	// Dernière ligne : on part de la case [m][0] = m et on ajoute les différences colonne par colonne
+	let distance = pattern.length;
+	for (const delta of horizontalDeltas) distance += delta;
+	return distance;
 }
