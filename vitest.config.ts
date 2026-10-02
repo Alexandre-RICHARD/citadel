@@ -2,10 +2,13 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	test: {
+		// Vitest ignore les "projects" d'une config listée ici : on pointe donc les projets de common, pas son vitest.config.ts
 		projects: [
-			"apps/*/vitest.config.ts",
-			"apps/*/vitest.integration.config.ts",
-			"packages/*/vitest.config.ts",
+			"apps/client/vitest.config.ts",
+			"apps/server/vitest.config.ts",
+			"apps/server/vitest.integration.config.ts",
+			"packages/common/vitest.universal.config.ts",
+			"packages/common/vitest.browser.config.ts",
 		],
 		outputFile: "./report/index.html",
 		passWithNoTests: true,

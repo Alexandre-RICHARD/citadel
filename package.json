@@ -23,8 +23,8 @@
     "update-major": "pnpm update --recursive --interactive --latest"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "catalog:",
-    "@vitest/ui": "catalog:",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/ui": "^4.1.11",
     "vite": "catalog:",
     "vitest": "catalog:"
   }
