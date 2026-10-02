@@ -31,7 +31,7 @@
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "sass-embedded": "^1.105.0",
+    "sass-embedded": "catalog:",
     "storybook": "^10.6.1",
     "typescript": "catalog:",
     "vite": "catalog:"

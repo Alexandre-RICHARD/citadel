@@ -14,6 +14,8 @@
 	"include": [
 		"src",
 		"vitest.config.ts",
+		"vitest.universal.config.ts",
+		"vitest.browser.config.ts",
 		"vitest.setup.ts",
 		"eslint.config.js",
 	],
