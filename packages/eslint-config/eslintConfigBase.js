@@ -178,7 +178,7 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ["eslint.config.**js"],
+		files: ["eslint.config.js", "eslintConfig*.js"],
 		rules: {
 			"import-x/no-default-export": "off",
 		},

@@ -2,11 +2,11 @@
   "name": "@citadel/eslint-config",
   "type": "module",
   "exports": {
-    "./client": "./eslint.config.client.js",
-    "./common": "./eslint.config.common.js",
-    "./design-system": "./eslint.config.designSystem.js",
-    "./server": "./eslint.config.server.js",
-    "./specs": "./eslint.config.specs.js"
+    "./client": "./eslintConfigClient.js",
+    "./common": "./eslintConfigCommon.js",
+    "./design-system": "./eslintConfigDesignSystem.js",
+    "./server": "./eslintConfigServer.js",
+    "./specs": "./eslintConfigSpecs.js"
   },
   "scripts": {
     "=== Validation ===": "",

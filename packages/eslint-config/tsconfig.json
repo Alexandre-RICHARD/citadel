@@ -9,7 +9,8 @@
 		],
 	},
 	"include": [
-		"eslint.config.**js",
+		"eslint.config.js",
+		"eslintConfig*.js",
 	],
 	"exclude": [
 		"node_modules",
