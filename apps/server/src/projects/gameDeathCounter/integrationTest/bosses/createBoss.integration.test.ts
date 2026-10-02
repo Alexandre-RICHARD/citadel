@@ -221,7 +221,11 @@ describe(`POST ${CREATE_BOSS_URL}`, () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["gameId"], message: "Game ID should be an integer" },
+				{
+					path: ["gameId"],
+					message:
+						"Game ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
+				},
 				{ path: ["name"], message: "Name should be a string" },
 			]);
 		});

@@ -3,17 +3,13 @@ import { existsSync } from "node:fs";
 // eslint-disable-next-line import-x/no-nodejs-modules
 import path from "node:path";
 
+import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
-const PROJECT_FOLDER_REGEX = /\/src\/projects\/([^/]+)/;
-
-const TRANSLATION_FILE_REGEX =
-	/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/;
-
 // Normalisation des séparateurs de chemin (compatible Windows / Linux)
 function normalizePath(id: string): string {
-	return id.replace(/\\/g, "/");
+	return id.replace(regexDictionary.windowsPathSeparator, "/");
 }
 
 export default defineConfig(({ mode }) => {
@@ -61,20 +57,21 @@ export default defineConfig(({ mode }) => {
 						groups: [
 							{
 								name: "vendor",
-								test: /[\\/]node_modules[\\/]/,
+								test: regexDictionary.nodeModulesPath,
 								priority: 5,
 							},
 							{
 								name: "design-system",
 								debugName: "design-system",
-								test: /[\\/]packages[\\/]design-system[\\/]/,
+								test: regexDictionary.designSystemPackagePath,
 								priority: 4,
 							},
 							{
 								name: (id) => {
-									const translationMatch = TRANSLATION_FILE_REGEX.exec(
-										normalizePath(id),
-									);
+									const translationMatch =
+										regexDictionary.clientTranslationFile.exec(
+											normalizePath(id),
+										);
 									return translationMatch
 										? `translations-${translationMatch[1]}`
 										: null;
@@ -96,7 +93,7 @@ export default defineConfig(({ mode }) => {
 							},
 							{
 								name: (id) => {
-									const projectMatch = PROJECT_FOLDER_REGEX.exec(
+									const projectMatch = regexDictionary.clientProjectFolder.exec(
 										normalizePath(id),
 									);
 									return projectMatch ? `projects/${projectMatch[1]}` : null;
@@ -114,14 +111,15 @@ export default defineConfig(({ mode }) => {
 				scss: {
 					api: "modern-compiler",
 					additionalData: (content, filename) => {
-						const normalizedFilename = filename.replace(/\\/g, "/");
+						const normalizedFilename = normalizePath(filename);
 
 						if (normalizedFilename.endsWith("variables.scss")) {
 							return content;
 						}
 
 						// Recherche le nom du projet dans le chemin
-						const match = PROJECT_FOLDER_REGEX.exec(normalizedFilename);
+						const match =
+							regexDictionary.clientProjectFolder.exec(normalizedFilename);
 
 						if (match) {
 							const projectName = match[1];
@@ -131,9 +129,8 @@ export default defineConfig(({ mode }) => {
 							);
 
 							if (existsSync(projectSCSSVariablesFilePath)) {
-								const normalizedPath = projectSCSSVariablesFilePath.replace(
-									/\\/g,
-									"/",
+								const normalizedPath = normalizePath(
+									projectSCSSVariablesFilePath,
 								);
 								return `@use "${normalizedPath}" as vars;\n${content}`;
 							}

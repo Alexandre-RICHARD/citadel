@@ -17,6 +17,7 @@ export default defineConfig({
 			"apps/server/vitest.integration.config.ts",
 			"packages/common/vitest.universal.config.ts",
 			"packages/common/vitest.browser.config.ts",
+			"packages/specs/vitest.config.ts",
 		],
 		outputFile: "./report/index.html",
 		passWithNoTests: true,
@@ -34,8 +35,8 @@ export default defineConfig({
 				"**/*.enum.ts",
 				"**/*.test.*",
 				"**/*.stories.tsx",
+				"**/testUtils/**",
 				"**/todo_folder/**", // TODO
-				"apps/server/src/testUtils/**",
 			],
 		},
 	},

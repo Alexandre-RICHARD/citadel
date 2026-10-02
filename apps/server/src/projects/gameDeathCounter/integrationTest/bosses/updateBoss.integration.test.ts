@@ -263,9 +263,17 @@ describe(`PUT ${UPDATE_BOSS_URL}`, () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["id"], message: "ID should be a number" },
+				{
+					path: ["id"],
+					message:
+						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
+				},
 				{ path: ["name"], message: "Name should be a string" },
-				{ path: ["gameId"], message: "Game ID should be a number" },
+				{
+					path: ["gameId"],
+					message:
+						'Game ID should be a JSON number, not text (e.g. 7, not "7")',
+				},
 			]);
 		});
 
