@@ -11,7 +11,7 @@ const dotenvResult = config({
 	quiet: true,
 });
 if (dotenvResult.error)
-	throw new Error("Fichier .env.test introuvable (voir .env.exemple)", {
+	throw new Error("Fichier .env.test introuvable (voir .env.example)", {
 		cause: dotenvResult.error,
 	});
 

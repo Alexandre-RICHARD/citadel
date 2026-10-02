@@ -29,7 +29,7 @@ function parseEnv(): z.infer<typeof envSchema> {
 			.map((issue) => `  - ${issue.path.join(".")} : ${issue.message}`)
 			.join("\n");
 		console.error(
-			`Variables d'environnement invalides (voir .env.exemple) :\n${invalidVariables}`,
+			`Variables d'environnement invalides (voir .env.example) :\n${invalidVariables}`,
 		);
 		process.exit(1);
 	}
