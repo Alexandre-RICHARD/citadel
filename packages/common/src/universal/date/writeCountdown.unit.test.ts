@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { writeCountdown } from "./writeCountdown";
+import { writeCountdown } from "./writeCountdown.ts";
 
 describe("writeCountdown", () => {
 	describe("format: HMS", () => {

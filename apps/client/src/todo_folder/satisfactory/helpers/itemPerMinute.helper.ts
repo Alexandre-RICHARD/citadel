@@ -1,5 +1,4 @@
-import { roundNumber } from "../nexus/helpers/data/number/roundNumber.helper";
-
+import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 type Args = {
 	cycleDuration: number;
 	cycleItemCount: number;

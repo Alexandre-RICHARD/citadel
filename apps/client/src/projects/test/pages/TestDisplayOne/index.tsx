@@ -1,8 +1,8 @@
+import { formatDate } from "@citadel/common/src/universal/date/formatDate";
+import { LanguageEnum } from "@citadel/common/src/universal/language/language.enum";
 import { useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router";
 
-import { formatDate } from "../../../../common/helpers/date/formatDate";
-import { LanguageEnum } from "../../../../common/language/language.enum";
 import { useGetOneTest } from "../../actions/useGetOneTest";
 import styles from "./testDisplayOne.module.scss";
 

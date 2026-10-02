@@ -66,7 +66,7 @@ export const calculateLevenshteinDistance = (a: string, b: string): number => {
 
 	const len = vector.length - 1;
 
-	for (; x < lb - 3; ) {
+	for (; x < lb - 3;) {
 		bx0 = d.charCodeAt(offset + (d0 = x));
 		bx1 = d.charCodeAt(offset + (d1 = x + 1));
 		bx2 = d.charCodeAt(offset + (d2 = x + 2));
@@ -88,7 +88,7 @@ export const calculateLevenshteinDistance = (a: string, b: string): number => {
 		}
 	}
 
-	for (; x < lb; ) {
+	for (; x < lb;) {
 		bx0 = d.charCodeAt(offset + (d0 = x));
 		x += 1;
 		dd = x;

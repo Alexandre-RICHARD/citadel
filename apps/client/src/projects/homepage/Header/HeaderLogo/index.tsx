@@ -1,6 +1,6 @@
+import { useSessionStorage } from "@citadel/common/src/react/hooks/useSessionStorage";
 import { useLayoutEffect, useRef } from "react";
 
-import { useSessionStorage } from "../../../../react/hook/useSessionStorage";
 import styles from "./headerLogo.module.scss";
 
 export function HeaderLogo() {

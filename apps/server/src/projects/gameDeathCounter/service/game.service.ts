@@ -1,4 +1,5 @@
-import { dateNow } from "../../../common/date/dateNow.ts";
+import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
+
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { CreateGameBean } from "../bean/createGame.bean.ts";
 import type { DeleteGameBean } from "../bean/deleteGame.bean.ts";

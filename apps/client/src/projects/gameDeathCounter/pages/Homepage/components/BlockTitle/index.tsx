@@ -1,6 +1,6 @@
+import { formatDate } from "@citadel/common/src/universal/date/formatDateBis";
 import { useEffect, useRef } from "react";
 
-import { formatDate } from "../../../../../../common/helpers/date/formatDateBis";
 import globalStyles from "../../../../globalStyles.module.scss";
 import styles from "./blockTitle.module.scss";
 

@@ -1,3 +1,6 @@
+import { assertBoolean } from "@citadel/common/src/universal/asserts/assertBoolean.ts";
+import { assertNumber } from "@citadel/common/src/universal/asserts/assertNumber.ts";
+import { assertString } from "@citadel/common/src/universal/asserts/assertString.ts";
 import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTest.endpoint.ts";
 import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTest.endpoint.ts";
 import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTest.endpoint.ts";
@@ -5,9 +8,6 @@ import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOn
 import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTest.endpoint.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { assertBoolean } from "../../../common/asserts/assertBoolean.ts";
-import { assertNumber } from "../../../common/asserts/assertNumber.ts";
-import { assertString } from "../../../common/asserts/assertString.ts";
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
 import { BadRequestError } from "../../../error/BadRequestError.ts";
 import { NotFoundError } from "../../../error/NotFoundError.ts";

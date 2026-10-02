@@ -1,4 +1,4 @@
-import { LanguageEnum } from "../../../../common/language/language.enum";
+import { LanguageEnum } from "@citadel/common/src/universal/language/language.enum";
 
 type Translations = {
 	a: string;

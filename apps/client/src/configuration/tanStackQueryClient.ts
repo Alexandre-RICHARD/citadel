@@ -1,6 +1,5 @@
+import { exponentielInterval } from "@citadel/common/src/universal/interval/exponentielInterval";
 import { QueryClient } from "@tanstack/react-query";
-
-import { exponentielInterval } from "../common/helpers/interval/exponentielInterval";
 
 export const tanStackQueryClient = new QueryClient({
 	defaultOptions: {

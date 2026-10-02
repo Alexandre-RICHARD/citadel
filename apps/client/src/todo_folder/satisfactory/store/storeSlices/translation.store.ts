@@ -1,9 +1,9 @@
+import { setCookie } from "@citadel/common/src/browser/cookie/setCookie";
 import type { StateCreator } from "zustand";
 
 import { supportedLanguages } from "../../dictionnaries/supportedLanguages.dictionnary";
 import { CookieEnum } from "../../enums/cookie.enum";
 import { LanguageEnum } from "../../nexus/enums/language.enum";
-import { setCookie } from "../../nexus/helpers/cookie/setCookie.helper";
 import { selectedLanguageInitiator } from "../../nexus/helpers/store/translation/selectedLanguageInitiator.helper";
 import type { TranslationSliceType } from "../../types/store/storeSlices/translations.type";
 

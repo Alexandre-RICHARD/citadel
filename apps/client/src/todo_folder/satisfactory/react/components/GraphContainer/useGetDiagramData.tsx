@@ -1,9 +1,9 @@
+import { getTextSizeHelper } from "@citadel/common/src/browser/dom/getTextSize";
+import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import type { Edge, Node } from "vis-network";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { stringRemoveEndPxHelper } from "../../../helpers/stringRemoveEndPx.helper";
-import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
-import { getTextSizeHelper } from "../../../nexus/helpers/data/string/getTextSize.helper";
 import type { FactoryLine } from "../../../types/satisfactory/factoryLine.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";
 
