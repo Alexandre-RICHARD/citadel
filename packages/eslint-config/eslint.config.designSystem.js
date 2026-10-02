@@ -18,4 +18,11 @@ export default [
 			"react-refresh/only-export-components": "off",
 		},
 	},
+	{
+		// Le format Storybook impose un export par défaut (meta) et un export nommé par story
+		files: ["**/*.stories.tsx"],
+		rules: {
+			"citadel/max-one-export": "off",
+		},
+	},
 ];
