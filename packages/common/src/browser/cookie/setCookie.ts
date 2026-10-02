@@ -1,7 +1,8 @@
 type Args = {
 	name: string;
 	value: string;
-	hours: number;
+	// 0 : cookie de session, supprimé à la fermeture du navigateur. Négatif : supprime le cookie
+	hours?: number;
 };
 
 export function setCookie({ name, value, hours = 1 }: Args): void {
@@ -11,5 +12,5 @@ export function setCookie({ name, value, hours = 1 }: Args): void {
 		date.setTime(date.getTime() + hours * 60 * 60 * 1000);
 		expires = `; expires=${date.toUTCString()}`;
 	}
-	document.cookie = `${name}=${value || ""}${expires}; path=/`;
+	document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/`;
 }

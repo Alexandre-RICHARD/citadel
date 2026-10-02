@@ -28,6 +28,14 @@ describe("useSessionStorage.tsx", () => {
 			);
 			expect(result.current.value).toBe(otherValue);
 		});
+
+		it("SHOULD return the default value WHEN the stored value is not valid JSON", () => {
+			sessionStorage.setItem(TEST_KEY, "{not json");
+			const { result } = renderHook(() =>
+				useSessionStorage<string>(TEST_KEY, defaultValue),
+			);
+			expect(result.current.value).toBe(defaultValue);
+		});
 	});
 
 	describe("set and remove", () => {

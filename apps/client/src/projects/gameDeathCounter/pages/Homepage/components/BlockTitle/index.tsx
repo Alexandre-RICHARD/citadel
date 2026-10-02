@@ -1,4 +1,4 @@
-import { formatDate } from "@citadel/common/src/universal/date/formatDateBis";
+import { formatLongDate } from "@citadel/common/src/universal/date/formatLongDate";
 import { useEffect, useRef } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
@@ -52,10 +52,10 @@ export function BlockTitle({
 			)}
 			<span className={styles.meta}>
 				{Boolean(element.startedAt) && (
-					<>Débuté le {formatDate(element.startedAt)}</>
+					<>Débuté le {formatLongDate(element.startedAt)}</>
 				)}
 				{Boolean(element.endedAt) && (
-					<> · terminé le {formatDate(element.endedAt)}</>
+					<> · terminé le {formatLongDate(element.endedAt)}</>
 				)}
 			</span>
 		</div>

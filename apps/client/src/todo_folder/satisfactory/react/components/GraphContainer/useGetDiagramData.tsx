@@ -1,4 +1,4 @@
-import { getTextSizeHelper } from "@citadel/common/src/browser/dom/getTextSize";
+import { getTextSize } from "@citadel/common/src/browser/dom/getTextSize";
 import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import type { Edge, Node } from "vis-network";
 
@@ -21,7 +21,7 @@ export const useGetDiagramData = ({
 	const t = useCustomTranslations();
 
 	const horizontalGraphSpacingHandler = (label: string) => {
-		const labelSize = getTextSizeHelper(
+		const labelSize = getTextSize(
 			label,
 			stringRemoveEndPxHelper("20px"),
 			"'Poppins', sans-serif",

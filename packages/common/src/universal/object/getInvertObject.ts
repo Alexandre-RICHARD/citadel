@@ -1,11 +1,8 @@
-export function getInvertObject(
-	originalObject: Record<string, string>,
-): Record<string, string> {
-	return Object.entries(originalObject).reduce(
-		(acc, [key, value]) => ({
-			...acc,
-			[value]: key,
-		}),
-		{} as Record<string, string>,
-	);
+// Les valeurs deviennent les clés ; si deux clés ont la même valeur, la dernière l'emporte
+export function getInvertObject<K extends string, V extends string>(
+	originalObject: Record<K, V>,
+): Record<V, K> {
+	return Object.fromEntries(
+		Object.entries(originalObject).map(([key, value]) => [value, key]),
+	) as Record<V, K>;
 }

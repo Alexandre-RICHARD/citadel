@@ -1,4 +1,4 @@
-import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
+import { enumDtoToFm } from "@citadel/common/src/universal/enum/enumDtoToFm";
 
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
 import type { ExtractorDto } from "../../types/satisfactory/apis/dataTransferObject/extractorDto.type";
@@ -6,7 +6,7 @@ import type { ExtractorFm } from "../../types/satisfactory/apis/frontModel/extra
 
 export const extractorDtoToFmMapper = (dto: ExtractorDto[]): ExtractorFm[] => {
 	return dto.map((extractorDto) => {
-		const className = enumDtoToFmMapper(
+		const className = enumDtoToFm(
 			extractorDto.ClassName,
 			GameClassNamesEnum,
 			"GameClassNamesEnum",

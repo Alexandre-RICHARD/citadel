@@ -1,10 +1,10 @@
-import { LanguageEnum } from "../language/language.enum.ts";
+import type { LanguageEnum } from "../language/language.enum.ts";
 import { languageDictionary } from "../language/languageDictionary.ts";
 
-export function formatDate(dateString: Date, locale: LanguageEnum): string {
-	const date = new Date(dateString);
+export function formatDate(date: Date, locale: LanguageEnum): string {
+	const parsedDate = new Date(date);
 
-	if (Number.isNaN(date.getTime())) {
+	if (Number.isNaN(parsedDate.getTime())) {
 		return "Date au format invalide";
 	}
 
@@ -16,6 +16,6 @@ export function formatDate(dateString: Date, locale: LanguageEnum): string {
 		minute: "2-digit",
 	};
 
-	const localeCode = languageDictionary[LanguageEnum[locale]].longCode;
-	return new Intl.DateTimeFormat(localeCode, options).format(date);
+	const localeCode = languageDictionary[locale].longCode;
+	return new Intl.DateTimeFormat(localeCode, options).format(parsedDate);
 }
