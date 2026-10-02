@@ -1,3 +1,3 @@
-import type { CreateErrorLog } from "./endpoint/entries/createErrorLog/createErrorLogEndpoint.type.ts";
+import type { CreateErrorLog } from "./endpoint/entries/createErrorLog/createErrorLogEndpoint.interface.ts";
 
 export type ErrorLogEndpointRegistry = CreateErrorLog;

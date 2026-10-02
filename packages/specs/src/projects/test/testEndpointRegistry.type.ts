@@ -1,8 +1,8 @@
-import type { CreateTest } from "./endpoint/createTestEndpoint.type.ts";
-import type { DeleteTest } from "./endpoint/deleteTestEndpoint.type.ts";
-import type { GetAllTest } from "./endpoint/getAllTestEndpoint.type.ts";
-import type { GetOneTest } from "./endpoint/getOneTestEndpoint.type.ts";
-import type { UpdateTest } from "./endpoint/updateTestEndpoint.type.ts";
+import type { CreateTest } from "./endpoint/createTestEndpoint.interface.ts";
+import type { DeleteTest } from "./endpoint/deleteTestEndpoint.interface.ts";
+import type { GetAllTest } from "./endpoint/getAllTestEndpoint.interface.ts";
+import type { GetOneTest } from "./endpoint/getOneTestEndpoint.interface.ts";
+import type { UpdateTest } from "./endpoint/updateTestEndpoint.interface.ts";
 
 export type TestEndpointRegistry =
 	GetOneTest | GetAllTest | CreateTest | UpdateTest | DeleteTest;

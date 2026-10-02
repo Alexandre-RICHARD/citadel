@@ -1,4 +1,4 @@
-import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTestEndpoint.type";
+import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTestEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";

@@ -6,10 +6,4 @@ export default [
 	// Main rules
 	//
 	// Override
-	{
-		files: ["src/projects/**/*endpoint.ts"],
-		rules: {
-			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-		},
-	},
 ];

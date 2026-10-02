@@ -1,9 +1,9 @@
-import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameEndpoint.type.ts";
-import type { DeleteGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGameEndpoint.type.ts";
-import type { GetAllGames } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getAllGames/getAllGamesEndpoint.type.ts";
-import type { GetOneGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGameEndpoint.type.ts";
-import type { SetGameFinished } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedEndpoint.type.ts";
-import type { UpdateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGameEndpoint.type.ts";
+import type { CreateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameEndpoint.interface.ts";
+import type { DeleteGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGameEndpoint.interface.ts";
+import type { GetAllGames } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getAllGames/getAllGamesEndpoint.interface.ts";
+import type { GetOneGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/getOneGame/getOneGameEndpoint.interface.ts";
+import type { SetGameFinished } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedEndpoint.interface.ts";
+import type { UpdateGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGameEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

@@ -1,8 +1,8 @@
-import type { CreateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossEndpoint.type.ts";
-import type { DeleteBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossEndpoint.type.ts";
-import type { GetOneBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossEndpoint.type.ts";
-import type { SetBossDefeated } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedEndpoint.type.ts";
-import type { UpdateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossEndpoint.type.ts";
+import type { CreateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossEndpoint.interface.ts";
+import type { DeleteBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossEndpoint.interface.ts";
+import type { GetOneBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/getOneBoss/getOneBossEndpoint.interface.ts";
+import type { SetBossDefeated } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedEndpoint.interface.ts";
+import type { UpdateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

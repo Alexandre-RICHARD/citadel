@@ -11,14 +11,28 @@ import tseslint from "typescript-eslint";
 
 import { maxOneExport } from "./rules/maxOneExport.js";
 
-const ENUM_EXPORT_RESTRICTION = {
-	selector: "ExportNamedDeclaration > TSEnumDeclaration",
-	message: "Un fichier qui exporte un enum doit finir par .enum.ts",
+// Chaque sorte d'export a son suffixe de fichier : un fichier n'est exempté que de la restriction de son suffixe
+const EXPORT_RESTRICTIONS = {
+	enum: {
+		selector: "ExportNamedDeclaration > TSEnumDeclaration",
+		message: "Un fichier qui exporte un enum doit finir par .enum.ts",
+	},
+	type: {
+		selector:
+			"ExportNamedDeclaration[exportKind='type']:not([declaration.type='TSInterfaceDeclaration'])",
+		message: "Un fichier qui exporte un type doit finir par .type.ts",
+	},
+	interface: {
+		selector: "ExportNamedDeclaration > TSInterfaceDeclaration",
+		message: "Un fichier qui exporte une interface doit finir par .interface.ts",
+	},
 };
-const TYPE_EXPORT_RESTRICTION = {
-	selector: "ExportNamedDeclaration[exportKind='type']",
-	message: "Un fichier qui exporte un type doit finir par .type.ts",
-};
+
+function exportRestrictionsExcept(...allowedKinds) {
+	return Object.entries(EXPORT_RESTRICTIONS)
+		.filter(([kind]) => !allowedKinds.includes(kind))
+		.map(([, restriction]) => restriction);
+}
 
 export default defineConfig([
 	globalIgnores([
@@ -137,28 +151,33 @@ export default defineConfig([
 	},
 
 	// Override
-	// Nommage : un export d'enum vit dans un *.enum.ts, un export de type dans un *.type.ts.
+	// Nommage : un export d'enum vit dans un *.enum.ts, de type dans un *.type.ts, d'interface dans un *.interface.ts.
 	// Un bloc no-restricted-syntax remplace le précédent : chaque bloc redonne la liste complète
 	{
 		files: ["**/*.{ts,tsx,mts,cts}"],
 		rules: {
+			"no-restricted-syntax": ["error", ...exportRestrictionsExcept()],
+		},
+	},
+	...Object.keys(EXPORT_RESTRICTIONS).map((kind) => ({
+		files: [`**/*.${kind}.ts`],
+		rules: {
+			"no-restricted-syntax": ["error", ...exportRestrictionsExcept(kind)],
+		},
+	})),
+	{
+		files: ["**/*.d.ts"],
+		rules: {
 			"no-restricted-syntax": [
 				"error",
-				ENUM_EXPORT_RESTRICTION,
-				TYPE_EXPORT_RESTRICTION,
+				...exportRestrictionsExcept("type", "interface"),
 			],
 		},
 	},
 	{
-		files: ["**/*.enum.ts"],
+		files: ["**/*.interface.ts"],
 		rules: {
-			"no-restricted-syntax": ["error", TYPE_EXPORT_RESTRICTION],
-		},
-	},
-	{
-		files: ["**/*.type.ts", "**/*.d.ts"],
-		rules: {
-			"no-restricted-syntax": ["error", ENUM_EXPORT_RESTRICTION],
+			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
 		},
 	},
 	// Désactive le type-checking pour les fichiers JS/MJS/CJS de configuration

@@ -1,4 +1,4 @@
-import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTestEndpoint.type";
+import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTestEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
