@@ -130,7 +130,12 @@ export default defineConfig([
 		...tseslint.configs.disableTypeChecked,
 	},
 	{
-		files: ["vite.config.ts", "vitest.config.ts"],
+		files: [
+			"vite.config.ts",
+			"vitest.config.ts",
+			"vitest.*.config.ts",
+			"vitest.integration.config.ts",
+		],
 		rules: {
 			"import-x/no-default-export": "off",
 		},

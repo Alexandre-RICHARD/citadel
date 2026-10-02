@@ -5,23 +5,7 @@ export default defineConfig({
 		environment: "jsdom",
 		include: ["src/**/*.test.ts?(x)"],
 		exclude: ["src/todo_folder/**"],
-		outputFile: "./report/index.html",
 		setupFiles: "vitest.setup.ts",
 		passWithNoTests: true,
-		coverage: {
-			reportOnFailure: true,
-			reportsDirectory: "./report/coverage",
-			enabled: false,
-			provider: "v8",
-			reporter: "html",
-			include: ["src/**/*.{ts,tsx}"],
-			exclude: [
-				"src/**/*.type.ts",
-				"src/**/*.d.ts",
-				"src/**/*.enum.ts",
-				"src/**/*.test.*",
-				"src/reserve/**",
-			],
-		},
 	},
 });
