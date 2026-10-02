@@ -1,4 +1,4 @@
-import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogEndpoint.type.ts";
+import type { CreateErrorLog } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

@@ -1,4 +1,4 @@
-import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTestEndpoint.type";
+import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTestEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";

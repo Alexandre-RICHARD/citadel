@@ -1,6 +1,6 @@
-import type { AddDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathEndpoint.type.ts";
-import type { DeleteDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeathEndpoint.type.ts";
-import type { UpdateDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathEndpoint.type.ts";
+import type { AddDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathEndpoint.interface.ts";
+import type { DeleteDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeathEndpoint.interface.ts";
+import type { UpdateDeath } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

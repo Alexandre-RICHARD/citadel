@@ -21,6 +21,7 @@ export default defineConfig({
 			include: ["apps/*/src/**/*.{ts,tsx}", "packages/*/src/**/*.{ts,tsx}"],
 			exclude: [
 				"**/*.type.ts",
+				"**/*.interface.ts",
 				"**/*.d.ts",
 				"**/*.enum.ts",
 				"**/*.test.*",
