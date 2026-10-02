@@ -3,10 +3,10 @@ import { existsSync } from "node:fs";
 // eslint-disable-next-line import-x/no-nodejs-modules
 import path from "node:path";
 
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
-import { projects } from "./src/react/appNavigation/projects.dictionnary.ts";
+const PROJECT_FOLDER_REGEX = /\/src\/projects\/([^/]+)/;
 
 const TRANSLATION_FILE_REGEX =
 	/\/src\/.*\/translations\/([^/]+)\/.*\.translations\.(ts|js|json)$/;
@@ -92,10 +92,12 @@ export default defineConfig(({ mode }) => {
 								priority: 2,
 							},
 							{
-								name: (id) =>
-									Object.values(projects).find((project) =>
-										normalizePath(id).includes(project.buildPath),
-									)?.outputFile ?? null,
+								name: (id) => {
+									const projectMatch = PROJECT_FOLDER_REGEX.exec(
+										normalizePath(id),
+									);
+									return projectMatch ? `projects/${projectMatch[1]}` : null;
+								},
 								priority: 1,
 							},
 						],
@@ -115,7 +117,7 @@ export default defineConfig(({ mode }) => {
 						}
 
 						// Recherche le nom du projet dans le chemin
-						const match = /\/src\/projects\/([^/]+)/.exec(normalizedFilename);
+						const match = PROJECT_FOLDER_REGEX.exec(normalizedFilename);
 
 						if (match) {
 							const projectName = match[1];

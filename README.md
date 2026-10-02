@@ -98,22 +98,6 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 [vite:react-swc] We recommend switching to `@vitejs/plugin-react` for improved performance as no swc plugins are used. More information at https://vite.dev/rolldown
 ```
-- Start le build du serveur provoque ceci
-```
-file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48
-    var fs = require("fs");
-             ^
-
-ReferenceError: require is not defined in ES module scope, you can use import instead
-This file is being treated as an ES module because it has a '.js' file extension and '\\?\C:\Users\Alex\Hub\Centre\Dev\Citadel\apps\server\package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
-    at ../../node_modules/.pnpm/dotenv@17.4.2/node_modules/dotenv/lib/main.js (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48:14)
-    at __require (file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:18:52)
-    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73151:3
-    at file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:73158:3
-    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
-    at async node:internal/modules/esm/loader:643:26
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
-```
 - Dev du design system
 ```
 file:///C:/Users/Alex/Hub/Centre/Dev/Citadel/apps/server/build/build.server.js:48
