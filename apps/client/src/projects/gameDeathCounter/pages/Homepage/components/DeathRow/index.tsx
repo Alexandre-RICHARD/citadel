@@ -5,7 +5,7 @@ import { Pencil, Save, Skull, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Death } from "../../game.type";
+import type { Death } from "../../../../types/death.type";
 import styles from "./deathRow.module.scss";
 
 type Props = {

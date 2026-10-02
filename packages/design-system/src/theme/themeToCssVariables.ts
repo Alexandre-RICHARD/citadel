@@ -1,6 +1,5 @@
+import type { CssVariableName } from "./cssVariableName.type";
 import type { ThemeType } from "./theme.type";
-
-export type CssVariableName = `--${string}`;
 
 export function themeToCssVariables(
 	theme: Partial<ThemeType>,

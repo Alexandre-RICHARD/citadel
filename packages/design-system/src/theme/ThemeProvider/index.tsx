@@ -1,10 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import type { CssVariableName } from "../cssVariableName.type";
 import type { ThemeType } from "../theme.type";
-import {
-	type CssVariableName,
-	themeToCssVariables,
-} from "../themeToCssVariables";
+import { themeToCssVariables } from "../themeToCssVariables";
 import styles from "./themeProvider.module.scss";
 
 type Props = {
