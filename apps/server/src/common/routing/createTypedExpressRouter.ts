@@ -30,12 +30,12 @@ type EndpointByMethodAndUrl<
 export function createTypedExpressRouter<
 	EndpointRegistry extends EndpointModel,
 >(expressRouter: ExpressRouter): TypedRouterShape<EndpointRegistry> {
-	const register = (
+	function register(
 		method: HttpMethodEnum,
 		path: string,
 		handler: unknown,
 		validator?: RequestHandler,
-	) => {
+	) {
 		const handlers = validator
 			? [validator, handler as RequestHandler]
 			: [handler as RequestHandler];
@@ -61,7 +61,7 @@ export function createTypedExpressRouter<
 					`Méthode non supportée: ${method as unknown as string}`,
 				);
 		}
-	};
+	}
 
 	return {
 		GET<Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.GET>>(

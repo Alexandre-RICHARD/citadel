@@ -68,12 +68,12 @@ export function GameCard({
 	const totalDeath = game.bosses.reduce((sum, b) => sum + b.deaths.length, 0);
 	const isFinished = Boolean(game.endedAt);
 
-	const saveGameName = () => {
+	function saveGameName() {
 		const trimmed = draftName.trim();
 		if (!trimmed) return;
 		onUpdateGame(game.id, { name: trimmed });
 		setEditing(false);
-	};
+	}
 
 	useEffect(() => {
 		if (addingBoss) {
@@ -81,13 +81,13 @@ export function GameCard({
 		}
 	}, [addingBoss]);
 
-	const submitNewBoss = () => {
+	function submitNewBoss() {
 		const trimmed = newBossName.trim();
 		if (!trimmed) return;
 		onAddBoss(game.id, trimmed);
 		setNewBossName("");
 		setAddingBoss(false);
-	};
+	}
 
 	return (
 		<li

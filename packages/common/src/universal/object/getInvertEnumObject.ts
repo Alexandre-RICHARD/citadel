@@ -1,6 +1,6 @@
-export const getInvertEnumObject = <T extends string>(
+export function getInvertEnumObject<T extends string>(
 	enumValue: Record<keyof T, T>,
-): Record<T, keyof T> => {
+): Record<T, keyof T> {
 	return Object.entries(enumValue).reduce(
 		(acc, [key, value]) => ({
 			...acc,
@@ -8,4 +8,4 @@ export const getInvertEnumObject = <T extends string>(
 		}),
 		{} as Record<T, keyof T>,
 	);
-};
+}

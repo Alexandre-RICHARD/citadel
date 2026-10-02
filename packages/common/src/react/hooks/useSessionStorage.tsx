@@ -62,7 +62,7 @@ export function useSessionStorage<T>(
 	}, [key, defaultValue]);
 
 	useEffect(() => {
-		const handleStorageChange = (event: Event) => {
+		function handleStorageChange(event: Event) {
 			if (event.type === customSessionEvent) {
 				const customEvent = event as CustomEvent<
 					SessionStorageCustomEventDetail<T>
@@ -85,7 +85,7 @@ export function useSessionStorage<T>(
 					setValue(readValue());
 				}
 			}
-		};
+		}
 
 		window.addEventListener(standardSessionEvent, handleStorageChange);
 		window.addEventListener(customSessionEvent, handleStorageChange);

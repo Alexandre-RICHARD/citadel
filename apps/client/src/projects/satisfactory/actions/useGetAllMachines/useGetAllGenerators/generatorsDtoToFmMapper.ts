@@ -4,7 +4,7 @@ import type { GeneratorDto } from "@citadel/specs/src/projects/satisfactory/dto/
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 import type { GeneratorFm } from "./generatorFm.type";
 
-export const generatorsDtoToFmMapper = (dto: GeneratorDto[]): GeneratorFm[] => {
+export function generatorsDtoToFmMapper(dto: GeneratorDto[]): GeneratorFm[] {
 	return dto.map((generatorDto) => {
 		const className = enumDtoToFmMapper(
 			generatorDto.ClassName,
@@ -26,4 +26,4 @@ export const generatorsDtoToFmMapper = (dto: GeneratorDto[]): GeneratorFm[] => {
 			},
 		};
 	});
-};
+}

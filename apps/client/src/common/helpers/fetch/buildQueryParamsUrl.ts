@@ -1,6 +1,6 @@
 import type { QueryParams } from "@citadel/specs/src/specUtils/queryParams.type";
 
-export const buildQueryString = (query?: QueryParams): string => {
+export function buildQueryString(query?: QueryParams): string {
 	if (!query) return "";
 	const searchParams = new URLSearchParams();
 	Object.entries(query).forEach(([key, value]) => {
@@ -15,4 +15,4 @@ export const buildQueryString = (query?: QueryParams): string => {
 	});
 	const queryString = searchParams.toString();
 	return queryString ? `?${queryString}` : "";
-};
+}

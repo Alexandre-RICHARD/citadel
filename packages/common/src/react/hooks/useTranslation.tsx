@@ -4,9 +4,9 @@ import { LanguageEnum } from "../../universal/language/language.enum.ts";
 
 type TranslationRecord<T> = Record<LanguageEnum, T>;
 
-const useCurrentLanguage = (): LanguageEnum => {
+function useCurrentLanguage(): LanguageEnum {
 	return LanguageEnum.FRENCH;
-};
+}
 
 export function useTranslation<T>(translations: TranslationRecord<T>): T {
 	const language = useCurrentLanguage();

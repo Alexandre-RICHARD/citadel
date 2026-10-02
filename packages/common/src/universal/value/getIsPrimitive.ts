@@ -1,3 +1,6 @@
-export const getIsPrimitiveHelper = (variable: unknown) =>
-	variable === null ||
-	(typeof variable !== "object" && typeof variable !== "function");
+export function getIsPrimitiveHelper(variable: unknown) {
+	return (
+		variable === null ||
+		(typeof variable !== "object" && typeof variable !== "function")
+	);
+}

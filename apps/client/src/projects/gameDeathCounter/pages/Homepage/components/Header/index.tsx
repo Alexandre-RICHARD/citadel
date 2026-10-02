@@ -17,12 +17,12 @@ export function Header({ submitNewGame, grandTotal }: Props) {
 	const [addingGame, setAddingGame] = useState(false);
 	const [newGameName, setNewGameName] = useState("");
 
-	const submit = (gameName: string) => {
+	function submit(gameName: string) {
 		submitNewGame(gameName, () => {
 			setNewGameName("");
 			setAddingGame(false);
 		});
-	};
+	}
 
 	useEffect(() => {
 		if (addingGame) {

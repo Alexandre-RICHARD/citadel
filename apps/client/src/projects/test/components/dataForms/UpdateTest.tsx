@@ -24,10 +24,10 @@ export function UpdateTest({
 		onSettled: onUpdateSuccess,
 	});
 
-	const handleMutation = () => {
+	function handleMutation() {
 		onClose();
 		mutate({ id: selectedTestData.id.toString(), name, isActive });
-	};
+	}
 
 	return (
 		<TestDataForm

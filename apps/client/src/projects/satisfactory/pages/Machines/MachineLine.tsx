@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function MachineLine({ machines }: Props) {
-	const ping = (x: number, y: number, z: number) => {
+	function ping(x: number, y: number, z: number) {
 		fetch("http://localhost:8080/createPing", {
 			method: "POST",
 			headers: {
@@ -21,7 +21,7 @@ export function MachineLine({ machines }: Props) {
 				z,
 			}),
 		}).catch((error) => console.error(error));
-	};
+	}
 
 	return machines.map((oneMachine) => {
 		return (

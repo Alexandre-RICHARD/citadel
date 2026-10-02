@@ -1,6 +1,6 @@
-export const getInvertObject = (
+export function getInvertObject(
 	originalObject: Record<string, string>,
-): Record<string, string> => {
+): Record<string, string> {
 	return Object.entries(originalObject).reduce(
 		(acc, [key, value]) => ({
 			...acc,
@@ -8,4 +8,4 @@ export const getInvertObject = (
 		}),
 		{} as Record<string, string>,
 	);
-};
+}

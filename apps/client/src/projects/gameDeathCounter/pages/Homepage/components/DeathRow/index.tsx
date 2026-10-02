@@ -25,13 +25,13 @@ export function DeathRow({ death, onUpdate, onDelete }: Props) {
 	const [draftComment, setDraftComment] = useState(death.comment ?? "");
 	const [draftDate, setDraftDate] = useState(toDateInputValue(death.date));
 
-	const save = () => {
+	function save() {
 		onUpdate(death.id, {
 			comment: draftComment.trim() ? draftComment.trim() : null,
 			date: new Date(draftDate).toISOString(),
 		});
 		setEditing(false);
-	};
+	}
 
 	if (editing) {
 		return (

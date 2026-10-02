@@ -4,7 +4,7 @@ import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/fa
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 import type { FactoryFm } from "./factoryFm.type";
 
-export const factoryDtoToFmMapper = (dto: FactoryDto[]): FactoryFm[] => {
+export function factoryDtoToFmMapper(dto: FactoryDto[]): FactoryFm[] {
 	return dto.map((factoryDto) => {
 		const className = enumDtoToFmMapper(
 			factoryDto.ClassName,
@@ -26,4 +26,4 @@ export const factoryDtoToFmMapper = (dto: FactoryDto[]): FactoryFm[] => {
 			},
 		};
 	});
-};
+}

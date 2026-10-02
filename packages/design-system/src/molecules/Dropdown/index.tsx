@@ -9,13 +9,13 @@ import type { SelectSearchType } from "./selectSearch.type";
 
 const DEFAULT_SEARCH_PLACEHOLDER = "Type to filter items";
 
-const isTop = (position: string) => {
+function isTop(position: string) {
 	return ["top-left", "top-right"].includes(position);
-};
+}
 
-const isLeft = (position: string) => {
+function isLeft(position: string) {
 	return ["bottom-left", "top-left"].includes(position);
-};
+}
 
 type PropsType<T extends string> = {
 	selectorId: string;
@@ -57,23 +57,21 @@ export function Dropdown<T extends string>({
 	);
 	const filteredItemsCount = filteredItems.length;
 
-	const selectItem = (value: T) => {
+	function selectItem(value: T) {
 		onSelect(value);
 		onClose();
-	};
+	}
 
-	const handleSearchChange = (newSearchString: string) => {
+	function handleSearchChange(newSearchString: string) {
 		setSearchString(newSearchString);
 		setItemFocused(-1);
-	};
+	}
 
-	const handleSearchKeyDown = (
-		event: React.KeyboardEvent<HTMLInputElement>,
-	) => {
+	function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
 		if (event.key !== "Enter") return;
 		const highlightedItem = filteredItems[Math.max(itemFocused, 0)];
 		if (highlightedItem) selectItem(highlightedItem.value);
-	};
+	}
 
 	const handleAllClick = useCallback(
 		(event: MouseEvent) => {

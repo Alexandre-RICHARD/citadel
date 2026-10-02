@@ -1,7 +1,4 @@
-export const areStrictlyDeeplyEqualsHelper = <T>(
-	obj1?: T,
-	obj2?: T,
-): boolean => {
+export function areStrictlyDeeplyEqualsHelper<T>(obj1?: T, obj2?: T): boolean {
 	if (obj1 === obj2) return true;
 
 	if (
@@ -36,4 +33,4 @@ export const areStrictlyDeeplyEqualsHelper = <T>(
 		// TODO T => Pas certain de ce type
 		return areStrictlyDeeplyEqualsHelper(value, obj2[key as keyof typeof obj2]);
 	});
-};
+}

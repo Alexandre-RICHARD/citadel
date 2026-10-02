@@ -6,11 +6,11 @@ type Args = {
 	strictMode?: boolean;
 };
 
-export const stringSearcher = ({
+export function stringSearcher({
 	searchString,
 	value,
 	strictMode = false,
-}: Args): boolean => {
+}: Args): boolean {
 	if (strictMode) return value.includes(searchString);
 	return stringConvertor(value).includes(stringConvertor(searchString));
-};
+}
