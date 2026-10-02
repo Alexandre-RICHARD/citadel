@@ -1,5 +1,5 @@
-import type { ErrorResponseDto } from "@citadel/specs/src/specUtils/error/errorResponse.dto.ts";
-import type { ValidationErrorResponseDto } from "@citadel/specs/src/specUtils/error/validationErrorResponse.dto.ts";
+import type { ErrorResponseDto } from "@citadel/specs/src/specUtils/error/errorResponseDto.ts";
+import type { ValidationErrorResponseDto } from "@citadel/specs/src/specUtils/error/validationErrorResponseDto.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import type { NextFunction, Request, Response } from "express";
 

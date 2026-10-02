@@ -1,10 +1,10 @@
 import { NavLink } from "react-router";
 
-import type { ProjectDictionnary } from "../../../react/appNavigation/projectDictionnary.type";
+import type { ProjectDictionary } from "../../../react/appNavigation/projectDictionary.type";
 import styles from "./projectsShowcase.module.scss";
 
 type Props = {
-	projects: ProjectDictionnary[];
+	projects: ProjectDictionary[];
 };
 
 export function ProjectsShowcase({ projects }: Props) {

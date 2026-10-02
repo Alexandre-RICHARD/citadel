@@ -1,6 +1,6 @@
-import type { GameListDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameList.dto.ts";
+import type { GameListDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameListDto.ts";
 
-import type { GameSummaryBean } from "../../../bean/gameSummary.bean.ts";
+import type { GameSummaryBean } from "../../../bean/gameSummaryBean.ts";
 import { fromGameSummaryBeanToGameSummaryDto } from "./fromGameSummaryBeanToGameSummaryDto.ts";
 
 export function fromGameSummaryBeanListToGameListDto(

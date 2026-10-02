@@ -1,4 +1,4 @@
-import type { ValidationErrorResponseDto } from "@citadel/specs/src/specUtils/error/validationErrorResponse.dto.ts";
+import type { ValidationErrorResponseDto } from "@citadel/specs/src/specUtils/error/validationErrorResponseDto.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 
 import { AppError } from "./AppError.ts";

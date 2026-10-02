@@ -1,8 +1,8 @@
 import { mapDateToString } from "@citadel/common/src/universal/date/mapDateToString.ts";
 import { mapNullableDateToStringOrNull } from "@citadel/common/src/universal/date/mapNullableDateToStringOrNull.ts";
-import type { GameDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/game.dto.ts";
+import type { GameDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameDto.ts";
 
-import type { GameBean } from "../../../bean/game.bean.ts";
+import type { GameBean } from "../../../bean/gameBean.ts";
 import { fromBossSummaryBeanToBossSummaryDto } from "../boss/fromBossSummaryBeanToBossSummaryDto.ts";
 
 export function fromGameBeanToGameDto(gameBean: GameBean): GameDto {

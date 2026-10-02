@@ -3,7 +3,7 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";
-import { testController } from "./controller/test.controller.ts";
+import { testController } from "./controller/testController.ts";
 
 const expressRouter = ExpressRouter();
 

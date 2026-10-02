@@ -1,5 +1,5 @@
 import { TextInput } from "@citadel/design-system/src/atoms/TextInput";
-import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
+import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto";
 import { useState } from "react";
 
 import { useCreateTest } from "../../actions/useCreateTest";

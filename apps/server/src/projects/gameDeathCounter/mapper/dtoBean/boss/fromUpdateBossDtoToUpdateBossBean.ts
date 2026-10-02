@@ -1,7 +1,7 @@
-import type { UpdateBossBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBody.dto.ts";
-import type { UpdateBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossPathParam.dto.ts";
+import type { UpdateBossBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBodyDto.ts";
+import type { UpdateBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossPathParamDto.ts";
 
-import type { UpdateBossBean } from "../../../bean/updateBoss.bean.ts";
+import type { UpdateBossBean } from "../../../bean/updateBossBean.ts";
 
 export function fromUpdateBossDtoToUpdateBossBean(
 	updateBossPathParamDto: UpdateBossPathParamDto,

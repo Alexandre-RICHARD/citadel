@@ -1,6 +1,6 @@
 import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 
-import { projects } from "./projects.dictionnary";
+import { projects } from "./projectsDictionary";
 import { ProjectsEnum } from "./projects.enum";
 import type { RouteMeta } from "./routeMeta.type";
 

@@ -1,4 +1,4 @@
-import { awesomeSinkDtoToFmMapper } from "./awesomeSinkDtoToFm.mapper";
+import { awesomeSinkDtoToFmMapper } from "./awesomeSinkDtoToFmMapper";
 import { useGetExplorationSink } from "./useGetExplorationSink";
 import { useGetResourceSink } from "./useGetResourceSink";
 

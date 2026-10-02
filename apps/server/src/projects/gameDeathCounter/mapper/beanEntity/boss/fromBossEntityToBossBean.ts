@@ -1,9 +1,9 @@
 import { getEarliestDate } from "@citadel/common/src/universal/date/getEarliestDate.ts";
 import { getLatestDate } from "@citadel/common/src/universal/date/getLatestDate.ts";
 
-import type { BossBean } from "../../../bean/boss.bean.ts";
-import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.row.ts";
-import type { BossWithDeathsEntity } from "../../../dbType/bossWithDeaths.entity.ts";
+import type { BossBean } from "../../../bean/bossBean.ts";
+import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRangeRow.ts";
+import type { BossWithDeathsEntity } from "../../../dbType/bossWithDeathsEntity.ts";
 import { fromDeathEntityToDeathBean } from "../death/fromDeathEntityToDeathBean.ts";
 import { fromBossEntityToBossSummaryBean } from "./fromBossEntityToBossSummaryBean.ts";
 

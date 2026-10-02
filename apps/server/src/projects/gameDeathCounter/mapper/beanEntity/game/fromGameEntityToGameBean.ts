@@ -1,6 +1,6 @@
-import type { GameBean } from "../../../bean/game.bean.ts";
-import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.row.ts";
-import type { GameWithBossesEntity } from "../../../dbType/gameWithBosses.entity.ts";
+import type { GameBean } from "../../../bean/gameBean.ts";
+import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRangeRow.ts";
+import type { GameWithBossesEntity } from "../../../dbType/gameWithBossesEntity.ts";
 import { fromBossEntityToBossSummaryBean } from "../boss/fromBossEntityToBossSummaryBean.ts";
 
 export function fromGameEntityToGameBean(

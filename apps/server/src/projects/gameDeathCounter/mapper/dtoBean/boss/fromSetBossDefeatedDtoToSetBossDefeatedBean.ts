@@ -1,7 +1,7 @@
-import type { SetBossDefeatedBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedBody.dto.ts";
-import type { SetBossDefeatedPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedPathParam.dto.ts";
+import type { SetBossDefeatedBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedBodyDto.ts";
+import type { SetBossDefeatedPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/setBossDefeated/setBossDefeatedPathParamDto.ts";
 
-import type { SetBossDefeatedBean } from "../../../bean/setBossDefeated.bean.ts";
+import type { SetBossDefeatedBean } from "../../../bean/setBossDefeatedBean.ts";
 
 export function fromSetBossDefeatedDtoToSetBossDefeatedBean(
 	setBossDefeatedPathParamDto: SetBossDefeatedPathParamDto,
