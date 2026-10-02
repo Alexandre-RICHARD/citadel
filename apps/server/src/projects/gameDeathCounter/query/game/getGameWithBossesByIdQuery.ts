@@ -1,5 +1,5 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { GameWithBossesEntity } from "../../dbType/gameWithBossesEntity.ts";
+import type { GameWithBossesEntity } from "../../dbType/gameWithBossesEntity.type.ts";
 import { Boss } from "../../models/Boss.ts";
 import { Game } from "../../models/Game.ts";
 

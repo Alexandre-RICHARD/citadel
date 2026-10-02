@@ -1,11 +1,11 @@
 import { assertBoolean } from "@citadel/common/src/universal/asserts/assertBoolean.ts";
 import { assertNumber } from "@citadel/common/src/universal/asserts/assertNumber.ts";
 import { assertString } from "@citadel/common/src/universal/asserts/assertString.ts";
-import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTestEndpoint.ts";
-import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTestEndpoint.ts";
-import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTestEndpoint.ts";
-import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTestEndpoint.ts";
-import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTestEndpoint.ts";
+import type { CreateTest } from "@citadel/specs/src/projects/test/endpoint/createTestEndpoint.type.ts";
+import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/deleteTestEndpoint.type.ts";
+import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTestEndpoint.type.ts";
+import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTestEndpoint.type.ts";
+import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTestEndpoint.type.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";

@@ -1,5 +1,5 @@
-import type { CreateErrorLogBean } from "../bean/createErrorLogBean.ts";
-import type { ErrorLogBean } from "../bean/errorLogBean.ts";
+import type { CreateErrorLogBean } from "../bean/createErrorLogBean.type.ts";
+import type { ErrorLogBean } from "../bean/errorLogBean.type.ts";
 import { fromErrorLogEntityToErrorLogBean } from "../mapper/beanEntity/errorLog/fromErrorLogEntityToErrorLogBean.ts";
 import { createErrorLogQuery } from "../query/createErrorLogQuery.ts";
 

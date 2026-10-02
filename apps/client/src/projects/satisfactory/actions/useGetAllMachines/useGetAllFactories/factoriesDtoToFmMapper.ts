@@ -1,5 +1,5 @@
 import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
-import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/factoryDto";
+import type { FactoryDto } from "@citadel/specs/src/projects/satisfactory/dto/factoryDto.type";
 
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 import type { FactoryFm } from "./factoryFm.type";

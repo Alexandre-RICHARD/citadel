@@ -1,13 +1,13 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
-import type { CreateGameBean } from "../bean/createGameBean.ts";
-import type { DeleteGameBean } from "../bean/deleteGameBean.ts";
-import type { GameBean } from "../bean/gameBean.ts";
-import type { GameSummaryBean } from "../bean/gameSummaryBean.ts";
-import type { GetOneGameBean } from "../bean/getOneGameBean.ts";
-import type { SetGameFinishedBean } from "../bean/setGameFinishedBean.ts";
-import type { UpdateGameBean } from "../bean/updateGameBean.ts";
+import type { CreateGameBean } from "../bean/createGameBean.type.ts";
+import type { DeleteGameBean } from "../bean/deleteGameBean.type.ts";
+import type { GameBean } from "../bean/gameBean.type.ts";
+import type { GameSummaryBean } from "../bean/gameSummaryBean.type.ts";
+import type { GetOneGameBean } from "../bean/getOneGameBean.type.ts";
+import type { SetGameFinishedBean } from "../bean/setGameFinishedBean.type.ts";
+import type { UpdateGameBean } from "../bean/updateGameBean.type.ts";
 import { fromGameEntityListToGameSummaryBeanList } from "../mapper/beanEntity/game/fromGameEntityListToGameSummaryBeanList.ts";
 import { fromGameEntityToGameBean } from "../mapper/beanEntity/game/fromGameEntityToGameBean.ts";
 import { fromGameEntityToGameSummaryBean } from "../mapper/beanEntity/game/fromGameEntityToGameSummaryBean.ts";

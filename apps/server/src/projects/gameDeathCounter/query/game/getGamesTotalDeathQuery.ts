@@ -2,7 +2,7 @@ import { QueryTypes } from "sequelize";
 
 import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { GameTotalDeathRow } from "../../dbType/gameTotalDeathRow.ts";
+import type { GameTotalDeathRow } from "../../dbType/gameTotalDeathRow.type.ts";
 
 export async function getGamesTotalDeathQuery(
 	gameIds: number[],

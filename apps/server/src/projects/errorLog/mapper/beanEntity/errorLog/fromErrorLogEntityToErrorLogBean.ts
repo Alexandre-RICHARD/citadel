@@ -1,4 +1,4 @@
-import type { ErrorLogBean } from "../../../bean/errorLogBean.ts";
+import type { ErrorLogBean } from "../../../bean/errorLogBean.type.ts";
 import type { ErrorLog } from "../../../models/ErrorLog.ts";
 
 export function fromErrorLogEntityToErrorLogBean(

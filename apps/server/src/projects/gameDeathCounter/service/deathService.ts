@@ -1,10 +1,10 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
-import type { AddDeathBean } from "../bean/addDeathBean.ts";
-import type { DeathBean } from "../bean/deathBean.ts";
-import type { DeleteDeathBean } from "../bean/deleteDeathBean.ts";
-import type { UpdateDeathBean } from "../bean/updateDeathBean.ts";
+import type { AddDeathBean } from "../bean/addDeathBean.type.ts";
+import type { DeathBean } from "../bean/deathBean.type.ts";
+import type { DeleteDeathBean } from "../bean/deleteDeathBean.type.ts";
+import type { UpdateDeathBean } from "../bean/updateDeathBean.type.ts";
 import { fromDeathEntityToDeathBean } from "../mapper/beanEntity/death/fromDeathEntityToDeathBean.ts";
 import { addDeathQuery } from "../query/death/addDeathQuery.ts";
 import { deleteDeathQuery } from "../query/death/deleteDeathQuery.ts";

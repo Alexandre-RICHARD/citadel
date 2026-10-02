@@ -1,6 +1,6 @@
-import type { AddDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathPathParamDto.ts";
+import type { AddDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/addDeath/addDeathPathParamDto.type.ts";
 
-import type { AddDeathBean } from "../../../bean/addDeathBean.ts";
+import type { AddDeathBean } from "../../../bean/addDeathBean.type.ts";
 
 export function fromAddDeathDtoToAddDeathBean(
 	addDeathPathParamDto: AddDeathPathParamDto,

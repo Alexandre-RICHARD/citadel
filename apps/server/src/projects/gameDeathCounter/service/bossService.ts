@@ -1,13 +1,13 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
-import type { BossBean } from "../bean/bossBean.ts";
-import type { BossSummaryBean } from "../bean/bossSummaryBean.ts";
-import type { CreateBossBean } from "../bean/createBossBean.ts";
-import type { DeleteBossBean } from "../bean/deleteBossBean.ts";
-import type { GetOneBossBean } from "../bean/getOneBossBean.ts";
-import type { SetBossDefeatedBean } from "../bean/setBossDefeatedBean.ts";
-import type { UpdateBossBean } from "../bean/updateBossBean.ts";
+import type { BossBean } from "../bean/bossBean.type.ts";
+import type { BossSummaryBean } from "../bean/bossSummaryBean.type.ts";
+import type { CreateBossBean } from "../bean/createBossBean.type.ts";
+import type { DeleteBossBean } from "../bean/deleteBossBean.type.ts";
+import type { GetOneBossBean } from "../bean/getOneBossBean.type.ts";
+import type { SetBossDefeatedBean } from "../bean/setBossDefeatedBean.type.ts";
+import type { UpdateBossBean } from "../bean/updateBossBean.type.ts";
 import { fromBossEntityToBossBean } from "../mapper/beanEntity/boss/fromBossEntityToBossBean.ts";
 import { fromBossEntityToBossSummaryBean } from "../mapper/beanEntity/boss/fromBossEntityToBossSummaryBean.ts";
 import { createBossQuery } from "../query/boss/createBossQuery.ts";

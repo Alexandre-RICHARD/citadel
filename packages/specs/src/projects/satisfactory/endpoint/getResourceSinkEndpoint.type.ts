@@ -1,20 +1,20 @@
 import type { ApiPrefixEnum } from "../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../specUtils/endpointModel.type.ts";
-import type { ErrorResponseDto } from "../../../specUtils/error/errorResponseDto.ts";
+import type { ErrorResponseDto } from "../../../specUtils/error/errorResponseDto.type.ts";
 import type { HttpMethodEnum } from "../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../specUtils/httpStatutCodeSuccess.enum.ts";
-import type { GeneratorDto } from "../dto/generatorDto.ts";
+import type { AwesomeSinkDto } from "../dto/awesomeSinkDto.type.ts";
 
-export interface GetAllGenerators extends EndpointModel {
+export interface GetResourceSink extends EndpointModel {
 	request: {
-		url: `${ApiPrefixEnum.SATISFACTORY}/getGenerators`;
+		url: `${ApiPrefixEnum.SATISFACTORY}/getResourceSink`;
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;
-		data: GeneratorDto[];
+		data: AwesomeSinkDto[];
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;

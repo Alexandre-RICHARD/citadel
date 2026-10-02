@@ -1,25 +1,22 @@
 import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
-import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.ts";
-import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.ts";
+import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.type.ts";
+import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.type.ts";
 import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
-import type { BossSummaryDto } from "../../../dto/boss/bossSummaryDto.ts";
-import type { CreateBossBodyDto } from "./createBossBodyDto.ts";
-import type { CreateBossPathParamDto } from "./createBossPathParamDto.ts";
+import type { DeleteGamePathParamDto } from "./deleteGamePathParamDto.type.ts";
 
-export interface CreateBoss extends EndpointModel {
+export interface DeleteGame extends EndpointModel {
 	request: {
-		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:gameId/bosses`;
-		method: HttpMethodEnum.POST;
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
+		method: HttpMethodEnum.DELETE;
 		protected: false;
-		pathParams: CreateBossPathParamDto;
-		body: CreateBossBodyDto;
+		pathParams: DeleteGamePathParamDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.CREATED;
-		data: BossSummaryDto;
+		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
+		data: null;
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;

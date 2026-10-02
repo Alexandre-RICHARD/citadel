@@ -1,4 +1,4 @@
-import type { GetAllGenerators } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllGeneratorsEndpoint";
+import type { GetAllGenerators } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllGeneratorsEndpoint.type";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
