@@ -13,7 +13,7 @@ export function ProjectsShowcase({ projects }: Props) {
 			{projects.map((project) => (
 				<NavLink
 					to={project.path}
-					key={project.buildPath}
+					key={project.id}
 					className={styles.project}
 				>
 					<div className={styles.inner}>
