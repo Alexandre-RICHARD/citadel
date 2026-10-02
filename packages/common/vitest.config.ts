@@ -1,29 +1,12 @@
 import { defineConfig } from "vitest/config";
 
+// Node par défaut, comme le serveur : les tests de src/browser et src/react demandent jsdom
+// en tête de fichier (// @vitest-environment jsdom)
 export default defineConfig({
 	test: {
+		environment: "node",
+		include: ["src/**/*.unit.test.ts?(x)"],
+		setupFiles: ["vitest.setup.ts"],
 		passWithNoTests: true,
-		projects: [
-			{
-				extends: true,
-				test: {
-					name: "universal",
-					environment: "node",
-					include: ["src/universal/**/*.unit.test.ts"],
-				},
-			},
-			{
-				extends: true,
-				test: {
-					name: "browser",
-					environment: "jsdom",
-					include: [
-						"src/browser/**/*.unit.test.ts",
-						"src/react/**/*.unit.test.tsx",
-					],
-					setupFiles: ["vitest.setup.ts"],
-				},
-			},
-		],
 	},
 });

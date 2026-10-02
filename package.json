@@ -14,11 +14,18 @@
     "lint-fix": "pnpm -r lint-fix",
     "check-types": "pnpm -r check-types",
     "validate-all": "pnpm -r validate-all",
+    "test-report": "vitest run --reporter=html --coverage.enabled=true && vite preview --outDir report --open",
     "=== Build & Production ===": "",
     "build": "pnpm --filter \"./apps/*\" build",
     "=== Packages ===": "",
     "install-dependencies": "pnpm i",
     "update-minor": "pnpm update --recursive --interactive",
     "update-major": "pnpm update --recursive --interactive --latest"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

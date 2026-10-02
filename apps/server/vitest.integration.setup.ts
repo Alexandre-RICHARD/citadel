@@ -5,7 +5,11 @@ import { afterAll, beforeEach } from "vitest";
 
 const TEST_DATABASE_SUFFIX = "_test";
 
-const dotenvResult = config({ path: ".env.test", override: true, quiet: true });
+const dotenvResult = config({
+	path: `${import.meta.dirname}/.env.test`,
+	override: true,
+	quiet: true,
+});
 if (dotenvResult.error)
 	throw new Error("Fichier .env.test introuvable (voir .env.exemple)", {
 		cause: dotenvResult.error,

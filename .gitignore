@@ -3,6 +3,7 @@
 # ====================
 /.vscode
 /node_modules/
+/report/
 
 # ====================
 # =      Client      =
@@ -10,7 +11,6 @@
 # Folder
 /apps/client/build
 /apps/client/node_modules/
-/apps/client/report/
 
 # Files
 /apps/client/.env
@@ -22,7 +22,6 @@
 # Folders
 /apps/server/build/
 /apps/server/node_modules/
-/apps/server/report/
 
 # Env Files
 /apps/server/.env

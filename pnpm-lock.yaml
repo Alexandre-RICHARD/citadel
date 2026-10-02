@@ -54,7 +54,20 @@ catalogs:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.11(vitest@4.1.11)
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 4.1.11(vitest@4.1.11)
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(sass-embedded@1.105.0)(sass@1.105.0)(tsx@4.23.15)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.6.2)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.1.1(@noble/hashes@1.8.0))(vite@8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(sass-embedded@1.105.0)(sass@1.105.0)(tsx@4.23.15))
 
   apps/client:
     dependencies:
@@ -116,12 +129,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.1.1(vite@8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(sass-embedded@1.105.0)(sass@1.105.0)(tsx@4.23.15))
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.1.11(vitest@4.1.11)
-      '@vitest/ui':
-        specifier: 'catalog:'
-        version: 4.1.11(vitest@4.1.11)
       eslint:
         specifier: 'catalog:'
         version: 10.11.0(supports-color@8.1.1)
@@ -186,12 +193,6 @@ importers:
       '@types/supertest':
         specifier: ^7.2.1
         version: 7.2.1
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.1.11(vitest@4.1.11)
-      '@vitest/ui':
-        specifier: 'catalog:'
-        version: 4.1.11(vitest@4.1.11)
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
