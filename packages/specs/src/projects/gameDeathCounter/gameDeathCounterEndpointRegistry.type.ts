@@ -1,17 +1,17 @@
-import type { CreateBoss } from "./endpoint/bosses/createBoss/createBoss.endpoint.ts";
-import type { DeleteBoss } from "./endpoint/bosses/deleteBoss/deleteBoss.endpoint.ts";
-import type { GetOneBoss } from "./endpoint/bosses/getOneBoss/getOneBoss.endpoint.ts";
-import type { SetBossDefeated } from "./endpoint/bosses/setBossDefeated/setBossDefeated.endpoint.ts";
-import type { UpdateBoss } from "./endpoint/bosses/updateBoss/updateBoss.endpoint.ts";
-import type { AddDeath } from "./endpoint/deaths/addDeath/addDeath.endpoint.ts";
-import type { DeleteDeath } from "./endpoint/deaths/deleteDeath/deleteDeath.endpoint.ts";
-import type { UpdateDeath } from "./endpoint/deaths/updateDeath/updateDeath.endpoint.ts";
-import type { CreateGame } from "./endpoint/games/createGame/createGame.endpoint.ts";
-import type { DeleteGame } from "./endpoint/games/deleteGame/deleteGame.endpoint.ts";
-import type { GetAllGames } from "./endpoint/games/getAllGames/getAllGames.endpoint.ts";
-import type { GetOneGame } from "./endpoint/games/getOneGame/getOneGame.endpoint.ts";
-import type { SetGameFinished } from "./endpoint/games/setGameFinished/setGameFinished.endpoint.ts";
-import type { UpdateGame } from "./endpoint/games/updateGame/updateGame.endpoint.ts";
+import type { CreateBoss } from "./endpoint/bosses/createBoss/createBossEndpoint.ts";
+import type { DeleteBoss } from "./endpoint/bosses/deleteBoss/deleteBossEndpoint.ts";
+import type { GetOneBoss } from "./endpoint/bosses/getOneBoss/getOneBossEndpoint.ts";
+import type { SetBossDefeated } from "./endpoint/bosses/setBossDefeated/setBossDefeatedEndpoint.ts";
+import type { UpdateBoss } from "./endpoint/bosses/updateBoss/updateBossEndpoint.ts";
+import type { AddDeath } from "./endpoint/deaths/addDeath/addDeathEndpoint.ts";
+import type { DeleteDeath } from "./endpoint/deaths/deleteDeath/deleteDeathEndpoint.ts";
+import type { UpdateDeath } from "./endpoint/deaths/updateDeath/updateDeathEndpoint.ts";
+import type { CreateGame } from "./endpoint/games/createGame/createGameEndpoint.ts";
+import type { DeleteGame } from "./endpoint/games/deleteGame/deleteGameEndpoint.ts";
+import type { GetAllGames } from "./endpoint/games/getAllGames/getAllGamesEndpoint.ts";
+import type { GetOneGame } from "./endpoint/games/getOneGame/getOneGameEndpoint.ts";
+import type { SetGameFinished } from "./endpoint/games/setGameFinished/setGameFinishedEndpoint.ts";
+import type { UpdateGame } from "./endpoint/games/updateGame/updateGameEndpoint.ts";
 
 export type GameDeathCounterEndpointRegistry =
 	| AddDeath

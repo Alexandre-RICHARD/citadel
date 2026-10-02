@@ -1,6 +1,6 @@
-import type { DeleteDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeathPathParam.dto.ts";
+import type { DeleteDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/deleteDeath/deleteDeathPathParamDto.ts";
 
-import type { DeleteDeathBean } from "../../../bean/deleteDeath.bean.ts";
+import type { DeleteDeathBean } from "../../../bean/deleteDeathBean.ts";
 
 export function fromDeleteDeathDtoToDeleteDeathBean(
 	deleteDeathPathParamDto: DeleteDeathPathParamDto,

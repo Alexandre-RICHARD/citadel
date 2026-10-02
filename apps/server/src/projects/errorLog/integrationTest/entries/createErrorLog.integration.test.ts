@@ -1,5 +1,5 @@
-import type { ErrorLogDto } from "@citadel/specs/src/projects/errorLog/dto/errorLog/errorLog.dto.ts";
-import type { CreateErrorLogBodyDto } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogBody.dto.ts";
+import type { ErrorLogDto } from "@citadel/specs/src/projects/errorLog/dto/errorLog/errorLogDto.ts";
+import type { CreateErrorLogBodyDto } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogBodyDto.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";

@@ -1,4 +1,4 @@
-import type { DeathBean } from "../../../bean/death.bean.ts";
+import type { DeathBean } from "../../../bean/deathBean.ts";
 import type { Death } from "../../../models/Death.ts";
 
 export function fromDeathEntityToDeathBean(death: Death): DeathBean {

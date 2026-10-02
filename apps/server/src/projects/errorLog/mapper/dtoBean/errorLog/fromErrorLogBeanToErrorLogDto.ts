@@ -1,7 +1,7 @@
 import { mapDateToString } from "@citadel/common/src/universal/date/mapDateToString.ts";
-import type { ErrorLogDto } from "@citadel/specs/src/projects/errorLog/dto/errorLog/errorLog.dto.ts";
+import type { ErrorLogDto } from "@citadel/specs/src/projects/errorLog/dto/errorLog/errorLogDto.ts";
 
-import type { ErrorLogBean } from "../../../bean/errorLog.bean.ts";
+import type { ErrorLogBean } from "../../../bean/errorLogBean.ts";
 
 export function fromErrorLogBeanToErrorLogDto(
 	errorLogBean: ErrorLogBean,

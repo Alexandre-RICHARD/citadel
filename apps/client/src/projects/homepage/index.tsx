@@ -1,5 +1,5 @@
 import { AppContainer } from "../../react/AppContainer";
-import { projects } from "../../react/appNavigation/projects.dictionnary";
+import { projects } from "../../react/appNavigation/projectsDictionary";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import styles from "./homepage.module.scss";

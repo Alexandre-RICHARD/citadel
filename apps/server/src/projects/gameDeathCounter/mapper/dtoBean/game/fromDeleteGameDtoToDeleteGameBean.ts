@@ -1,6 +1,6 @@
-import type { DeleteGamePathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParam.dto.ts";
+import type { DeleteGamePathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGamePathParamDto.ts";
 
-import type { DeleteGameBean } from "../../../bean/deleteGame.bean.ts";
+import type { DeleteGameBean } from "../../../bean/deleteGameBean.ts";
 
 export function fromDeleteGameDtoToDeleteGameBean(
 	deleteGamePathParamDto: DeleteGamePathParamDto,

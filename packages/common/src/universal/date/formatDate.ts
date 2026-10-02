@@ -1,4 +1,4 @@
-import { languageDictionnary } from "../language/language.dictionnary.ts";
+import { languageDictionary } from "../language/languageDictionary.ts";
 import { LanguageEnum } from "../language/language.enum.ts";
 
 export function formatDate(dateString: Date, locale: LanguageEnum): string {
@@ -16,6 +16,6 @@ export function formatDate(dateString: Date, locale: LanguageEnum): string {
 		minute: "2-digit",
 	};
 
-	const localeCode = languageDictionnary[LanguageEnum[locale]].longCode;
+	const localeCode = languageDictionary[LanguageEnum[locale]].longCode;
 	return new Intl.DateTimeFormat(localeCode, options).format(date);
 }

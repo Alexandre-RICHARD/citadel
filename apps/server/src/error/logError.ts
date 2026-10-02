@@ -1,6 +1,6 @@
 import { inspect } from "node:util";
 
-import { errorLogService } from "../projects/errorLog/service/errorLog.service.ts";
+import { errorLogService } from "../projects/errorLog/service/errorLogService.ts";
 
 export async function logError(error: unknown, context: string): Promise<void> {
 	const errorDetail = inspect(error, { depth: 5 });

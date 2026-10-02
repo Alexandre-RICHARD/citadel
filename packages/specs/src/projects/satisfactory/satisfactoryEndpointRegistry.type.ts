@@ -1,8 +1,8 @@
-import type { GetAllExtractors } from "./endpoint/getAllExtractors.endpoint.ts";
-import type { GetAllFactories } from "./endpoint/getAllFactories.endpoint.ts";
-import type { GetAllGenerators } from "./endpoint/getAllGenerators.endpoint.ts";
-import type { GetExplorationSink } from "./endpoint/getExplorationSink.endpoint.ts";
-import type { GetResourceSink } from "./endpoint/getResourceSink.endpoint.ts";
+import type { GetAllExtractors } from "./endpoint/getAllExtractorsEndpoint.ts";
+import type { GetAllFactories } from "./endpoint/getAllFactoriesEndpoint.ts";
+import type { GetAllGenerators } from "./endpoint/getAllGeneratorsEndpoint.ts";
+import type { GetExplorationSink } from "./endpoint/getExplorationSinkEndpoint.ts";
+import type { GetResourceSink } from "./endpoint/getResourceSinkEndpoint.ts";
 
 export type SatisfactoryEndpointRegistry =
 	| GetAllExtractors

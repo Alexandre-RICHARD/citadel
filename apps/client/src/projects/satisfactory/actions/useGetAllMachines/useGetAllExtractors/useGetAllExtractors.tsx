@@ -1,11 +1,11 @@
-import type { GetAllExtractors } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllExtractors.endpoint";
+import type { GetAllExtractors } from "@citadel/specs/src/projects/satisfactory/endpoint/getAllExtractorsEndpoint";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../../../common/helpers/fetch/handlerFetch";
-import { loopRequestDelay } from "../../../dictionnaries/loopRequestDelay";
-import { extractorsDtoToFmMapper } from "./extractorsDtoToFm.mapper";
+import { loopRequestDelay } from "../../../dictionaries/loopRequestDelay";
+import { extractorsDtoToFmMapper } from "./extractorsDtoToFmMapper";
 
 export function useGetAllExtractors() {
 	const {

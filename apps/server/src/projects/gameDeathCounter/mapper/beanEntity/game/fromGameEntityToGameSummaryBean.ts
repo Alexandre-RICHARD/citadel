@@ -1,4 +1,4 @@
-import type { GameSummaryBean } from "../../../bean/gameSummary.bean.ts";
+import type { GameSummaryBean } from "../../../bean/gameSummaryBean.ts";
 import type { Game } from "../../../models/Game.ts";
 
 export function fromGameEntityToGameSummaryBean(

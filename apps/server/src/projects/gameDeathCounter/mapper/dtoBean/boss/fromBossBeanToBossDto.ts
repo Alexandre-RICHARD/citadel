@@ -1,6 +1,6 @@
-import type { BossDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/boss.dto.ts";
+import type { BossDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/bossDto.ts";
 
-import type { BossBean } from "../../../bean/boss.bean.ts";
+import type { BossBean } from "../../../bean/bossBean.ts";
 import { fromDeathBeanToDeathDto } from "../death/fromDeathBeanToDeathDto.ts";
 import { fromBossSummaryBeanToBossSummaryDto } from "./fromBossSummaryBeanToBossSummaryDto.ts";
 
