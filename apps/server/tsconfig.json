@@ -16,6 +16,7 @@
     "vitestSetup.ts",
     "vitest.integration.config.ts",
     "vitestIntegrationSetup.ts",
+    "vitestIntegrationGlobalSetup.ts",
     "eslint.config.js",
   ],
   "exclude": [

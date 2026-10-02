@@ -1,34 +1,22 @@
 import "./src/configuration/timezone.ts";
 
-import { config } from "dotenv";
-import { afterAll, beforeEach } from "vitest";
+import { afterAll, beforeEach, inject } from "vitest";
 
-const TEST_DATABASE_SUFFIX = "_test";
+import { loadIntegrationTestEnvironment } from "./src/testUtils/integration/loadIntegrationTestEnvironment.ts";
 
-const dotenvResult = config({
-	path: `${import.meta.dirname}/.env.test`,
-	override: true,
-	quiet: true,
-});
-if (dotenvResult.error)
-	throw new Error("Fichier .env.test introuvable (voir .env.example)", {
-		cause: dotenvResult.error,
-	});
-
-// Les tests vident les tables : on refuse de tourner sur autre chose qu'une base de test
-const databaseName = process.env.DB_DATABASE_NAME ?? "";
-if (!databaseName.endsWith(TEST_DATABASE_SUFFIX))
-	throw new Error(
-		`DB_DATABASE_NAME doit finir par "${TEST_DATABASE_SUFFIX}" (reçu : "${databaseName}")`,
-	);
+loadIntegrationTestEnvironment();
 
 // Import dynamique : env.ts lit process.env dès son import, donc après le chargement de .env.test
 const { sequelize } = await import("./src/configuration/sequelize.ts");
-const { resetDatabase } =
-	await import("./src/testUtils/integration/resetDatabase.ts");
 
-beforeEach(async () => {
-	await resetDatabase();
+const testSeed = inject("testSeed");
+
+// Annotée au début de chaque test, car Vitest refuse d'annoter un test déjà en échec.
+// Le terminal ne l'affiche que sous un échec, le rapport HTML sur chaque test
+beforeEach(async ({ annotate }) => {
+	await annotate(
+		`Ordre aléatoire de graine ${testSeed} : pour rejouer exactement le même ordre, ajouter TEST_SEED=${testSeed} dans apps/server/.env.test (puis retirer la ligne pour revenir au hasard)`,
+	);
 });
 
 afterAll(async () => {

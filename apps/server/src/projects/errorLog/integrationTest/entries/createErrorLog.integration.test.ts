@@ -46,16 +46,13 @@ describe(`POST ${CREATE_ERROR_LOG_URL}`, () => {
 		);
 		expect(createdAt.getTime()).toBeLessThanOrEqual(requestEndedAt.getTime());
 
-		// Assert : base
-		const errorLogs = await ErrorLog.findAll({ raw: true });
-		expect(errorLogs).toStrictEqual([
-			{
-				id: errorLogDto.id,
-				errorType: createErrorLogBody.errorType,
-				message: createErrorLogBody.message,
-				stack: createErrorLogBody.stack,
-				createdAt,
-			},
-		]);
+		const errorLog = await ErrorLog.findByPk(errorLogDto.id, { raw: true });
+		expect(errorLog).toStrictEqual({
+			id: errorLogDto.id,
+			errorType: createErrorLogBody.errorType,
+			message: createErrorLogBody.message,
+			stack: createErrorLogBody.stack,
+			createdAt,
+		});
 	});
 });

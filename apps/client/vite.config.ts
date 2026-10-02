@@ -66,6 +66,7 @@ export default defineConfig(({ mode }) => {
 							},
 							{
 								name: "design-system",
+								debugName: "design-system",
 								test: /[\\/]packages[\\/]design-system[\\/]/,
 								priority: 4,
 							},
@@ -78,10 +79,12 @@ export default defineConfig(({ mode }) => {
 										? `translations-${translationMatch[1]}`
 										: null;
 								},
+								debugName: "translation",
 								priority: 3,
 							},
 							{
 								name: "app",
+								debugName: "app",
 								test: (id) => {
 									const normalizedId = normalizePath(id);
 									return (
@@ -98,6 +101,7 @@ export default defineConfig(({ mode }) => {
 									);
 									return projectMatch ? `projects/${projectMatch[1]}` : null;
 								},
+								debugName: "project",
 								priority: 1,
 							},
 						],

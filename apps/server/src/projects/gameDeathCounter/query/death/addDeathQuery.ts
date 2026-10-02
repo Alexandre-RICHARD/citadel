@@ -9,11 +9,13 @@ export async function addDeathQuery(
 ): Promise<Death | null> {
 	try {
 		return await sequelize.transaction(async (transaction) => {
-			const bossCount = await Boss.count({
-				where: { id: bossId },
+			// Verrou exclusif sur le boss dès la première lecture : des ajouts simultanés sur un même boss
+			// attendent leur tour au lieu de se bloquer mutuellement entre l'insertion et l'incrément
+			const boss = await Boss.findByPk(bossId, {
 				transaction,
+				lock: transaction.LOCK.UPDATE,
 			});
-			if (bossCount === 0) return null;
+			if (boss === null) return null;
 
 			const death = await Death.create(
 				{
