@@ -10,7 +10,6 @@
   font-size: 13px;
   flex-shrink: 0;
 
-  // Avant la variante neutral : à spécificité égale, son padding doit l'emporter
   &[data-size="sm"] {
     padding: 3px 8px;
     font-size: 12px;

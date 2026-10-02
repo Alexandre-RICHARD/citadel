@@ -15,7 +15,6 @@ const meta = {
 		step: 1,
 		onChange: fn(),
 	},
-	// Composant contrôlé : useArgs répercute le déplacement sur la valeur de la story
 	render: (args) => {
 		const [, updateArgs] = useArgs<typeof args>();
 

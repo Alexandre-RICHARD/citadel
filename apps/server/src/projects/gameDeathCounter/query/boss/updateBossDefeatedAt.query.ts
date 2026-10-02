@@ -6,8 +6,6 @@ export async function updateBossDefeatedAtQuery(
 	defeatedAt: Date | null,
 ): Promise<Boss | null> {
 	try {
-		// Pas de `Boss.update({ where })` : son nombre de lignes affectées vaut 0
-		// quand les valeurs sont identiques, ce qui ne permet pas de détecter un boss inexistant
 		const boss = await Boss.findByPk(id);
 		if (boss === null) return null;
 

@@ -120,9 +120,6 @@ export default defineConfig([
 			"@typescript-eslint/no-unused-vars": "error",
 			"@typescript-eslint/lines-between-class-members": "off",
 			"@typescript-eslint/no-throw-literal": "off",
-
-			// TEMPORARY
-			"preserve-caught-error": ["off", {}],
 		},
 	},
 

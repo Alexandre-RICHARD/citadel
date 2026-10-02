@@ -1,6 +1,5 @@
 import { type z } from "zod";
 
-// Mise à jour partielle : tous les champs sont optionnels, mais au moins un doit être renseigné
 export function requireAtLeastOneField<Shape extends z.ZodRawShape>(
 	objectSchema: z.ZodObject<Shape>,
 ) {

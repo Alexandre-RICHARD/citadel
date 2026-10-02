@@ -12,6 +12,6 @@ export const createErrorLogBodySchema = z.object({
 		SqlColumnMaxLengthEnum.VARCHAR_100,
 	),
 	message: requiredStringSchema("Message", SqlColumnMaxLengthEnum.TEXT),
-	// Colonne LONGTEXT : pas de limite pratique
+	// TODO EXPLICITER Colonne LONGTEXT : pas de limite pratique
 	stack: nullableStringSchema("Stack"),
 });

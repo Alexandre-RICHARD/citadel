@@ -3,9 +3,6 @@ import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.r
 import type { GameWithBossesEntity } from "../../../dbType/gameWithBosses.entity.ts";
 import { fromBossEntityToBossSummaryBean } from "../boss/fromBossEntityToBossSummaryBean.ts";
 
-/**
- * @param deathDateRangeByBossId Les boss sans aucune mort n'y figurent pas
- */
 export function fromGameEntityToGameBean(
 	game: GameWithBossesEntity,
 	deathDateRangeByBossId: Map<number, BossDeathDateRangeRow>,

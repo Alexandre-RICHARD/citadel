@@ -65,7 +65,6 @@ export function GraphContainer(): React.JSX.Element | null {
 
 	useEffect(() => {
 		if (visJsRef.current) {
-			// eslint-disable-next-line no-new
 			new Network(visJsRef.current, data, options);
 		}
 	}, [visJsRef, nodes, edges, data, options]);

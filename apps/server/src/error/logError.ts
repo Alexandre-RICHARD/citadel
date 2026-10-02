@@ -2,10 +2,6 @@ import { inspect } from "node:util";
 
 import { errorLogService } from "../projects/errorLog/service/errorLog.service.ts";
 
-/**
- * Ne throw jamais pour ne pas freeze le serveur
- * @param context Où l'erreur s'est produite
- */
 export async function logError(error: unknown, context: string): Promise<void> {
 	const errorDetail = inspect(error, { depth: 5 });
 	console.error(`[${context}]`, errorDetail);

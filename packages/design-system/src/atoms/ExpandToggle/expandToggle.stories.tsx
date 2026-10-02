@@ -13,7 +13,6 @@ const meta = {
 		collapseLabel: "Replier",
 		onToggle: fn(),
 	},
-	// Composant contrôlé : useArgs répercute le clic sur l'état de la story
 	render: (args) => {
 		const [, updateArgs] = useArgs<typeof args>();
 

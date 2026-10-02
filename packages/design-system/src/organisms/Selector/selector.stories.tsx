@@ -23,7 +23,6 @@ const meta = {
 		position: "bottom-right",
 		onSelect: fn(),
 	},
-	// Composant contrôlé : useArgs répercute la sélection sur la valeur de la story
 	render: (args) => {
 		const [, updateArgs] = useArgs<typeof args>();
 

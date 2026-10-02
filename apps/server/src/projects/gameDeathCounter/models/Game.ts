@@ -19,8 +19,6 @@ export class Game extends Model<
 	declare endedAt: CreationOptional<Date | null>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
-
-	// Inclu uniquement si la requête utilise `include: { model: Boss }`
 	declare bosses?: NonAttribute<Boss[]>;
 }
 

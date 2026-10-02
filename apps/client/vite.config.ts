@@ -55,8 +55,8 @@ export default defineConfig(({ mode }) => {
 						}
 						return "[name]-[hash][extname]";
 					},
-					// Un groupe embarque aussi les dépendances des modules qu'il capture : les priorités
-					// décident qui passe en premier, sinon "app" avalerait React & co, et un projet le code partagé
+					// Un groupe embarque aussi les dépendances des modules qu'il capture :
+					// les priorités décident qui passe en premier, sinon "app" avalerait React & co, et un projet le code partagé
 					codeSplitting: {
 						groups: [
 							{

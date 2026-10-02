@@ -4,9 +4,6 @@ import type { BossSummaryBean } from "../../../bean/bossSummary.bean.ts";
 import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.row.ts";
 import type { Boss } from "../../../models/Boss.ts";
 
-/**
- * @param bossDeathDateRange `null` si le boss n'a aucune mort
- */
 export function fromBossEntityToBossSummaryBean(
 	boss: Boss,
 	bossDeathDateRange: BossDeathDateRangeRow | null,
