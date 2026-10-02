@@ -1,4 +1,4 @@
-import { stringSearcher } from "@citadel/design-system/src/helpers/string/stringSearcher";
+import { stringSearcher } from "@citadel/common/src/universal/string/stringSearcher";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import type { RecipeType } from "../../../types/satisfactory/recipe.type";

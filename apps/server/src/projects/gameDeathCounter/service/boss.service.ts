@@ -1,4 +1,5 @@
-import { dateNow } from "../../../common/date/dateNow.ts";
+import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
+
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { BossBean } from "../bean/boss.bean.ts";
 import type { BossSummaryBean } from "../bean/bossSummary.bean.ts";

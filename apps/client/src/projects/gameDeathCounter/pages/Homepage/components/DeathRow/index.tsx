@@ -1,9 +1,9 @@
+import { formatDateTime } from "@citadel/common/src/universal/date/formatDateTime";
+import { toDateInputValue } from "@citadel/common/src/universal/date/toDateInputValue";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { Pencil, Save, Skull, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
-import { formatDateTime } from "../../../../../../common/helpers/date/formatDateTime";
-import { toDateInputValue } from "../../../../../../common/helpers/date/toDateInputValue";
 import globalStyles from "../../../../globalStyles.module.scss";
 import type { Death } from "../../game.type";
 import styles from "./deathRow.module.scss";

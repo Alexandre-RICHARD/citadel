@@ -1,4 +1,4 @@
-import { stringConvertor } from "./stringConvertor";
+import { stringConvertor } from "./stringConvertor.ts";
 
 type Args = {
 	searchString: string;

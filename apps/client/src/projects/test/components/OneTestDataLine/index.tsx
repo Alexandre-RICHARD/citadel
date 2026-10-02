@@ -1,9 +1,9 @@
+import { formatDate } from "@citadel/common/src/universal/date/formatDate";
+import { LanguageEnum } from "@citadel/common/src/universal/language/language.enum";
 import { Button } from "@citadel/design-system/src/atoms/Button";
 import type { TestDto } from "@citadel/specs/src/projects/test/dto/test.dto";
 import { NavLink } from "react-router";
 
-import { formatDate } from "../../../../common/helpers/date/formatDate";
-import { LanguageEnum } from "../../../../common/language/language.enum";
 import styles from "./oneTestDataLine.module.scss";
 
 type Props = {

@@ -1,8 +1,8 @@
+import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
 import React, { useMemo, useState } from "react";
 
 import { EndpointEnum } from "../../../enums/endpoint.enum";
-import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
 import type { ExtractorDto } from "../../../types/satisfactory/apis/dataTransferObject/extractorDto.type";
 import type { FactoryDto } from "../../../types/satisfactory/apis/dataTransferObject/factoryDto.type";
 import type { GeneratorDto } from "../../../types/satisfactory/apis/dataTransferObject/generatorsDto.type";

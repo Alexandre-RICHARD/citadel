@@ -1,10 +1,10 @@
+import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import { Icon } from "@citadel/design-system/src/atoms/Icon";
 import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 import React from "react";
 
 import { TranslationsFilesEnum as TF } from "../../../enums/translationsFile.enum";
 import { powerCalculation } from "../../../helpers/powerCalculation.helper";
-import { roundNumber } from "../../../nexus/helpers/data/number/roundNumber.helper";
 import { useCombinedStore } from "../../../store/combined.store";
 import type { RecipeType } from "../../../types/satisfactory/recipe.type";
 import { useCustomTranslations } from "../../hooks/useCustomTranslations";

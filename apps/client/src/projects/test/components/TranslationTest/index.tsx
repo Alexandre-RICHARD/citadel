@@ -1,4 +1,5 @@
-import { useTranslation } from "../../../../react/hook/useTranslation";
+import { useTranslation } from "@citadel/common/src/react/hooks/useTranslation";
+
 import { translations } from "./translations";
 
 export function TranslationTest() {

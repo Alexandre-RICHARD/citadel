@@ -1,7 +1,7 @@
+import { stringSearcher } from "@citadel/common/src/universal/string/stringSearcher";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { stringSearcher } from "../../helpers/string/stringSearcher";
 import styles from "./dropdown.module.scss";
 import type { DropdownPositionType } from "./dropdownPosition.type";
 import type { SelectItemsType } from "./selectedItems.type";

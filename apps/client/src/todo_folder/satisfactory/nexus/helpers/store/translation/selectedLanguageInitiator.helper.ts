@@ -1,9 +1,10 @@
+import { getCookie } from "@citadel/common/src/browser/cookie/getCookie";
+import { setCookie } from "@citadel/common/src/browser/cookie/setCookie";
+import { getInvertObject } from "@citadel/common/src/universal/object/getInvertObject";
+
 import { languageToCode } from "../../../dictionnaries/languageToCode.dictionnary";
 import type { LanguageEnum } from "../../../enums/language.enum";
 import type { LanguageCodeEnum } from "../../../enums/languageCode.enum";
-import { getCookie } from "../../cookie/getCookie.helper";
-import { setCookie } from "../../cookie/setCookie.helper";
-import { getInvertObject } from "../../data/object/getInvertObject.helper";
 import { getIsSupportedLanguage } from "../../translation/getIsSupportedLanguage.helper";
 
 type Args = {

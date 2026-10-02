@@ -1,5 +1,6 @@
-import { getEarliestDate } from "../../../../../common/date/getEarliestDate.ts";
-import { getLatestDate } from "../../../../../common/date/getLatestDate.ts";
+import { getEarliestDate } from "@citadel/common/src/universal/date/getEarliestDate.ts";
+import { getLatestDate } from "@citadel/common/src/universal/date/getLatestDate.ts";
+
 import type { BossSummaryBean } from "../../../bean/bossSummary.bean.ts";
 import type { BossDeathDateRangeRow } from "../../../dbType/bossDeathDateRange.row.ts";
 import type { Boss } from "../../../models/Boss.ts";

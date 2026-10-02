@@ -1,8 +1,8 @@
+import { writeCountdown } from "@citadel/common/src/universal/date/writeCountdown";
+import { formatNumberWithSpaces } from "@citadel/common/src/universal/number/formatNumberWithSpaces";
+import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
 
-import { writeCountdown } from "../../../../common/helpers/date/writeCountdown";
-import { formatNumberWithSpaces } from "../../../../common/helpers/number/formatNumberWithSpaces";
-import { roundNumber } from "../../../../common/helpers/number/roundNumber";
 import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines";
 import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
 import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink";

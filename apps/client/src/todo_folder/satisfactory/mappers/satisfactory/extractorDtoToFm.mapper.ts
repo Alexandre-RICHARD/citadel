@@ -1,5 +1,6 @@
+import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
+
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
-import { enumDtoToFmMapper } from "../../nexus/mappers/enumDtoToFm.mapper";
 import type { ExtractorDto } from "../../types/satisfactory/apis/dataTransferObject/extractorDto.type";
 import type { ExtractorFm } from "../../types/satisfactory/apis/frontModel/extractorFm.type";
 

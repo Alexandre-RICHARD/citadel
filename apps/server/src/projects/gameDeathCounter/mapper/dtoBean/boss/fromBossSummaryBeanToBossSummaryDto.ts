@@ -1,6 +1,6 @@
+import { mapNullableDateToStringOrNull } from "@citadel/common/src/universal/date/mapNullableDateToStringOrNull.ts";
 import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/bossSummary.dto.ts";
 
-import { mapNullableDateToStringOrNull } from "../../../../../common/date/mapNullableDateToStringOrNull.ts";
 import type { BossSummaryBean } from "../../../bean/bossSummary.bean.ts";
 
 export function fromBossSummaryBeanToBossSummaryDto(
