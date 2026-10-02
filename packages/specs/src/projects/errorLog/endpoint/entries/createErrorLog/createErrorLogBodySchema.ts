@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/sqlColumnMaxLength.enum.ts";
-import {
-	nullableStringSchema,
-	requiredStringSchema,
-} from "../../../../../specUtils/schemaValidator/stringSchemas.ts";
+import { nullableStringSchema } from "../../../../../specUtils/schemaValidator/string/nullableStringSchema.ts";
+import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/string/requiredStringSchema.ts";
+import { SqlColumnMaxLengthEnum } from "../../../../../specUtils/schemaValidator/string/sqlColumnMaxLength.enum.ts";
 
 export const createErrorLogBodySchema = z.object({
 	errorType: requiredStringSchema(
