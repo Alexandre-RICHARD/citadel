@@ -19,7 +19,7 @@
     "@citadel/common": "workspace:*",
     "@citadel/design-system": "workspace:*",
     "@citadel/specs": "workspace:*",
-    "@tanstack/react-query": "^5.103.2",
+    "@tanstack/react-query": "^5.104.0",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
