@@ -1,7 +1,15 @@
 import { defineConfig } from "vitest/config";
 
+import { resolveTestSeed } from "./apps/server/src/testUtils/integration/resolveTestSeed.ts";
+
 export default defineConfig({
 	test: {
+		// Seuls les fichiers sont mélangés ici : le projet d'intégration mélange en plus ses tests.
+		// Graine résolue avant le chargement des projets : la config d'intégration relit la même
+		sequence: {
+			shuffle: { files: true, tests: false },
+			seed: resolveTestSeed(),
+		},
 		// Vitest ignore les "projects" d'une config listée ici : on pointe donc les projets de common, pas son vitest.config.ts
 		projects: [
 			"apps/client/vitest.config.ts",

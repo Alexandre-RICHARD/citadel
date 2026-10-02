@@ -16,7 +16,13 @@ export function nullableStringSchema(label: string, maxLength?: number) {
 					message: `${label} should contain at most ${maxLength} characters`,
 				});
 
-	return boundedString
-		.transform((value) => (value === "" ? null : value))
-		.nullable();
+	return (
+		boundedString
+			// Une moitié d'emoji isolée (surrogate orphelin) serait remplacée par « � » en base, sans erreur
+			.refine((value) => value.isWellFormed(), {
+				message: `${label} should not contain invalid characters`,
+			})
+			.transform((value) => (value === "" ? null : value))
+			.nullable()
+	);
 }

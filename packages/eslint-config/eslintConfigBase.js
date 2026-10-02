@@ -190,6 +190,13 @@ export default defineConfig([
 			"@typescript-eslint/consistent-type-definitions": ["error", "interface"],
 		},
 	},
+	// Une déclaration (.d.ts) complète souvent un type existant, ce qui n'est possible qu'avec une interface
+	{
+		files: ["**/*.d.ts"],
+		rules: {
+			"@typescript-eslint/consistent-type-definitions": "off",
+		},
+	},
 	// Désactive le type-checking pour les fichiers JS/MJS/CJS de configuration
 	{
 		files: ["**/*.{js,jsx,mjs,cjs}"],
@@ -227,6 +234,11 @@ export default defineConfig([
 		},
 		rules: {
 			...vitest.configs.recommended.rules,
+			// Les helpers d'assertion commencent par "expect" (expectNotFound, errorLogWatcher.expectLogged…)
+			"vitest/expect-expect": [
+				"error",
+				{ assertFunctionNames: ["expect", "expect*", "*.expect*"] },
+			],
 			"@typescript-eslint/no-empty-function": "off",
 			"promise/always-return": "off",
 			"promise/catch-or-return": "off",
