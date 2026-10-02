@@ -17,8 +17,8 @@ import { deleteGameQuery } from "../query/game/deleteGameQuery.ts";
 import { getAllGamesQuery } from "../query/game/getAllGamesQuery.ts";
 import { getGamesTotalDeathQuery } from "../query/game/getGamesTotalDeathQuery.ts";
 import { getGameWithBossesByIdQuery } from "../query/game/getGameWithBossesByIdQuery.ts";
-import { updateGameQuery } from "../query/game/updateGameQuery.ts";
 import { updateGameEndedAtQuery } from "../query/game/updateGameEndedAtQuery.ts";
+import { updateGameQuery } from "../query/game/updateGameQuery.ts";
 
 class GameService {
 	async getAllGames(): Promise<GameSummaryBean[]> {

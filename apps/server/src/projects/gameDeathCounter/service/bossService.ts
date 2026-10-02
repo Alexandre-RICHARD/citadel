@@ -14,8 +14,8 @@ import { createBossQuery } from "../query/boss/createBossQuery.ts";
 import { deleteBossQuery } from "../query/boss/deleteBossQuery.ts";
 import { getBossesDeathDateRangeQuery } from "../query/boss/getBossesDeathDateRangeQuery.ts";
 import { getBossWithDeathsByIdQuery } from "../query/boss/getBossWithDeathsByIdQuery.ts";
-import { updateBossQuery } from "../query/boss/updateBossQuery.ts";
 import { updateBossDefeatedAtQuery } from "../query/boss/updateBossDefeatedAtQuery.ts";
+import { updateBossQuery } from "../query/boss/updateBossQuery.ts";
 import { gameExistsByIdQuery } from "../query/game/gameExistsByIdQuery.ts";
 
 class BossService {

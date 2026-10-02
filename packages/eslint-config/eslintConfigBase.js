@@ -24,7 +24,8 @@ const EXPORT_RESTRICTIONS = {
 	},
 	interface: {
 		selector: "ExportNamedDeclaration > TSInterfaceDeclaration",
-		message: "Un fichier qui exporte une interface doit finir par .interface.ts",
+		message:
+			"Un fichier qui exporte une interface doit finir par .interface.ts",
 	},
 };
 
