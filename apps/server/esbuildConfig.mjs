@@ -1,3 +1,4 @@
+import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary.ts";
 import { build } from "esbuild";
 
 await build({
@@ -17,17 +18,20 @@ await build({
 			name: "ignore-optional-sequelize",
 			setup(build) {
 				build.onResolve(
-					{ filter: /(pg-hstore|pg|mysql2|sqlite3|tedious)$/ },
+					{ filter: regexDictionary.sequelizeUnusedDriver },
 					() => ({
 						path: "noop",
 						namespace: "ignore",
 					}),
 				);
 
-				build.onLoad({ filter: /.*/, namespace: "ignore" }, () => ({
-					contents: "export default {};",
-					loader: "js",
-				}));
+				build.onLoad(
+					{ filter: regexDictionary.anyPath, namespace: "ignore" },
+					() => ({
+						contents: "export default {};",
+						loader: "js",
+					}),
+				);
 			},
 		},
 	],

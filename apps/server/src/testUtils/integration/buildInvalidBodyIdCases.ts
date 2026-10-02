@@ -10,18 +10,22 @@ export function buildInvalidBodyIdCases(label: string): {
 		{
 			reason: "absent",
 			value: undefined,
-			message: `${label} should be a number`,
+			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
 		},
-		{ reason: "null", value: null, message: `${label} should be a number` },
+		{
+			reason: "null",
+			value: null,
+			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
+		},
 		{
 			reason: "un nombre écrit en chaîne",
 			value: "3",
-			message: `${label} should be a number`,
+			message: `${label} should be a JSON number, not text (e.g. 7, not "7")`,
 		},
 		{
 			reason: "un décimal",
 			value: 1.5,
-			message: `${label} should be an integer`,
+			message: `${label} should be an integer (e.g. 7, not 7.5)`,
 		},
 		{
 			reason: "zéro",

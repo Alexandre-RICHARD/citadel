@@ -1,3 +1,4 @@
+import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary";
 import type { PathParams } from "@citadel/specs/src/specUtils/pathParams.type";
 
 type Args = {
@@ -7,7 +8,7 @@ type Args = {
 
 export function insertParamsInRequestUrl({ baseUrl, params }: Args): string {
 	if (!params) return baseUrl;
-	return baseUrl.replace(/:([A-Za-z0-9_]+)/g, (_, key: string) => {
+	return baseUrl.replace(regexDictionary.urlPathParam, (_, key: string) => {
 		const paramValue = params[key];
 		if (paramValue === undefined) {
 			throw new Error(`Missing path param ':${key}'`);

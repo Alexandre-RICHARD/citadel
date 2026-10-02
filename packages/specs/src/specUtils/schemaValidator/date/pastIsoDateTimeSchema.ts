@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { SqlDatetimeBoundEnum } from "./sqlDatetimeBound.enum.ts";
 
-// Date ISO 8601 (avec décalage horaire accepté), ni dans le futur, ni avant ce que la base sait stocker
+// Date ISO 8601 (avec décalage horaire accepté), ni dans le futur, ni avant ce que la base sait stocker.
+// Au-delà de la milliseconde, la base tronque : c'est accepté
 export function pastIsoDateTimeSchema(label: string) {
 	return z.iso
 		.datetime({

@@ -6,9 +6,12 @@
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "validate-all": "pnpm check-types && pnpm lint-fix"
+    "unit-test-once": "vitest run",
+    "unit-test-watch": "vitest watch",
+    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once"
   },
   "dependencies": {
+    "@citadel/common": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -17,6 +20,7 @@
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

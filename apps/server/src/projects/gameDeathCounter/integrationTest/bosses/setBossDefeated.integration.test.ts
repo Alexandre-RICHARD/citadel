@@ -223,7 +223,11 @@ describe(`PATCH ${SET_BOSS_DEFEATED_URL}`, () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["id"], message: "ID should be at least 1" },
+				{
+					path: ["id"],
+					message:
+						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
+				},
 				{ path: ["defeated"], message: "Defeated should be a boolean" },
 			]);
 		});
