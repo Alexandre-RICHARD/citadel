@@ -5,7 +5,7 @@ export default defineConfig({
 		environment: "jsdom",
 		include: ["src/**/*.test.ts?(x)"],
 		exclude: ["src/todo_folder/**"],
-		setupFiles: "vitest.setup.ts",
+		setupFiles: "vitestSetup.ts",
 		passWithNoTests: true,
 	},
 });

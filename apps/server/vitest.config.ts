@@ -4,7 +4,7 @@ export default defineConfig({
 	test: {
 		include: ["src/**/*.unit.test.ts"],
 		exclude: ["src/todo_folder/**"],
-		setupFiles: ["vitest.setup.ts"],
+		setupFiles: ["vitestSetup.ts"],
 		passWithNoTests: true,
 	},
 });

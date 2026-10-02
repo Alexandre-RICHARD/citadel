@@ -5,6 +5,6 @@ export default defineConfig({
 		name: "@citadel/common:browser",
 		environment: "jsdom",
 		include: ["src/browser/**/*.unit.test.ts", "src/react/**/*.unit.test.tsx"],
-		setupFiles: ["vitest.setup.ts"],
+		setupFiles: ["vitestSetup.ts"],
 	},
 });

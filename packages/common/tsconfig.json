@@ -16,7 +16,7 @@
 		"vitest.config.ts",
 		"vitest.universal.config.ts",
 		"vitest.browser.config.ts",
-		"vitest.setup.ts",
+		"vitestSetup.ts",
 		"eslint.config.js",
 	],
 	"exclude": [
