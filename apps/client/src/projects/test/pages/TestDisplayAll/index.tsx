@@ -1,5 +1,5 @@
 import { Button } from "@citadel/design-system/src/atoms/Button";
-import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto";
+import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto.type";
 import { useState } from "react";
 
 import { useDeleteTest } from "../../actions/useDeleteTest";

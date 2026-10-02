@@ -1,5 +1,5 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { UpdateDeathBean } from "../../bean/updateDeathBean.ts";
+import type { UpdateDeathBean } from "../../bean/updateDeathBean.type.ts";
 import { Death } from "../../models/Death.ts";
 
 export async function updateDeathQuery(

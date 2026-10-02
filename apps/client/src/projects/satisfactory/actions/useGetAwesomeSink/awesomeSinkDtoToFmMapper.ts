@@ -1,4 +1,4 @@
-import type { AwesomeSinkDto } from "@citadel/specs/src/projects/satisfactory/dto/awesomeSinkDto";
+import type { AwesomeSinkDto } from "@citadel/specs/src/projects/satisfactory/dto/awesomeSinkDto.type";
 
 import type { AwesomeSinkFm } from "./awesomeSinkFm.type";
 

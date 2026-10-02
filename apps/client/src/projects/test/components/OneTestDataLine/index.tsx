@@ -1,7 +1,7 @@
 import { formatDate } from "@citadel/common/src/universal/date/formatDate";
 import { LanguageEnum } from "@citadel/common/src/universal/language/language.enum";
 import { Button } from "@citadel/design-system/src/atoms/Button";
-import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto";
+import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto.type";
 import { NavLink } from "react-router";
 
 import styles from "./oneTestDataLine.module.scss";

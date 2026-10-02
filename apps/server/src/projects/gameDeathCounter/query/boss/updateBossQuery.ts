@@ -1,5 +1,5 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { UpdateBossBean } from "../../bean/updateBossBean.ts";
+import type { UpdateBossBean } from "../../bean/updateBossBean.type.ts";
 import { Boss } from "../../models/Boss.ts";
 
 export async function updateBossQuery(

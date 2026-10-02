@@ -1,5 +1,5 @@
 import { enumDtoToFmMapper } from "@citadel/common/src/universal/enum/enumDtoToFm";
-import type { GeneratorDto } from "@citadel/specs/src/projects/satisfactory/dto/generatorDto";
+import type { GeneratorDto } from "@citadel/specs/src/projects/satisfactory/dto/generatorDto.type";
 
 import { GameClassNamesEnum } from "../../../enums/gameClassNames.enum";
 import type { GeneratorFm } from "./generatorFm.type";

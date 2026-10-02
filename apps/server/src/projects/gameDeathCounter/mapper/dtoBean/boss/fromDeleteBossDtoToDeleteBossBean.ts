@@ -1,6 +1,6 @@
-import type { DeleteBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossPathParamDto.ts";
+import type { DeleteBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/deleteBoss/deleteBossPathParamDto.type.ts";
 
-import type { DeleteBossBean } from "../../../bean/deleteBossBean.ts";
+import type { DeleteBossBean } from "../../../bean/deleteBossBean.type.ts";
 
 export function fromDeleteBossDtoToDeleteBossBean(
 	deleteBossPathParamDto: DeleteBossPathParamDto,

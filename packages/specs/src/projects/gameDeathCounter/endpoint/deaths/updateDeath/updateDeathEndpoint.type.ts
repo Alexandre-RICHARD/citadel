@@ -1,25 +1,25 @@
 import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
-import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.ts";
-import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.ts";
+import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.type.ts";
+import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.type.ts";
 import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
-import type { BossSummaryDto } from "../../../dto/boss/bossSummaryDto.ts";
-import type { SetBossDefeatedBodyDto } from "./setBossDefeatedBodyDto.ts";
-import type { SetBossDefeatedPathParamDto } from "./setBossDefeatedPathParamDto.ts";
+import type { DeathDto } from "../../../dto/death/deathDto.type.ts";
+import type { UpdateDeathBodyDto } from "./updateDeathBodyDto.type.ts";
+import type { UpdateDeathPathParamDto } from "./updateDeathPathParamDto.type.ts";
 
-export interface SetBossDefeated extends EndpointModel {
+export interface UpdateDeath extends EndpointModel {
 	request: {
-		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id/defeated`;
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`;
 		method: HttpMethodEnum.PATCH;
 		protected: false;
-		pathParams: SetBossDefeatedPathParamDto;
-		body: SetBossDefeatedBodyDto;
+		pathParams: UpdateDeathPathParamDto;
+		body: UpdateDeathBodyDto;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;
-		data: BossSummaryDto;
+		data: DeathDto;
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;

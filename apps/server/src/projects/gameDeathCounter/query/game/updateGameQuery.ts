@@ -1,5 +1,5 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { UpdateGameBean } from "../../bean/updateGameBean.ts";
+import type { UpdateGameBean } from "../../bean/updateGameBean.type.ts";
 import { Game } from "../../models/Game.ts";
 
 export async function updateGameQuery(

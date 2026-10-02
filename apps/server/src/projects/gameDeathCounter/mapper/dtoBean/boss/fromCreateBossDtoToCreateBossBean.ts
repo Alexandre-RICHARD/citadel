@@ -1,7 +1,7 @@
-import type { CreateBossBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBodyDto.ts";
-import type { CreateBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossPathParamDto.ts";
+import type { CreateBossBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBodyDto.type.ts";
+import type { CreateBossPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossPathParamDto.type.ts";
 
-import type { CreateBossBean } from "../../../bean/createBossBean.ts";
+import type { CreateBossBean } from "../../../bean/createBossBean.type.ts";
 
 export function fromCreateBossDtoToCreateBossBean(
 	createBossPathParamDto: CreateBossPathParamDto,

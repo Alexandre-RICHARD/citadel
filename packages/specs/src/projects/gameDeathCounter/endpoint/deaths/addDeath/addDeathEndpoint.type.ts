@@ -1,22 +1,23 @@
 import type { ApiPrefixEnum } from "../../../../../specUtils/apiPrefix.enum.ts";
 import type { EndpointModel } from "../../../../../specUtils/endpointModel.type.ts";
-import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.ts";
-import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.ts";
+import type { ErrorResponseDto } from "../../../../../specUtils/error/errorResponseDto.type.ts";
+import type { ValidationErrorResponseDto } from "../../../../../specUtils/error/validationErrorResponseDto.type.ts";
 import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts";
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
-import type { DeleteGamePathParamDto } from "./deleteGamePathParamDto.ts";
+import type { DeathDto } from "../../../dto/death/deathDto.type.ts";
+import type { AddDeathPathParamDto } from "./addDeathPathParamDto.type.ts";
 
-export interface DeleteGame extends EndpointModel {
+export interface AddDeath extends EndpointModel {
 	request: {
-		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
-		method: HttpMethodEnum.DELETE;
+		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`;
+		method: HttpMethodEnum.POST;
 		protected: false;
-		pathParams: DeleteGamePathParamDto;
+		pathParams: AddDeathPathParamDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
-		data: null;
+		status: HttpStatutCodeSuccessEnum.CREATED;
+		data: DeathDto;
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: ErrorResponseDto;

@@ -1,6 +1,6 @@
-import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodyDto.ts";
+import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodyDto.type.ts";
 
-import type { CreateGameBean } from "../../../bean/createGameBean.ts";
+import type { CreateGameBean } from "../../../bean/createGameBean.type.ts";
 
 export function fromCreateGameDtoToCreateGameBean(
 	createGameBodyDto: CreateGameBodyDto,

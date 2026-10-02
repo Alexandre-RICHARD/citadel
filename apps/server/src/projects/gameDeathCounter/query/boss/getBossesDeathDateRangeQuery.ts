@@ -2,7 +2,7 @@ import { QueryTypes } from "sequelize";
 
 import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
-import type { BossDeathDateRangeRow } from "../../dbType/bossDeathDateRangeRow.ts";
+import type { BossDeathDateRangeRow } from "../../dbType/bossDeathDateRangeRow.type.ts";
 
 export async function getBossesDeathDateRangeQuery(
 	bossIds: number[],

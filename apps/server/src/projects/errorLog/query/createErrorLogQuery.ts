@@ -1,5 +1,5 @@
 import { DatabaseError } from "../../../error/DatabaseError.ts";
-import type { CreateErrorLogBean } from "../bean/createErrorLogBean.ts";
+import type { CreateErrorLogBean } from "../bean/createErrorLogBean.type.ts";
 import { ErrorLog } from "../models/ErrorLog.ts";
 
 export async function createErrorLogQuery(

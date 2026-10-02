@@ -1,6 +1,6 @@
-import type { CreateErrorLogBodyDto } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogBodyDto.ts";
+import type { CreateErrorLogBodyDto } from "@citadel/specs/src/projects/errorLog/endpoint/entries/createErrorLog/createErrorLogBodyDto.type.ts";
 
-import type { CreateErrorLogBean } from "../../../bean/createErrorLogBean.ts";
+import type { CreateErrorLogBean } from "../../../bean/createErrorLogBean.type.ts";
 
 export function fromCreateErrorLogDtoToCreateErrorLogBean(
 	createErrorLogBodyDto: CreateErrorLogBodyDto,

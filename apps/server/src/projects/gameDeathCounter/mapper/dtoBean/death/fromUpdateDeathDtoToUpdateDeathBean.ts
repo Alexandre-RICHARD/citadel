@@ -1,8 +1,8 @@
 import { mapStringToDate } from "@citadel/common/src/universal/date/mapStringToDate.ts";
-import type { UpdateDeathBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathBodyDto.ts";
-import type { UpdateDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathPathParamDto.ts";
+import type { UpdateDeathBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathBodyDto.type.ts";
+import type { UpdateDeathPathParamDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/deaths/updateDeath/updateDeathPathParamDto.type.ts";
 
-import type { UpdateDeathBean } from "../../../bean/updateDeathBean.ts";
+import type { UpdateDeathBean } from "../../../bean/updateDeathBean.type.ts";
 
 export function fromUpdateDeathDtoToUpdateDeathBean(
 	updateDeathPathParamDto: UpdateDeathPathParamDto,

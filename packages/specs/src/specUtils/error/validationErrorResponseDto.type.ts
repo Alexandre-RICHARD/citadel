@@ -1,4 +1,4 @@
-import type { ErrorResponseDto } from "./errorResponseDto.ts";
+import type { ErrorResponseDto } from "./errorResponseDto.type.ts";
 
 // Corps d'une réponse 400 : `issues` détaille les champs invalides (vide si aucun champ précis n'est en cause)
 export type ValidationErrorResponseDto = ErrorResponseDto & {
