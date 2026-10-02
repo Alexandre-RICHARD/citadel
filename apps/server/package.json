@@ -15,7 +15,7 @@
     "integration-test": "vitest run --config vitest.integration.config.ts",
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm integration-test && pnpm build",
     "=== Build & Production ===": "",
-    "build": "node esbuild.config.mjs",
+    "build": "node esbuildConfig.mjs",
     "start": "node --enable-source-maps ./build/build.server.cjs"
   },
   "dependencies": {

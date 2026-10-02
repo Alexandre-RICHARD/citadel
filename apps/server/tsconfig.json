@@ -13,9 +13,9 @@
     "**/*.d.ts",
     "vite.config.ts",
     "vitest.config.ts",
-    "vitest.setup.ts",
+    "vitestSetup.ts",
     "vitest.integration.config.ts",
-    "vitest.integration.setup.ts",
+    "vitestIntegrationSetup.ts",
     "eslint.config.js",
   ],
   "exclude": [
