@@ -7,9 +7,9 @@ import styles from "./returnToHomepageButton.module.scss";
 
 export function ReturnToHomepageButton() {
 	const navigate = useNavigate();
-	const handleReturnToHomepageClick = () => {
+	function handleReturnToHomepageClick() {
 		void navigate(projects[ProjectsEnum.Homepage].path);
-	};
+	}
 
 	return (
 		<div className={styles.returnToHomepageButtonContainer}>

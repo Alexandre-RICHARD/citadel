@@ -1,17 +1,17 @@
-const getMin = (
+function getMin(
 	d0: number,
 	d1: number,
 	d2: number,
 	bx: number,
 	ay: number,
-): number => {
+): number {
 	if (d0 < d1 || d2 < d1) {
 		return d0 > d2 ? d2 + 1 : d0 + 1;
 	}
 	return bx === ay ? d1 : d1 + 1;
-};
+}
 
-export const calculateLevenshteinDistance = (a: string, b: string): number => {
+export function calculateLevenshteinDistance(a: string, b: string): number {
 	let c = a;
 	let d = b;
 
@@ -101,4 +101,4 @@ export const calculateLevenshteinDistance = (a: string, b: string): number => {
 	}
 
 	return dd;
-};
+}

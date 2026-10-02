@@ -4,7 +4,7 @@ type Args = {
 	hours: number;
 };
 
-export const setCookie = ({ name, value, hours = 1 }: Args): void => {
+export function setCookie({ name, value, hours = 1 }: Args): void {
 	let expires = "";
 	if (hours) {
 		const date = new Date();
@@ -12,4 +12,4 @@ export const setCookie = ({ name, value, hours = 1 }: Args): void => {
 		expires = `; expires=${date.toUTCString()}`;
 	}
 	document.cookie = `${name}=${value || ""}${expires}; path=/`;
-};
+}

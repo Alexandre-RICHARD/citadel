@@ -1,4 +1,4 @@
-export const getCookie = (name: string): string | undefined => {
+export function getCookie(name: string): string | undefined {
 	const decodedCookies = decodeURIComponent(document.cookie);
 	const splitedCookies = decodedCookies
 		.split(";")
@@ -10,4 +10,4 @@ export const getCookie = (name: string): string | undefined => {
 		return foundCookie.substring(name.length + 1);
 	}
 	return undefined;
-};
+}

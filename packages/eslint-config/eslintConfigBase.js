@@ -79,6 +79,7 @@ export default defineConfig([
 			// JS rules
 			"no-alert": "error",
 			"no-console": ["warn", { allow: ["error"] }],
+			"func-style": ["error", "declaration"],
 			// We allow to reassign acc in reduce
 			"no-param-reassign": [
 				"error",

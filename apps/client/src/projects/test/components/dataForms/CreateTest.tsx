@@ -22,7 +22,7 @@ export function CreateTest({
 		onSettled: onCreateSuccess,
 	});
 
-	const handleMutation = () => {
+	function handleMutation() {
 		onClose();
 		mutate({ name });
 		onCreateSubmit({
@@ -32,7 +32,7 @@ export function CreateTest({
 			createdAt: new Date(),
 			updatedAt: null,
 		});
-	};
+	}
 
 	return (
 		<TestDataForm

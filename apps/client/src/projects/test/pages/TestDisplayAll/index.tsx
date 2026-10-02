@@ -29,18 +29,18 @@ export function TestDisplayAll() {
 
 	if (error) return <p>Erreur lors du chargement des données de tests</p>;
 
-	const handleCreateTest = () => {
+	function handleCreateTest() {
 		setPendingTest(undefined);
 		refetchTestData();
-	};
+	}
 
-	const handleCloseModal = () => {
+	function handleCloseModal() {
 		setIsEditionModalOpen(false);
-	};
+	}
 
-	const handleDeleteTest = (id: number) => {
+	function handleDeleteTest(id: number) {
 		mutate({ id: id.toString() });
-	};
+	}
 
 	return (
 		<div className={styles.testDisplayContainer}>

@@ -5,7 +5,7 @@ type Args = {
 	params: PathParams | undefined;
 };
 
-export const insertParamsInRequestUrl = ({ baseUrl, params }: Args): string => {
+export function insertParamsInRequestUrl({ baseUrl, params }: Args): string {
 	if (!params) return baseUrl;
 	return baseUrl.replace(/:([A-Za-z0-9_]+)/g, (_, key: string) => {
 		const paramValue = params[key];
@@ -14,4 +14,4 @@ export const insertParamsInRequestUrl = ({ baseUrl, params }: Args): string => {
 		}
 		return encodeURIComponent(String(paramValue));
 	});
-};
+}

@@ -50,12 +50,12 @@ export function BossRow({
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 
-	const save = () => {
+	function save() {
 		const trimmed = draftName.trim();
 		if (!trimmed) return;
 		onUpdate(boss.id, { name: trimmed });
 		setEditing(false);
-	};
+	}
 
 	return (
 		<li
