@@ -17,7 +17,7 @@
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm integration-test && pnpm build",
     "=== Build & Production ===": "",
     "build": "node esbuild.config.mjs",
-    "start": "node ./build/build.server.js"
+    "start": "node --enable-source-maps ./build/build.server.cjs"
   },
   "dependencies": {
     "@citadel/specs": "workspace:*",
