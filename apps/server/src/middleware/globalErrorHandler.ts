@@ -1,11 +1,16 @@
 import type { ErrorResponseDto } from "@citadel/specs/src/specUtils/error/errorResponseDto.type.ts";
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import type { ValidationErrorResponseDto } from "@citadel/specs/src/specUtils/error/validationErrorResponseDto.type.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import type { NextFunction, Request, Response } from "express";
 
 import { AppError } from "../error/AppError.ts";
 import { BadRequestError } from "../error/BadRequestError.ts";
+import type { ErrorCode } from "../error/errorCode.type.ts";
 import { logError } from "../error/logError.ts";
+
+// Type que body-parser (express.json) donne à un corps JSON illisible
+const BODY_PARSE_FAILED_TYPE = "entity.parse.failed";
 
 function isExposedHttpError(
 	error: unknown,
@@ -19,6 +24,14 @@ function isExposedHttpError(
 	);
 }
 
+function isBodyParseError(error: unknown): boolean {
+	return (
+		isExposedHttpError(error) &&
+		"type" in error &&
+		error.type === BODY_PARSE_FAILED_TYPE
+	);
+}
+
 function getStatusCode(error: unknown): number {
 	if (error instanceof AppError) return error.statusCode;
 	if (isExposedHttpError(error)) return error.status;
@@ -29,20 +42,38 @@ function isServerError(statusCode: number): boolean {
 	return statusCode >= Number(HttpStatutCodeErrorEnum.SERVER_ERROR);
 }
 
+// Erreur exposée par un middleware tiers (body-parser) : la requête a été refusée avant tout traitement
+function getRejectedRequestCode(
+	error: unknown,
+):
+	| TechnicalErrorCodeEnum.MALFORMED_JSON
+	| TechnicalErrorCodeEnum.INVALID_REQUEST {
+	return isBodyParseError(error)
+		? TechnicalErrorCodeEnum.MALFORMED_JSON
+		: TechnicalErrorCodeEnum.INVALID_REQUEST;
+}
+
 function buildErrorResponse(
 	error: unknown,
 	statusCode: number,
-): ErrorResponseDto | ValidationErrorResponseDto {
-	if (isServerError(statusCode)) return { message: "Internal server error" };
+): ErrorResponseDto<ErrorCode> | ValidationErrorResponseDto {
+	if (isServerError(statusCode))
+		return {
+			code: TechnicalErrorCodeEnum.INTERNAL_ERROR,
+			message: "Internal server error",
+		};
 
 	const message = error instanceof Error ? error.message : "Request error";
 
-	if (statusCode === Number(HttpStatutCodeErrorEnum.BAD_REQUEST)) {
-		const issues = error instanceof BadRequestError ? error.issues : [];
-		return { message, issues };
-	}
+	if (error instanceof BadRequestError)
+		return { code: error.code, message, issues: error.issues };
 
-	return { message };
+	if (error instanceof AppError) return { code: error.code, message };
+
+	if (statusCode === Number(HttpStatutCodeErrorEnum.BAD_REQUEST))
+		return { code: getRejectedRequestCode(error), message, issues: [] };
+
+	return { code: getRejectedRequestCode(error), message };
 }
 
 export function globalErrorHandler(

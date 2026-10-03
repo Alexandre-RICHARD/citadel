@@ -1,4 +1,5 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { CreateGameBean } from "../bean/createGameBean.type.ts";
@@ -40,7 +41,10 @@ class GameService {
 	async getOneGame(getOneGameBean: GetOneGameBean): Promise<GameBean> {
 		const gameEntity = await getGameWithBossesByIdQuery(getOneGameBean.id);
 		if (gameEntity === null)
-			throw new NotFoundError(`No game with id : ${getOneGameBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${getOneGameBean.id}`,
+			);
 
 		const bossIds = gameEntity.bosses.map((boss) => boss.id);
 		const deathDateRanges = await getBossesDeathDateRangeQuery(bossIds);
@@ -60,7 +64,10 @@ class GameService {
 	async updateGame(updateGameBean: UpdateGameBean): Promise<GameSummaryBean> {
 		const gameEntity = await updateGameQuery(updateGameBean);
 		if (gameEntity === null)
-			throw new NotFoundError(`No game with id : ${updateGameBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${updateGameBean.id}`,
+			);
 
 		const gamesTotalDeath = await getGamesTotalDeathQuery([gameEntity.id]);
 
@@ -79,7 +86,10 @@ class GameService {
 			endedAt,
 		);
 		if (gameEntity === null)
-			throw new NotFoundError(`No game with id : ${setGameFinishedBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${setGameFinishedBean.id}`,
+			);
 
 		const gamesTotalDeath = await getGamesTotalDeathQuery([gameEntity.id]);
 		const gameTotalDeath = gamesTotalDeath.at(0)?.totalDeath ?? 0;
@@ -90,7 +100,10 @@ class GameService {
 	async deleteGame(deleteGameBean: DeleteGameBean): Promise<void> {
 		const wasDeleted = await deleteGameQuery(deleteGameBean.id);
 		if (!wasDeleted)
-			throw new NotFoundError(`No game with id : ${deleteGameBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${deleteGameBean.id}`,
+			);
 	}
 }
 

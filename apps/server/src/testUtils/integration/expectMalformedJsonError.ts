@@ -1,3 +1,4 @@
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import type { Response } from "supertest";
 import { expect } from "vitest";
@@ -6,6 +7,7 @@ import { expect } from "vitest";
 export function expectMalformedJsonError(response: Response): void {
 	expect(response.status).toBe(HttpStatutCodeErrorEnum.BAD_REQUEST);
 	expect(response.body).toStrictEqual({
+		code: TechnicalErrorCodeEnum.MALFORMED_JSON,
 		message: expect.any(String) as string,
 		issues: [],
 	});
