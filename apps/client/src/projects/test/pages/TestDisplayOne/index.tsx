@@ -3,7 +3,7 @@ import { LanguageEnum } from "@citadel/common/src/universal/language/language.en
 import { useEffect } from "react";
 import { NavLink, useNavigate, useParams } from "react-router";
 
-import { useGetOneTest } from "../../actions/useGetOneTest";
+import { useGetOneTest } from "../../api/useGetOneTest";
 import styles from "./testDisplayOne.module.scss";
 
 export function TestDisplayOne() {
@@ -37,18 +37,17 @@ export function TestDisplayOne() {
 			{data ? (
 				<>
 					<p>
-						<span className={styles.dataType}>Id :</span> {data?.data.id}
+						<span className={styles.dataType}>Id :</span> {data.id}
 					</p>
 					<p>
-						<span className={styles.dataType}>Nom :</span> {data?.data.name}
+						<span className={styles.dataType}>Nom :</span> {data.name}
 					</p>
 					<p>
-						<span className={styles.dataType}>Actif :</span>{" "}
-						{data?.data.isActive}
+						<span className={styles.dataType}>Actif :</span> {data.isActive}
 					</p>
 					<p>
 						<span className={styles.dataType}>Créé le :</span>{" "}
-						{formatDate(data?.data.createdAt, LanguageEnum.FRENCH)}
+						{formatDate(data.createdAt, LanguageEnum.FRENCH)}
 					</p>
 				</>
 			) : null}

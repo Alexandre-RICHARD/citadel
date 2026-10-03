@@ -3,7 +3,7 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation } from "@tanstack/react-query";
 
-import { fetchHandler } from "../../../common/helpers/fetch/handlerFetch";
+import { fetchHandler } from "../../../common/api/fetch/fetchHandler";
 
 type MutationArgs = {
 	name: string;
