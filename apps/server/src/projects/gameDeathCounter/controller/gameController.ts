@@ -21,6 +21,9 @@ export const gameController = {
 	getAll: asyncRequestHandler<GetAllGames>(async (_request, response) => {
 		const games = await gameService.getAllGames();
 
+		if (games.length === 0)
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+
 		return response
 			.status(HttpStatutCodeSuccessEnum.SUCCESS)
 			.json(fromGameSummaryBeanListToGameListDto(games));

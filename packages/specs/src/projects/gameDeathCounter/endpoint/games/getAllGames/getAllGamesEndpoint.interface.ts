@@ -12,10 +12,15 @@ export interface GetAllGames extends EndpointModel {
 		method: HttpMethodEnum.GET;
 		protected: false;
 	};
-	response: {
-		status: HttpStatutCodeSuccessEnum.SUCCESS;
-		data: GameListDto;
-	};
+	response:
+		| {
+				status: HttpStatutCodeSuccessEnum.SUCCESS;
+				data: GameListDto;
+		  }
+		| {
+				status: HttpStatutCodeSuccessEnum.NO_CONTENT;
+				data: null;
+		  };
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 	};
