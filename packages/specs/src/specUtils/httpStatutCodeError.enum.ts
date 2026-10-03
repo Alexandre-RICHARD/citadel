@@ -8,6 +8,7 @@ export enum HttpStatutCodeErrorEnum {
 	METHOD_NOT_ALLOWED = 405, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/405
 	CONFLICT_WITH_SERVER = 409, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/409
 	DELETE_ON_SERVER = 410, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/410
+	CONTENT_TOO_LARGE = 413, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/413
 	OUT_OF_RANGE = 416, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/416
 	SERVER_ERROR = 500, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500
 }
