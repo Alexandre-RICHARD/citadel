@@ -1,0 +1,107 @@
+.toaster {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20; // TODO Gérer proprement les zIndex
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 10px 10px 14px;
+    border-radius: var(--theme-radiusM);
+    border: 1px solid var(--theme-colorBorder);
+    border-left-width: 4px;
+    background: var(--theme-colorSurfaceRaised);
+    color: var(--theme-colorText);
+    font-family: var(--theme-fontFamilyPrimary);
+    font-size: 13px;
+    box-shadow: 0 6px 20px color-mix(in srgb, black 35%, transparent);
+    pointer-events: auto;
+
+    &[data-variant="error"] {
+      border-left-color: var(--theme-colorDestructiveHue);
+    }
+
+    &[data-variant="success"] {
+      border-left-color: var(--theme-colorConstructiveHue);
+    }
+
+    &[data-variant="info"] {
+      border-left-color: var(--theme-colorPrimaryHue);
+    }
+  }
+
+  .message {
+    flex: 1;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .action {
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: var(--theme-radiusS);
+    border: 1px solid color-mix(in srgb, var(--theme-colorPrimaryHue) 45%, transparent);
+    background: var(--theme-colorPrimarySubtle);
+    color: var(--theme-colorPrimaryStrong);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--theme-colorPrimaryHue) 28%, transparent);
+    }
+  }
+
+  .close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--theme-radiusS);
+    border: none;
+    background: transparent;
+    color: var(--theme-colorTextMuted);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--theme-colorSurface);
+      color: var(--theme-colorText);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .toaster {
+    right: 8px;
+    bottom: 8px;
+    width: calc(100vw - 16px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toaster .toast {
+    animation: toastEnter 0.18s ease-out;
+  }
+}
+
+@keyframes toastEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
