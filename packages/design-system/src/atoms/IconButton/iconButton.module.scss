@@ -72,3 +72,10 @@
     }
   }
 }
+
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  // Pas d'effet de survol sur une action indisponible
+  pointer-events: none;
+}
