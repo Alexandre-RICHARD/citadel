@@ -156,6 +156,20 @@ describe("getAllGames", () => {
 		});
 	});
 
+	describe("204 No Content", () => {
+		it("SHOULD answer without body WHEN there is no game", async () => {
+			// Arrange : la base garde les jeux des autres tests, son contenu est donc simulé vide
+			vi.spyOn(Game, "findAll").mockResolvedValueOnce([]);
+
+			// Act
+			const response = await request(app).get(GET_ALL_GAMES_URL);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(response.text).toBe("");
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error and log it WHEN reading the games fails", async () => {
 			// Arrange

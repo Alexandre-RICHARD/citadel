@@ -7,12 +7,13 @@ import type { ResponseMap } from "./responseMap.type.ts";
 
 type JsonFor<ResponseBody> = { json: (body: ResponseBody) => ExpressResponse };
 
-type StatusReturn<
-	Map extends Record<number, unknown>,
-	Status extends keyof Map & number,
-> = Omit<ExpressResponse, "json"> & JsonFor<Map[Status]>;
+type StatusReturn<Map extends object, Status extends keyof Map & number> = Omit<
+	ExpressResponse,
+	"json"
+> &
+	JsonFor<Map[Status]>;
 
-type TypedResponse<Map extends Record<number, unknown>> = Omit<
+type TypedResponse<Map extends object> = Omit<
 	ExpressResponse,
 	"status" | "json"
 > & {
