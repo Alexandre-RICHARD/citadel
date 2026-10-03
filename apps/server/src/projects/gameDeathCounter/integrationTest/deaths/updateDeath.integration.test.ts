@@ -1,6 +1,7 @@
 import type { DeathDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/death/deathDto.type.ts";
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -328,14 +329,14 @@ describe("updateDeath", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Act
 				const response = await request(app)
 					.patch(updateDeathUrl(pathValue))
 					.send({ comment: "Ornstein" });
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 
@@ -346,6 +347,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: [],
+						code: ValidationIssueCodeEnum.MISSING_FIELDS,
 						message: "At least one of date, comment should be provided",
 					},
 				],
@@ -356,6 +358,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: [],
+						code: ValidationIssueCodeEnum.MISSING_FIELDS,
 						message: "At least one of date, comment should be provided",
 					},
 				],
@@ -364,42 +367,66 @@ describe("updateDeath", () => {
 				reason: "the date is free text",
 				body: { date: "hier soir" },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_FORMAT,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				],
 			},
 			{
 				reason: "the date has no time",
 				body: { date: "2024-01-01" },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_FORMAT,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				],
 			},
 			{
 				reason: "the date has no time zone",
 				body: { date: "2024-01-01T10:00:00" },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_FORMAT,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				],
 			},
 			{
 				reason: "the date is a number",
 				body: { date: 1_700_000_000_000 },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				],
 			},
 			{
 				reason: "the date is null",
 				body: { date: null },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				],
 			},
 			{
 				reason: "the date is in the future",
 				body: { date: "2999-01-01T00:00:00.000Z" },
 				issues: [
-					{ path: ["date"], message: "Date should not be in the future" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.FUTURE_DATE,
+						message: "Date should not be in the future",
+					},
 				],
 			},
 			{
@@ -408,6 +435,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: ["date"],
+						code: ValidationIssueCodeEnum.DATE_TOO_OLD,
 						message: "Date should not be before 1000-01-01T00:00:00.000Z",
 					},
 				],
@@ -418,6 +446,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: ["date"],
+						code: ValidationIssueCodeEnum.DATE_TOO_OLD,
 						message: "Date should not be before 1000-01-01T00:00:00.000Z",
 					},
 				],
@@ -428,6 +457,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: ["date"],
+						code: ValidationIssueCodeEnum.DATE_TOO_OLD,
 						message: "Date should not be before 1000-01-01T00:00:00.000Z",
 					},
 				],
@@ -435,7 +465,13 @@ describe("updateDeath", () => {
 			{
 				reason: "the comment is a number",
 				body: { comment: 5 },
-				issues: [{ path: ["comment"], message: "Comment should be a string" }],
+				issues: [
+					{
+						path: ["comment"],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Comment should be a string",
+					},
+				],
 			},
 			{
 				reason:
@@ -444,6 +480,7 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: ["comment"],
+						code: ValidationIssueCodeEnum.INVALID_CHARACTERS,
 						message: "Comment should not contain invalid characters",
 					},
 				],
@@ -455,6 +492,8 @@ describe("updateDeath", () => {
 				issues: [
 					{
 						path: ["comment"],
+						code: ValidationIssueCodeEnum.TOO_LONG,
+						limit: 1000,
 						message: "Comment should contain at most 1000 characters",
 					},
 				],
@@ -463,8 +502,16 @@ describe("updateDeath", () => {
 				reason: "both the date and the comment are invalid",
 				body: { date: 12, comment: 5 },
 				issues: [
-					{ path: ["date"], message: "Date should be an ISO 8601 datetime" },
-					{ path: ["comment"], message: "Comment should be a string" },
+					{
+						path: ["date"],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Date should be an ISO 8601 datetime",
+					},
+					{
+						path: ["comment"],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Comment should be a string",
+					},
 				],
 			},
 		])(
@@ -498,6 +545,7 @@ describe("updateDeath", () => {
 			expectValidationError(response, [
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message: "Invalid input: expected object, received undefined",
 				},
 			]);
@@ -511,11 +559,13 @@ describe("updateDeath", () => {
 			expectValidationError(response, [
 				{
 					path: ["id"],
+					code: ValidationIssueCodeEnum.INVALID_FORMAT,
 					message:
 						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
 				},
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.MISSING_FIELDS,
 					message: "At least one of date, comment should be provided",
 				},
 			]);
@@ -529,7 +579,11 @@ describe("updateDeath", () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["comment"], message: "Comment should be a string" },
+				{
+					path: ["comment"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Comment should be a string",
+				},
 			]);
 		});
 

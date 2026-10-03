@@ -1,3 +1,4 @@
+import { fromZodIssueToValidationIssueDto } from "@citadel/specs/src/specUtils/error/fromZodIssueToValidationIssueDto.ts";
 import type { NextFunction, Request, Response } from "express";
 import { ZodError, type ZodType } from "zod";
 
@@ -54,12 +55,7 @@ export function requestValidator(schemas: RequestSchemas) {
 			next(
 				new BadRequestError(
 					"Parsing of request failed",
-					combinedError.issues.map((issue) => ({
-						path: issue.path.map((key) =>
-							typeof key === "symbol" ? key.toString() : key,
-						),
-						message: issue.message,
-					})),
+					combinedError.issues.map(fromZodIssueToValidationIssueDto),
 				),
 			);
 			return;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { requiredStringSchema } from "./requiredStringSchema.ts";
 
 const MAX_LENGTH = 10;
@@ -62,7 +63,11 @@ describe("requiredStringSchema.ts", () => {
 			{ reason: "a boolean", value: true },
 		])("SHOULD ask for a string WHEN the value is $reason", ({ value }) => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
-				{ path: [], message: "Name should be a string" },
+				{
+					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Name should be a string",
+				},
 			]);
 		});
 	});
@@ -76,7 +81,12 @@ describe("requiredStringSchema.ts", () => {
 			"SHOULD ask for at least one character WHEN the string is $reason",
 			({ value }) => {
 				expect(getIssues(schema.safeParse(value))).toStrictEqual([
-					{ path: [], message: "Name should contain at least 1 character" },
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.TOO_SHORT,
+						limit: 1,
+						message: "Name should contain at least 1 character",
+					},
 				]);
 			},
 		);
@@ -88,6 +98,8 @@ describe("requiredStringSchema.ts", () => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.TOO_LONG,
+					limit: MAX_LENGTH,
 					message: `Name should contain at most ${MAX_LENGTH} characters`,
 				},
 			]);
@@ -103,7 +115,11 @@ describe("requiredStringSchema.ts", () => {
 			"SHOULD reject the string WHEN it contains $reason, that the database would replace with �",
 			({ value }) => {
 				expect(getIssues(schema.safeParse(value))).toStrictEqual([
-					{ path: [], message: "Name should not contain invalid characters" },
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.INVALID_CHARACTERS,
+						message: "Name should not contain invalid characters",
+					},
 				]);
 			},
 		);

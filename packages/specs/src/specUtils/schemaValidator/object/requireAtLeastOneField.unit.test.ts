@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { requireAtLeastOneField } from "./requireAtLeastOneField.ts";
 
 const schema = requireAtLeastOneField(
@@ -49,7 +50,11 @@ describe("requireAtLeastOneField.ts", () => {
 			},
 		])("SHOULD list the possible fields WHEN $reason", ({ value }) => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
-				{ path: [], message: MESSAGE },
+				{
+					path: [],
+					code: ValidationIssueCodeEnum.MISSING_FIELDS,
+					message: MESSAGE,
+				},
 			]);
 		});
 
@@ -57,6 +62,7 @@ describe("requireAtLeastOneField.ts", () => {
 			expect(getIssues(schema.safeParse({ count: "3" }))).toStrictEqual([
 				{
 					path: ["count"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message: "Invalid input: expected number, received string",
 				},
 			]);

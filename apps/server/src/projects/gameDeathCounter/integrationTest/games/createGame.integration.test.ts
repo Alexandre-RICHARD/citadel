@@ -1,6 +1,7 @@
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummaryDto.type.ts";
 import type { CreateGameBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodyDto.type.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -167,7 +168,7 @@ describe("createGame", () => {
 	describe("400 Bad Request", () => {
 		it.each(INVALID_NAME_CASES)(
 			"SHOULD reject the request without creating anything WHEN $reason",
-			async ({ name, message }) => {
+			async ({ name, issue }) => {
 				// Arrange
 				const gameCountBefore = await countTableRows("game");
 
@@ -177,7 +178,7 @@ describe("createGame", () => {
 					.send({ name });
 
 				// Assert
-				expectValidationError(response, [{ path: ["name"], message }]);
+				expectValidationError(response, [{ path: ["name"], ...issue }]);
 				expect(await countTableRows("game")).toBe(gameCountBefore);
 			},
 		);
@@ -193,6 +194,7 @@ describe("createGame", () => {
 			expectValidationError(response, [
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message: "Invalid input: expected object, received undefined",
 				},
 			]);
@@ -212,6 +214,7 @@ describe("createGame", () => {
 			expectValidationError(response, [
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message: "Invalid input: expected object, received array",
 				},
 			]);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { bodyIdSchema } from "./bodyIdSchema.ts";
 import { IdBoundEnum } from "./idBound.enum.ts";
 
@@ -33,6 +34,7 @@ describe("bodyIdSchema.ts", () => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message:
 						'Game ID should be a JSON number, not text (e.g. 7, not "7")',
 				},
@@ -42,16 +44,32 @@ describe("bodyIdSchema.ts", () => {
 
 	describe("rejected numbers", () => {
 		it.each([
-			{ value: 1.5, message: "Game ID should be an integer (e.g. 7, not 7.5)" },
-			{ value: 0, message: "Game ID should be at least 1" },
-			{ value: -2, message: "Game ID should be at least 1" },
+			{
+				value: 1.5,
+				code: ValidationIssueCodeEnum.NOT_INTEGER,
+				message: "Game ID should be an integer (e.g. 7, not 7.5)",
+			},
+			{
+				value: 0,
+				code: ValidationIssueCodeEnum.TOO_SMALL,
+				limit: 1,
+				message: "Game ID should be at least 1",
+			},
+			{
+				value: -2,
+				code: ValidationIssueCodeEnum.TOO_SMALL,
+				limit: 1,
+				message: "Game ID should be at least 1",
+			},
 			{
 				value: IdBoundEnum.MAX + 1,
+				code: ValidationIssueCodeEnum.TOO_BIG,
+				limit: IdBoundEnum.MAX,
 				message: `Game ID should be at most ${IdBoundEnum.MAX}`,
 			},
-		])("SHOULD reject the id WHEN it is $value", ({ value, message }) => {
+		])("SHOULD reject the id WHEN it is $value", ({ value, ...issue }) => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
-				{ path: [], message },
+				{ path: [], ...issue },
 			]);
 		});
 	});

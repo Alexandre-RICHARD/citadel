@@ -1,6 +1,7 @@
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummaryDto.type.ts";
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -139,20 +140,20 @@ describe("setGameFinished", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Act
 				const response = await request(app)
 					.patch(setGameFinishedUrl(pathValue))
 					.send({ finished: true });
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 
 		it.each(buildInvalidBooleanCases("Finished"))(
 			"SHOULD reject the request without changing anything WHEN finished is $reason",
-			async ({ value, message }) => {
+			async ({ value, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Remnant II" });
 				const gameRowBefore = await selectGameRow(gameId);
@@ -163,7 +164,7 @@ describe("setGameFinished", () => {
 					.send({ finished: value });
 
 				// Assert
-				expectValidationError(response, [{ path: ["finished"], message }]);
+				expectValidationError(response, [{ path: ["finished"], ...issue }]);
 				expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 			},
 		);
@@ -176,8 +177,17 @@ describe("setGameFinished", () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["id"], message: "ID should be at least 1" },
-				{ path: ["finished"], message: "Finished should be a boolean" },
+				{
+					path: ["id"],
+					code: ValidationIssueCodeEnum.TOO_SMALL,
+					limit: 1,
+					message: "ID should be at least 1",
+				},
+				{
+					path: ["finished"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Finished should be a boolean",
+				},
 			]);
 		});
 
