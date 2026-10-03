@@ -1,0 +1,35 @@
+.errorState {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--theme-radiusM);
+  border: 1px solid var(--theme-colorBorder);
+  border-left: 4px solid var(--theme-colorDestructiveHue);
+  background: var(--theme-colorSurfaceRaised);
+  color: var(--theme-colorText);
+  font-family: var(--theme-fontFamilyPrimary);
+  font-size: 13px;
+
+  .message {
+    flex: 1;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .retry {
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: var(--theme-radiusS);
+    border: 1px solid color-mix(in srgb, var(--theme-colorPrimaryHue) 45%, transparent);
+    background: var(--theme-colorPrimarySubtle);
+    color: var(--theme-colorPrimaryStrong);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, var(--theme-colorPrimaryHue) 28%, transparent);
+    }
+  }
+}
