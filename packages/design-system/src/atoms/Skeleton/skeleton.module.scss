@@ -1,0 +1,78 @@
+// Anti-flash : invisible pendant 300 ms, pour qu'un chargement rapide (cache, réseau local) ne fasse pas clignoter la page
+.skeleton {
+  // Opaque : les barres de textes imbriqués se superposent sans foncer
+  --skeletonBone: color-mix(in srgb, var(--theme-colorTextMuted) 28%, var(--theme-colorSurface));
+
+  animation: skeletonReveal 0.15s ease-out 0.3s both;
+}
+
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Les !important sont voulus : la silhouette doit l'emporter sur les styles propres de chaque composant
+.bones {
+  filter: grayscale(1);
+  user-select: none;
+
+  // Texte : glyphes masqués, barré épais de la longueur exacte du texte
+  :where(*) {
+    color: transparent !important;
+    text-decoration: line-through 0.7em var(--skeletonBone) !important;
+    text-decoration-skip-ink: none !important;
+  }
+
+  :where(input, textarea)::placeholder {
+    color: transparent !important;
+  }
+
+  // Éléments sans texte à barrer : un bloc plein à leurs dimensions
+  :where(button, input, select, textarea, svg, img) {
+    background: var(--skeletonBone) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  :where(svg) {
+    border-radius: var(--theme-radiusS);
+  }
+
+  :where(img) {
+    opacity: 0;
+  }
+
+  // Une icône dans un bouton se fond dans le bloc du bouton
+  :where(button, input, select, textarea) :where(svg) {
+    background: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bones {
+    animation: skeletonPulse 1.6s ease-in-out 0.3s infinite;
+  }
+}
+
+@keyframes skeletonReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
