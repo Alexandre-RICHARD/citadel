@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import { ApiError } from "../error/ApiError";
+import { buildFailureMessage } from "../error/buildFailureMessage";
 import { getErrorReason } from "../error/getErrorReason";
 import { isTransientApiError } from "../error/isTransientApiError";
 import type { MutationFailure } from "./mutationFailure.type";
@@ -83,7 +84,7 @@ export function buildOptimisticMutationCallbacks<
 				...(options.fieldLabels && { fieldLabels: options.fieldLabels }),
 			});
 			notifyFailure({
-				message: `Impossible de ${options.actionLabel} : ${reason}.`,
+				message: buildFailureMessage(options.actionLabel, reason),
 				...(isTransientApiError(error) && { retry: () => retry(variables) }),
 			});
 		},
