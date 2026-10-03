@@ -1,6 +1,7 @@
 import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/bossSummaryDto.type.ts";
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -184,20 +185,20 @@ describe("setBossDefeated", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Act
 				const response = await request(app)
 					.patch(setBossDefeatedUrl(pathValue))
 					.send({ defeated: true });
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 
 		it.each(buildInvalidBooleanCases("Defeated"))(
 			"SHOULD reject the request without changing anything WHEN defeated is $reason",
-			async ({ value, message }) => {
+			async ({ value, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Celeste" });
 				const bossId = await insertBossRow({ gameId, name: "Oshiro" });
@@ -209,7 +210,7 @@ describe("setBossDefeated", () => {
 					.send({ defeated: value });
 
 				// Assert
-				expectValidationError(response, [{ path: ["defeated"], message }]);
+				expectValidationError(response, [{ path: ["defeated"], ...issue }]);
 				expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 			},
 		);
@@ -224,10 +225,15 @@ describe("setBossDefeated", () => {
 			expectValidationError(response, [
 				{
 					path: ["id"],
+					code: ValidationIssueCodeEnum.INVALID_FORMAT,
 					message:
 						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
 				},
-				{ path: ["defeated"], message: "Defeated should be a boolean" },
+				{
+					path: ["defeated"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Defeated should be a boolean",
+				},
 			]);
 		});
 

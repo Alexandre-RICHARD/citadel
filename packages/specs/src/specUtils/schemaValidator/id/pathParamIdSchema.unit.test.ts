@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { IdBoundEnum } from "./idBound.enum.ts";
 import { pathParamIdSchema } from "./pathParamIdSchema.ts";
 
@@ -53,7 +54,11 @@ describe("pathParamIdSchema.ts", () => {
 			"SHOULD describe the accepted format WHEN the path value is $reason",
 			({ pathValue }) => {
 				expect(getIssues(schema.safeParse(pathValue))).toStrictEqual([
-					{ path: [], message: FORMAT_MESSAGE },
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.INVALID_FORMAT,
+						message: FORMAT_MESSAGE,
+					},
 				]);
 			},
 		);
@@ -64,21 +69,33 @@ describe("pathParamIdSchema.ts", () => {
 			{
 				reason: "zero, well written but below the minimum",
 				pathValue: "0",
-				message: `ID should be at least ${IdBoundEnum.MIN}`,
+				issue: {
+					code: ValidationIssueCodeEnum.TOO_SMALL,
+					limit: IdBoundEnum.MIN,
+					message: `ID should be at least ${IdBoundEnum.MIN}`,
+				},
 			},
 			{
 				reason: "beyond the maximum of an INT column",
 				pathValue: String(IdBoundEnum.MAX + 1),
-				message: `ID should be at most ${IdBoundEnum.MAX}`,
+				issue: {
+					code: ValidationIssueCodeEnum.TOO_BIG,
+					limit: IdBoundEnum.MAX,
+					message: `ID should be at most ${IdBoundEnum.MAX}`,
+				},
 			},
 			{
 				reason: "too long to be an exact JavaScript number",
 				pathValue: "99999999999999999999",
-				message: `ID should be at most ${IdBoundEnum.MAX}`,
+				issue: {
+					code: ValidationIssueCodeEnum.TOO_BIG,
+					limit: IdBoundEnum.MAX,
+					message: `ID should be at most ${IdBoundEnum.MAX}`,
+				},
 			},
-		])("SHOULD reject the id WHEN it is $reason", ({ pathValue, message }) => {
+		])("SHOULD reject the id WHEN it is $reason", ({ pathValue, issue }) => {
 			expect(getIssues(schema.safeParse(pathValue))).toStrictEqual([
-				{ path: [], message },
+				{ path: [], ...issue },
 			]);
 		});
 	});
@@ -92,7 +109,11 @@ describe("pathParamIdSchema.ts", () => {
 			"SHOULD reject the value WHEN it is $reason, since a path param is always a string",
 			({ value }) => {
 				expect(getIssues(schema.safeParse(value))).toStrictEqual([
-					{ path: [], message: "ID should be a number" },
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "ID should be a number",
+					},
 				]);
 			},
 		);

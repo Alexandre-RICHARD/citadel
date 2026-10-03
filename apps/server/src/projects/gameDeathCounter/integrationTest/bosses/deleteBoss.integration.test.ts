@@ -88,12 +88,12 @@ describe("deleteBoss", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Act
 				const response = await request(app).delete(deleteBossUrl(pathValue));
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 	});

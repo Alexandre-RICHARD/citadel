@@ -1,5 +1,6 @@
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -197,7 +198,7 @@ describe("updateBoss", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Dead Cells" });
 
@@ -207,13 +208,13 @@ describe("updateBoss", () => {
 					.send({ name: "The Concierge", gameId });
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 
 		it.each(INVALID_NAME_CASES)(
 			"SHOULD reject the request without changing anything WHEN $reason",
-			async ({ name, message }) => {
+			async ({ name, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Salt and Sanctuary" });
 				const bossId = await insertBossRow({
@@ -228,14 +229,14 @@ describe("updateBoss", () => {
 					.send({ name, gameId });
 
 				// Assert
-				expectValidationError(response, [{ path: ["name"], message }]);
+				expectValidationError(response, [{ path: ["name"], ...issue }]);
 				expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 			},
 		);
 
 		it.each(buildInvalidBodyIdCases("Game ID"))(
 			"SHOULD reject the request without changing anything WHEN the game id is $reason",
-			async ({ value, message }) => {
+			async ({ value, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({
 					name: "Ori and the Blind Forest",
@@ -249,7 +250,7 @@ describe("updateBoss", () => {
 					.send({ name: "Kuro", gameId: value });
 
 				// Assert
-				expectValidationError(response, [{ path: ["gameId"], message }]);
+				expectValidationError(response, [{ path: ["gameId"], ...issue }]);
 				expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 			},
 		);
@@ -264,12 +265,18 @@ describe("updateBoss", () => {
 			expectValidationError(response, [
 				{
 					path: ["id"],
+					code: ValidationIssueCodeEnum.INVALID_FORMAT,
 					message:
 						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
 				},
-				{ path: ["name"], message: "Name should be a string" },
+				{
+					path: ["name"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Name should be a string",
+				},
 				{
 					path: ["gameId"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
 					message:
 						'Game ID should be a JSON number, not text (e.g. 7, not "7")',
 				},
@@ -284,7 +291,12 @@ describe("updateBoss", () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["name"], message: "Name should contain at least 1 character" },
+				{
+					path: ["name"],
+					code: ValidationIssueCodeEnum.TOO_SHORT,
+					limit: 1,
+					message: "Name should contain at least 1 character",
+				},
 			]);
 		});
 

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
+
 const REQUIRED_STRING_MIN_LENGTH = 1;
 
 export function requiredStringSchema(label: string, maxLength: number) {
@@ -16,6 +18,7 @@ export function requiredStringSchema(label: string, maxLength: number) {
 			// Une moitié d'emoji isolée (surrogate orphelin) serait remplacée par « � » en base, sans erreur
 			.refine((value) => value.isWellFormed(), {
 				message: `${label} should not contain invalid characters`,
+				params: { code: ValidationIssueCodeEnum.INVALID_CHARACTERS },
 			})
 	);
 }

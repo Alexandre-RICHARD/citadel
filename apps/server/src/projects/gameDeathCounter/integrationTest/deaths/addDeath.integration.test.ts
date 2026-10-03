@@ -161,7 +161,7 @@ describe("addDeath", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("Boss ID"))(
 			"SHOULD reject the request WHEN the boss id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Arrange
 				const deathCountBefore = await countTableRows("death");
 
@@ -169,7 +169,7 @@ describe("addDeath", () => {
 				const response = await request(app).post(addDeathUrl(pathValue));
 
 				// Assert
-				expectValidationError(response, [{ path: ["bossId"], message }]);
+				expectValidationError(response, [{ path: ["bossId"], ...issue }]);
 				expect(await countTableRows("death")).toBe(deathCountBefore);
 			},
 		);

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { pastIsoDateTimeSchema } from "./pastIsoDateTimeSchema.ts";
 import { SqlDatetimeBoundEnum } from "./sqlDatetimeBound.enum.ts";
 
@@ -79,15 +80,35 @@ describe("pastIsoDateTimeSchema.ts", () => {
 			{ reason: "24 o'clock", value: "2024-01-01T24:00:00Z" },
 			{ reason: "a six-digit year", value: "+002024-01-01T10:00:00Z" },
 			{ reason: "an empty string", value: "" },
+		])(
+			"SHOULD ask for an ISO 8601 datetime WHEN the value is $reason",
+			({ value }) => {
+				expect(getIssues(schema.safeParse(value))).toStrictEqual([
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.INVALID_FORMAT,
+						message: "Date should be an ISO 8601 datetime",
+					},
+				]);
+			},
+		);
+	});
+
+	describe("rejected types", () => {
+		it.each([
 			{ reason: "a numeric timestamp", value: 1_700_000_000_000 },
 			{ reason: "a Date object", value: new Date("2024-01-01T10:00:00Z") },
 			{ reason: "null", value: null },
 			{ reason: "undefined", value: undefined },
 		])(
-			"SHOULD ask for an ISO 8601 datetime WHEN the value is $reason",
+			"SHOULD ask for an ISO 8601 datetime, as a type error, WHEN the value is $reason",
 			({ value }) => {
 				expect(getIssues(schema.safeParse(value))).toStrictEqual([
-					{ path: [], message: "Date should be an ISO 8601 datetime" },
+					{
+						path: [],
+						code: ValidationIssueCodeEnum.INVALID_TYPE,
+						message: "Date should be an ISO 8601 datetime",
+					},
 				]);
 			},
 		);
@@ -106,7 +127,11 @@ describe("pastIsoDateTimeSchema.ts", () => {
 			{ reason: "far in the future", value: "2999-01-01T00:00:00.000Z" },
 		])("SHOULD reject the date WHEN it is $reason", ({ value }) => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
-				{ path: [], message: "Date should not be in the future" },
+				{
+					path: [],
+					code: ValidationIssueCodeEnum.FUTURE_DATE,
+					message: "Date should not be in the future",
+				},
 			]);
 		});
 	});
@@ -129,6 +154,7 @@ describe("pastIsoDateTimeSchema.ts", () => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.DATE_TOO_OLD,
 					message: `Date should not be before ${SqlDatetimeBoundEnum.MIN}`,
 				},
 			]);

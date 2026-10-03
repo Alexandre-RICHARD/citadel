@@ -1,5 +1,7 @@
 import { type z } from "zod";
 
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
+
 export function requireAtLeastOneField<Shape extends z.ZodRawShape>(
 	objectSchema: z.ZodObject<Shape>,
 ) {
@@ -11,6 +13,9 @@ export function requireAtLeastOneField<Shape extends z.ZodRawShape>(
 				(fieldName) =>
 					(object as Record<string, unknown>)[fieldName] !== undefined,
 			),
-		{ message: `At least one of ${fieldNames.join(", ")} should be provided` },
+		{
+			message: `At least one of ${fieldNames.join(", ")} should be provided`,
+			params: { code: ValidationIssueCodeEnum.MISSING_FIELDS },
+		},
 	);
 }

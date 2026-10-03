@@ -1,6 +1,7 @@
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummaryDto.type.ts";
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
@@ -181,20 +182,20 @@ describe("updateGame", () => {
 	describe("400 Bad Request", () => {
 		it.each(buildInvalidPathIdCases("ID"))(
 			"SHOULD reject the request WHEN the id is $reason",
-			async ({ pathValue, message }) => {
+			async ({ pathValue, issue }) => {
 				// Act
 				const response = await request(app)
 					.put(updateGameUrl(pathValue))
 					.send({ name: "Dead Cells" });
 
 				// Assert
-				expectValidationError(response, [{ path: ["id"], message }]);
+				expectValidationError(response, [{ path: ["id"], ...issue }]);
 			},
 		);
 
 		it.each(INVALID_NAME_CASES)(
 			"SHOULD reject the request without changing anything WHEN $reason",
-			async ({ name, message }) => {
+			async ({ name, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Salt and Sanctuary" });
 				const gameRowBefore = await selectGameRow(gameId);
@@ -205,7 +206,7 @@ describe("updateGame", () => {
 					.send({ name });
 
 				// Assert
-				expectValidationError(response, [{ path: ["name"], message }]);
+				expectValidationError(response, [{ path: ["name"], ...issue }]);
 				expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
 			},
 		);
@@ -220,10 +221,16 @@ describe("updateGame", () => {
 			expectValidationError(response, [
 				{
 					path: ["id"],
+					code: ValidationIssueCodeEnum.INVALID_FORMAT,
 					message:
 						"ID has an invalid number format: only digits from 0 to 9 are accepted, without leading zero (e.g. 7 or 42)",
 				},
-				{ path: ["name"], message: "Name should contain at least 1 character" },
+				{
+					path: ["name"],
+					code: ValidationIssueCodeEnum.TOO_SHORT,
+					limit: 1,
+					message: "Name should contain at least 1 character",
+				},
 			]);
 		});
 
@@ -235,7 +242,11 @@ describe("updateGame", () => {
 
 			// Assert
 			expectValidationError(response, [
-				{ path: ["name"], message: "Name should be a string" },
+				{
+					path: ["name"],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Name should be a string",
+				},
 			]);
 		});
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { booleanSchema } from "./booleanSchema.ts";
 
 const schema = booleanSchema("Defeated");
@@ -27,7 +28,11 @@ describe("booleanSchema.ts", () => {
 			{ reason: "an array", value: [true] },
 		])("SHOULD reject the value WHEN it is $reason", ({ value }) => {
 			expect(getIssues(schema.safeParse(value))).toStrictEqual([
-				{ path: [], message: "Defeated should be a boolean" },
+				{
+					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Defeated should be a boolean",
+				},
 			]);
 		});
 	});

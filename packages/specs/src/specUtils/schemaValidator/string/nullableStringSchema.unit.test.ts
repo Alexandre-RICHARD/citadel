@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getIssues } from "../../../testUtils/getIssues.ts";
+import { ValidationIssueCodeEnum } from "../../error/validationIssueCode.enum.ts";
 import { nullableStringSchema } from "./nullableStringSchema.ts";
 
 const MAX_LENGTH = 12;
@@ -49,7 +50,11 @@ describe("nullableStringSchema.ts", () => {
 			{ reason: "an array", value: ["Missed"] },
 		])("SHOULD ask for a string WHEN the value is $reason", ({ value }) => {
 			expect(getIssues(boundedSchema.safeParse(value))).toStrictEqual([
-				{ path: [], message: "Comment should be a string" },
+				{
+					path: [],
+					code: ValidationIssueCodeEnum.INVALID_TYPE,
+					message: "Comment should be a string",
+				},
 			]);
 		});
 
@@ -59,6 +64,8 @@ describe("nullableStringSchema.ts", () => {
 			).toStrictEqual([
 				{
 					path: [],
+					code: ValidationIssueCodeEnum.TOO_LONG,
+					limit: MAX_LENGTH,
 					message: `Comment should contain at most ${MAX_LENGTH} characters`,
 				},
 			]);
@@ -73,6 +80,7 @@ describe("nullableStringSchema.ts", () => {
 				expect(getIssues(boundedSchema.safeParse(value))).toStrictEqual([
 					{
 						path: [],
+						code: ValidationIssueCodeEnum.INVALID_CHARACTERS,
 						message: "Comment should not contain invalid characters",
 					},
 				]);

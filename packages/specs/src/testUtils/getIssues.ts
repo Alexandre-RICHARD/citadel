@@ -1,9 +1,12 @@
 import type { z } from "zod";
 
-// Garde de chaque problème ce que l'API renvoie au client : le chemin du champ et le message
+import { fromZodIssueToValidationIssueDto } from "../specUtils/error/fromZodIssueToValidationIssueDto.ts";
+import type { ValidationIssueDto } from "../specUtils/error/validationIssueDto.type.ts";
+
+// Garde de chaque problème ce que l'API renvoie au client dans un 400
 export function getIssues(
 	result: z.ZodSafeParseResult<unknown>,
-): { path: PropertyKey[]; message: string }[] {
+): ValidationIssueDto[] {
 	if (result.success) return [];
-	return result.error.issues.map(({ path, message }) => ({ path, message }));
+	return result.error.issues.map(fromZodIssueToValidationIssueDto);
 }
