@@ -1,11 +1,20 @@
-import { exponentialInterval } from "@citadel/common/src/universal/interval/exponentialInterval";
 import { QueryClient } from "@tanstack/react-query";
+
+import { shouldRetryQuery } from "../common/api/query/shouldRetryQuery";
+
+const STALE_TIME_MS = 30_000;
 
 export const tanStackQueryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			retryDelay: (attempt: number) => exponentialInterval(2, attempt, 2, 60),
-			retry: 1,
+			staleTime: STALE_TIME_MS,
+			retry: shouldRetryQuery,
+			// L'UI affiche l'erreur au lieu d'attendre indéfiniment le retour du réseau
+			networkMode: "always",
+		},
+		mutations: {
+			retry: false,
+			networkMode: "always",
 		},
 	},
 });
