@@ -3,9 +3,9 @@ import { formatNumberWithSpaces } from "@citadel/common/src/universal/number/for
 import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
 
-import { useGetAllMachines } from "../../actions/useGetAllMachines/useGetAllMachines";
-import type { AwesomeSinkFm } from "../../actions/useGetAwesomeSink/awesomeSinkFm.type";
-import { useGetAwesomeSink } from "../../actions/useGetAwesomeSink/useGetAwesomeSink";
+import { useGetAllMachines } from "../../api/useGetAllMachines/useGetAllMachines";
+import type { AwesomeSinkFm } from "../../api/useGetAwesomeSink/awesomeSinkFm.type";
+import { useGetAwesomeSink } from "../../api/useGetAwesomeSink/useGetAwesomeSink";
 import { MachineLine } from "./MachineLine";
 import styles from "./machines.module.scss";
 import { useMachines } from "./useMachines";
