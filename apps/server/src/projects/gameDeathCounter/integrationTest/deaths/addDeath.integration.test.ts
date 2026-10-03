@@ -1,4 +1,5 @@
 import type { DeathDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/death/deathDto.type.ts";
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -183,7 +184,11 @@ describe("addDeath", () => {
 			const response = await request(app).post(addDeathUrl(NON_EXISTENT_ID));
 
 			// Assert
-			expectNotFound(response, `No boss with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${NON_EXISTENT_ID}`,
+			);
 			expect(await countTableRows("death")).toBe(deathCountBefore);
 		});
 	});

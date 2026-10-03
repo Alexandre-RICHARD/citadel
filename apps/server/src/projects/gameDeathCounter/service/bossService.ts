@@ -1,4 +1,5 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { BossBean } from "../bean/bossBean.type.ts";
@@ -22,7 +23,10 @@ class BossService {
 	async getOneBoss(getOneBossBean: GetOneBossBean): Promise<BossBean> {
 		const bossEntity = await getBossWithDeathsByIdQuery(getOneBossBean.id);
 		if (bossEntity === null)
-			throw new NotFoundError(`No boss with id : ${getOneBossBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${getOneBossBean.id}`,
+			);
 
 		return fromBossEntityToBossBean(bossEntity);
 	}
@@ -31,7 +35,10 @@ class BossService {
 		const gameExists = await gameExistsByIdQuery(createBossBean.gameId);
 
 		if (!gameExists)
-			throw new NotFoundError(`No game with id : ${createBossBean.gameId}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${createBossBean.gameId}`,
+			);
 
 		const bossEntity = await createBossQuery(createBossBean);
 
@@ -41,11 +48,17 @@ class BossService {
 	async updateBoss(updateBossBean: UpdateBossBean): Promise<BossSummaryBean> {
 		const gameExists = await gameExistsByIdQuery(updateBossBean.gameId);
 		if (!gameExists)
-			throw new NotFoundError(`No game with id : ${updateBossBean.gameId}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${updateBossBean.gameId}`,
+			);
 
 		const bossEntity = await updateBossQuery(updateBossBean);
 		if (bossEntity === null)
-			throw new NotFoundError(`No boss with id : ${updateBossBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${updateBossBean.id}`,
+			);
 
 		const deathDateRanges = await getBossesDeathDateRangeQuery([bossEntity.id]);
 		const bossDeathDateRange = deathDateRanges.at(0) ?? null;
@@ -63,7 +76,10 @@ class BossService {
 			defeatedAt,
 		);
 		if (bossEntity === null)
-			throw new NotFoundError(`No boss with id : ${setBossDefeatedBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${setBossDefeatedBean.id}`,
+			);
 
 		const deathDateRanges = await getBossesDeathDateRangeQuery([bossEntity.id]);
 		const bossDeathDateRange = deathDateRanges.at(0) ?? null;
@@ -74,7 +90,10 @@ class BossService {
 	async deleteBoss(deleteBossBean: DeleteBossBean): Promise<void> {
 		const wasDeleted = await deleteBossQuery(deleteBossBean.id);
 		if (!wasDeleted)
-			throw new NotFoundError(`No boss with id : ${deleteBossBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${deleteBossBean.id}`,
+			);
 	}
 }
 

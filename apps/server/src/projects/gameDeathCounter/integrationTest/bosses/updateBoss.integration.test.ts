@@ -1,3 +1,4 @@
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -316,7 +317,11 @@ describe("updateBoss", () => {
 				.send({ name: "The Chain", gameId });
 
 			// Assert
-			expectNotFound(response, `No boss with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 
 		it("SHOULD answer that the target game does not exist, changing nothing", async () => {
@@ -331,7 +336,11 @@ describe("updateBoss", () => {
 				.send({ name: "Parade Master", gameId: NON_EXISTENT_ID });
 
 			// Assert
-			expectNotFound(response, `No game with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${NON_EXISTENT_ID}`,
+			);
 			expect(await selectBossRow(bossId)).toStrictEqual(bossRowBefore);
 		});
 
@@ -342,7 +351,11 @@ describe("updateBoss", () => {
 				.send({ name: "Ghost", gameId: NON_EXISTENT_ID });
 
 			// Assert
-			expectNotFound(response, `No game with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 	});
 

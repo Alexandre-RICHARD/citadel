@@ -1,3 +1,4 @@
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -105,7 +106,11 @@ describe("deleteBoss", () => {
 			);
 
 			// Assert
-			expectNotFound(response, `No boss with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 
 		it("SHOULD answer that the boss no longer exists WHEN deleted twice", async () => {
@@ -118,7 +123,11 @@ describe("deleteBoss", () => {
 			const response = await request(app).delete(deleteBossUrl(bossId));
 
 			// Assert
-			expectNotFound(response, `No boss with id : ${bossId}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${bossId}`,
+			);
 		});
 	});
 

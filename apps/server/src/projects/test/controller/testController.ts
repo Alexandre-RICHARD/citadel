@@ -6,6 +6,7 @@ import type { DeleteTest } from "@citadel/specs/src/projects/test/endpoint/delet
 import type { GetAllTest } from "@citadel/specs/src/projects/test/endpoint/getAllTestEndpoint.interface.ts";
 import type { GetOneTest } from "@citadel/specs/src/projects/test/endpoint/getOneTestEndpoint.interface.ts";
 import type { UpdateTest } from "@citadel/specs/src/projects/test/endpoint/updateTestEndpoint.interface.ts";
+import { TestErrorCodeEnum } from "@citadel/specs/src/projects/test/error/testErrorCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
@@ -28,7 +29,10 @@ export const testController = {
 		const result = await getOneTest({ id: parsedId });
 
 		if (!result) {
-			throw new NotFoundError(`No test with id : ${parsedId}`);
+			throw new NotFoundError(
+				TestErrorCodeEnum.TEST_NOT_FOUND,
+				`No test with id : ${parsedId}`,
+			);
 		}
 
 		return response
@@ -78,7 +82,10 @@ export const testController = {
 		});
 
 		if (!result) {
-			throw new NotFoundError(`No test with id : ${parsedId}`);
+			throw new NotFoundError(
+				TestErrorCodeEnum.TEST_NOT_FOUND,
+				`No test with id : ${parsedId}`,
+			);
 		}
 
 		return response

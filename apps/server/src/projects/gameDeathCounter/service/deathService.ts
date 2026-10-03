@@ -1,4 +1,5 @@
 import { dateNow } from "@citadel/common/src/universal/date/dateNow.ts";
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { AddDeathBean } from "../bean/addDeathBean.type.ts";
@@ -14,7 +15,10 @@ class DeathService {
 	async addDeath(addDeathBean: AddDeathBean): Promise<DeathBean> {
 		const deathEntity = await addDeathQuery(addDeathBean.bossId, dateNow());
 		if (deathEntity === null)
-			throw new NotFoundError(`No boss with id : ${addDeathBean.bossId}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${addDeathBean.bossId}`,
+			);
 
 		return fromDeathEntityToDeathBean(deathEntity);
 	}
@@ -22,7 +26,10 @@ class DeathService {
 	async updateDeath(updateDeathBean: UpdateDeathBean): Promise<DeathBean> {
 		const deathEntity = await updateDeathQuery(updateDeathBean);
 		if (deathEntity === null)
-			throw new NotFoundError(`No death with id : ${updateDeathBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${updateDeathBean.id}`,
+			);
 
 		return fromDeathEntityToDeathBean(deathEntity);
 	}
@@ -30,7 +37,10 @@ class DeathService {
 	async deleteDeath(deleteDeathBean: DeleteDeathBean): Promise<void> {
 		const wasDeleted = await deleteDeathQuery(deleteDeathBean.id);
 		if (!wasDeleted)
-			throw new NotFoundError(`No death with id : ${deleteDeathBean.id}`);
+			throw new NotFoundError(
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${deleteDeathBean.id}`,
+			);
 	}
 }
 

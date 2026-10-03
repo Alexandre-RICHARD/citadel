@@ -1,3 +1,4 @@
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -105,7 +106,11 @@ describe("deleteGame", () => {
 			);
 
 			// Assert
-			expectNotFound(response, `No game with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 
 		it("SHOULD answer that the game no longer exists WHEN deleted twice", async () => {
@@ -117,7 +122,11 @@ describe("deleteGame", () => {
 			const response = await request(app).delete(deleteGameUrl(gameId));
 
 			// Assert
-			expectNotFound(response, `No game with id : ${gameId}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${gameId}`,
+			);
 		});
 	});
 

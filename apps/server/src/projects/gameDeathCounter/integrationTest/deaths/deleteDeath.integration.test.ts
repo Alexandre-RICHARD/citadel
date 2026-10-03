@@ -1,3 +1,4 @@
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
@@ -169,7 +170,11 @@ describe("deleteDeath", () => {
 			);
 
 			// Assert
-			expectNotFound(response, `No death with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 
 		it("SHOULD answer that the death no longer exists without decrementing again WHEN deleted twice", async () => {
@@ -190,7 +195,11 @@ describe("deleteDeath", () => {
 			const response = await request(app).delete(deleteDeathUrl(deathId));
 
 			// Assert
-			expectNotFound(response, `No death with id : ${deathId}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${deathId}`,
+			);
 			expect((await selectBossRow(bossId))?.totalDeath).toBe(4);
 		});
 	});

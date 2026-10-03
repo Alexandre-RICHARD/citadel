@@ -1,4 +1,5 @@
 import type { GameDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameDto.type.ts";
+import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -289,7 +290,11 @@ describe("getOneGame", () => {
 			const response = await request(app).get(getOneGameUrl(NON_EXISTENT_ID));
 
 			// Assert
-			expectNotFound(response, `No game with id : ${NON_EXISTENT_ID}`);
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${NON_EXISTENT_ID}`,
+			);
 		});
 	});
 
