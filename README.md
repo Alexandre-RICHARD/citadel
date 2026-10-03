@@ -44,3 +44,6 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - Transformer tout l'infra. Avoir des base uniquement en container docker. La base dev est persisté mais facile à vider. La base de test est reset à chaque fois.
 - getSortStringValue classe les majuscules avant les minuscules et les accents après « z ». Il y a déjà un TODO sur le sujet ; les tests décrivent ce comportement actuel.
 - Rajouter un petit toast global à l'appli quand le client n'est plus connecté à internet. Avoir un toast de succès quand cela revient à la normale.
+- Tout convertir en REM
+- Gérer le preference mode dark or light
+- Avoir un mode qui désactive toutes les animations si l'utilisateur à émis cette préférence
