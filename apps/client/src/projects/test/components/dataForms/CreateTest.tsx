@@ -1,13 +1,13 @@
 import { TextInput } from "@citadel/design-system/src/atoms/TextInput";
-import type { TestDto } from "@citadel/specs/src/projects/test/dto/testDto.type";
 import { useState } from "react";
 
-import { useCreateTest } from "../../actions/useCreateTest";
+import type { TestFm } from "../../api/testFm.type";
+import { useCreateTest } from "../../api/useCreateTest";
 import { TestDataForm } from "./TestDataForm";
 
 type Props = {
 	onClose: () => void;
-	onCreateSubmit: (pendingTest: TestDto) => void;
+	onCreateSubmit: (pendingTest: TestFm) => void;
 	onCreateSuccess: () => void;
 };
 
