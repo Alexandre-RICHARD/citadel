@@ -39,3 +39,12 @@ export const Pressed: Story = {
 export const Small: Story = {
 	args: { size: "sm" },
 };
+
+export const Disabled: Story = {
+	args: {
+		icon: Save,
+		label: "Enregistrer",
+		variant: "primary",
+		disabled: true,
+	},
+};

@@ -8,6 +8,8 @@ type Props = {
 	variant?: "ghost" | "primary" | "accent" | "destructive";
 	size?: "sm" | "md";
 	pressed?: boolean;
+	// Action indisponible : mutation déjà en cours, saisie invalide…
+	disabled?: boolean;
 };
 
 export function IconButton({
@@ -17,11 +19,13 @@ export function IconButton({
 	variant = "ghost",
 	size = "md",
 	pressed,
+	disabled = false,
 }: Props) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
+			disabled={disabled}
 			aria-label={label}
 			aria-pressed={pressed}
 			title={label}
