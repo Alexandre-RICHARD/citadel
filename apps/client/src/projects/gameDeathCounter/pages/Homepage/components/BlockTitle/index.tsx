@@ -8,6 +8,8 @@ type Props = {
 	editing: boolean;
 	draftName: string;
 	setDraftName: (newName: string) => void;
+	// Règle enfreinte par le nom saisi, affichée sous le champ à la place des dates
+	inputError: string | null;
 	onToggleExpand: () => void;
 	element: {
 		name: string;
@@ -20,6 +22,7 @@ export function BlockTitle({
 	editing,
 	draftName,
 	setDraftName,
+	inputError,
 	onToggleExpand,
 	element,
 }: Props) {
@@ -39,6 +42,7 @@ export function BlockTitle({
 					type="text"
 					value={draftName}
 					onChange={(e) => setDraftName(e.target.value)}
+					aria-invalid={inputError !== null}
 					className={`${globalStyles.fieldInput} ${globalStyles.fieldInputInlineTitle} ${globalStyles.fieldInputGame}`}
 				/>
 			) : (
@@ -50,14 +54,18 @@ export function BlockTitle({
 					{element.name}
 				</button>
 			)}
-			<span className={styles.meta}>
-				{Boolean(element.startedAt) && (
-					<>Débuté le {formatLongDate(element.startedAt)}</>
-				)}
-				{Boolean(element.endedAt) && (
-					<> · terminé le {formatLongDate(element.endedAt)}</>
-				)}
-			</span>
+			{editing && inputError !== null ? (
+				<p className={globalStyles.inputError}>{inputError}</p>
+			) : (
+				<span className={styles.meta}>
+					{Boolean(element.startedAt) && (
+						<>Débuté le {formatLongDate(element.startedAt)}</>
+					)}
+					{Boolean(element.endedAt) && (
+						<> · terminé le {formatLongDate(element.endedAt)}</>
+					)}
+				</span>
+			)}
 		</div>
 	);
 }

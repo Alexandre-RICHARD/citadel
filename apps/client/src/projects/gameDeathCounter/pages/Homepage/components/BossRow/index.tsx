@@ -2,69 +2,85 @@ import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { ExpandToggle } from "@citadel/design-system/src/atoms/ExpandToggle";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { Pill } from "@citadel/design-system/src/atoms/Pill";
+import { ConfirmDialog } from "@citadel/design-system/src/molecules/ConfirmDialog";
+import { updateBossBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossBodySchema";
 import { Flame, Pencil, Plus, Save, Shield, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
+import { checkInput } from "../../../../../../common/validation/checkInput";
+import { useDeleteBoss } from "../../../../api/boss/useDeleteBoss";
+import { useSetBossDefeated } from "../../../../api/boss/useSetBossDefeated";
+import { useUpdateBoss } from "../../../../api/boss/useUpdateBoss";
+import { useAddDeath } from "../../../../api/death/useAddDeath";
+import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
+import type { BossSummaryFm } from "../../../../api/model/bossSummaryFm.type";
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Boss } from "../../../../types/boss.type";
 import { BlockTitle } from "../BlockTitle";
-import { DeathRow } from "../DeathRow";
+import { BossBody } from "../BossBody";
 import styles from "./bossRow.module.scss";
 
 type Props = {
-	boss: Boss;
-	expanded: boolean;
-	onToggleExpand: () => void;
-	onUpdate: (bossId: number, patch: { name: string }) => void;
-	onDelete: (bossId: number) => void;
-	onToggleDefeated: (bossId: number) => void;
-	onAddDeath: (bossId: number) => void;
-	onUpdateDeath: (
-		bossId: number,
-		deathId: number,
-		patch: {
-			comment: string | null;
-			date: string;
-		},
-	) => void;
-	onDeleteDeath: (bossId: number, deathId: number) => void;
+	gameId: number;
+	boss: BossSummaryFm;
 };
 
-export function BossRow({
-	boss,
-	expanded,
-	onToggleExpand,
-	onUpdate,
-	onDelete,
-	onToggleDefeated,
-	onAddDeath,
-	onUpdateDeath,
-	onDeleteDeath,
-}: Props) {
+// Annonce ce que la suppression emporte avec le boss
+function describeDeletion(totalDeath: number): string {
+	if (totalDeath === 0) return "Cette action est définitive.";
+	if (totalDeath === 1) return "Sa mort sera supprimée définitivement.";
+	return `Ses ${totalDeath} morts seront supprimées définitivement.`;
+}
+
+export function BossRow({ gameId, boss }: Props) {
+	const ids = { gameId, bossId: boss.id };
+
+	// Déplié en mémoire seulement : les morts du boss se chargent à la première ouverture
+	const [expanded, setExpanded] = useState(false);
 	const [editing, setEditing] = useState(false);
 	const [draftName, setDraftName] = useState(boss.name);
+	const [confirmingDeletion, setConfirmingDeletion] = useState(false);
 
-	const totalDeath = boss.deaths.length;
-	const isDefeated = Boolean(boss.defeatedAt);
-	const sorted = [...boss.deaths].sort(
-		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	const updateBoss = useUpdateBoss(ids);
+	const setBossDefeated = useSetBossDefeated(ids);
+	const deleteBoss = useDeleteBoss(ids);
+	const addDeath = useAddDeath(ids);
+
+	// Le schéma de l'endpoint exige aussi le jeu, que la mutation ajoute elle-même
+	const nameCheck = checkInput(
+		updateBossBodySchema.pick({ name: true }),
+		{ name: draftName },
+		gameDeathCounterFieldLabels,
 	);
 
+	function toggleExpand() {
+		setExpanded((wasExpanded) => !wasExpanded);
+	}
+
+	function startEditing() {
+		setDraftName(boss.name);
+		setEditing(true);
+	}
+
 	function save() {
-		const trimmed = draftName.trim();
-		if (!trimmed) return;
-		onUpdate(boss.id, { name: trimmed });
+		if (!nameCheck.isValid) return;
+		updateBoss.mutate(nameCheck.data);
 		setEditing(false);
+	}
+
+	function confirmDeletion() {
+		setConfirmingDeletion(false);
+		deleteBoss.mutate();
 	}
 
 	return (
 		<li
-			className={`${styles.bossCard} ${isDefeated ? styles.bossCardDefeated : ""}`}
+			className={`${styles.bossCard} ${boss.isDefeated ? styles.bossCardDefeated : ""} ${boss.isTemporary ? globalStyles.temporary : ""}`}
+			inert={boss.isTemporary}
 		>
 			<div className={styles.bossHeader}>
 				<ExpandToggle
 					expanded={expanded}
-					onToggle={onToggleExpand}
+					onToggle={toggleExpand}
 					expandLabel="Déplier le boss"
 					collapseLabel="Replier le boss"
 				/>
@@ -73,15 +89,20 @@ export function BossRow({
 					editing={editing}
 					draftName={draftName}
 					setDraftName={setDraftName}
-					onToggleExpand={onToggleExpand}
+					inputError={
+						!nameCheck.isValid && draftName.trim() !== ""
+							? nameCheck.message
+							: null
+					}
+					onToggleExpand={toggleExpand}
 					element={{
 						name: boss.name,
-						startedAt: sorted.length ? sorted[sorted.length - 1].date : null,
+						startedAt: boss.firstTry,
 						endedAt: boss.defeatedAt,
 					}}
 				/>
 
-				{isDefeated && (
+				{boss.isDefeated && (
 					<Pill>
 						<Shield
 							size={12}
@@ -92,7 +113,7 @@ export function BossRow({
 				)}
 
 				<CountBadge
-					count={totalDeath}
+					count={boss.totalDeath}
 					icon={Flame}
 					flickerIcon
 					size="sm"
@@ -106,6 +127,7 @@ export function BossRow({
 								label="Enregistrer"
 								variant="primary"
 								size="sm"
+								disabled={!nameCheck.isValid}
 								onClick={save}
 							/>
 							<IconButton
@@ -120,31 +142,39 @@ export function BossRow({
 							<IconButton
 								icon={Shield}
 								label={
-									isDefeated ? "Marquer non vaincu" : "Marquer comme vaincu"
+									boss.isDefeated
+										? "Marquer non vaincu"
+										: "Marquer comme vaincu"
 								}
-								pressed={isDefeated}
+								pressed={boss.isDefeated}
 								size="sm"
-								onClick={() => onToggleDefeated(boss.id)}
+								disabled={setBossDefeated.isPending}
+								onClick={() =>
+									setBossDefeated.mutate({ defeated: !boss.isDefeated })
+								}
 							/>
 							<IconButton
 								icon={Pencil}
 								label="Modifier le boss"
 								size="sm"
-								onClick={() => setEditing(true)}
+								disabled={updateBoss.isPending}
+								onClick={startEditing}
 							/>
 							<IconButton
 								icon={Trash2}
 								label="Supprimer le boss"
 								size="sm"
 								variant="destructive"
-								onClick={() => onDelete(boss.id)}
+								disabled={deleteBoss.isPending}
+								onClick={() => setConfirmingDeletion(true)}
 							/>
 							<IconButton
 								icon={Plus}
 								label="Ajouter une mort (+1)"
 								variant="accent"
 								size="sm"
-								onClick={() => onAddDeath(boss.id)}
+								disabled={addDeath.isPending}
+								onClick={() => addDeath.mutate()}
 							/>
 						</>
 					)}
@@ -152,34 +182,21 @@ export function BossRow({
 			</div>
 
 			{expanded && (
-				<div className={styles.bossBody}>
-					{boss.deaths.length === 0 ? (
-						<p className={globalStyles.emptyHint}>
-							Aucune tentative enregistrée. Le bouton flamme ajoute la première
-							mort.
-						</p>
-					) : (
-						<ul className={styles.deathList}>
-							{sorted.map((death) => (
-								<DeathRow
-									key={death.id}
-									death={death}
-									onUpdate={(
-										deathId: number,
-										patch: {
-											comment: string | null;
-											date: string;
-										},
-									) => onUpdateDeath(boss.id, deathId, patch)}
-									onDelete={(deathId: number) =>
-										onDeleteDeath(boss.id, deathId)
-									}
-								/>
-							))}
-						</ul>
-					)}
-				</div>
+				<BossBody
+					gameId={gameId}
+					bossId={boss.id}
+				/>
 			)}
+
+			<ConfirmDialog
+				open={confirmingDeletion}
+				title={`Supprimer « ${boss.name} » ?`}
+				description={describeDeletion(boss.totalDeath)}
+				confirmLabel="Supprimer"
+				destructive
+				onConfirm={confirmDeletion}
+				onCancel={() => setConfirmingDeletion(false)}
+			/>
 		</li>
 	);
 }
