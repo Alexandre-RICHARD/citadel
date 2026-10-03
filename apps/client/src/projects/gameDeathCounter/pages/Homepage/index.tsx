@@ -1,72 +1,39 @@
-import { Flame } from "lucide-react";
+import { Skeleton } from "@citadel/design-system/src/atoms/Skeleton";
+import { Suspense } from "react";
 
-import { GameCard } from "./components/GameCard";
+import { QueryErrorBoundary } from "../../../../react/QueryErrorBoundary";
+import { useGameList } from "../../api/game/useGameList";
+import { gameDeathCounterErrorReasons } from "../../api/gameDeathCounterErrorReasons";
+import { GameList } from "./components/GameList";
+import { GAME_LIST_PLACEHOLDER } from "./components/GameList/gameListPlaceholder";
 import { Header } from "./components/Header";
 import styles from "./homepage.module.scss";
-import { useHomepage } from "./useHomepage";
+
+function LoadedGameList() {
+	const { games } = useGameList();
+	return <GameList games={games} />;
+}
 
 export function Homepage() {
-	const {
-		submitNewGame,
-		grandTotal,
-		games,
-		expandedGameIds,
-		expandedBossIds,
-		toggleGameExpand,
-		toggleBossExpand,
-		onUpdateGame,
-		onDeleteGame,
-		onToggleFinished,
-		onAddBoss,
-		onUpdateBoss,
-		onDeleteBoss,
-		onToggleDefeated,
-		onAddDeath,
-		onUpdateDeath,
-		onDeleteDeath,
-	} = useHomepage();
-
 	return (
 		<>
-			<Header
-				submitNewGame={submitNewGame}
-				grandTotal={grandTotal}
-			/>
-			{games.length === 0 ? (
-				<div className={styles.emptyState}>
-					<Flame
-						size={34}
-						className={styles.flame}
-					/>
-					<h2>Aucun jeu enregistré</h2>
-					<p>
-						Ajoutez votre premier bûcher pour commencer à consigner vos trépas.
-					</p>
-				</div>
-			) : (
-				<ul className={styles.gameList}>
-					{games.map((game) => (
-						<GameCard
-							key={game.id}
-							game={game}
-							expanded={expandedGameIds.has(game.id)}
-							onToggleExpand={() => toggleGameExpand(game.id)}
-							expandedBossIds={expandedBossIds}
-							onToggleBossExpand={toggleBossExpand}
-							onUpdateGame={onUpdateGame}
-							onDeleteGame={onDeleteGame}
-							onToggleFinished={onToggleFinished}
-							onAddBoss={onAddBoss}
-							onUpdateBoss={onUpdateBoss}
-							onDeleteBoss={onDeleteBoss}
-							onToggleDefeated={onToggleDefeated}
-							onAddDeath={onAddDeath}
-							onUpdateDeath={onUpdateDeath}
-							onDeleteDeath={onDeleteDeath}
-						/>
-					))}
-				</ul>
-			)}
+			<Header />
+			<main className={styles.content}>
+				<QueryErrorBoundary
+					actionLabel="charger les jeux"
+					errorReasons={gameDeathCounterErrorReasons}
+				>
+					<Suspense
+						fallback={
+							<Skeleton label="Chargement des jeux">
+								<GameList games={GAME_LIST_PLACEHOLDER} />
+							</Skeleton>
+						}
+					>
+						<LoadedGameList />
+					</Suspense>
+				</QueryErrorBoundary>
+			</main>
 		</>
 	);
 }

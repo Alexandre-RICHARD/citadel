@@ -2,101 +2,79 @@ import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { ExpandToggle } from "@citadel/design-system/src/atoms/ExpandToggle";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { Pill } from "@citadel/design-system/src/atoms/Pill";
-import { Check, Flame, Pencil, Plus, Save, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ConfirmDialog } from "@citadel/design-system/src/molecules/ConfirmDialog";
+import { updateGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/updateGame/updateGameBodySchema";
+import { Check, Flame, Pencil, Save, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
+import { checkInput } from "../../../../../../common/validation/checkInput";
+import { useDeleteGame } from "../../../../api/game/useDeleteGame";
+import { useSetGameFinished } from "../../../../api/game/useSetGameFinished";
+import { useUpdateGame } from "../../../../api/game/useUpdateGame";
+import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
+import type { GameSummaryFm } from "../../../../api/model/gameSummaryFm.type";
 import globalStyles from "../../../../globalStyles.module.scss";
-import type { Game } from "../../../../types/game.type";
 import { BlockTitle } from "../BlockTitle";
-import { BossRow } from "../BossRow";
+import { GameBody } from "../GameBody";
 import styles from "./gameCard.module.scss";
 
 type Props = {
-	game: Game;
-	expanded: boolean;
-	onToggleExpand: () => void;
-	expandedBossIds: Set<number>;
-	onToggleBossExpand: (bossId: number) => void;
-	onUpdateGame: (gameId: number, gamePatch: { name: string }) => void;
-	onDeleteGame: (gameId: number) => void;
-	onToggleFinished: (gameId: number) => void;
-	onAddBoss: (gameId: number, bossName: string) => void;
-	onUpdateBoss: (
-		gameId: number,
-		bossId: number,
-		patch: { name: string },
-	) => void;
-	onDeleteBoss: (gameId: number, bossId: number) => void;
-	onToggleDefeated: (gameId: number, bossId: number) => void;
-	onAddDeath: (gameId: number, bossId: number) => void;
-	onUpdateDeath: (
-		gameId: number,
-		bossId: number,
-		deathId: number,
-		patch: {
-			comment: string | null;
-			date: string;
-		},
-	) => void;
-	onDeleteDeath: (gameId: number, bossId: number, deathId: number) => void;
+	game: GameSummaryFm;
 };
 
-export function GameCard({
-	game,
-	expanded,
-	onToggleExpand,
-	expandedBossIds,
-	onToggleBossExpand,
-	onUpdateGame,
-	onDeleteGame,
-	onToggleFinished,
-	onAddBoss,
-	onUpdateBoss,
-	onDeleteBoss,
-	onToggleDefeated,
-	onAddDeath,
-	onUpdateDeath,
-	onDeleteDeath,
-}: Props) {
-	const inputRef = useRef<HTMLInputElement>(null);
+// Annonce ce que la suppression emporte avec le jeu
+function describeDeletion(totalDeath: number): string {
+	if (totalDeath === 0) return "Ses boss seront supprimés définitivement.";
+	const deaths = totalDeath === 1 ? "sa mort" : `ses ${totalDeath} morts`;
+	return `Ses boss et ${deaths} seront supprimés définitivement.`;
+}
 
+export function GameCard({ game }: Props) {
+	// Déplié en mémoire seulement : le détail du jeu se charge à la première ouverture
+	const [expanded, setExpanded] = useState(false);
 	const [editing, setEditing] = useState(false);
 	const [draftName, setDraftName] = useState(game.name);
-	const [addingBoss, setAddingBoss] = useState(false);
-	const [newBossName, setNewBossName] = useState("");
+	const [confirmingDeletion, setConfirmingDeletion] = useState(false);
 
-	const totalDeath = game.bosses.reduce((sum, b) => sum + b.deaths.length, 0);
-	const isFinished = Boolean(game.endedAt);
+	const updateGame = useUpdateGame(game.id);
+	const setGameFinished = useSetGameFinished(game.id);
+	const deleteGame = useDeleteGame(game.id);
+
+	const nameCheck = checkInput(
+		updateGameBodySchema,
+		{ name: draftName },
+		gameDeathCounterFieldLabels,
+	);
+
+	function toggleExpand() {
+		setExpanded((wasExpanded) => !wasExpanded);
+	}
+
+	function startEditing() {
+		setDraftName(game.name);
+		setEditing(true);
+	}
 
 	function saveGameName() {
-		const trimmed = draftName.trim();
-		if (!trimmed) return;
-		onUpdateGame(game.id, { name: trimmed });
+		if (!nameCheck.isValid) return;
+		updateGame.mutate(nameCheck.data);
 		setEditing(false);
 	}
 
-	useEffect(() => {
-		if (addingBoss) {
-			inputRef.current?.focus();
-		}
-	}, [addingBoss]);
-
-	function submitNewBoss() {
-		const trimmed = newBossName.trim();
-		if (!trimmed) return;
-		onAddBoss(game.id, trimmed);
-		setNewBossName("");
-		setAddingBoss(false);
+	function confirmDeletion() {
+		setConfirmingDeletion(false);
+		deleteGame.mutate();
 	}
 
 	return (
 		<li
-			className={`${styles.gameCard} ${isFinished ? styles.gameCardFinished : ""}`}
+			className={`${styles.gameCard} ${game.isFinished ? styles.gameCardFinished : ""} ${game.isTemporary ? globalStyles.temporary : ""}`}
+			inert={game.isTemporary}
 		>
 			<div className={styles.gameHeader}>
 				<ExpandToggle
 					expanded={expanded}
-					onToggle={onToggleExpand}
+					onToggle={toggleExpand}
 					expandLabel="Déplier le jeu"
 					collapseLabel="Replier le jeu"
 					size="lg"
@@ -106,7 +84,12 @@ export function GameCard({
 					editing={editing}
 					draftName={draftName}
 					setDraftName={setDraftName}
-					onToggleExpand={onToggleExpand}
+					inputError={
+						!nameCheck.isValid && draftName.trim() !== ""
+							? nameCheck.message
+							: null
+					}
+					onToggleExpand={toggleExpand}
 					element={{
 						name: game.name,
 						startedAt: game.startedAt,
@@ -114,7 +97,7 @@ export function GameCard({
 					}}
 				/>
 
-				{isFinished && (
+				{game.isFinished && (
 					<Pill>
 						<Check
 							size={12}
@@ -125,7 +108,7 @@ export function GameCard({
 				)}
 
 				<CountBadge
-					count={totalDeath}
+					count={game.totalDeath}
 					icon={Flame}
 					flickerIcon
 				/>
@@ -137,6 +120,7 @@ export function GameCard({
 								icon={Save}
 								label="Enregistrer"
 								variant="primary"
+								disabled={!nameCheck.isValid}
 								onClick={saveGameName}
 							/>
 							<IconButton
@@ -150,103 +134,45 @@ export function GameCard({
 							<IconButton
 								icon={Check}
 								label={
-									isFinished ? "Marquer non terminé" : "Marquer comme terminé"
+									game.isFinished
+										? "Marquer non terminé"
+										: "Marquer comme terminé"
 								}
-								pressed={isFinished}
-								onClick={() => onToggleFinished(game.id)}
+								pressed={game.isFinished}
+								disabled={setGameFinished.isPending}
+								onClick={() =>
+									setGameFinished.mutate({ finished: !game.isFinished })
+								}
 							/>
 							<IconButton
 								icon={Pencil}
 								label="Modifier le jeu"
-								onClick={() => setEditing(true)}
+								disabled={updateGame.isPending}
+								onClick={startEditing}
 							/>
 							<IconButton
 								icon={Trash2}
 								label="Supprimer le jeu"
 								variant="destructive"
-								onClick={() => onDeleteGame(game.id)}
+								disabled={deleteGame.isPending}
+								onClick={() => setConfirmingDeletion(true)}
 							/>
 						</>
 					)}
 				</div>
 			</div>
 
-			{expanded && (
-				<div className={styles.gameBody}>
-					{game.bosses.length === 0 && !addingBoss ? (
-						<p className={globalStyles.emptyHint}>
-							Aucun boss enregistré pour ce jeu.
-						</p>
-					) : (
-						<ul className={styles.bossList}>
-							{game.bosses.map((boss) => (
-								<BossRow
-									key={boss.id}
-									boss={boss}
-									expanded={expandedBossIds.has(boss.id)}
-									onToggleExpand={() => onToggleBossExpand(boss.id)}
-									onUpdate={(bossId: number, patch: { name: string }) =>
-										onUpdateBoss(game.id, bossId, patch)
-									}
-									onDelete={(bossId: number) => onDeleteBoss(game.id, bossId)}
-									onToggleDefeated={(bossId: number) =>
-										onToggleDefeated(game.id, bossId)
-									}
-									onAddDeath={(bossId: number) => onAddDeath(game.id, bossId)}
-									onUpdateDeath={(
-										bossId: number,
-										deathId: number,
-										patch: {
-											comment: string | null;
-											date: string;
-										},
-									) => onUpdateDeath(game.id, bossId, deathId, patch)}
-									onDeleteDeath={(bossId: number, deathId: number) =>
-										onDeleteDeath(game.id, bossId, deathId)
-									}
-								/>
-							))}
-						</ul>
-					)}
+			{expanded && <GameBody gameId={game.id} />}
 
-					{addingBoss ? (
-						<div className={styles.addBossForm}>
-							<input
-								ref={inputRef}
-								type="text"
-								value={newBossName}
-								onChange={(e) => setNewBossName(e.target.value)}
-								placeholder="Nom du boss"
-								className={globalStyles.fieldInput}
-								onKeyDown={(e) => e.key === "Enter" && submitNewBoss()}
-							/>
-							<IconButton
-								icon={Save}
-								label="Ajouter"
-								variant="primary"
-								onClick={submitNewBoss}
-							/>
-							<IconButton
-								icon={X}
-								label="Annuler"
-								onClick={() => setAddingBoss(false)}
-							/>
-						</div>
-					) : (
-						<button
-							type="button"
-							className={styles.addBossTrigger}
-							onClick={() => setAddingBoss(true)}
-						>
-							<Plus
-								size={16}
-								strokeWidth={2.4}
-							/>
-							Ajouter un boss
-						</button>
-					)}
-				</div>
-			)}
+			<ConfirmDialog
+				open={confirmingDeletion}
+				title={`Supprimer « ${game.name} » ?`}
+				description={describeDeletion(game.totalDeath)}
+				confirmLabel="Supprimer"
+				destructive
+				onConfirm={confirmDeletion}
+				onCancel={() => setConfirmingDeletion(false)}
+			/>
 		</li>
 	);
 }

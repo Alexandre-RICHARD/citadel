@@ -1,0 +1,43 @@
+.gameBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 16px 44px;
+  border-top: 1px solid vars.$lineSoft;
+
+  .addBossTrigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 9px;
+    border: 1px dashed vars.$line;
+    background: transparent;
+    color: vars.$ash;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover {
+      border-color: vars.$ember;
+      color: vars.$emberBright;
+    }
+  }
+
+  .addBossForm {
+    display: flex;
+    gap: 8px;
+  }
+
+  .addBossField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+}

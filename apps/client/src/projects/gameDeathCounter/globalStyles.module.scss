@@ -47,3 +47,14 @@
   font-family: "JetBrains Mono", monospace;
   font-weight: 600;
 }
+
+// Élément créé de façon optimiste : visible tout de suite, mais grisé et inerte jusqu'à la réponse du serveur
+.temporary {
+  opacity: 0.55;
+}
+
+.inputError {
+  margin: 0;
+  font-size: 11.5px;
+  color: vars.$dangerBright;
+}
