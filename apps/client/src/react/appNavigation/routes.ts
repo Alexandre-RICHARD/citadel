@@ -61,6 +61,21 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		} satisfies RouteMeta,
 		index: true,
 	},
+
+	[ProjectsEnum.Backlog]: {
+		path: `${projects[ProjectsEnum.Backlog].path}/*`,
+		lazy: async () => {
+			const { Backlog } = await import("../../projects/backlog");
+			return { Component: Backlog };
+		},
+		handle: {
+			project: ProjectsEnum.Backlog,
+			documentTitle: projects[ProjectsEnum.Backlog].documentTitle,
+			favicon: projects[ProjectsEnum.Backlog].favicon,
+			basePath: projects[ProjectsEnum.Backlog].path,
+		} satisfies RouteMeta,
+		index: true,
+	},
 };
 
 export const router = createBrowserRouter([

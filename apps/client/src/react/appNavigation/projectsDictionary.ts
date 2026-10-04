@@ -35,4 +35,13 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		documentTitle: "Game Death Counter",
 		favicon: "/favicon/game-death-counter.ico",
 	},
+
+	[ProjectsEnum.Backlog]: {
+		id: "backlog",
+		path: "/backlog",
+		name: "Backlog",
+		description: "Projet de suivi du backlog des jeux, films et séries",
+		documentTitle: "Backlog",
+		favicon: "/favicon/backlog.ico",
+	},
 };
