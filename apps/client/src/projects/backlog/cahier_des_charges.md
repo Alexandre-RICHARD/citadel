@@ -54,7 +54,7 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | --- | --- | --- |
 | Nom VO | Colonne Nom, recherche | `name` |
 | Nom VF | Colonne Nom, recherche | `alternative_names` dont le commentaire indique un titre français (« French title ») : IGDB n'a pas de région France. Sans titre français, ou s'il est identique au nom VO, seul le nom VO s'affiche |
-| Noms alternatifs | Recherche, prévisualisation à l'ajout | `alternative_names` (nom + commentaire) |
+| Noms alternatifs | Seulement pour trouver le nom VF : aucun n'est stocké | `alternative_names` (nom + commentaire) |
 | Image | Miniature, choisie à l'ajout | `cover`, `artworks` → `image_id` |
 | Page IGDB | Entrée « Ouvrir sur IGDB » du menu Actions | `url` |
 | Date de sortie | Colonne Date de sortie | `first_release_date` ; `release_dates` par plateforme |
@@ -98,7 +98,7 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 
 ### Consignes pour le code du POC
 
-- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, variante, DLC, DLC fait, série, franchise, société, nom alternatif…), avec les mêmes noms de champs.
+- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, variante, DLC, DLC fait, série, franchise, société…), avec les mêmes noms de champs.
 - **Données normalisées** : les relations passent par des identifiants (`gameId`, `platformId`…), sans objets imbriqués ni données copiées d'une entité à l'autre.
 - **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
 - **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de variantes).
@@ -138,8 +138,6 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
   - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), plus le type de fin et le numéro dans la série choisis à l'ajout. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
   - **Base utilisateur** : les variantes, qui portent toutes les données de l'utilisateur. C'est là seulement que la plateforme distingue les variantes.
 - **Serveur obligatoire** entre le front et IGDB : IGDB refuse les appels depuis un navigateur, son token doit rester côté serveur et l'API est limitée à 4 requêtes par seconde.
-- **Noms alternatifs** : une table dédiée (jeu, nom, commentaire).
-
 ### Images
 
 - On stocke seulement la référence de l'image : son `image_id` IGDB. Aucune image n'est stockée.
@@ -169,9 +167,9 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Plateformes proposées pour une variante** : d'abord celles où la version est sortie, puis les émulateurs de ces consoles. Exemple : un jeu PS2 propose PS2, puis *PCSX2*.
 - **Pas de doublon** : un jeu, une version ou un DLC n'existe qu'une fois en base. La recherche exclut les bundles et signale ce qui est déjà en base.
 - **Pas de duplication de variante** : avoir joué à la même variante sur plusieurs comptes ne crée pas de seconde entrée.
-- **Plusieurs noms** : un jeu a un nom VO, un nom VF éventuel et des noms alternatifs, tous reliés au même jeu.
+- **Deux noms** : un jeu a un nom VO et un nom VF éventuel. Les autres noms alternatifs d'IGDB ne sont pas stockés.
 - **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu.
-- **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément.
+- **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément. Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
 - **Jeu original toujours en base** : ajouter un jeu récupère aussi son original et toutes ses versions, nécessaires pour la ligne dépliable et le choix des variantes.
 
 ### Affichage replié / déplié
@@ -268,11 +266,11 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 ### Ajout depuis IGDB
 
 1. **Recherche** : une barre de recherche connectée à IGDB, y compris dans le POC.
-   - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image ; un seul nom si VF et VO sont identiques.
+   - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image et ses plateformes (3 au plus, puis le nombre de plateformes restantes) ; un seul nom si VF et VO sont identiques.
    - Sont exclus des résultats : les bundles, les DLC et extensions (ils arrivent avec leur jeu), les packs, mises à jour, mods, épisodes, saisons et forks. Restent les jeux principaux, remakes, extensions standalone et versions.
    - Une version (ex. *Skyrim Special Edition*) est un résultat à part entière : la choisir ouvre la modale de son jeu original, avec cette version pré-sélectionnée pour la variante.
    - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec cette version pré-sélectionnée.
-2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF, alternatifs), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
+2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
 3. **Choix dans la modale** :
    - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
    - Le type de fin du jeu (section 6) ; Histoire par défaut.
@@ -371,6 +369,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
 - Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
 - Plusieurs séries, franchises, développeurs et éditeurs par jeu : IGDB renvoie des listes (`collections`, `franchises`, `involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (chaque franchise cliquable, un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
+- À surveiller : les éditions qu'IGDB classe en « Bundle ». Le POC prend comme version tout bundle rattaché à un jeu par `version_parent` (*Skyrim Legendary Edition*, éditions de *GTA V*) et ignore les autres, même quand ils ne contiennent qu'un jeu et ses DLC (*FF7 Remake Intergrade*, seulement listé dans `bundles` du jeu). Vérifier la règle sur plus de jeux et traiter ces cas.
 
 ### Écartées
 
@@ -388,7 +387,7 @@ Trace des idées qui ne seront pas faites.
 - Choisir à l'ajout les versions et les jeux de la franchise à importer.
 - Colonne « Jeux liés ».
 - Stocker les images elles-mêmes (base64 ou fichiers).
-- Noms alternatifs stockés dans un seul champ avec séparateur.
+- Stocker les noms alternatifs : seuls les noms VO et VF sont gardés.
 - Dupliquer une variante pour cumuler les stats de plusieurs comptes.
 - External games / external game sources d'IGDB.
 

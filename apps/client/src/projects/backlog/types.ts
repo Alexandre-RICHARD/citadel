@@ -242,14 +242,6 @@ export type Company = {
 	logoImageId: IgdbImageId | null;
 };
 
-/** Nom alternatif d'un jeu (`alternative_names`) */
-export type AlternativeName = {
-	id: number;
-	gameId: number;
-	name: string;
-	comment: string | null;
-};
-
 // ---------- Base utilisateur ----------
 
 /**
@@ -296,7 +288,6 @@ export type Database = {
 	series: Series[];
 	franchises: Franchise[];
 	companies: Company[];
-	alternativeNames: AlternativeName[];
 	variants: Variant[];
 	variantDlcs: VariantDlc[];
 };
@@ -312,6 +303,8 @@ export type SearchResult = {
 	frenchName: string | null;
 	releaseYear: number | null;
 	coverImageId: IgdbImageId | null;
+	/** Abréviations IGDB (sinon noms) ; la liste n'en affiche que 3 */
+	platformNames: string[];
 };
 
 /** Les trois choix de la modale du jeu (section 8) */
@@ -339,7 +332,6 @@ export type GameImport = {
 	franchise: Franchise | null;
 	developer: Company | null;
 	publisher: Company | null;
-	alternativeNames: AlternativeName[];
 	/** Images proposées : la cover d'abord, puis les artworks */
 	imageIds: IgdbImageId[];
 	/** Fiches IGDB qui ne rentrent pas dans le modèle, montrées dans la modale */
@@ -537,6 +529,7 @@ export type IgdbSearchGame = {
 	first_release_date?: number;
 	cover?: { image_id: IgdbImageId };
 	alternative_names?: IgdbAlternativeName[];
+	platforms?: { name: string; abbreviation?: string }[];
 };
 
 /** Nœud de l'arbre des versions : de quoi remonter à l'original et descendre vers ses versions */

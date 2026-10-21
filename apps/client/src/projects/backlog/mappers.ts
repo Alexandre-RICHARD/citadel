@@ -1,7 +1,10 @@
 /* eslint-disable citadel/max-one-export -- le cahier des charges impose 6 fichiers, dont mappers.ts pour tous les mappers */
 import type {
 	Company,
+	Database,
+	Game,
 	GameImport,
+	GameRow,
 	IgdbAlternativeName,
 	IgdbCompany,
 	IgdbGameData,
@@ -10,10 +13,20 @@ import type {
 	IgdbVersionGame,
 	Platform,
 	SearchResult,
+	Variant,
+	VariantRow,
 	Version,
 	VersionPlatform,
 } from "./types";
-import { toIsoDate, trimToNull } from "./utils";
+import {
+	findById,
+	getEarliestDate,
+	getGameStatus,
+	getHighestValue,
+	sum,
+	toIsoDate,
+	trimToNull,
+} from "./utils";
 
 // ---------- IGDB → résultats de recherche ----------
 
@@ -45,6 +58,9 @@ export function mapSearchResult(game: IgdbSearchGame): SearchResult {
 				? null
 				: new Date(game.first_release_date * 1000).getUTCFullYear(),
 		coverImageId: game.cover?.image_id ?? null,
+		platformNames: (game.platforms ?? []).map(
+			(platform) => trimToNull(platform.abbreviation) ?? platform.name,
+		),
 	};
 }
 
@@ -160,14 +176,6 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			franchise === null ? null : { id: franchise.id, name: franchise.name },
 		developer: developer === null ? null : mapCompany(developer),
 		publisher: publisher === null ? null : mapCompany(publisher),
-		alternativeNames: (original.alternative_names ?? []).flatMap(
-			({ id, name, comment }) => {
-				const trimmedName = trimToNull(name);
-				return trimmedName === null
-					? []
-					: [{ id, gameId, name: trimmedName, comment: trimToNull(comment) }];
-			},
-		),
 		imageIds: [
 			...(originalCover === undefined ? [] : [originalCover]),
 			...(original.artworks ?? []).map((artwork) => artwork.image_id),
@@ -177,4 +185,145 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			igdbData: JSON.stringify(entry, null, 2),
 		})),
 	};
+}
+
+// ---------- Base → lignes du tableau (sections 5 et 7), recalculées à chaque affichage ----------
+
+function mapVariantRow(
+	database: Database,
+	variant: Variant,
+	dlcIds: number[],
+): VariantRow {
+	const version = findById(database.versions, variant.versionId);
+	const platform = findById(database.platforms, variant.platformId) ?? {
+		id: variant.platformId,
+		name: `#${variant.platformId}`,
+		technicalName: "",
+		emulatedPlatformId: null,
+	};
+	// Un émulateur reprend la date de sortie de la version sur la console qu'il émule
+	const releasePlatformId = platform.emulatedPlatformId ?? platform.id;
+	return {
+		variantId: variant.id,
+		versionId: variant.versionId,
+		imageId: version?.coverImageId ?? null,
+		versionTitle: version?.title ?? null,
+		releaseDate:
+			database.versionPlatforms.find(
+				(versionPlatform) =>
+					versionPlatform.versionId === variant.versionId &&
+					versionPlatform.platformId === releasePlatformId,
+			)?.releaseDate ?? null,
+		platform,
+		status: variant.status,
+		owned: variant.owned,
+		playSoon: variant.playSoon,
+		finishDate: variant.finishDate,
+		sureFinishCount: variant.sureFinishCount,
+		probableFinishCount: variant.probableFinishCount,
+		doneDlcCount: database.variantDlcs.filter(
+			(variantDlc) =>
+				variantDlc.variantId === variant.id &&
+				dlcIds.includes(variantDlc.dlcId),
+		).length,
+		dlcCount: dlcIds.length,
+		trackedPlayTimeMinutes: variant.trackedPlayTimeMinutes,
+		estimatedPlayTimeMinutes: variant.estimatedPlayTimeMinutes,
+		totalPlayTimeMinutes:
+			variant.trackedPlayTimeMinutes + variant.estimatedPlayTimeMinutes,
+		rating: variant.rating,
+		comment: variant.comment,
+		igdbUrl: version?.url ?? "",
+	};
+}
+
+/** Ligne du jeu : ses données et les agrégats de ses variantes (section 7), vides quand il est impossible de choisir */
+function mapGameRow(
+	database: Database,
+	game: Game,
+	variantRows: VariantRow[],
+	dlcIds: number[],
+): GameRow {
+	const singleVariantRow =
+		variantRows.length === 1 ? (variantRows.at(0) ?? null) : null;
+	const variantIds = variantRows.map(({ variantId }) => variantId);
+	// Un DLC compte comme fait s'il l'est sur au moins une variante
+	const doneDlcIds = new Set(
+		database.variantDlcs
+			.filter(
+				(variantDlc) =>
+					variantIds.includes(variantDlc.variantId) &&
+					dlcIds.includes(variantDlc.dlcId),
+			)
+			.map(({ dlcId }) => dlcId),
+	);
+	const comments = variantRows.flatMap(({ comment }) =>
+		comment === null ? [] : [comment],
+	);
+
+	return {
+		gameId: game.id,
+		imageId: game.imageId,
+		name: game.name,
+		frenchName: game.frenchName,
+		// Ligne à variante unique : le titre de sa version sous le nom, sauf pour l'originale
+		versionTitle: singleVariantRow?.versionTitle ?? null,
+		series: findById(database.series, game.seriesId),
+		seriesNumber: game.seriesNumber,
+		franchise: findById(database.franchises, game.franchiseId),
+		developer: findById(database.companies, game.developerId),
+		publisher: findById(database.companies, game.publisherId),
+		releaseDate: game.firstReleaseDate,
+		isCancelled: game.isCancelled,
+		endingType: game.endingType,
+		platform: singleVariantRow?.platform ?? null,
+		status: getGameStatus(variantRows.map(({ status }) => status)),
+		owned: variantRows.some(({ owned }) => owned),
+		playSoon: variantRows.some(({ playSoon }) => playSoon),
+		finishDate: getEarliestDate(
+			variantRows.map(({ finishDate }) => finishDate),
+		),
+		sureFinishCount: sum(
+			variantRows.map(({ sureFinishCount }) => sureFinishCount),
+		),
+		probableFinishCount: sum(
+			variantRows.map(({ probableFinishCount }) => probableFinishCount),
+		),
+		doneDlcCount: doneDlcIds.size,
+		dlcCount: dlcIds.length,
+		trackedPlayTimeMinutes: sum(
+			variantRows.map(({ trackedPlayTimeMinutes }) => trackedPlayTimeMinutes),
+		),
+		estimatedPlayTimeMinutes: sum(
+			variantRows.map(
+				({ estimatedPlayTimeMinutes }) => estimatedPlayTimeMinutes,
+			),
+		),
+		totalPlayTimeMinutes: sum(
+			variantRows.map(({ totalPlayTimeMinutes }) => totalPlayTimeMinutes),
+		),
+		rating: getHighestValue(variantRows.map(({ rating }) => rating)),
+		comment: comments.length === 1 ? (comments.at(0) ?? null) : null,
+		// La fiche originale du jeu porte le même id que lui
+		igdbUrl: findById(database.versions, game.id)?.url ?? "",
+		variantRows,
+	};
+}
+
+/** Base → lignes du tableau : une ligne par jeu qui a au moins une variante, dans l'ordre d'ajout (section 5) */
+export function mapGameRows(database: Database): GameRow[] {
+	return database.games.flatMap((game) => {
+		const versionIds = database.versions
+			.filter(({ gameId }) => gameId === game.id)
+			.map(({ id }) => id);
+		const dlcIds = database.dlcs
+			.filter(({ gameId }) => gameId === game.id)
+			.map(({ id }) => id);
+		const variantRows = database.variants
+			.filter(({ versionId }) => versionIds.includes(versionId))
+			.map((variant) => mapVariantRow(database, variant, dlcIds));
+		return variantRows.length === 0
+			? []
+			: [mapGameRow(database, game, variantRows, dlcIds)];
+	});
 }

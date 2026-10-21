@@ -1,37 +1,56 @@
-import { type ReactNode, useEffect, useState } from "react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 import styles from "./backlog.module.scss";
 import { initialState } from "./initialState";
-import { mapGameImport, mapSearchResult } from "./mappers";
+import { mapGameImport, mapGameRows, mapSearchResult } from "./mappers";
 import {
 	type AppState,
+	type ColumnKey,
+	type ColumnSetting,
 	type Company,
 	type Database,
 	endingTypeDefinitions,
 	type GameChoices,
 	type GameImport,
+	type GameRow,
 	type IgdbImageId,
 	type Modal,
 	type Platform,
 	type SearchResult,
 	type Variant,
 	type VariantChoice,
+	type VariantRow,
+	variantStatusDefinitions,
 	type Version,
 	type VersionPlatform,
 } from "./types";
 import {
 	addGameImport,
 	addVariant,
+	backlogPageSize,
 	buildInitialStateFile,
 	countBacklogGames,
 	describeFilters,
 	describeSort,
 	describeVersionPlatforms,
 	fetchIgdbGameData,
+	formatDlcProgress,
+	formatDuration,
+	formatFinishCount,
+	formatIsoDate,
 	formatReleaseDate,
+	getColumnLabel,
+	getEndingTypeLabel,
 	getIgdbImageUrl,
 	getLastAddedGame,
 	getPlatformOptions,
+	getStatusLabel,
 	getVersionLabel,
 	mergeById,
 	receiveGameImport,
@@ -40,6 +59,13 @@ import {
 } from "./utils";
 
 // ---------- Petits composants ----------
+
+/** Icônes embarquées dans `icons/`, nommées par le nom technique de leur plateforme (ex. `ps2.svg`) */
+const platformIconUrls = import.meta.glob<string>("./icons/*.svg", {
+	eager: true,
+	query: "?url",
+	import: "default",
+});
 
 /** Miniature IGDB : `t_thumb`, et `t_thumb_2x` pour les écrans haute densité */
 function Thumbnail({ imageId }: { imageId: IgdbImageId | null }) {
@@ -71,6 +97,23 @@ function CompanyLabel({ company }: { company: Company | null }) {
 				/>
 			)}
 			<span>{company.name}</span>
+		</span>
+	);
+}
+
+/** Plateforme : icône et nom, le nom seul si l'icône manque */
+function PlatformLabel({ platform }: { platform: Platform }) {
+	const iconUrl: string | undefined =
+		platformIconUrls[`./icons/${platform.technicalName}.svg`];
+	return (
+		<span className={styles.platform}>
+			{iconUrl !== undefined && (
+				<img
+					src={iconUrl}
+					alt=""
+				/>
+			)}
+			<span>{platform.name}</span>
 		</span>
 	);
 }
@@ -154,6 +197,14 @@ function SearchBar({
 										<span className={styles.originalName}> {result.name}</span>
 									)}
 									{result.releaseYear !== null && ` (${result.releaseYear})`}
+									{/* 3 plateformes au plus, puis le nombre restant */}
+									{result.platformNames.length > 0 && (
+										<span className={styles.originalName}>
+											{` · ${result.platformNames.slice(0, 3).join(", ")}`}
+											{result.platformNames.length > 3 &&
+												` +${result.platformNames.length - 3}`}
+										</span>
+									)}
 								</span>
 								{database.versions.some(({ id }) => id === result.id) && (
 									<span className={styles.inDatabaseBadge}>
@@ -276,7 +327,6 @@ function GamePreview({
 		franchise,
 		developer,
 		publisher,
-		alternativeNames,
 		imageIds,
 		warnings,
 	} = gameImport;
@@ -397,23 +447,6 @@ function GamePreview({
 				<dt>Éditeur</dt>
 				<dd>
 					<CompanyLabel company={publisher} />
-				</dd>
-				<dt>Noms alternatifs</dt>
-				<dd>
-					{alternativeNames.length === 0 ? (
-						"—"
-					) : (
-						<ul>
-							{alternativeNames.map(({ id, name, comment }) => (
-								<li key={id}>
-									{name}
-									{comment !== null && (
-										<span className={styles.hint}> ({comment})</span>
-									)}
-								</li>
-							))}
-						</ul>
-					)}
 				</dd>
 			</dl>
 
@@ -609,6 +642,280 @@ function AddVariantDialog({
 	);
 }
 
+// ---------- Tableau (sections 5, 7 et 9) ----------
+
+/** Bulles explicatives des en-têtes : la signification des valeurs */
+const columnHelp: Partial<Record<ColumnKey, string>> = {
+	endingType: endingTypeDefinitions
+		.map(({ label, meaning }) => `${label} : ${meaning}`)
+		.join("\n"),
+	status: variantStatusDefinitions
+		.map(({ rank, label, meaning }) => `${rank ?? "–"} · ${label} : ${meaning}`)
+		.join("\n"),
+};
+
+/** Colonnes des données de l'utilisateur : agrégats sur la ligne du jeu, valeurs sur la sous-ligne */
+const playCellRenderers = {
+	status: (row) => (row.status === null ? null : getStatusLabel(row.status)),
+	playSoon: (row) => (
+		<input
+			type="checkbox"
+			checked={row.playSoon}
+			readOnly
+			disabled
+			aria-label="À jouer bientôt"
+		/>
+	),
+	owned: (row) => (
+		<input
+			type="checkbox"
+			checked={row.owned}
+			readOnly
+			disabled
+			aria-label="Possédé"
+		/>
+	),
+	finishDate: (row) =>
+		row.finishDate === null ? null : formatIsoDate(row.finishDate),
+	finishCount: (row) =>
+		formatFinishCount(row.sureFinishCount, row.probableFinishCount),
+	dlc: (row) => formatDlcProgress(row.doneDlcCount, row.dlcCount),
+	trackedPlayTime: (row) => formatDuration(row.trackedPlayTimeMinutes),
+	estimatedPlayTime: (row) => formatDuration(row.estimatedPlayTimeMinutes),
+	totalPlayTime: (row) => formatDuration(row.totalPlayTimeMinutes),
+	rating: (row) => (row.rating === null ? null : `${row.rating}/20`),
+	comment: (row) =>
+		row.comment === null ? null : (
+			<span
+				className={styles.comment}
+				title={row.comment}
+			>
+				{row.comment}
+			</span>
+		),
+	// Le menu « 3 points verticaux » arrive en phase 6
+	actions: () => (
+		<button
+			type="button"
+			className={styles.actionsButton}
+			disabled
+			title="Menu Actions : phase 6"
+		>
+			⋮
+		</button>
+	),
+} satisfies Partial<
+	Record<ColumnKey, (row: GameRow | VariantRow) => ReactNode>
+>;
+
+const gameCellRenderers: Record<ColumnKey, (row: GameRow) => ReactNode> = {
+	thumbnail: (row) => <Thumbnail imageId={row.imageId} />,
+	// Nom VF, nom VO en dessous s'il diffère ; ligne à variante unique : titre de sa version
+	name: (row) => (
+		<span className={styles.nameCell}>
+			<strong>{row.frenchName ?? row.name}</strong>
+			{row.frenchName !== null && (
+				<span className={styles.originalName}>{row.name}</span>
+			)}
+			{row.versionTitle !== null && (
+				<span className={styles.versionTitle}>{row.versionTitle}</span>
+			)}
+		</span>
+	),
+	series: (row) => row.series?.name,
+	seriesNumber: (row) => row.seriesNumber,
+	franchise: (row) => row.franchise?.name,
+	developer: (row) =>
+		row.developer === null ? null : <CompanyLabel company={row.developer} />,
+	publisher: (row) =>
+		row.publisher === null ? null : <CompanyLabel company={row.publisher} />,
+	releaseDate: (row) => formatReleaseDate(row.releaseDate, row.isCancelled),
+	endingType: (row) => getEndingTypeLabel(row.endingType),
+	platform: (row) =>
+		row.platform === null ? null : <PlatformLabel platform={row.platform} />,
+	...playCellRenderers,
+};
+
+const variantCellRenderers: Record<ColumnKey, (row: VariantRow) => ReactNode> =
+	{
+		thumbnail: (row) => <Thumbnail imageId={row.imageId} />,
+		name: (row) => (
+			<span className={styles.versionTitle}>
+				{row.versionTitle ?? "Version originale"}
+			</span>
+		),
+		series: () => null,
+		seriesNumber: () => null,
+		franchise: () => null,
+		developer: () => null,
+		publisher: () => null,
+		releaseDate: (row) => formatReleaseDate(row.releaseDate, false),
+		endingType: () => null,
+		platform: (row) => <PlatformLabel platform={row.platform} />,
+		...playCellRenderers,
+	};
+
+function ColumnHeader({ column }: { column: ColumnKey }) {
+	const help = columnHelp[column];
+	return (
+		<th scope="col">
+			{getColumnLabel(column)}
+			{help !== undefined && (
+				<span
+					className={styles.help}
+					title={help}
+				>
+					{" ℹ️"}
+				</span>
+			)}
+		</th>
+	);
+}
+
+/** Ligne du jeu, puis ses sous-lignes de variantes si elle est dépliée */
+function GameRowGroup({
+	row,
+	columns,
+	isExpanded,
+	onToggleExpanded,
+}: {
+	row: GameRow;
+	columns: ColumnKey[];
+	isExpanded: boolean;
+	onToggleExpanded: (gameId: number) => void;
+}) {
+	const isExpandable = row.variantRows.length > 1;
+
+	return (
+		<>
+			<tr className={row.playSoon ? styles.playSoonRow : styles.gameRow}>
+				{/* Chevron et badge sur une ligne dépliable, espace vide sur une ligne simple */}
+				<td className={styles.expandCell}>
+					{isExpandable && (
+						<>
+							<button
+								type="button"
+								className={styles.chevron}
+								aria-expanded={isExpanded}
+								aria-label={isExpanded ? "Replier" : "Déplier"}
+								onClick={() => onToggleExpanded(row.gameId)}
+							>
+								{isExpanded ? "🔽" : "▶️"}
+							</button>
+							<span className={styles.variantBadge}>
+								{row.variantRows.length} variantes
+							</span>
+						</>
+					)}
+				</td>
+				{columns.map((column) => (
+					<td key={column}>{gameCellRenderers[column](row)}</td>
+				))}
+			</tr>
+			{isExpandable &&
+				isExpanded &&
+				row.variantRows.map((variantRow) => (
+					<tr
+						key={variantRow.variantId}
+						className={styles.variantRow}
+					>
+						<td className={styles.expandCell} />
+						{columns.map((column) => (
+							<td key={column}>{variantCellRenderers[column](variantRow)}</td>
+						))}
+					</tr>
+				))}
+		</>
+	);
+}
+
+function BacklogTable({
+	rows,
+	columns,
+	expandedGameIds,
+	loadedPageCount,
+	onToggleExpanded,
+	onLoadNextPage,
+}: {
+	rows: GameRow[];
+	columns: ColumnSetting[];
+	expandedGameIds: number[];
+	loadedPageCount: number;
+	onToggleExpanded: (gameId: number) => void;
+	onLoadNextPage: () => void;
+}) {
+	const visibleColumns = columns
+		.filter(({ isVisible }) => isVisible)
+		.map(({ key }) => key);
+	const shownRows = rows.slice(0, loadedPageCount * backlogPageSize);
+	const hasMoreRows = shownRows.length < rows.length;
+	const loadMoreRef = useRef<HTMLDivElement>(null);
+
+	// Défilement infini : la page suivante se charge à l'approche du bas de page, avant de l'atteindre
+	useEffect(() => {
+		const loadMore = loadMoreRef.current;
+		if (!hasMoreRows || loadMore === null) {
+			return undefined;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some(({ isIntersecting }) => isIntersecting)) {
+					onLoadNextPage();
+				}
+			},
+			{ rootMargin: "0px 0px 800px 0px" },
+		);
+		observer.observe(loadMore);
+		return () => observer.disconnect();
+	}, [hasMoreRows, loadedPageCount, onLoadNextPage]);
+
+	return (
+		<div className={styles.tableWrapper}>
+			<table className={styles.table}>
+				<thead>
+					<tr>
+						<th
+							className={styles.expandCell}
+							aria-label="Variantes"
+						/>
+						{visibleColumns.map((column) => (
+							<ColumnHeader
+								key={column}
+								column={column}
+							/>
+						))}
+					</tr>
+				</thead>
+				<tbody>
+					{shownRows.map((row) => (
+						<GameRowGroup
+							key={row.gameId}
+							row={row}
+							columns={visibleColumns}
+							isExpanded={expandedGameIds.includes(row.gameId)}
+							onToggleExpanded={onToggleExpanded}
+						/>
+					))}
+				</tbody>
+			</table>
+			{rows.length === 0 && (
+				<p className={styles.emptyMessage}>
+					Le backlog est vide : ajoute un jeu depuis la recherche, avec une
+					plateforme.
+				</p>
+			)}
+			{hasMoreRows && (
+				<div
+					ref={loadMoreRef}
+					className={styles.emptyMessage}
+				>
+					⏳ Chargement…
+				</div>
+			)}
+		</div>
+	);
+}
+
 // ---------- Footer de debug ----------
 
 const copyLabels = {
@@ -691,15 +998,15 @@ export function Backlog() {
 	const [isEditMode] = useState<AppState["isEditMode"]>(
 		initialState.isEditMode,
 	);
-	const [expandedGameIds] = useState<AppState["expandedGameIds"]>(
-		initialState.expandedGameIds,
-	);
+	const [expandedGameIds, setExpandedGameIds] = useState<
+		AppState["expandedGameIds"]
+	>(initialState.expandedGameIds);
 	const [columns] = useState<AppState["columns"]>(initialState.columns);
 	const [sort] = useState<AppState["sort"]>(initialState.sort);
 	const [filters] = useState<AppState["filters"]>(initialState.filters);
-	const [loadedPageCount] = useState<AppState["loadedPageCount"]>(
-		initialState.loadedPageCount,
-	);
+	const [loadedPageCount, setLoadedPageCount] = useState<
+		AppState["loadedPageCount"]
+	>(initialState.loadedPageCount);
 
 	// États passagers, hors AppState : historique d'annulation (rempli en phase 7), recherche et modale en cours
 	const [undoHistory] = useState<Database[]>([]);
@@ -767,6 +1074,18 @@ export function Backlog() {
 		changeDatabase((current) => addVariant(current, versionId, platformId));
 		closeModal();
 	}
+
+	function toggleExpanded(gameId: number) {
+		setExpandedGameIds((current) =>
+			current.includes(gameId)
+				? current.filter((id) => id !== gameId)
+				: [...current, gameId],
+		);
+	}
+
+	const loadNextPage = useCallback(() => {
+		setLoadedPageCount((count) => count + 1);
+	}, []);
 
 	// Recherche temporisée : une requête 300 ms après la dernière frappe, la précédente est annulée
 	useEffect(() => {
@@ -856,6 +1175,7 @@ export function Backlog() {
 	return (
 		<div className={styles.page}>
 			<header className={styles.toolbar}>
+				<h1 className={styles.title}>🎮 Backlog</h1>
 				<SearchBar
 					query={searchQuery}
 					results={searchResults}
@@ -866,6 +1186,16 @@ export function Backlog() {
 					onSelect={selectSearchResult}
 				/>
 			</header>
+			<main>
+				<BacklogTable
+					rows={mapGameRows(database)}
+					columns={columns}
+					expandedGameIds={expandedGameIds}
+					loadedPageCount={loadedPageCount}
+					onToggleExpanded={toggleExpanded}
+					onLoadNextPage={loadNextPage}
+				/>
+			</main>
 			{modal?.kind === "addGame" && (
 				<AddGameDialog
 					modal={modal}
