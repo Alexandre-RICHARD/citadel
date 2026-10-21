@@ -1,3 +1,29 @@
 .page {
   min-height: 100svh;
+  // Place pour le footer de debug, fixé en bas
+  padding-bottom: 5rem;
+}
+
+.debugFooter {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #e5e5e5;
+  background: #1f1f1f;
+  border-top: 1px solid #444;
+
+  button {
+    margin-left: auto;
+    padding: 0.25rem 0.75rem;
+    font: inherit;
+    cursor: pointer;
+  }
 }
