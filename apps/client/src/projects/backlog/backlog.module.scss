@@ -2,7 +2,104 @@
   min-height: 100svh;
   // Place pour le footer de debug, fixé en bas
   padding-bottom: 5rem;
+  color: #1f1f1f;
+  background: #f6f6f6;
 }
+
+// ---------- Recherche ----------
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 1rem;
+  background: #f6f6f6;
+  border-bottom: 1px solid #ddd;
+}
+
+.search {
+  position: relative;
+  max-width: 40rem;
+}
+
+.searchInput {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: #1f1f1f;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+
+.searchResults {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  left: 0;
+  max-height: 70vh;
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 15%);
+}
+
+.searchMessage {
+  padding: 0.5rem 0.75rem;
+  color: #555;
+}
+
+.searchResult {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+}
+
+.searchResultName {
+  flex: 1;
+}
+
+.originalName {
+  color: #666;
+}
+
+.inDatabaseBadge {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: #14532d;
+  background: #dcfce7;
+  border-radius: 999px;
+}
+
+// ---------- Miniatures ----------
+
+.thumbnail,
+.thumbnailPlaceholder {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 4px;
+}
+
+.thumbnail {
+  object-fit: cover;
+}
+
+.thumbnailPlaceholder {
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  background: #e5e5e5;
+}
+
+// ---------- Footer de debug ----------
 
 .debugFooter {
   position: fixed;
@@ -24,6 +121,14 @@
     margin-left: auto;
     padding: 0.25rem 0.75rem;
     font: inherit;
+    color: #1f1f1f;
+    background: #e5e5e5;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
     cursor: pointer;
+
+    &:hover {
+      background: #fff;
+    }
   }
 }
