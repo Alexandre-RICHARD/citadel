@@ -53,7 +53,7 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Donnée | Utilisée pour | Côté IGDB |
 | --- | --- | --- |
 | Nom VO | Colonne Nom, recherche | `name` |
-| Nom VF | Colonne Nom, recherche | `game_localizations` (un nom par région), sinon `alternative_names` ; repli sur le nom VO |
+| Nom VF | Colonne Nom, recherche | `alternative_names` dont le commentaire indique un titre français (« French title ») : IGDB n'a pas de région France. Sans titre français, ou s'il est identique au nom VO, seul le nom VO s'affiche |
 | Noms alternatifs | Recherche, prévisualisation à l'ajout | `alternative_names` (nom + commentaire) |
 | Image | Miniature, choisie à l'ajout | `cover`, `artworks` → `image_id` |
 | Page IGDB | Entrée « Ouvrir sur IGDB » du menu Actions | `url` |

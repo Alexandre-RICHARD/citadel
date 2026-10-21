@@ -3,9 +3,116 @@ import type { AppState } from "./types";
 
 export const initialState = {
 	"database": {
-		"games": [],
-		"versions": [],
-		"versionPlatforms": [],
+		"games": [
+			{
+				"id": 1311,
+				"name": "Medal of Honor: European Assault",
+				"frenchName": "Medal of Honor : Les faucons de guerre",
+				"firstReleaseDate": "2005-06-07",
+				"isCancelled": false,
+				"seriesId": 59,
+				"franchiseId": null,
+				"developerId": 140,
+				"publisherId": 1,
+				"imageId": "co5x7t",
+				"endingType": "story",
+				"seriesNumber": 2
+			},
+			{
+				"id": 1942,
+				"name": "The Witcher 3: Wild Hunt",
+				"frenchName": null,
+				"firstReleaseDate": "2015-05-19",
+				"isCancelled": false,
+				"seriesId": 62,
+				"franchiseId": 452,
+				"developerId": 908,
+				"publisherId": 50,
+				"imageId": "ar6ijr",
+				"endingType": "story",
+				"seriesNumber": null
+			}
+		],
+		"versions": [
+			{
+				"id": 1311,
+				"gameId": 1311,
+				"title": null,
+				"coverImageId": "co5x7t",
+				"url": "https://www.igdb.com/games/medal-of-honor-european-assault"
+			},
+			{
+				"id": 1942,
+				"gameId": 1942,
+				"title": null,
+				"coverImageId": "coaarl",
+				"url": "https://www.igdb.com/games/the-witcher-3-wild-hunt"
+			},
+			{
+				"id": 44549,
+				"gameId": 1942,
+				"title": "Collector's Edition",
+				"coverImageId": "co2lgn",
+				"url": "https://www.igdb.com/games/the-witcher-3-wild-hunt-collectors-edition"
+			}
+		],
+		"versionPlatforms": [
+			{
+				"versionId": 1311,
+				"platformId": 11,
+				"releaseDate": "2005-06-07"
+			},
+			{
+				"versionId": 1311,
+				"platformId": 21,
+				"releaseDate": "2005-06-07"
+			},
+			{
+				"versionId": 1311,
+				"platformId": 8,
+				"releaseDate": "2005-06-07"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 169,
+				"releaseDate": "2022-12-14"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 48,
+				"releaseDate": "2015-05-19"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 508,
+				"releaseDate": "2026-09-29"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 6,
+				"releaseDate": "2015-05-19"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 167,
+				"releaseDate": "2022-12-14"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 49,
+				"releaseDate": "2015-05-19"
+			},
+			{
+				"versionId": 1942,
+				"platformId": 130,
+				"releaseDate": "2021-01-28"
+			},
+			{
+				"versionId": 44549,
+				"platformId": 48,
+				"releaseDate": "2015-06-19"
+			}
+		],
 		"platforms": [
 			{
 				"id": 8,
@@ -30,14 +137,266 @@ export const initialState = {
 				"name": "RPCS3",
 				"technicalName": "rpcs3",
 				"emulatedPlatformId": 9
+			},
+			{
+				"id": 11,
+				"name": "XBOX",
+				"technicalName": "xbox",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 21,
+				"name": "NGC",
+				"technicalName": "ngc",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 169,
+				"name": "Series X|S",
+				"technicalName": "series-x-s",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 48,
+				"name": "PS4",
+				"technicalName": "ps4--1",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 508,
+				"name": "Switch 2",
+				"technicalName": "switch-2",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 6,
+				"name": "PC",
+				"technicalName": "win",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 167,
+				"name": "PS5",
+				"technicalName": "ps5",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 49,
+				"name": "XONE",
+				"technicalName": "xboxone",
+				"emulatedPlatformId": null
+			},
+			{
+				"id": 130,
+				"name": "Switch",
+				"technicalName": "switch",
+				"emulatedPlatformId": null
 			}
 		],
-		"dlcs": [],
-		"series": [],
-		"franchises": [],
-		"companies": [],
-		"alternativeNames": [],
-		"variants": [],
+		"dlcs": [
+			{
+				"id": 12503,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - Hearts of Stone"
+			},
+			{
+				"id": 13166,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - Blood and Wine"
+			},
+			{
+				"id": 157580,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - New Quest 'Contract: Skellige's Most Wanted'"
+			},
+			{
+				"id": 170449,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - New Quest 'Where the Cat and Wolf Play...'"
+			},
+			{
+				"id": 170450,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - New Quest 'Fool's Gold'"
+			},
+			{
+				"id": 170451,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - New Quest 'Contract: Missing Miners'"
+			},
+			{
+				"id": 226413,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - New Quest: Scavenger Hunt: Wolf School Gear"
+			},
+			{
+				"id": 403150,
+				"gameId": 1942,
+				"name": "The Witcher 3: Wild Hunt - Songs of the Past"
+			}
+		],
+		"series": [
+			{
+				"id": 59,
+				"name": "Medal of Honor"
+			},
+			{
+				"id": 62,
+				"name": "The Witcher"
+			}
+		],
+		"franchises": [
+			{
+				"id": 452,
+				"name": "The Witcher"
+			}
+		],
+		"companies": [
+			{
+				"id": 140,
+				"name": "EA Los Angeles",
+				"logoImageId": "uffh2zhts7fa8x9dwpoz"
+			},
+			{
+				"id": 1,
+				"name": "Electronic Arts",
+				"logoImageId": "clg2a"
+			},
+			{
+				"id": 908,
+				"name": "CD Projekt RED",
+				"logoImageId": "cl2dk"
+			},
+			{
+				"id": 50,
+				"name": "WB Games",
+				"logoImageId": "cl4uw"
+			}
+		],
+		"alternativeNames": [
+			{
+				"id": 3084,
+				"gameId": 1311,
+				"name": "Medal of Honor: Dogs of War",
+				"comment": "Working title"
+			},
+			{
+				"id": 165802,
+				"gameId": 1311,
+				"name": "Medal of Honor : Les faucons de guerre",
+				"comment": "French title"
+			},
+			{
+				"id": 173745,
+				"gameId": 1942,
+				"name": "Witcher III",
+				"comment": "Alternative title"
+			},
+			{
+				"id": 2427,
+				"gameId": 1942,
+				"name": "Ведьмак 3: Дикая охота",
+				"comment": "Russian Title"
+			},
+			{
+				"id": 2495,
+				"gameId": 1942,
+				"name": "Wiedźmin 3: Dziki Gon",
+				"comment": "Polish title"
+			},
+			{
+				"id": 71879,
+				"gameId": 1942,
+				"name": "巫师3：狂猎",
+				"comment": "Chinese title - simplified"
+			},
+			{
+				"id": 51941,
+				"gameId": 1942,
+				"name": "The Witcher III: Wild Hunt",
+				"comment": "Alternative spelling"
+			},
+			{
+				"id": 74560,
+				"gameId": 1942,
+				"name": "Witcher 3",
+				"comment": "Alternative title"
+			},
+			{
+				"id": 74561,
+				"gameId": 1942,
+				"name": "TW3",
+				"comment": "Acronym"
+			},
+			{
+				"id": 121895,
+				"gameId": 1942,
+				"name": "巫師3：狂獵",
+				"comment": "Chinese title - traditional"
+			},
+			{
+				"id": 179756,
+				"gameId": 1942,
+				"name": "redprelauncher.exe",
+				"comment": "Windows Executable"
+			},
+			{
+				"id": 256031,
+				"gameId": 1942,
+				"name": "Zaklínač 3: Divoký hon",
+				"comment": "Czech title"
+			},
+			{
+				"id": 276816,
+				"gameId": 1942,
+				"name": "Вещерът 3 - Дивият лов",
+				"comment": "Alternative title"
+			},
+			{
+				"id": 282455,
+				"gameId": 1942,
+				"name": "ウィッチャー３　ワイルドハント",
+				"comment": "Japanese title - stylized"
+			},
+			{
+				"id": 276919,
+				"gameId": 1942,
+				"name": "Вещерът 3: Дивият лов",
+				"comment": "Alternative title"
+			}
+		],
+		"variants": [
+			{
+				"id": 1,
+				"versionId": 1311,
+				"platformId": 8,
+				"status": "notStarted",
+				"owned": false,
+				"playSoon": false,
+				"finishDate": null,
+				"sureFinishCount": 0,
+				"probableFinishCount": 0,
+				"trackedPlayTimeMinutes": 0,
+				"estimatedPlayTimeMinutes": 0,
+				"rating": null,
+				"comment": null
+			},
+			{
+				"id": 2,
+				"versionId": 1942,
+				"platformId": 6,
+				"status": "notStarted",
+				"owned": false,
+				"playSoon": false,
+				"finishDate": null,
+				"sureFinishCount": 0,
+				"probableFinishCount": 0,
+				"trackedPlayTimeMinutes": 0,
+				"estimatedPlayTimeMinutes": 0,
+				"rating": null,
+				"comment": null
+			}
+		],
 		"variantDlcs": []
 	},
 	"searchQuery": "",
