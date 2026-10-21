@@ -207,6 +207,7 @@ export type VersionPlatform = {
 export type Platform = {
 	/** id IGDB ; un émulateur, absent d'IGDB, a un id négatif */
 	id: number;
+	/** Abréviation IGDB (`abbreviation`), sinon `name` ; nom choisi à la main pour un émulateur */
 	name: string;
 	/** `slug` IGDB, ou slug choisi à la main pour un émulateur ; nomme l'icône `icons/<technicalName>.svg` */
 	technicalName: string;

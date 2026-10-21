@@ -69,7 +69,7 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Développeur, éditeur | Colonnes Développeur et Éditeur | `involved_companies` (rôles développeur / éditeur) → `companies` |
 | Logos des sociétés | Affichés au-dessus du nom de la société | `company_logos` |
 
-Le POC ne garde qu'une série, une franchise, un développeur et un éditeur par jeu (section 11).
+Le POC ne garde qu'une série, une franchise, un développeur et un éditeur par jeu (section 11) : la première collection ; la franchise principale (`franchise`), sinon la première de `franchises` ; pour chaque rôle, la première société.
 
 ## 4. Architecture des données
 
@@ -127,7 +127,7 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 
 ### Plateformes et icônes
 
-- Chaque plateforme, émulateurs compris, est stockée avec un nom et un nom technique. Le nom technique est le `slug` IGDB (ex. `ps2`, `win`, `ps4--1`) ; pour un émulateur, un slug choisi à la main (ex. `pcsx2`).
+- Chaque plateforme, émulateurs compris, est stockée avec un nom et un nom technique. Le nom est l'abréviation IGDB (`abbreviation`, ex. « PS2 »), ou le nom complet (`name`) quand elle manque. Le nom technique est le `slug` IGDB (ex. `ps2`, `win`, `ps4--1`) ; pour un émulateur, un slug choisi à la main (ex. `pcsx2`).
 - Émulateurs du POC : PCSX2 (PS2) et RPCS3 (PS3), chacun rattaché à une seule console (liste complète en section 11).
 - Le front embarque les icônes en dur, chaque fichier nommé par le nom technique de sa plateforme (ex. `ps2.svg`).
 - Une plateforme sans icône affiche son nom.
@@ -370,7 +370,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Synchronisation des données globales avec IGDB (logo d'un studio modifié, date de sortie fixée pour un jeu à venir).
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
 - Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
-- Plusieurs séries, franchises, développeurs et éditeurs par jeu : IGDB renvoie des listes (`collections`, `franchises`, `involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (chaque franchise cliquable, un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne.
+- Plusieurs séries, franchises, développeurs et éditeurs par jeu : IGDB renvoie des listes (`collections`, `franchises`, `involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (chaque franchise cliquable, un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
 
 ### Écartées
 
