@@ -342,6 +342,14 @@ export type GameImport = {
 	alternativeNames: AlternativeName[];
 	/** Images proposées : la cover d'abord, puis les artworks */
 	imageIds: IgdbImageId[];
+	/** Fiches IGDB qui ne rentrent pas dans le modèle, montrées dans la modale */
+	warnings: ImportWarning[];
+};
+
+/** Donnée IGDB hors modèle : le cas et la réponse brute d'IGDB (JSON) */
+export type ImportWarning = {
+	message: string;
+	igdbData: string;
 };
 
 export type Modal =
@@ -503,6 +511,24 @@ export type IgdbGameType = {
 	type: string;
 };
 
+/** Endpoint `game_statuses` */
+export type IgdbGameStatus = {
+	id: number;
+	status: string;
+};
+
+/** Noms des types de fiche et des statuts de sortie, par id : lus une fois via IGDB, jamais codés en dur */
+export type IgdbReference = {
+	gameTypes: Map<number, string>;
+	gameStatuses: Map<number, string>;
+};
+
+export type IgdbAlternativeName = {
+	id: number;
+	name?: string;
+	comment?: string;
+};
+
 /** Fiche renvoyée par la recherche */
 export type IgdbSearchGame = {
 	id: number;
@@ -510,6 +536,81 @@ export type IgdbSearchGame = {
 	/** Timestamp Unix, en secondes */
 	first_release_date?: number;
 	cover?: { image_id: IgdbImageId };
-	game_localizations?: { name?: string; region?: { identifier?: string } }[];
-	alternative_names?: { name?: string; comment?: string }[];
+	alternative_names?: IgdbAlternativeName[];
+};
+
+/** Nœud de l'arbre des versions : de quoi remonter à l'original et descendre vers ses versions */
+export type IgdbGameNode = {
+	id: number;
+	name: string;
+	game_type?: number;
+	version_parent?: number;
+	parent_game?: number;
+	remasters?: number[];
+	ports?: number[];
+	expanded_games?: number[];
+};
+
+export type IgdbPlatform = {
+	id: number;
+	name: string;
+	abbreviation?: string;
+	slug: string;
+};
+
+/** Détail d'une version, originale comprise */
+export type IgdbVersionGame = {
+	id: number;
+	name: string;
+	version_title?: string;
+	cover?: { image_id: IgdbImageId };
+	url: string;
+	platforms?: IgdbPlatform[];
+	/** `date` : timestamp Unix en secondes, absent si la date est inconnue */
+	release_dates?: { date?: number; platform?: number }[];
+	dlcs?: number[];
+	expansions?: number[];
+};
+
+export type IgdbCompany = {
+	id: number;
+	name: string;
+	logo?: { image_id: IgdbImageId };
+};
+
+/** Données propres au jeu, lues sur sa fiche originale */
+export type IgdbOriginalGame = {
+	id: number;
+	name: string;
+	alternative_names?: IgdbAlternativeName[];
+	first_release_date?: number;
+	game_status?: number;
+	artworks?: { image_id: IgdbImageId }[];
+	collections?: { id: number; name: string }[];
+	franchise?: { id: number; name: string };
+	franchises?: { id: number; name: string }[];
+	involved_companies?: {
+		developer: boolean;
+		publisher: boolean;
+		company: IgdbCompany;
+	}[];
+};
+
+export type IgdbDlcGame = {
+	id: number;
+	name: string;
+	game_type?: number;
+};
+
+/** Tout ce qu'IGDB renvoie pour un jeu à l'ouverture de la modale d'ajout */
+export type IgdbGameData = {
+	original: IgdbOriginalGame;
+	/** Toutes les versions, originale comprise */
+	versions: IgdbVersionGame[];
+	/** DLC et extensions de l'original et de toutes ses versions, sans packs ni mises à jour */
+	dlcs: IgdbDlcGame[];
+	/** Nom du `game_status` de l'original (ex. « Cancelled ») */
+	gameStatus: string | null;
+	/** Fiches rattachées comme versions mais d'un autre type (bundle…), donc ignorées */
+	skippedEntries: { reason: string; entry: IgdbGameNode }[];
 };
