@@ -1,0 +1,22 @@
+.backlogContainer {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  padding: 5rem;
+
+  .backlogTable {
+    border-collapse: collapse;
+    height: fit-content;
+    border: 1px solid black;
+
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      border: 1px solid black;
+      padding: 0.5rem;
+    }
+  }
+}
