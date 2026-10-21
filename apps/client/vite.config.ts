@@ -21,6 +21,18 @@ export default defineConfig(({ mode }) => {
 		server: {
 			port: parseInt(env.VITE_LOCAL_PORT, 10),
 			strictPort: true,
+			// POC Backlog : relais vers IGDB (pas de CORS chez IGDB, identifiants gardés côté serveur de dev)
+			proxy: {
+				"/igdb/": {
+					target: "https://api.igdb.com/v4",
+					changeOrigin: true,
+					rewrite: (requestPath) => requestPath.slice("/igdb".length),
+					headers: {
+						"Client-ID": env.INTERNET_GAME_DATA_BASE_CLIENT_ID,
+						"Authorization": `Bearer ${env.INTERNET_GAME_DATA_BASE_TOKEN}`,
+					},
+				},
+			},
 		},
 		resolve: {
 			alias: {

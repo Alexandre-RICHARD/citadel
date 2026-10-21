@@ -69,6 +69,8 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Développeur, éditeur | Colonnes Développeur et Éditeur | `involved_companies` (rôles développeur / éditeur) → `companies` |
 | Logos des sociétés | Affichés au-dessus du nom de la société | `company_logos` |
 
+Le POC ne garde qu'une série, une franchise, un développeur et un éditeur par jeu (section 11).
+
 ## 4. Architecture des données
 
 Le POC simule la base dans l'état React mais interroge les vraies données IGDB ; ses types ont déjà la forme de la future base.
@@ -100,16 +102,19 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 - **Données normalisées** : les relations passent par des identifiants (`gameId`, `platformId`…), sans objets imbriqués ni données copiées d'une entité à l'autre.
 - **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
 - **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de variantes).
+- **Langue** : tout le code est en anglais (types, champs, variables, valeurs des listes fermées). Les libellés d'interface sont en français, écrits en dur dans le code, sans système de traduction.
+- **Pictos d'interface** (chevron, menu, flèches de tri) : des emojis, sans bibliothèque d'icônes.
 
 ### Export et réimport de l'état
 
 Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargement.
 
-- Il affiche dans la console un seul objet regroupant tous les états (données et interface), hors historique d'annulation.
+- Il affiche dans la console un seul objet regroupant tous les états (données et interface) : tout ce que l'utilisateur voit ou choisit (recherche et résultats, modale ouverte avec ses données et ses choix en cours, mode édition, lignes dépliées, colonnes, tri, filtres, popover). Sont exclus l'historique d'annulation et les états passagers (chargement en cours, erreur réseau, minuteurs).
 - Ce log se colle tel quel dans `initialState.ts` ; chaque `useState` part ensuite de sa clé dans cet objet.
 - `initialState` est vérifié contre `AppState` (`satisfies AppState`) : aucun `any`, statuts, types de fin et autres listes fermées en unions de littéraux.
 - Tout l'état est sérialisable en JSON : dates en chaînes ISO (`"2026-10-21"`), `null` plutôt que `undefined`, ni `Date`, ni `Map`, ni `Set`. Sinon, le log collé ne passe plus le typage.
-- Au départ, `initialState` peut ne contenir que les plateformes et les émulateurs.
+- Au départ, `initialState` ne contient que les consoles émulées et leurs émulateurs. Les autres plateformes s'ajoutent en base à l'import du premier jeu qui en a besoin.
+- Au démarrage, le tri et les filtres présents dans l'URL, et la disposition des colonnes sauvegardée dans le `localStorage`, priment sur `initialState`.
 
 ### Footer de debug (POC)
 
@@ -122,7 +127,8 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 
 ### Plateformes et icônes
 
-- Chaque plateforme, émulateurs compris, est stockée avec un nom et un nom technique.
+- Chaque plateforme, émulateurs compris, est stockée avec un nom et un nom technique. Le nom technique est le `slug` IGDB (ex. `ps2`, `win`, `ps4--1`) ; pour un émulateur, un slug choisi à la main (ex. `pcsx2`).
+- Émulateurs du POC : PCSX2 (PS2) et RPCS3 (PS3), chacun rattaché à une seule console (liste complète en section 11).
 - Le front embarque les icônes en dur, chaque fichier nommé par le nom technique de sa plateforme (ex. `ps2.svg`).
 - Une plateforme sans icône affiche son nom.
 
@@ -164,13 +170,13 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Pas de doublon** : un jeu, une version ou un DLC n'existe qu'une fois en base. La recherche exclut les bundles et signale ce qui est déjà en base.
 - **Pas de duplication de variante** : avoir joué à la même variante sur plusieurs comptes ne crée pas de seconde entrée.
 - **Plusieurs noms** : un jeu a un nom VO, un nom VF éventuel et des noms alternatifs, tous reliés au même jeu.
-- **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés.
+- **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu.
 - **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément.
 - **Jeu original toujours en base** : ajouter un jeu récupère aussi son original et toutes ses versions, nécessaires pour la ligne dépliable et le choix des variantes.
 
 ### Affichage replié / déplié
 
-- **Une seule variante** : la ligne est simple, non dépliable. Elle affiche cette variante (version et plateforme) et ses données se modifient directement sur la ligne.
+- **Une seule variante** : la ligne est simple, non dépliable. Elle affiche cette variante (version et plateforme) et ses données se modifient directement sur la ligne. Miniature : l'image choisie à l'ajout ; nom : celui du jeu, avec le titre de la version en dessous si ce n'est pas l'original ; date de sortie : la date originale du jeu.
 - **Plusieurs variantes** : la ligne affiche le jeu original (nom, date de sortie originale), plateforme vide, et les agrégats des variantes. Elle se déplie en une sous-ligne par variante, où se modifient ses données.
 - **Agrégats** : la ligne du jeu montre le total, le meilleur, le plus ancien… selon la colonne (section 7). Quand il est impossible de choisir une valeur, la case reste vide.
 - **Données du jeu** : le type de fin et le numéro dans la série, choisis à l'ajout et modifiables avec le jeu (section 8), s'affichent en lecture seule dans le tableau.
@@ -220,7 +226,8 @@ Les variantes « Pas commencé » sont ignorées tant qu'une autre variante a un
 
 ### Règles
 
-- Passer une variante au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0.
+- Passer une variante au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0. Si la date de fin est vide, une petite fenêtre la propose, pré-remplie avec la date du jour (« Valider » ou « Plus tard »).
+- Repasser sous le rang 5 n'efface pas la date de fin.
 
 ## 7. Données suivies et colonnes du backlog
 
@@ -251,6 +258,9 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | Commentaire | Variante | Saisie | Le commentaire s'il n'y en a qu'un, sinon vide | Texte libre, tronqué, complet au survol |
 | Actions | Jeu, variante |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
 
+- **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement.
+- **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série décimal possible (ex. 2.5) ; compteurs « fois fini » entiers, à partir de 0.
+
 ## 8. Ajout d'un jeu et gestion du backlog
 
 Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un résultat, vérification du type de fin (Histoire par défaut), puis « Valider » avec la cover pré-sélectionnée.
@@ -259,8 +269,9 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 
 1. **Recherche** : une barre de recherche connectée à IGDB, y compris dans le POC.
    - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image ; un seul nom si VF et VO sont identiques.
-   - Les bundles sont exclus des résultats. Les DLC n'y apparaissent pas non plus : ils arrivent avec leur jeu.
-   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante.
+   - Sont exclus des résultats : les bundles, les DLC et extensions (ils arrivent avec leur jeu), les packs, mises à jour, mods, épisodes, saisons et forks. Restent les jeux principaux, remakes, extensions standalone et versions.
+   - Une version (ex. *Skyrim Special Edition*) est un résultat à part entière : la choisir ouvre la modale de son jeu original, avec cette version pré-sélectionnée pour la variante.
+   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec cette version pré-sélectionnée.
 2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF, alternatifs), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
 3. **Choix dans la modale** :
    - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
@@ -272,7 +283,7 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 ### Modification d'un jeu
 
 - Un jeu déjà en base se modifie avec exactement les mêmes choix qu'à l'ajout : l'image de la miniature, le type de fin et le numéro dans la série.
-- La modification rouvre la même modale : données IGDB en lecture seule, ces trois choix modifiables, puis « Valider ».
+- La modification rouvre la même modale : données IGDB en lecture seule, ces trois choix modifiables, puis « Valider ». La cover et les artworks proposés sont rechargés depuis IGDB à l'ouverture ; les autres données viennent de la base.
 - On y accède par l'entrée « Modifier le jeu » du menu Actions (section 9).
 - Changer le type de fin peut rendre incompatible le statut d'une variante : Fini devient Estimé fini et inversement, Vu sans jouer devient Pas commencé.
 
@@ -293,7 +304,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 
 ### Chargement
 
-- Défilement infini : la page suivante se charge à l'approche du bas de page, avant de l'atteindre.
+- Défilement infini par pages de 25 jeux : la page suivante se charge à l'approche du bas de page, avant de l'atteindre.
 - Le tri et les filtres s'appliquent page par page, côté serveur après le POC.
 
 ### DLC
@@ -358,6 +369,8 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 - Synchronisation des données globales avec IGDB (logo d'un studio modifié, date de sortie fixée pour un jeu à venir).
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
+- Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
+- Plusieurs séries, franchises, développeurs et éditeurs par jeu : IGDB renvoie des listes (`collections`, `franchises`, `involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (chaque franchise cliquable, un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne.
 
 ### Écartées
 
