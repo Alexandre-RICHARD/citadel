@@ -5,6 +5,8 @@ import {
 	type ColumnFilter,
 	type ColumnKey,
 	type Database,
+	type EndingType,
+	endingTypeDefinitions,
 	type Game,
 	type GameChoices,
 	type GameImport,
@@ -25,6 +27,8 @@ import {
 	type SortCriterion,
 	type Variant,
 	type VariantChoice,
+	type VariantStatus,
+	variantStatusDefinitions,
 	type Version,
 	type VersionPlatform,
 } from "./types";
@@ -161,7 +165,7 @@ export async function searchIgdbGames(
 		"games",
 		[
 			`search "${escapedQuery}";`,
-			"fields name, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment;",
+			"fields name, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment, platforms.name, platforms.abbreviation;",
 			`where game_type = (${gameTypeIds.join(",")});`,
 			"limit 20;",
 		].join(" "),
@@ -260,7 +264,11 @@ export async function fetchIgdbGameData(
 			const typeName = getGameTypeName(reference, candidate.game_type);
 			const isNew =
 				!versionNodes.has(candidate.id) && !skippedIds.has(candidate.id);
-			if (isNew && versionGameTypes.includes(typeName)) {
+			// Un bundle rattaché par `version_parent` est une édition vendue avec ses DLC : une version (section 5)
+			const isVersion =
+				versionGameTypes.includes(typeName) ||
+				(typeName === "Bundle" && candidate.version_parent !== undefined);
+			if (isNew && isVersion) {
 				versionNodes.set(candidate.id, candidate);
 				level.push(candidate);
 			} else if (isNew) {
@@ -484,7 +492,7 @@ export function addVariant(
 
 /**
  * « Valider » de la modale d'ajout (section 8) : le jeu, toutes ses versions, ses DLC, sa série,
- * sa franchise, ses sociétés et ses noms, sans doublon ; puis la variante si version et plateforme sont choisies.
+ * sa franchise et ses sociétés, sans doublon ; puis la variante si version et plateforme sont choisies.
  * Un jeu déjà en base garde ses choix : seules les fiches manquantes s'ajoutent.
  */
 export function addGameImport(
@@ -530,15 +538,119 @@ export function addGameImport(
 				(company) => company ?? [],
 			),
 		),
-		alternativeNames: mergeById(
-			database.alternativeNames,
-			gameImport.alternativeNames,
-		),
 	};
 	const { versionId, platformId } = variantChoice;
 	return versionId === null || platformId === null
 		? withGame
 		: addVariant(withGame, versionId, platformId);
+}
+
+// ---------- Tableau : agrégats et affichage (sections 6, 7 et 9) ----------
+
+/** Défilement infini : nombre de jeux par page */
+export const backlogPageSize = 25;
+
+export function findById<T extends { id: number }>(
+	items: T[],
+	id: number | null,
+): T | null {
+	return id === null ? null : (items.find((item) => item.id === id) ?? null);
+}
+
+export function getStatusLabel(status: VariantStatus): string {
+	return (
+		variantStatusDefinitions.find(({ key }) => key === status)?.label ?? status
+	);
+}
+
+export function getEndingTypeLabel(endingType: EndingType): string {
+	return (
+		endingTypeDefinitions.find(({ key }) => key === endingType)?.label ??
+		endingType
+	);
+}
+
+function getStatusRank(status: VariantStatus): number | null {
+	return (
+		variantStatusDefinitions.find(({ key }) => key === status)?.rank ?? null
+	);
+}
+
+/** Le statut de plus haut rang ; « Abandonné », hors échelle, n'est jamais retenu */
+function getHighestStatus(statuses: VariantStatus[]): VariantStatus | null {
+	let highest: VariantStatus | null = null;
+	let highestRank = 0;
+	for (const status of statuses) {
+		const rank = getStatusRank(status);
+		if (rank !== null && rank > highestRank) {
+			highest = status;
+			highestRank = rank;
+		}
+	}
+	return highest;
+}
+
+/**
+ * Statut de la ligne du jeu (section 6) : les « Pas commencé » sont ignorées tant qu'une autre variante
+ * a un statut, puis la première situation qui correspond l'emporte. `null` : impossible de choisir.
+ */
+export function getGameStatus(statuses: VariantStatus[]): VariantStatus | null {
+	const played = statuses.filter((status) => status !== "notStarted");
+	// Toutes « Pas commencé »
+	if (played.length === 0) {
+		return "notStarted";
+	}
+	// Au moins une au rang 5 ou plus : le plus haut de ces statuts
+	const finished = played.filter((status) => (getStatusRank(status) ?? 0) >= 5);
+	if (finished.length > 0) {
+		return getHighestStatus(finished);
+	}
+	// Toutes « Abandonné »
+	if (played.every((status) => status === "abandoned")) {
+		return "abandoned";
+	}
+	// Aucune « Abandonné » : le plus haut statut
+	if (!played.includes("abandoned")) {
+		return getHighestStatus(played);
+	}
+	// « Abandonné » mêlé à un statut en cours (rangs 2 à 4)
+	return null;
+}
+
+export function sum(values: number[]): number {
+	return values.reduce((total, value) => total + value, 0);
+}
+
+/** La plus ancienne date, `null` s'il n'y en a aucune */
+export function getEarliestDate(dates: (IsoDate | null)[]): IsoDate | null {
+	let earliest: IsoDate | null = null;
+	for (const date of dates) {
+		if (date !== null && (earliest === null || date < earliest)) {
+			earliest = date;
+		}
+	}
+	return earliest;
+}
+
+/** La plus haute valeur, `null` s'il n'y en a aucune */
+export function getHighestValue(values: (number | null)[]): number | null {
+	const knownValues = values.filter((value) => value !== null);
+	return knownValues.length === 0 ? null : Math.max(...knownValues);
+}
+
+/** Minutes → « 12 h 30 » */
+export function formatDuration(minutes: number): string {
+	return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
+}
+
+/** « Fois fini » : le compteur sûr, puis le probable s'il y en a, ex. « 2 (+1 ?) » */
+export function formatFinishCount(sure: number, probable: number): string {
+	return probable === 0 ? String(sure) : `${sure} (+${probable} ?)`;
+}
+
+/** « faits / total » ; vide quand le jeu n'a pas de DLC */
+export function formatDlcProgress(done: number, total: number): string {
+	return total === 0 ? "" : `${done} / ${total}`;
 }
 
 // ---------- Footer de debug ----------

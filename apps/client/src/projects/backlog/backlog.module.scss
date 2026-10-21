@@ -47,13 +47,23 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
   padding: 1rem;
   background: #f6f6f6;
   border-bottom: 1px solid #ddd;
 }
 
+.title {
+  margin: 0;
+  font-size: 1.4rem;
+  white-space: nowrap;
+}
+
 .search {
   position: relative;
+  flex: 1;
   max-width: 40rem;
 }
 
@@ -158,6 +168,136 @@
     max-height: 2rem;
     object-fit: contain;
   }
+}
+
+.platform {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  white-space: nowrap;
+
+  img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// ---------- Tableau ----------
+
+.tableWrapper {
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.table {
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.9rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    font-weight: 600;
+    white-space: nowrap;
+    background: #f1f1f1;
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+.gameRow {
+  background: #fff;
+}
+
+// Jeux « À jouer bientôt » mis en valeur
+.playSoonRow {
+  background: #fef9c3;
+}
+
+// Sous-lignes : fond plus discret, légèrement indentées
+.variantRow {
+  font-size: 0.85rem;
+  background: #f8fafc;
+
+  td:nth-child(2) {
+    padding-left: 1.75rem;
+  }
+}
+
+.expandCell {
+  width: 6rem;
+  white-space: nowrap;
+}
+
+.chevron {
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.variantBadge {
+  margin-left: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: #1e3a8a;
+  background: #dbeafe;
+  border-radius: 999px;
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+}
+
+.versionTitle {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #475569;
+}
+
+// Commentaire tronqué, complet au survol
+.comment {
+  display: inline-block;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.help {
+  cursor: help;
+}
+
+.actionsButton {
+  padding: 0 0.4rem;
+  font: inherit;
+  font-size: 1.1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+}
+
+.emptyMessage {
+  padding: 1rem;
+  color: #666;
 }
 
 // ---------- Modales ----------
