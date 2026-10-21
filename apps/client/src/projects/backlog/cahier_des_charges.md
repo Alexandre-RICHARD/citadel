@@ -109,10 +109,10 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 
 Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargement.
 
-- Il affiche dans la console un seul objet regroupant tous les états (données et interface) : tout ce que l'utilisateur voit ou choisit (recherche et résultats, modale ouverte avec ses données et ses choix en cours, mode édition, lignes dépliées, colonnes, tri, filtres, popover). Sont exclus l'historique d'annulation et les états passagers (chargement en cours, erreur réseau, minuteurs).
-- Ce log se colle tel quel dans `initialState.ts` ; chaque `useState` part ensuite de sa clé dans cet objet.
+- Il copie dans le presse-papiers le contenu complet de `initialState.ts` : un seul objet regroupant tous les états (données et interface) : tout ce que l'utilisateur voit ou choisit (recherche et résultats, modale ouverte avec ses données et ses choix en cours, mode édition, lignes dépliées, colonnes, tri, filtres, popover). Sont exclus l'historique d'annulation et les états passagers (chargement en cours, erreur réseau, minuteurs).
+- Cette copie se colle telle quelle dans `initialState.ts` ; chaque `useState` part ensuite de sa clé dans cet objet.
 - `initialState` est vérifié contre `AppState` (`satisfies AppState`) : aucun `any`, statuts, types de fin et autres listes fermées en unions de littéraux.
-- Tout l'état est sérialisable en JSON : dates en chaînes ISO (`"2026-10-21"`), `null` plutôt que `undefined`, ni `Date`, ni `Map`, ni `Set`. Sinon, le log collé ne passe plus le typage.
+- Tout l'état est sérialisable en JSON : dates en chaînes ISO (`"2026-10-21"`), `null` plutôt que `undefined`, ni `Date`, ni `Map`, ni `Set`. Sinon, la copie collée ne passe plus le typage.
 - Au départ, `initialState` ne contient que les consoles émulées et leurs émulateurs. Les autres plateformes s'ajoutent en base à l'import du premier jeu qui en a besoin.
 - Au démarrage, le tri et les filtres présents dans l'URL, et la disposition des colonnes sauvegardée dans le `localStorage`, priment sur `initialState`.
 
@@ -202,7 +202,7 @@ Les statuts sont gradés du rang 1 au rang 8 ; « Abandonné » est hors échell
 | Rang | Statut | Signification | Histoire | Runs | Bac à sable | Multi |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Pas commencé | Dans le backlog, jamais lancé | ✓ | ✓ | ✓ | ✓ |
-| 2 | Vu sans jouer | Connu par une vidéo ou un let's play, jamais joué | ✓ | ✓ |  |  |
+| 2 | Vu sans jouer | Je l'ai fait avec des amis | ✓ | ✓ |  |  |
 | 3 | Démarré | Lancé, quelques heures de jeu | ✓ | ✓ | ✓ | ✓ |
 | 4 | Bien entamé | Bonne progression, pas encore fini | ✓ | ✓ | ✓ | ✓ |
 | 5 | Fini | Fin principale atteinte | ✓ | ✓ |  |  |

@@ -165,7 +165,7 @@ export type Game = {
 	id: number;
 	/** Nom VO (`name`) */
 	name: string;
-	/** Nom VF (`game_localizations`, sinon `alternative_names`), `null` si introuvable */
+	/** Nom VF (règle dans `findFrenchName`, mappers.ts) ; `null` si introuvable ou identique au nom VO */
 	frenchName: string | null;
 	/** `first_release_date` ; `null` ou date future : « à venir » */
 	firstReleaseDate: IsoDate | null;
@@ -308,6 +308,7 @@ export type SearchResult = {
 	/** id IGDB de la fiche ; « déjà en base » si une version porte cet id */
 	id: number;
 	name: string;
+	/** `null` si introuvable ou identique au nom VO : un seul nom s'affiche */
 	frenchName: string | null;
 	releaseYear: number | null;
 	coverImageId: IgdbImageId | null;
@@ -479,4 +480,36 @@ export type GameRow = {
 	igdbUrl: string;
 	/** Une sous-ligne par variante ; la ligne est dépliable à partir de deux */
 	variantRows: VariantRow[];
+};
+
+// ---------- Réponses IGDB : seulement les champs demandés, absents quand IGDB n'a pas de valeur ----------
+
+/** Tailles d'image IGDB ; suffixe `_2x` pour les écrans haute densité */
+export type IgdbImageSize =
+	| "micro"
+	| "thumb"
+	| "cover_small"
+	| "cover_big"
+	| "logo_med"
+	| "screenshot_med"
+	| "screenshot_big"
+	| "screenshot_huge"
+	| "720p"
+	| "1080p";
+
+/** Endpoint `game_types` */
+export type IgdbGameType = {
+	id: number;
+	type: string;
+};
+
+/** Fiche renvoyée par la recherche */
+export type IgdbSearchGame = {
+	id: number;
+	name: string;
+	/** Timestamp Unix, en secondes */
+	first_release_date?: number;
+	cover?: { image_id: IgdbImageId };
+	game_localizations?: { name?: string; region?: { identifier?: string } }[];
+	alternative_names?: { name?: string; comment?: string }[];
 };

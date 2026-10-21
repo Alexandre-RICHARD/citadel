@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier -- généré par le bouton « Exporter l'état » du footer de debug, à coller tel quel */
+/* eslint-disable prettier/prettier -- généré par le bouton « Copier l’état » du footer de debug, à coller tel quel */
 import type { AppState } from "./types";
 
 export const initialState = {
