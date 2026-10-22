@@ -287,8 +287,8 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 
 ### Gestion du backlog
 
-- Ajouter une variante : entrée « Ajouter une variante » du menu Actions, qui ouvre directement le choix de la version et de la plateforme. La recherche y mène aussi : un résultat signalé « déjà en base » ouvre le même choix.
-- Retirer : entrées « Retirer la variante » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière variante retire le jeu du backlog.
+- Ajouter une variante : entrée « Ajouter une variante » du menu Actions, qui ouvre directement le choix de la version et de la plateforme, sans version pré-sélectionnée. La recherche y mène aussi : un résultat signalé « déjà en base » ouvre le même choix.
+- Retirer : entrées « Retirer la variante » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière variante retire le jeu du backlog. Les retraits se font sans confirmation : `Ctrl+Z` les annule (section 10).
 
 ## 9. Vue Backlog (tableau principal)
 
@@ -324,7 +324,8 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 | Ligne à variante unique | Le menu de la ligne du jeu ; « Retirer le jeu du backlog » y retire l'unique variante |
 
 - « Ouvrir sur IGDB » et « Logger cette ligne » restent disponibles en lecture seule ; les autres entrées ne sont actives qu'en mode édition.
-- « Logger cette ligne » affiche dans la console le jeu, ses versions et ses variantes tels qu'ils sont stockés.
+- « Logger cette ligne » affiche dans la console le jeu, ses versions et ses variantes tels qu'ils sont stockés ; sur une sous-ligne, seulement cette variante et sa version.
+- Le menu, comme le popover des DLC, se ferme au clic à côté ou avec Échap.
 
 ### Header du tableau
 
@@ -332,13 +333,15 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Un bouton qui ouvre une petite modale pour gérer la visibilité de chaque colonne.
 - Un bouton fixe (*sticky*) pour basculer en mode édition.
 - De petites bulles explicatives, par exemple sur Type de fin et Statut pour rappeler la signification des valeurs.
+- La barre du haut (titre, recherche, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
 
 ### Lecture seule et édition
 
 - Le tableau est en lecture seule par défaut.
 - Le bouton du header bascule en mode édition.
-- Retour automatique en lecture seule après 1 minute d'inactivité.
-- Une cellule en cours d'édition suspend ce minuteur.
+- Retour automatique en lecture seule après 1 minute d'inactivité : ni mouvement de souris, ni clic, ni frappe, ni défilement.
+- Une cellule en cours d'édition (le curseur dans un de ses champs de saisie) suspend ce minuteur ; une modale ouverte aussi. Les cases à cocher et les listes s'enregistrent tout de suite et ne le suspendent pas.
+- Un champ s'enregistre quand on le quitte, ou avec Entrée. Une valeur invalide (ex. une note de 25) est refusée : le champ revient à l'ancienne valeur.
 
 ### Personnalisation de la vue
 
@@ -358,6 +361,10 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 ## 10. Annuler / rétablir
 
 - `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
+- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé, un retrait, « Modifier le jeu » validé. La date de fin validée dans la petite fenêtre est une action distincte.
+- Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
+- Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.
+- L'annulation marche aussi en lecture seule.
 - L'historique vit en mémoire et se perd au rechargement de la page.
 - Après le POC, chaque annulation ou rétablissement relance une requête API ; dans le POC, il met simplement à jour l'état.
 
