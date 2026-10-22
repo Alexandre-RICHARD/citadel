@@ -12,6 +12,7 @@ import {
 	type GameImport,
 	type IgdbDlcGame,
 	type IgdbGameData,
+	type IgdbGameImages,
 	type IgdbGameNode,
 	type IgdbGameStatus,
 	type IgdbGameType,
@@ -27,6 +28,7 @@ import {
 	type SortCriterion,
 	type Variant,
 	type VariantChoice,
+	type VariantDlc,
 	type VariantStatus,
 	variantStatusDefinitions,
 	type Version,
@@ -48,6 +50,19 @@ export function toIsoDate(seconds: number | undefined): IsoDate | null {
 		: (new Date(seconds * 1000).toISOString().slice(0, 10) as IsoDate);
 }
 
+/** Date du jour, en heure locale */
+export function getTodayIsoDate(): IsoDate {
+	const now = new Date();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const day = String(now.getDate()).padStart(2, "0");
+	return `${now.getFullYear()}-${month}-${day}` as IsoDate;
+}
+
+/** Valeur d'un champ date (« 2026-10-21 ») → date ISO ; `null` si elle n'en est pas une */
+export function parseIsoDate(text: string): IsoDate | null {
+	return /^\d{4}-\d{2}-\d{2}$/.test(text) ? (text as IsoDate) : null;
+}
+
 /** « 2013-09-17 » → « 17/09/2013 » */
 export function formatIsoDate(date: IsoDate): string {
 	const [year, month, day] = date.split("-");
@@ -62,7 +77,7 @@ export function formatReleaseDate(
 	if (isCancelled) {
 		return "annulé";
 	}
-	if (date === null || date > new Date().toISOString().slice(0, 10)) {
+	if (date === null || date > getTodayIsoDate()) {
 		return "à venir";
 	}
 	return formatIsoDate(date);
@@ -332,6 +347,24 @@ export async function fetchIgdbGameData(
 	};
 }
 
+/** Cover et artworks du jeu, rechargés à l'ouverture de « Modifier le jeu » (section 8) : la cover d'abord */
+export async function fetchIgdbGameImages(
+	gameId: number,
+	signal: AbortSignal,
+): Promise<IgdbImageId[]> {
+	const game = (
+		await requestIgdb<IgdbGameImages[]>(
+			"games",
+			`fields cover.image_id, artworks.image_id; where id = ${gameId};`,
+			signal,
+		)
+	).at(0);
+	return [
+		...(game?.cover === undefined ? [] : [game.cover.image_id]),
+		...(game?.artworks ?? []).map((artwork) => artwork.image_id),
+	];
+}
+
 /** Seule fonction qui construit l'URL d'une image IGDB ; `t_thumb` (90 × 90) pour une miniature */
 export function getIgdbImageUrl(
 	imageId: IgdbImageId,
@@ -370,6 +403,29 @@ export function receiveGameImport(
 				? versionId
 				: null,
 		},
+	};
+}
+
+/** Range les images rechargées dans la modale « Modifier le jeu » ; l'image choisie reste proposée même si IGDB ne l'a plus */
+export function receiveGameImages(
+	modal: Modal | null,
+	gameId: number,
+	imageIds: IgdbImageId[],
+): Modal | null {
+	if (
+		modal?.kind !== "editGame" ||
+		modal.gameId !== gameId ||
+		modal.imageIds !== null
+	) {
+		return modal;
+	}
+	const { imageId } = modal.choices;
+	return {
+		...modal,
+		imageIds:
+			imageId === null || imageIds.includes(imageId)
+				? imageIds
+				: [imageId, ...imageIds],
 	};
 }
 
@@ -425,6 +481,57 @@ export function describeVersionPlatforms(
 			return `${name} ${releaseDate === null ? "(date inconnue)" : formatIsoDate(releaseDate)}`;
 		})
 		.join(" · ");
+}
+
+// ---------- Données et statuts ----------
+
+export function findById<T extends { id: number }>(
+	items: T[],
+	id: number | null,
+): T | null {
+	return id === null ? null : (items.find((item) => item.id === id) ?? null);
+}
+
+function getStatusRank(status: VariantStatus): number | null {
+	return (
+		variantStatusDefinitions.find(({ key }) => key === status)?.rank ?? null
+	);
+}
+
+/** Rang 5 ou plus : la variante est finie (section 6) */
+export function isFinishedStatus(status: VariantStatus): boolean {
+	return (getStatusRank(status) ?? 0) >= 5;
+}
+
+/** Les statuts proposés dépendent du type de fin du jeu (section 6) */
+export function isStatusAllowed(
+	status: VariantStatus,
+	endingType: EndingType,
+): boolean {
+	return variantStatusDefinitions.some((definition) => {
+		const endingTypes: readonly EndingType[] = definition.endingTypes;
+		return definition.key === status && endingTypes.includes(endingType);
+	});
+}
+
+/** Statut devenu incompatible avec un nouveau type de fin (section 8) : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé */
+export function convertStatus(
+	status: VariantStatus,
+	endingType: EndingType,
+): VariantStatus {
+	if (isStatusAllowed(status, endingType)) {
+		return status;
+	}
+	if (status === "finished") {
+		return "deemedFinished";
+	}
+	if (status === "deemedFinished") {
+		return "finished";
+	}
+	if (status === "watched") {
+		return "notStarted";
+	}
+	return status;
 }
 
 // ---------- Écritures en base, toutes passées à changeDatabase ----------
@@ -545,17 +652,140 @@ export function addGameImport(
 		: addVariant(withGame, versionId, platformId);
 }
 
+export function updateVariant(
+	database: Database,
+	variantId: number,
+	update: (variant: Variant) => Variant,
+): Database {
+	return {
+		...database,
+		variants: database.variants.map((variant) =>
+			variant.id === variantId ? update(variant) : variant,
+		),
+	};
+}
+
+/** Statut d'une variante ; au rang 5 ou plus, « fois fini (sûr) » passe à 1 s'il était à 0 (section 6) */
+export function setVariantStatus(
+	database: Database,
+	variantId: number,
+	status: VariantStatus,
+): Database {
+	return updateVariant(database, variantId, (variant) => ({
+		...variant,
+		status,
+		sureFinishCount:
+			isFinishedStatus(status) && variant.sureFinishCount === 0
+				? 1
+				: variant.sureFinishCount,
+	}));
+}
+
+/** Coche ou décoche un DLC comme fait sur une variante */
+export function toggleVariantDlc(
+	database: Database,
+	variantId: number,
+	dlcId: number,
+): Database {
+	function isThisDlc(variantDlc: VariantDlc): boolean {
+		return variantDlc.variantId === variantId && variantDlc.dlcId === dlcId;
+	}
+	return {
+		...database,
+		variantDlcs: database.variantDlcs.some(isThisDlc)
+			? database.variantDlcs.filter((variantDlc) => !isThisDlc(variantDlc))
+			: [...database.variantDlcs, { variantId, dlcId }],
+	};
+}
+
+export function getGameVariantIds(
+	database: Database,
+	gameId: number,
+): number[] {
+	const versionIds = database.versions
+		.filter((version) => version.gameId === gameId)
+		.map(({ id }) => id);
+	return database.variants
+		.filter(({ versionId }) => versionIds.includes(versionId))
+		.map(({ id }) => id);
+}
+
+/** Retire des variantes et leurs DLC faits ; un jeu sans variante quitte le backlog mais reste en base (section 8) */
+export function removeVariants(
+	database: Database,
+	variantIds: number[],
+): Database {
+	return {
+		...database,
+		variants: database.variants.filter(({ id }) => !variantIds.includes(id)),
+		variantDlcs: database.variantDlcs.filter(
+			({ variantId }) => !variantIds.includes(variantId),
+		),
+	};
+}
+
+/** « Modifier le jeu » (section 8) : les trois choix, puis la conversion des statuts que le nouveau type de fin rend incompatibles */
+export function updateGameChoices(
+	database: Database,
+	gameId: number,
+	choices: GameChoices,
+): Database {
+	const variantIds = getGameVariantIds(database, gameId);
+	return {
+		...database,
+		games: database.games.map((game) =>
+			game.id === gameId
+				? {
+						...game,
+						...choices,
+						seriesNumber: game.seriesId === null ? null : choices.seriesNumber,
+					}
+				: game,
+		),
+		variants: database.variants.map((variant) =>
+			variantIds.includes(variant.id)
+				? {
+						...variant,
+						status: convertStatus(variant.status, choices.endingType),
+					}
+				: variant,
+		),
+	};
+}
+
+/** « Logger cette ligne » (section 9) : le jeu, ses versions et ses variantes tels qu'ils sont stockés ; une sous-ligne s'en tient à sa variante */
+export function getStoredLine(
+	database: Database,
+	gameId: number,
+	variantId: number | null,
+): { game: Game | null; versions: Version[]; variants: Variant[] } {
+	const versions = database.versions.filter(
+		(version) => version.gameId === gameId,
+	);
+	const variants = database.variants.filter(
+		(variant) =>
+			versions.some(({ id }) => id === variant.versionId) &&
+			(variantId === null || variant.id === variantId),
+	);
+	return {
+		game: findById(database.games, gameId),
+		versions:
+			variantId === null
+				? versions
+				: versions.filter(({ id }) =>
+						variants.some((variant) => variant.versionId === id),
+					),
+		variants,
+	};
+}
+
 // ---------- Tableau : agrégats et affichage (sections 6, 7 et 9) ----------
 
 /** Défilement infini : nombre de jeux par page */
 export const backlogPageSize = 25;
 
-export function findById<T extends { id: number }>(
-	items: T[],
-	id: number | null,
-): T | null {
-	return id === null ? null : (items.find((item) => item.id === id) ?? null);
-}
+/** Mode édition : retour automatique en lecture seule après 1 minute d'inactivité (section 9) */
+export const editModeIdleMs = 60_000;
 
 export function getStatusLabel(status: VariantStatus): string {
 	return (
@@ -567,12 +797,6 @@ export function getEndingTypeLabel(endingType: EndingType): string {
 	return (
 		endingTypeDefinitions.find(({ key }) => key === endingType)?.label ??
 		endingType
-	);
-}
-
-function getStatusRank(status: VariantStatus): number | null {
-	return (
-		variantStatusDefinitions.find(({ key }) => key === status)?.rank ?? null
 	);
 }
 

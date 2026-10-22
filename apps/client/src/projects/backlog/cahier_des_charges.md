@@ -256,7 +256,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | Commentaire | Variante | Saisie | Le commentaire s'il n'y en a qu'un, sinon vide | Texte libre, tronqué, complet au survol |
 | Actions | Jeu, variante |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
 
-- **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement.
+- **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement. Sur une sous-ligne d'émulateur, c'est la date de sortie de la version sur la console d'origine (ex. PCSX2 : la date de sortie sur PS2).
 - **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série décimal possible (ex. 2.5) ; compteurs « fois fini » entiers, à partir de 0.
 
 ## 8. Ajout d'un jeu et gestion du backlog

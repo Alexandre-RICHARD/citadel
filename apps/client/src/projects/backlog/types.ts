@@ -408,6 +408,23 @@ export type AppState = {
 	loadedPageCount: number;
 };
 
+/** Ce que le tableau peut déclencher ; toute modification de la base passe par `changeDatabase` */
+export type TableHandlers = {
+	toggleExpanded: (gameId: number) => void;
+	setPopover: (popover: Popover | null) => void;
+	updateVariant: (
+		variantId: number,
+		update: (variant: Variant) => Variant,
+	) => void;
+	changeVariantStatus: (variantId: number, status: VariantStatus) => void;
+	toggleVariantDlc: (variantId: number, dlcId: number) => void;
+	openEditGame: (gameId: number) => void;
+	openAddVariant: (gameId: number) => void;
+	removeGameFromBacklog: (gameId: number) => void;
+	removeVariant: (variantId: number) => void;
+	logLine: (gameId: number, variantId: number | null) => void;
+};
+
 // ---------- Lignes du tableau : calculées par les mappers, jamais stockées ----------
 
 /** Sous-ligne : une variante */
@@ -587,6 +604,13 @@ export type IgdbOriginalGame = {
 		publisher: boolean;
 		company: IgdbCompany;
 	}[];
+};
+
+/** Cover et artworks d'un jeu, rechargés pour « Modifier le jeu » */
+export type IgdbGameImages = {
+	id: number;
+	cover?: { image_id: IgdbImageId };
+	artworks?: { image_id: IgdbImageId }[];
 };
 
 export type IgdbDlcGame = {
