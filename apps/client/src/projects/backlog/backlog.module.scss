@@ -1,7 +1,14 @@
+// Hauteur de la barre du haut, fixe : la page et les en-têtes du tableau se calent dessous
+$toolbar-height: 4.5rem;
+
 .page {
+  box-sizing: border-box;
+  // La page s'élargit avec le tableau : popovers et menus ne sont jamais coupés
+  width: max-content;
+  min-width: 100%;
   min-height: 100svh;
-  // Place pour le footer de debug, fixé en bas
-  padding-bottom: 5rem;
+  // Place pour la barre du haut et le footer de debug, tous deux fixes
+  padding: $toolbar-height 0 5rem;
   color: #1f1f1f;
   background: #f6f6f6;
 }
@@ -9,14 +16,18 @@
 // ---------- Boutons (le style global de l'app les remet à zéro) ----------
 
 .button,
-.primaryButton {
+.primaryButton,
+.editModeButton,
+.editModeButtonActive {
   padding: 0.4rem 1rem;
   font: inherit;
+  white-space: nowrap;
   border-radius: 6px;
   cursor: pointer;
 }
 
-.button {
+.button,
+.editModeButton {
   color: #1f1f1f;
   background: #fff;
   border: 1px solid #bbb;
@@ -26,7 +37,8 @@
   }
 }
 
-.primaryButton {
+.primaryButton,
+.editModeButtonActive {
   color: #fff;
   background: #2563eb;
   border: 1px solid #2563eb;
@@ -41,16 +53,30 @@
   }
 }
 
-// ---------- Recherche ----------
+.linkButton {
+  padding: 0;
+  font: inherit;
+  color: #2563eb;
+  text-decoration: underline dotted;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+// ---------- Barre du haut et recherche ----------
 
 .toolbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  right: 0;
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
   display: flex;
   gap: 1.5rem;
   align-items: center;
-  padding: 1rem;
+  height: $toolbar-height;
+  padding: 0 1rem;
   background: #f6f6f6;
   border-bottom: 1px solid #ddd;
 }
@@ -135,7 +161,7 @@
   border-radius: 999px;
 }
 
-// ---------- Miniatures et sociétés ----------
+// ---------- Miniatures, sociétés et plateformes ----------
 
 .thumbnail,
 .thumbnailPlaceholder {
@@ -186,7 +212,6 @@
 
 .tableWrapper {
   padding: 1rem;
-  overflow-x: auto;
 }
 
 .table {
@@ -206,11 +231,21 @@
   }
 
   th {
+    position: sticky;
+    top: $toolbar-height;
+    z-index: 5;
     font-weight: 600;
     white-space: nowrap;
     background: #f1f1f1;
     border-bottom: 1px solid #ddd;
   }
+}
+
+// Mode édition : le tableau est encadré
+.editingTable {
+  @extend .table;
+
+  outline: 2px solid #2563eb;
 }
 
 .gameRow {
@@ -281,23 +316,132 @@
   cursor: help;
 }
 
+.emptyMessage {
+  padding: 1rem;
+  color: #666;
+}
+
+// ---------- Champs d'édition des cellules ----------
+
+.cellField,
+.numberField,
+.textField,
+.dateField {
+  box-sizing: border-box;
+  padding: 0.15rem 0.3rem;
+  font: inherit;
+  color: #1f1f1f;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+}
+
+.numberField {
+  width: 3.75rem;
+}
+
+.textField {
+  width: 12rem;
+}
+
+.fieldGroup {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  white-space: nowrap;
+}
+
+// ---------- Popover des DLC et menu Actions ----------
+
+.popoverAnchor {
+  position: relative;
+  display: inline-block;
+}
+
+.popover,
+.menu {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 15%);
+}
+
+.popover {
+  left: 0;
+  width: max-content;
+  max-width: 24rem;
+  max-height: 18rem;
+  padding: 0.5rem 0.75rem;
+  overflow-y: auto;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  label {
+    display: flex;
+    gap: 0.4rem;
+    align-items: flex-start;
+    padding: 0.2rem 0;
+  }
+}
+
+.popoverTitle {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+// Dernière colonne : le menu s'ouvre vers la gauche
+.menu {
+  right: 0;
+  min-width: 15rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+
+  a,
+  button {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    padding: 0.4rem 0.75rem;
+    font: inherit;
+    color: inherit;
+    white-space: nowrap;
+    text-align: left;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: #f1f5f9;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+  }
+}
+
 .actionsButton {
-  padding: 0 0.4rem;
+  padding: 0 0.5rem;
   font: inherit;
   font-size: 1.1rem;
   background: none;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
+  &:hover {
+    background: #f1f5f9;
   }
-}
-
-.emptyMessage {
-  padding: 1rem;
-  color: #666;
 }
 
 // ---------- Modales ----------
@@ -312,15 +456,23 @@
   background: rgb(0 0 0 / 45%);
 }
 
-.dialog {
+.dialog,
+.compactDialog {
   display: flex;
   flex-direction: column;
-  width: min(56rem, 100%);
   max-height: calc(100svh - 2rem);
   color: #1f1f1f;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 20px 50px rgb(0 0 0 / 30%);
+}
+
+.dialog {
+  width: min(56rem, 100%);
+}
+
+.compactDialog {
+  width: min(28rem, 100%);
 }
 
 .dialogTitle {
@@ -396,6 +548,7 @@
   flex-wrap: wrap;
   gap: 1rem;
   align-items: flex-end;
+  margin-top: 0.75rem;
 
   label {
     display: flex;
@@ -482,6 +635,7 @@
   right: 0;
   bottom: 0;
   left: 0;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

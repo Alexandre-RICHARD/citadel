@@ -273,45 +273,14 @@ export const initialState = {
 				"logoImageId": "cl4uw"
 			}
 		],
-		"variants": [
-			{
-				"id": 1,
-				"versionId": 1311,
-				"platformId": 8,
-				"status": "notStarted",
-				"owned": false,
-				"playSoon": false,
-				"finishDate": null,
-				"sureFinishCount": 0,
-				"probableFinishCount": 0,
-				"trackedPlayTimeMinutes": 0,
-				"estimatedPlayTimeMinutes": 0,
-				"rating": null,
-				"comment": null
-			},
-			{
-				"id": 2,
-				"versionId": 1942,
-				"platformId": 6,
-				"status": "notStarted",
-				"owned": false,
-				"playSoon": false,
-				"finishDate": null,
-				"sureFinishCount": 0,
-				"probableFinishCount": 0,
-				"trackedPlayTimeMinutes": 0,
-				"estimatedPlayTimeMinutes": 0,
-				"rating": null,
-				"comment": null
-			}
-		],
+		"variants": [],
 		"variantDlcs": []
 	},
 	"searchQuery": "",
 	"searchResults": [],
 	"modal": null,
 	"popover": null,
-	"isEditMode": false,
+	"isEditMode": true,
 	"expandedGameIds": [],
 	"columns": [
 		{

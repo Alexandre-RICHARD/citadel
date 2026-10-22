@@ -8,6 +8,7 @@ import type {
 	IgdbAlternativeName,
 	IgdbCompany,
 	IgdbGameData,
+	IgdbImageId,
 	IgdbPlatform,
 	IgdbSearchGame,
 	IgdbVersionGame,
@@ -326,4 +327,45 @@ export function mapGameRows(database: Database): GameRow[] {
 			? []
 			: [mapGameRow(database, game, variantRows, dlcIds)];
 	});
+}
+
+// ---------- Base → modale « Modifier le jeu » (section 8) ----------
+
+/** Un jeu de la base sous la forme de la modale d'ajout : la même modale sert à le modifier */
+export function mapStoredGameImport(
+	database: Database,
+	game: Game,
+	imageIds: IgdbImageId[],
+): GameImport {
+	const versions = database.versions.filter(
+		(version) => version.gameId === game.id,
+	);
+	const versionIds = versions.map(({ id }) => id);
+	const versionPlatforms = database.versionPlatforms.filter(({ versionId }) =>
+		versionIds.includes(versionId),
+	);
+	const platformIds = versionPlatforms.map(({ platformId }) => platformId);
+	return {
+		game: {
+			id: game.id,
+			name: game.name,
+			frenchName: game.frenchName,
+			firstReleaseDate: game.firstReleaseDate,
+			isCancelled: game.isCancelled,
+			seriesId: game.seriesId,
+			franchiseId: game.franchiseId,
+			developerId: game.developerId,
+			publisherId: game.publisherId,
+		},
+		versions,
+		versionPlatforms,
+		platforms: database.platforms.filter(({ id }) => platformIds.includes(id)),
+		dlcs: database.dlcs.filter((dlc) => dlc.gameId === game.id),
+		series: findById(database.series, game.seriesId),
+		franchise: findById(database.franchises, game.franchiseId),
+		developer: findById(database.companies, game.developerId),
+		publisher: findById(database.companies, game.publisherId),
+		imageIds,
+		warnings: [],
+	};
 }
