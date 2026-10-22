@@ -877,6 +877,19 @@ export function formatDlcProgress(done: number, total: number): string {
 	return total === 0 ? "" : `${done} / ${total}`;
 }
 
+// ---------- Annuler / rétablir (section 10) ----------
+
+/** Actions gardées dans l'historique : la 21e efface la plus ancienne */
+export const undoHistoryLimit = 20;
+
+/** Ajoute un état de la base à un historique borné aux 20 dernières actions */
+export function pushToHistory(
+	history: Database[],
+	database: Database,
+): Database[] {
+	return [...history, database].slice(-undoHistoryLimit);
+}
+
 // ---------- Footer de debug ----------
 
 /** Contenu complet de initialState.ts pour cet état, à coller tel quel (bouton d'export du footer de debug) */

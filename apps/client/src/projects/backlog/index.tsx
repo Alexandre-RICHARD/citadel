@@ -73,6 +73,7 @@ import {
 	isStatusAllowed,
 	mergeById,
 	parseIsoDate,
+	pushToHistory,
 	receiveGameImages,
 	receiveGameImport,
 	removeVariants,
@@ -1782,9 +1783,11 @@ const copyLabels = {
 function DebugFooter({
 	state,
 	undoHistoryLength,
+	redoHistoryLength,
 }: {
 	state: AppState;
 	undoHistoryLength: number;
+	redoHistoryLength: number;
 }) {
 	const { database } = state;
 	const lastAddedGame = getLastAddedGame(database);
@@ -1822,7 +1825,10 @@ function DebugFooter({
 				Backlog — jeux : {countBacklogGames(database)} · variantes :{" "}
 				{database.variants.length}
 			</span>
-			<span>Historique d’annulation : {undoHistoryLength}</span>
+			<span>
+				Historique d’annulation : {undoHistoryLength} · à rétablir :{" "}
+				{redoHistoryLength}
+			</span>
 			<span>Tri : {describeSort(state.sort)}</span>
 			<span>Filtres : {describeFilters(state.filters)}</span>
 			<button
@@ -1847,13 +1853,22 @@ const activityEvents = [
 	"touchstart",
 ] as const;
 
+/** Champ où l'on tape : Ctrl+Z y reste l'annulation du navigateur */
+function isTextField(
+	target: EventTarget | null,
+): target is HTMLInputElement | HTMLTextAreaElement {
+	return (
+		target instanceof HTMLTextAreaElement ||
+		(target instanceof HTMLInputElement &&
+			["text", "number", "date", "search"].includes(target.type))
+	);
+}
+
 /** Une cellule est en cours d'édition quand le focus est dans un de ses champs de saisie */
 function isEditingCell(): boolean {
 	const element = document.activeElement;
 	return (
-		element instanceof HTMLInputElement &&
-		["text", "number", "date"].includes(element.type) &&
-		element.closest("[data-backlog-table]") !== null
+		isTextField(element) && element.closest("[data-backlog-table]") !== null
 	);
 }
 
@@ -1885,15 +1900,44 @@ export function Backlog() {
 		AppState["loadedPageCount"]
 	>(initialState.loadedPageCount);
 
-	// États passagers, hors AppState : historique d'annulation (rempli en phase 7), recherche et modale en cours
-	const [undoHistory] = useState<Database[]>([]);
+	// États passagers, hors AppState : historique d'annulation (en mémoire seulement), recherche et modale en cours
+	const [undoHistory, setUndoHistory] = useState<Database[]>([]);
+	const [redoHistory, setRedoHistory] = useState<Database[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchError, setSearchError] = useState<string | null>(null);
 	const [modalError, setModalError] = useState<string | null>(null);
 
-	// Seule fonction qui modifie la base : l'annuler / rétablir (phase 7) s'y branchera
+	// Seule fonction qui modifie la base : chaque appel est une action, annulable avec Ctrl+Z (section 10)
 	function changeDatabase(change: (current: Database) => Database) {
-		setDatabase(change(database));
+		const next = change(database);
+		// Rien n'a changé (ex. variante déjà présente) : pas d'action
+		if (next === database) {
+			return;
+		}
+		setUndoHistory(pushToHistory(undoHistory, database));
+		// Une nouvelle action efface ce qui restait à rétablir
+		setRedoHistory([]);
+		setDatabase(next);
+	}
+
+	function undo() {
+		const previous = undoHistory.at(-1);
+		if (previous === undefined) {
+			return;
+		}
+		setUndoHistory(undoHistory.slice(0, -1));
+		setRedoHistory([...redoHistory, database]);
+		setDatabase(previous);
+	}
+
+	function redo() {
+		const next = redoHistory.at(-1);
+		if (next === undefined) {
+			return;
+		}
+		setRedoHistory(redoHistory.slice(0, -1));
+		setUndoHistory(pushToHistory(undoHistory, database));
+		setDatabase(next);
 	}
 
 	function changeSearchQuery(query: string) {
@@ -2194,6 +2238,31 @@ export function Backlog() {
 		};
 	}, [isEditMode, isModalOpen]);
 
+	// Ctrl+Z annule, Ctrl+Y rétablit (section 10), aussi en lecture seule. Dans un champ texte,
+	// le navigateur garde la main ; pendant qu'une modale est ouverte, les raccourcis sont ignorés.
+	// Sans dépendances : l'écouteur est remplacé à chaque rendu et voit toujours l'historique à jour.
+	useEffect(() => {
+		function undoOrRedo(event: KeyboardEvent) {
+			if (
+				!(event.ctrlKey || event.metaKey) ||
+				isModalOpen ||
+				isTextField(event.target)
+			) {
+				return;
+			}
+			const key = event.key.toLowerCase();
+			if (key === "z" && !event.shiftKey) {
+				event.preventDefault();
+				undo();
+			} else if (key === "y") {
+				event.preventDefault();
+				redo();
+			}
+		}
+		window.addEventListener("keydown", undoOrRedo);
+		return () => window.removeEventListener("keydown", undoOrRedo);
+	});
+
 	// Même ordre de clés que AppState et initialState : l'export reste comparable au fichier collé
 	const state: AppState = {
 		database,
@@ -2288,6 +2357,7 @@ export function Backlog() {
 			<DebugFooter
 				state={state}
 				undoHistoryLength={undoHistory.length}
+				redoHistoryLength={redoHistory.length}
 			/>
 		</div>
 	);
