@@ -17,6 +17,7 @@ import {
 } from "./mappers";
 import {
 	type AppState,
+	type ColumnFilter,
 	type ColumnKey,
 	type ColumnSetting,
 	type Company,
@@ -32,6 +33,7 @@ import {
 	type Platform,
 	type Popover,
 	type SearchResult,
+	type SortCriterion,
 	type TableHandlers,
 	type Variant,
 	type VariantChoice,
@@ -46,6 +48,8 @@ import {
 	addVariant,
 	backlogPageSize,
 	buildInitialStateFile,
+	buildViewSearch,
+	columnFilterKinds,
 	countBacklogGames,
 	describeFilters,
 	describeSort,
@@ -53,6 +57,7 @@ import {
 	editModeIdleMs,
 	fetchIgdbGameData,
 	fetchIgdbGameImages,
+	filterGameRows,
 	findById,
 	formatDlcProgress,
 	formatDuration,
@@ -61,6 +66,7 @@ import {
 	formatReleaseDate,
 	getColumnLabel,
 	getEndingTypeLabel,
+	getFilterOptions,
 	getGameVariantIds,
 	getIgdbImageUrl,
 	getLastAddedGame,
@@ -69,17 +75,28 @@ import {
 	getStoredLine,
 	getTodayIsoDate,
 	getVersionLabel,
+	isDurationColumn,
 	isFinishedStatus,
+	isSortableColumn,
 	isStatusAllowed,
+	keepVisibleColumns,
+	loadSavedColumns,
 	mergeById,
+	moveColumn,
 	parseIsoDate,
 	pushToHistory,
+	readViewFromUrl,
 	receiveGameImages,
 	receiveGameImport,
 	removeVariants,
+	saveColumns,
 	searchDelayMs,
 	searchIgdbGames,
+	setColumnFilter,
 	setVariantStatus,
+	sortGameRows,
+	toggleColumnVisibility,
+	toggleSort,
 	toggleVariantDlc,
 	trimToNull,
 	updateGameChoices,
@@ -1024,7 +1041,6 @@ const gameInfoRenderers: Partial<
 	),
 	series: (row) => row.series?.name,
 	seriesNumber: (row) => row.seriesNumber,
-	franchise: (row) => row.franchise?.name,
 	developer: (row) =>
 		row.developer === null ? null : <CompanyLabel company={row.developer} />,
 	publisher: (row) =>
@@ -1055,11 +1071,40 @@ const variantInfoRenderers: Partial<
 	platform: (row) => <PlatformLabel platform={row.platform} />,
 };
 
-function ColumnHeader({ column }: { column: ColumnKey }) {
+/** En-tête : un clic trie (⬆️, ⬇️, puis sans tri), avec le numéro de priorité du critère */
+function ColumnHeader({
+	column,
+	sort,
+	onToggleSort,
+}: {
+	column: ColumnKey;
+	sort: SortCriterion[];
+	onToggleSort: (column: ColumnKey) => void;
+}) {
 	const help = columnHelp[column];
+	const label = getColumnLabel(column);
+	const priority = sort.findIndex((criterion) => criterion.column === column);
+	const criterion = sort.find((current) => current.column === column);
+
 	return (
 		<th scope="col">
-			{getColumnLabel(column)}
+			{isSortableColumn(column) ? (
+				<button
+					type="button"
+					className={styles.sortButton}
+					title="Trier : ⬆️, puis ⬇️, puis sans tri"
+					onClick={() => onToggleSort(column)}
+				>
+					{label}
+					{criterion !== undefined && (
+						<span className={styles.sortIndicator}>
+							{`${criterion.direction === "asc" ? "⬆️" : "⬇️"}${priority + 1}`}
+						</span>
+					)}
+				</button>
+			) : (
+				label
+			)}
 			{help !== undefined && (
 				<span
 					className={styles.help}
@@ -1568,6 +1613,20 @@ function GameRowGroup({
 		if (renderInfo !== undefined) {
 			return renderInfo(row);
 		}
+		// Un clic sur la franchise filtre le tableau sur ses jeux, aussi en lecture seule
+		if (column === "franchise") {
+			const { franchise } = row;
+			return franchise === null ? null : (
+				<button
+					type="button"
+					className={styles.linkButton}
+					title="Filtrer sur cette franchise"
+					onClick={() => handlers.filterOnFranchise(franchise.name)}
+				>
+					{franchise.name}
+				</button>
+			);
+		}
 		if (column === "actions") {
 			return (
 				<ActionsCell
@@ -1673,25 +1732,269 @@ function GameRowGroup({
 	);
 }
 
+/** Minimum et maximum d'un nombre ; les temps se saisissent en heures et se filtrent en minutes */
+function NumberRangeFilter({
+	column,
+	filter,
+	label,
+	onChange,
+}: {
+	column: ColumnKey;
+	filter: Extract<ColumnFilter, { kind: "numberRange" }> | null;
+	label: string;
+	onChange: (filter: ColumnFilter | null) => void;
+}) {
+	const unit = isDurationColumn(column) ? 60 : 1;
+	const minBound = filter?.min ?? null;
+	const maxBound = filter?.max ?? null;
+	const minRef = useRef<HTMLInputElement>(null);
+	const maxRef = useRef<HTMLInputElement>(null);
+
+	function readBound(input: HTMLInputElement | null): number | null {
+		if (input === null || input.value === "" || !input.validity.valid) {
+			return null;
+		}
+		return Number(input.value) * unit;
+	}
+
+	function update() {
+		const min = readBound(minRef.current);
+		const max = readBound(maxRef.current);
+		onChange(
+			min === null && max === null
+				? null
+				: { column, kind: "numberRange", min, max },
+		);
+	}
+
+	return (
+		<span className={styles.fieldGroup}>
+			<input
+				ref={minRef}
+				type="number"
+				step="any"
+				className={styles.rangeField}
+				placeholder="min"
+				aria-label={`${label}, minimum`}
+				defaultValue={minBound === null ? "" : minBound / unit}
+				onChange={update}
+			/>
+			–
+			<input
+				ref={maxRef}
+				type="number"
+				step="any"
+				className={styles.rangeField}
+				placeholder="max"
+				aria-label={`${label}, maximum`}
+				defaultValue={maxBound === null ? "" : maxBound / unit}
+				onChange={update}
+			/>
+			{unit === 60 && "h"}
+		</span>
+	);
+}
+
+/** Dates de début et de fin, incluses */
+function DateRangeFilter({
+	column,
+	filter,
+	label,
+	onChange,
+}: {
+	column: ColumnKey;
+	filter: Extract<ColumnFilter, { kind: "dateRange" }> | null;
+	label: string;
+	onChange: (filter: ColumnFilter | null) => void;
+}) {
+	const fromRef = useRef<HTMLInputElement>(null);
+	const toRef = useRef<HTMLInputElement>(null);
+
+	function update() {
+		const from = parseIsoDate(fromRef.current?.value ?? "");
+		const to = parseIsoDate(toRef.current?.value ?? "");
+		onChange(
+			from === null && to === null
+				? null
+				: { column, kind: "dateRange", from, to },
+		);
+	}
+
+	return (
+		<span className={styles.fieldGroup}>
+			<input
+				ref={fromRef}
+				type="date"
+				className={styles.dateField}
+				aria-label={`${label}, depuis`}
+				defaultValue={filter?.from ?? ""}
+				onChange={update}
+			/>
+			–
+			<input
+				ref={toRef}
+				type="date"
+				className={styles.dateField}
+				aria-label={`${label}, jusqu’à`}
+				defaultValue={filter?.to ?? ""}
+				onChange={update}
+			/>
+		</span>
+	);
+}
+
+/** Filtre d'une colonne, dans la ligne sous les en-têtes (section 9) */
+function ColumnFilterCell({
+	column,
+	filter,
+	database,
+	onChange,
+}: {
+	column: ColumnKey;
+	filter: ColumnFilter | null;
+	database: Database;
+	onChange: (filter: ColumnFilter | null) => void;
+}) {
+	const label = `Filtre ${getColumnLabel(column)}`;
+
+	switch (columnFilterKinds[column]) {
+		case "text": {
+			const textFilter = filter?.kind === "text" ? filter : null;
+			return (
+				<span className={styles.fieldGroup}>
+					{textFilter?.isExact === true && (
+						<span
+							className={styles.hint}
+							title="Valeur exacte, après un clic sur une franchise"
+						>
+							=
+						</span>
+					)}
+					<input
+						type="search"
+						className={styles.filterField}
+						placeholder="contient…"
+						aria-label={label}
+						value={textFilter?.text ?? ""}
+						onChange={(event) =>
+							onChange(
+								event.target.value === ""
+									? null
+									: {
+											column,
+											kind: "text",
+											text: event.target.value,
+											isExact: false,
+										},
+							)
+						}
+					/>
+				</span>
+			);
+		}
+		case "value":
+			return (
+				<select
+					className={styles.filterField}
+					aria-label={label}
+					value={filter?.kind === "value" ? filter.value : ""}
+					onChange={(event) =>
+						onChange(
+							event.target.value === ""
+								? null
+								: { column, kind: "value", value: event.target.value },
+						)
+					}
+				>
+					<option value="">Tous</option>
+					{getFilterOptions(column, database).map((option) => (
+						<option
+							key={option.value}
+							value={option.value}
+						>
+							{option.label}
+						</option>
+					))}
+				</select>
+			);
+		case "boolean": {
+			let selectedValue = "";
+			if (filter?.kind === "boolean") {
+				selectedValue = filter.value ? "oui" : "non";
+			}
+			return (
+				<select
+					className={styles.filterField}
+					aria-label={label}
+					value={selectedValue}
+					onChange={(event) =>
+						onChange(
+							event.target.value === ""
+								? null
+								: {
+										column,
+										kind: "boolean",
+										value: event.target.value === "oui",
+									},
+						)
+					}
+				>
+					<option value="">Tous</option>
+					<option value="oui">Oui</option>
+					<option value="non">Non</option>
+				</select>
+			);
+		}
+		case "numberRange":
+			return (
+				<NumberRangeFilter
+					column={column}
+					filter={filter?.kind === "numberRange" ? filter : null}
+					label={label}
+					onChange={onChange}
+				/>
+			);
+		case "dateRange":
+			return (
+				<DateRangeFilter
+					column={column}
+					filter={filter?.kind === "dateRange" ? filter : null}
+					label={label}
+					onChange={onChange}
+				/>
+			);
+		default:
+			return null;
+	}
+}
+
 function BacklogTable({
 	rows,
 	columns,
+	sort,
+	filters,
 	expandedGameIds,
 	loadedPageCount,
 	database,
 	isEditMode,
 	popover,
 	handlers,
+	onToggleSort,
+	onFilterChange,
 	onLoadNextPage,
 }: {
 	rows: GameRow[];
 	columns: ColumnSetting[];
+	sort: SortCriterion[];
+	filters: ColumnFilter[];
 	expandedGameIds: number[];
 	loadedPageCount: number;
 	database: Database;
 	isEditMode: boolean;
 	popover: Popover | null;
 	handlers: TableHandlers;
+	onToggleSort: (column: ColumnKey) => void;
+	onFilterChange: (column: ColumnKey, filter: ColumnFilter | null) => void;
 	onLoadNextPage: () => void;
 }) {
 	const visibleColumns = columns
@@ -1735,7 +2038,29 @@ function BacklogTable({
 							<ColumnHeader
 								key={column}
 								column={column}
+								sort={sort}
+								onToggleSort={onToggleSort}
 							/>
+						))}
+					</tr>
+					<tr className={styles.filterRow}>
+						<th
+							className={styles.expandCell}
+							aria-label="Filtres"
+						>
+							🔎
+						</th>
+						{visibleColumns.map((column) => (
+							<th key={column}>
+								<ColumnFilterCell
+									column={column}
+									filter={
+										filters.find((filter) => filter.column === column) ?? null
+									}
+									database={database}
+									onChange={(filter) => onFilterChange(column, filter)}
+								/>
+							</th>
 						))}
 					</tr>
 				</thead>
@@ -1756,8 +2081,9 @@ function BacklogTable({
 			</table>
 			{rows.length === 0 && (
 				<p className={styles.emptyMessage}>
-					Le backlog est vide : ajoute un jeu depuis la recherche, avec une
-					plateforme.
+					{filters.length > 0
+						? "Aucun jeu ne correspond aux filtres."
+						: "Le backlog est vide : ajoute un jeu depuis la recherche, avec une plateforme."}
 				</p>
 			)}
 			{hasMoreRows && (
@@ -1769,6 +2095,82 @@ function BacklogTable({
 				</div>
 			)}
 		</div>
+	);
+}
+
+/** Visibilité et ordre des colonnes (section 9) : appliqués tout de suite, gardés dans le navigateur */
+function ColumnsDialog({
+	columns,
+	onToggleVisibility,
+	onMove,
+	onClose,
+}: {
+	columns: ColumnSetting[];
+	onToggleVisibility: (key: ColumnKey) => void;
+	onMove: (key: ColumnKey, offset: -1 | 1) => void;
+	onClose: () => void;
+}) {
+	return (
+		<Dialog
+			title="Colonnes"
+			isCompact
+			actions={
+				<button
+					type="button"
+					className={styles.primaryButton}
+					onClick={onClose}
+				>
+					Fermer
+				</button>
+			}
+		>
+			<p className={styles.hint}>
+				Masquer une colonne la retire aussi du tri et des filtres.
+			</p>
+			<ol className={styles.columnList}>
+				{columns.map(({ key, isVisible }, index) => {
+					const label = getColumnLabel(key);
+					return (
+						<li key={key}>
+							<label>
+								<input
+									type="checkbox"
+									checked={isVisible}
+									disabled={key === "actions"}
+									title={
+										key === "actions"
+											? "Toujours visible : sans elle, plus de menu"
+											: undefined
+									}
+									onChange={() => onToggleVisibility(key)}
+								/>
+								{label}
+							</label>
+							<span className={styles.fieldGroup}>
+								<button
+									type="button"
+									className={styles.iconButton}
+									aria-label={`Monter ${label}`}
+									disabled={index === 0}
+									onClick={() => onMove(key, -1)}
+								>
+									⬆️
+								</button>
+								<button
+									type="button"
+									className={styles.iconButton}
+									aria-label={`Descendre ${label}`}
+									disabled={index === columns.length - 1}
+									onClick={() => onMove(key, 1)}
+								>
+									⬇️
+								</button>
+							</span>
+						</li>
+					);
+				})}
+			</ol>
+		</Dialog>
 	);
 }
 
@@ -1868,7 +2270,8 @@ function isTextField(
 function isEditingCell(): boolean {
 	const element = document.activeElement;
 	return (
-		isTextField(element) && element.closest("[data-backlog-table]") !== null
+		isTextField(element) &&
+		element.closest("[data-backlog-table] tbody") !== null
 	);
 }
 
@@ -1893,9 +2296,23 @@ export function Backlog() {
 	const [expandedGameIds, setExpandedGameIds] = useState<
 		AppState["expandedGameIds"]
 	>(initialState.expandedGameIds);
-	const [columns] = useState<AppState["columns"]>(initialState.columns);
-	const [sort] = useState<AppState["sort"]>(initialState.sort);
-	const [filters] = useState<AppState["filters"]>(initialState.filters);
+	// La disposition sauvegardée dans le navigateur, puis le tri et les filtres de l'URL, priment sur initialState (section 4).
+	// Une URL qui trie ou filtre sur une colonne masquée voit ce critère ignoré (section 9).
+	const [columns, setColumns] = useState<AppState["columns"]>(
+		() => loadSavedColumns() ?? initialState.columns,
+	);
+	const [sort, setSort] = useState<AppState["sort"]>(() =>
+		keepVisibleColumns(
+			readViewFromUrl(window.location.search)?.sort ?? initialState.sort,
+			columns,
+		),
+	);
+	const [filters, setFilters] = useState<AppState["filters"]>(() =>
+		keepVisibleColumns(
+			readViewFromUrl(window.location.search)?.filters ?? initialState.filters,
+			columns,
+		),
+	);
 	const [loadedPageCount, setLoadedPageCount] = useState<
 		AppState["loadedPageCount"]
 	>(initialState.loadedPageCount);
@@ -2088,7 +2505,39 @@ export function Backlog() {
 		removeVariant: (variantId) =>
 			changeDatabase((current) => removeVariants(current, [variantId])),
 		logLine,
+		filterOnFranchise: (franchiseName) =>
+			setFilters(
+				setColumnFilter(filters, "franchise", {
+					column: "franchise",
+					kind: "text",
+					text: franchiseName,
+					isExact: true,
+				}),
+			),
 	};
+
+	/** Une colonne masquée sort du tri et des filtres (section 9) */
+	function changeColumnVisibility(key: ColumnKey) {
+		const nextColumns = toggleColumnVisibility(columns, key);
+		setColumns(nextColumns);
+		setSort(keepVisibleColumns(sort, nextColumns));
+		setFilters(keepVisibleColumns(filters, nextColumns));
+	}
+
+	// La disposition des colonnes se garde dans le navigateur (section 9)
+	useEffect(() => {
+		saveColumns(columns);
+	}, [columns]);
+
+	// Le tri et les filtres se gardent dans l'URL (section 9), sans toucher à l'état du routeur
+	useEffect(() => {
+		const routerState: unknown = window.history.state;
+		window.history.replaceState(
+			routerState,
+			"",
+			`${window.location.pathname}?${buildViewSearch(sort, filters)}${window.location.hash}`,
+		);
+	}, [sort, filters]);
 
 	const loadNextPage = useCallback(() => {
 		setLoadedPageCount((count) => count + 1);
@@ -2291,6 +2740,13 @@ export function Backlog() {
 					onQueryChange={changeSearchQuery}
 					onSelect={selectSearchResult}
 				/>
+				<button
+					type="button"
+					className={styles.button}
+					onClick={() => setModal({ kind: "columns" })}
+				>
+					🧩 Colonnes
+				</button>
 				{/* Bouton fixe du mode édition : le tableau est en lecture seule par défaut (section 9) */}
 				<button
 					type="button"
@@ -2305,14 +2761,23 @@ export function Backlog() {
 			</header>
 			<main>
 				<BacklogTable
-					rows={mapGameRows(database)}
+					rows={sortGameRows(
+						filterGameRows(mapGameRows(database), filters),
+						sort,
+					)}
 					columns={columns}
+					sort={sort}
+					filters={filters}
 					expandedGameIds={expandedGameIds}
 					loadedPageCount={loadedPageCount}
 					database={database}
 					isEditMode={isEditMode}
 					popover={popover}
 					handlers={tableHandlers}
+					onToggleSort={(column) => setSort(toggleSort(sort, column))}
+					onFilterChange={(column, filter) =>
+						setFilters(setColumnFilter(filters, column, filter))
+					}
 					onLoadNextPage={loadNextPage}
 				/>
 			</main>
@@ -2343,6 +2808,14 @@ export function Backlog() {
 					onModalChange={setModal}
 					onCancel={closeModal}
 					onValidate={() => validateAddVariant(modal)}
+				/>
+			)}
+			{modal?.kind === "columns" && (
+				<ColumnsDialog
+					columns={columns}
+					onToggleVisibility={changeColumnVisibility}
+					onMove={(key, offset) => setColumns(moveColumn(columns, key, offset))}
+					onClose={closeModal}
 				/>
 			)}
 			{modal?.kind === "finishDate" && (

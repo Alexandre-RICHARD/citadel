@@ -31,6 +31,48 @@ export const initialState = {
 				"imageId": "ar6ijr",
 				"endingType": "story",
 				"seriesNumber": null
+			},
+			{
+				"id": 1020,
+				"name": "Grand Theft Auto V",
+				"frenchName": null,
+				"firstReleaseDate": "2013-09-17",
+				"isCancelled": false,
+				"seriesId": 847,
+				"franchiseId": 493,
+				"developerId": 365,
+				"publisherId": 139,
+				"imageId": "co2lbd",
+				"endingType": "story",
+				"seriesNumber": null
+			},
+			{
+				"id": 731,
+				"name": "Grand Theft Auto IV",
+				"frenchName": null,
+				"firstReleaseDate": "2008-04-29",
+				"isCancelled": false,
+				"seriesId": 847,
+				"franchiseId": 493,
+				"developerId": 365,
+				"publisherId": 139,
+				"imageId": "co2lbv",
+				"endingType": "story",
+				"seriesNumber": 1
+			},
+			{
+				"id": 52189,
+				"name": "Grand Theft Auto VI",
+				"frenchName": null,
+				"firstReleaseDate": "2026-11-19",
+				"isCancelled": false,
+				"seriesId": 847,
+				"franchiseId": 493,
+				"developerId": 29,
+				"publisherId": 29,
+				"imageId": "ar64ek",
+				"endingType": "story",
+				"seriesNumber": 6
 			}
 		],
 		"versions": [
@@ -54,6 +96,90 @@ export const initialState = {
 				"title": "Collector's Edition",
 				"coverImageId": "co2lgn",
 				"url": "https://www.igdb.com/games/the-witcher-3-wild-hunt-collectors-edition"
+			},
+			{
+				"id": 1020,
+				"gameId": 1020,
+				"title": null,
+				"coverImageId": "co2lbd",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v"
+			},
+			{
+				"id": 45131,
+				"gameId": 1020,
+				"title": "Special Edition",
+				"coverImageId": "co2nbc",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-special-edition"
+			},
+			{
+				"id": 239064,
+				"gameId": 1020,
+				"title": "Grand Theft Auto V",
+				"coverImageId": "co9751",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v--2"
+			},
+			{
+				"id": 93901,
+				"gameId": 1020,
+				"title": "Premium Online Edition & Whale Shark Card Bundle",
+				"coverImageId": "co66j4",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-premium-online-edition-and-whale-shark-card-bundle"
+			},
+			{
+				"id": 143293,
+				"gameId": 1020,
+				"title": "Premium Edition & Megalodon Shark Card Bundle",
+				"coverImageId": "co66j2",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-premium-edition-and-megalodon-shark-card-bundle"
+			},
+			{
+				"id": 143295,
+				"gameId": 1020,
+				"title": "Premium Edition & Great White Shark Card Bundle",
+				"coverImageId": "co66j3",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-premium-edition-and-great-white-shark-card-bundle"
+			},
+			{
+				"id": 98077,
+				"gameId": 1020,
+				"title": "Premium Online Edition",
+				"coverImageId": "co1twh",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-premium-online-edition"
+			},
+			{
+				"id": 334254,
+				"gameId": 1020,
+				"title": "Grand Theft Auto V Enhanced",
+				"coverImageId": "co9hz1",
+				"url": "https://www.igdb.com/games/grand-theft-auto-v-enhanced--2"
+			},
+			{
+				"id": 731,
+				"gameId": 731,
+				"title": null,
+				"coverImageId": "co2lbv",
+				"url": "https://www.igdb.com/games/grand-theft-auto-iv"
+			},
+			{
+				"id": 27912,
+				"gameId": 731,
+				"title": "Complete Edition",
+				"coverImageId": "co1twe",
+				"url": "https://www.igdb.com/games/grand-theft-auto-iv-complete-edition"
+			},
+			{
+				"id": 52189,
+				"gameId": 52189,
+				"title": null,
+				"coverImageId": "cocv1v",
+				"url": "https://www.igdb.com/games/grand-theft-auto-vi"
+			},
+			{
+				"id": 407999,
+				"gameId": 52189,
+				"title": "Ultimate Edition",
+				"coverImageId": "cocver",
+				"url": "https://www.igdb.com/games/grand-theft-auto-vi-ultimate-edition"
 			}
 		],
 		"versionPlatforms": [
@@ -111,6 +237,186 @@ export const initialState = {
 				"versionId": 44549,
 				"platformId": 48,
 				"releaseDate": "2015-06-19"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 169,
+				"releaseDate": "2025-03-15"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 9,
+				"releaseDate": "2013-09-17"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 48,
+				"releaseDate": "2014-11-18"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 6,
+				"releaseDate": "2015-04-13"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 167,
+				"releaseDate": "2025-03-15"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 12,
+				"releaseDate": "2013-09-17"
+			},
+			{
+				"versionId": 1020,
+				"platformId": 49,
+				"releaseDate": "2014-11-18"
+			},
+			{
+				"versionId": 45131,
+				"platformId": 9,
+				"releaseDate": "2013-09-17"
+			},
+			{
+				"versionId": 45131,
+				"platformId": 12,
+				"releaseDate": "2013-10-17"
+			},
+			{
+				"versionId": 239064,
+				"platformId": 169,
+				"releaseDate": "2022-07-15"
+			},
+			{
+				"versionId": 239064,
+				"platformId": 48,
+				"releaseDate": "2022-07-15"
+			},
+			{
+				"versionId": 239064,
+				"platformId": 6,
+				"releaseDate": "2015-04-14"
+			},
+			{
+				"versionId": 239064,
+				"platformId": 167,
+				"releaseDate": "2022-07-15"
+			},
+			{
+				"versionId": 239064,
+				"platformId": 49,
+				"releaseDate": "2022-07-15"
+			},
+			{
+				"versionId": 93901,
+				"platformId": 6,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 93901,
+				"platformId": 49,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143293,
+				"platformId": 48,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143293,
+				"platformId": 6,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143293,
+				"platformId": 49,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143295,
+				"platformId": 48,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143295,
+				"platformId": 6,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 143295,
+				"platformId": 49,
+				"releaseDate": "2017-12-19"
+			},
+			{
+				"versionId": 98077,
+				"platformId": 48,
+				"releaseDate": "2018-04-20"
+			},
+			{
+				"versionId": 98077,
+				"platformId": 6,
+				"releaseDate": "2018-04-20"
+			},
+			{
+				"versionId": 98077,
+				"platformId": 49,
+				"releaseDate": "2018-04-20"
+			},
+			{
+				"versionId": 334254,
+				"platformId": 6,
+				"releaseDate": "2025-03-04"
+			},
+			{
+				"versionId": 731,
+				"platformId": 9,
+				"releaseDate": "2008-04-29"
+			},
+			{
+				"versionId": 731,
+				"platformId": 6,
+				"releaseDate": "2008-12-02"
+			},
+			{
+				"versionId": 731,
+				"platformId": 12,
+				"releaseDate": "2008-04-29"
+			},
+			{
+				"versionId": 27912,
+				"platformId": 9,
+				"releaseDate": "2010-10-26"
+			},
+			{
+				"versionId": 27912,
+				"platformId": 6,
+				"releaseDate": "2010-10-27"
+			},
+			{
+				"versionId": 27912,
+				"platformId": 12,
+				"releaseDate": "2010-10-26"
+			},
+			{
+				"versionId": 52189,
+				"platformId": 169,
+				"releaseDate": "2026-11-19"
+			},
+			{
+				"versionId": 52189,
+				"platformId": 167,
+				"releaseDate": "2026-11-19"
+			},
+			{
+				"versionId": 407999,
+				"platformId": 169,
+				"releaseDate": "2026-11-19"
+			},
+			{
+				"versionId": 407999,
+				"platformId": 167,
+				"releaseDate": "2026-11-19"
 			}
 		],
 		"platforms": [
@@ -191,6 +497,12 @@ export const initialState = {
 				"name": "Switch",
 				"technicalName": "switch",
 				"emulatedPlatformId": null
+			},
+			{
+				"id": 12,
+				"name": "X360",
+				"technicalName": "xbox360",
+				"emulatedPlatformId": null
 			}
 		],
 		"dlcs": [
@@ -233,6 +545,16 @@ export const initialState = {
 				"id": 403150,
 				"gameId": 1942,
 				"name": "The Witcher 3: Wild Hunt - Songs of the Past"
+			},
+			{
+				"id": 3174,
+				"gameId": 731,
+				"name": "Grand Theft Auto IV: The Ballad of Gay Tony"
+			},
+			{
+				"id": 3265,
+				"gameId": 731,
+				"name": "Grand Theft Auto IV: The Lost and Damned"
 			}
 		],
 		"series": [
@@ -243,12 +565,20 @@ export const initialState = {
 			{
 				"id": 62,
 				"name": "The Witcher"
+			},
+			{
+				"id": 847,
+				"name": "Grand Theft Auto"
 			}
 		],
 		"franchises": [
 			{
 				"id": 452,
 				"name": "The Witcher"
+			},
+			{
+				"id": 493,
+				"name": "Grand Theft Auto"
 			}
 		],
 		"companies": [
@@ -271,10 +601,80 @@ export const initialState = {
 				"id": 50,
 				"name": "WB Games",
 				"logoImageId": "cl4uw"
+			},
+			{
+				"id": 365,
+				"name": "Rockstar North",
+				"logoImageId": "cl8g6"
+			},
+			{
+				"id": 139,
+				"name": "Take-Two Interactive",
+				"logoImageId": "cl622"
+			},
+			{
+				"id": 29,
+				"name": "Rockstar Games",
+				"logoImageId": "cl8g0"
 			}
 		],
-		"variants": [],
-		"variantDlcs": []
+		"variants": [
+			{
+				"id": 1,
+				"versionId": 1020,
+				"platformId": 6,
+				"status": "notStarted",
+				"owned": false,
+				"playSoon": false,
+				"finishDate": null,
+				"sureFinishCount": 0,
+				"probableFinishCount": 0,
+				"trackedPlayTimeMinutes": 0,
+				"estimatedPlayTimeMinutes": 0,
+				"rating": null,
+				"comment": null
+			},
+			{
+				"id": 2,
+				"versionId": 731,
+				"platformId": 6,
+				"status": "notStarted",
+				"owned": false,
+				"playSoon": false,
+				"finishDate": null,
+				"sureFinishCount": 0,
+				"probableFinishCount": 0,
+				"trackedPlayTimeMinutes": 0,
+				"estimatedPlayTimeMinutes": 0,
+				"rating": null,
+				"comment": null
+			},
+			{
+				"id": 3,
+				"versionId": 407999,
+				"platformId": 167,
+				"status": "notStarted",
+				"owned": false,
+				"playSoon": false,
+				"finishDate": null,
+				"sureFinishCount": 0,
+				"probableFinishCount": 0,
+				"trackedPlayTimeMinutes": 0,
+				"estimatedPlayTimeMinutes": 0,
+				"rating": null,
+				"comment": null
+			}
+		],
+		"variantDlcs": [
+			{
+				"variantId": 2,
+				"dlcId": 3174
+			},
+			{
+				"variantId": 2,
+				"dlcId": 3265
+			}
+		]
 	},
 	"searchQuery": "",
 	"searchResults": [],
@@ -288,11 +688,11 @@ export const initialState = {
 			"isVisible": true
 		},
 		{
-			"key": "name",
+			"key": "series",
 			"isVisible": true
 		},
 		{
-			"key": "series",
+			"key": "name",
 			"isVisible": true
 		},
 		{
@@ -301,7 +701,7 @@ export const initialState = {
 		},
 		{
 			"key": "franchise",
-			"isVisible": true
+			"isVisible": false
 		},
 		{
 			"key": "developer",
@@ -361,18 +761,23 @@ export const initialState = {
 		},
 		{
 			"key": "rating",
-			"isVisible": true
+			"isVisible": false
 		},
 		{
 			"key": "comment",
-			"isVisible": true
+			"isVisible": false
 		},
 		{
 			"key": "actions",
 			"isVisible": true
 		}
 	],
-	"sort": [],
+	"sort": [
+		{
+			"column": "platform",
+			"direction": "desc"
+		}
+	],
 	"filters": [],
 	"loadedPageCount": 1
 } satisfies AppState;

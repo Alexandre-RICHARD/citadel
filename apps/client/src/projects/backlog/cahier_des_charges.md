@@ -121,7 +121,7 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 - Dernier jeu ajouté.
 - Nombre de jeux, de versions et de DLC en base.
 - Nombre de jeux et de variantes dans le backlog.
-- Nombre d'actions dans l'historique d'annulation.
+- Nombre d'actions dans l'historique d'annulation, et à rétablir.
 - Tri et filtres actifs.
 - Le bouton d'export de l'état.
 
@@ -303,7 +303,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 ### Chargement
 
 - Défilement infini par pages de 25 jeux : la page suivante se charge à l'approche du bas de page, avant de l'atteindre.
-- Le tri et les filtres s'appliquent page par page, côté serveur après le POC.
+- Dans le POC, le tri et les filtres portent sur tout le backlog, en mémoire ; le défilement infini découpe ensuite le résultat par pages de 25. Après le POC, ils s'appliqueront page par page, côté serveur.
 
 ### DLC
 
@@ -345,14 +345,16 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 ### Personnalisation de la vue
 
-- Masquer / afficher les colonnes via des boutons.
-- Réorganiser l'ordre des colonnes.
+- Masquer / afficher les colonnes via des boutons. La colonne Actions ne peut pas être masquée : le menu disparaîtrait.
+- Réorganiser l'ordre des colonnes, avec ⬆️ et ⬇️ dans la modale de visibilité (sans glisser-déposer).
 - Sauvegarder la disposition et la visibilité des colonnes dans le `localStorage`.
 
 ### Tri et filtres
 
-- Tri multi-colonnes : flèche de direction et indicateur numérique de priorité.
-- Filtre disponible sur chaque colonne.
+- Tri multi-colonnes : flèche de direction et indicateur numérique de priorité. Un clic sur un en-tête fait défiler ⬆️, ⬇️, puis plus de tri sur cette colonne ; chaque nouvelle colonne passe après les autres.
+- Les lignes des jeux se trient sur ce qu'elles affichent, leurs sous-lignes restent rattachées à leur jeu, et les cases vides passent en dernier.
+- Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, franchise, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
+- Un jeu reste affiché si sa ligne ou au moins une de ses variantes correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une variante PS4) ; déplié, il montre toutes ses variantes.
 - Un clic sur un nom de franchise filtre le tableau sur les jeux de cette franchise.
 - Paramètres de tri et de filtre persistés dans l'URL.
 - Une colonne masquée est retirée du tri dans l'URL et de la recherche.
@@ -364,7 +366,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé, un retrait, « Modifier le jeu » validé. La date de fin validée dans la petite fenêtre est une action distincte.
 - Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
 - Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.
-- L'annulation marche aussi en lecture seule.
+- L'annulation marche aussi en lecture seule ; pendant qu'une modale est ouverte, les raccourcis sont ignorés. Sur Mac, `⌘` vaut `Ctrl`.
 - L'historique vit en mémoire et se perd au rechargement de la page.
 - Après le POC, chaque annulation ou rétablissement relance une requête API ; dans le POC, il met simplement à jour l'état.
 
