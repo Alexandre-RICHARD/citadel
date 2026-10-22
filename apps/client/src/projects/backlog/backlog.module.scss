@@ -316,6 +316,89 @@ $toolbar-height: 4.5rem;
   cursor: help;
 }
 
+// ---------- Tri, filtres et colonnes ----------
+
+.sortButton {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0;
+  font: inherit;
+  white-space: nowrap;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.sortIndicator {
+  font-size: 0.8rem;
+}
+
+// La ligne des filtres défile sous la ligne des en-têtes, seule à rester visible
+.filterRow th {
+  position: static;
+  font-weight: normal;
+  background: #fafafa;
+}
+
+.filterField,
+.rangeField {
+  box-sizing: border-box;
+  padding: 0.15rem 0.3rem;
+  font: inherit;
+  font-weight: normal;
+  color: #1f1f1f;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filterField {
+  width: 100%;
+  min-width: 6rem;
+  max-width: 12rem;
+}
+
+.rangeField {
+  width: 4rem;
+}
+
+.columnList {
+  margin: 0.75rem 0 0 !important;
+  padding: 0 !important;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+
+  label {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
+
+.iconButton {
+  padding: 0.1rem 0.3rem;
+  font: inherit;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+}
+
 .emptyMessage {
   padding: 1rem;
   color: #666;

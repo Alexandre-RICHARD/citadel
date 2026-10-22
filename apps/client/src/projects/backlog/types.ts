@@ -386,11 +386,26 @@ export type SortCriterion = {
 	direction: SortDirection;
 };
 
-/** Forme à préciser en phase 8 */
-export type ColumnFilter = {
-	column: ColumnKey;
-	value: string;
-};
+/** Filtre d'une colonne (section 9), un seul par colonne */
+export type ColumnFilter =
+	/** « contient », ou valeur exacte après un clic sur une franchise */
+	| { column: ColumnKey; kind: "text"; text: string; isExact: boolean }
+	/** Une valeur de liste : clé du type de fin ou du statut, id de la plateforme */
+	| { column: ColumnKey; kind: "value"; value: string }
+	| { column: ColumnKey; kind: "boolean"; value: boolean }
+	/** Bornes incluses ; les temps sont en minutes */
+	| {
+			column: ColumnKey;
+			kind: "numberRange";
+			min: number | null;
+			max: number | null;
+	  }
+	| {
+			column: ColumnKey;
+			kind: "dateRange";
+			from: IsoDate | null;
+			to: IsoDate | null;
+	  };
 
 /** État complet : un `useState` par clé. Hors historique d'annulation et états passagers (chargement, erreur réseau, minuteurs) */
 export type AppState = {
@@ -423,6 +438,8 @@ export type TableHandlers = {
 	removeGameFromBacklog: (gameId: number) => void;
 	removeVariant: (variantId: number) => void;
 	logLine: (gameId: number, variantId: number | null) => void;
+	/** Un clic sur un nom de franchise filtre le tableau sur ses jeux (section 9) */
+	filterOnFranchise: (franchiseName: string) => void;
 };
 
 // ---------- Lignes du tableau : calculées par les mappers, jamais stockées ----------

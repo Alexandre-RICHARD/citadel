@@ -4,12 +4,14 @@ import {
 	columnDefinitions,
 	type ColumnFilter,
 	type ColumnKey,
+	type ColumnSetting,
 	type Database,
 	type EndingType,
 	endingTypeDefinitions,
 	type Game,
 	type GameChoices,
 	type GameImport,
+	type GameRow,
 	type IgdbDlcGame,
 	type IgdbGameData,
 	type IgdbGameImages,
@@ -29,6 +31,7 @@ import {
 	type Variant,
 	type VariantChoice,
 	type VariantDlc,
+	type VariantRow,
 	type VariantStatus,
 	variantStatusDefinitions,
 	type Version,
@@ -877,6 +880,547 @@ export function formatDlcProgress(done: number, total: number): string {
 	return total === 0 ? "" : `${done} / ${total}`;
 }
 
+// ---------- Tri, filtres et colonnes (section 9) ----------
+
+/** Sorte de filtre de chaque colonne ; la miniature et les actions n'ont ni filtre ni tri */
+export const columnFilterKinds: Record<ColumnKey, ColumnFilter["kind"] | null> =
+	{
+		thumbnail: null,
+		name: "text",
+		series: "text",
+		seriesNumber: "numberRange",
+		franchise: "text",
+		developer: "text",
+		publisher: "text",
+		releaseDate: "dateRange",
+		endingType: "value",
+		platform: "value",
+		status: "value",
+		playSoon: "boolean",
+		owned: "boolean",
+		finishDate: "dateRange",
+		finishCount: "numberRange",
+		dlc: "numberRange",
+		trackedPlayTime: "numberRange",
+		estimatedPlayTime: "numberRange",
+		totalPlayTime: "numberRange",
+		rating: "numberRange",
+		comment: "text",
+		actions: null,
+	};
+
+export function isSortableColumn(column: ColumnKey): boolean {
+	return columnFilterKinds[column] !== null;
+}
+
+/** Colonnes de temps : saisies en heures dans les filtres, comparées en minutes */
+export function isDurationColumn(column: ColumnKey): boolean {
+	return (
+		column === "trackedPlayTime" ||
+		column === "estimatedPlayTime" ||
+		column === "totalPlayTime"
+	);
+}
+
+/** Sans accents ni majuscules : « pokemon » trouve « Pokémon » */
+function normalizeText(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase();
+}
+
+/** Ce qu'affiche une ligne dans une colonne, pour le tri et les filtres ; `null` quand la case est vide */
+function getColumnValue(
+	column: ColumnKey,
+	row: GameRow,
+): string | number | boolean | null {
+	switch (column) {
+		case "name":
+			return row.frenchName ?? row.name;
+		case "series":
+			return row.series?.name ?? null;
+		case "seriesNumber":
+			return row.seriesNumber;
+		case "franchise":
+			return row.franchise?.name ?? null;
+		case "developer":
+			return row.developer?.name ?? null;
+		case "publisher":
+			return row.publisher?.name ?? null;
+		case "releaseDate":
+			return row.releaseDate;
+		case "endingType":
+			return row.endingType;
+		case "platform":
+			return row.platform?.name ?? null;
+		case "status":
+			return row.status;
+		case "playSoon":
+			return row.playSoon;
+		case "owned":
+			return row.owned;
+		case "finishDate":
+			return row.finishDate;
+		case "finishCount":
+			return row.sureFinishCount;
+		case "dlc":
+			return row.dlcCount === 0 ? null : row.doneDlcCount;
+		case "trackedPlayTime":
+			return row.trackedPlayTimeMinutes;
+		case "estimatedPlayTime":
+			return row.estimatedPlayTimeMinutes;
+		case "totalPlayTime":
+			return row.totalPlayTimeMinutes;
+		case "rating":
+			return row.rating;
+		case "comment":
+			return row.comment;
+		default:
+			return null;
+	}
+}
+
+/** Valeur de tri : statuts et types de fin dans leur ordre de définition, cases à cocher en 0 ou 1 */
+function getSortValue(column: ColumnKey, row: GameRow): string | number | null {
+	if (column === "status") {
+		return row.status === null
+			? null
+			: variantStatusDefinitions.findIndex(({ key }) => key === row.status);
+	}
+	if (column === "endingType") {
+		return endingTypeDefinitions.findIndex(({ key }) => key === row.endingType);
+	}
+	const value = getColumnValue(column, row);
+	return typeof value === "boolean" ? Number(value) : value;
+}
+
+function compareSortValues(
+	first: string | number,
+	second: string | number,
+): number {
+	if (typeof first === "string" && typeof second === "string") {
+		return first.localeCompare(second, "fr", {
+			sensitivity: "base",
+			numeric: true,
+		});
+	}
+	return Number(first) - Number(second);
+}
+
+/** Tri multi-colonnes : les lignes des jeux sur ce qu'elles affichent, les cases vides en dernier quel que soit le sens */
+export function sortGameRows(
+	rows: GameRow[],
+	sort: SortCriterion[],
+): GameRow[] {
+	function compareRows(first: GameRow, second: GameRow): number {
+		for (const { column, direction } of sort) {
+			const firstValue = getSortValue(column, first);
+			const secondValue = getSortValue(column, second);
+			if (firstValue === null && secondValue !== null) {
+				return 1;
+			}
+			if (firstValue !== null && secondValue === null) {
+				return -1;
+			}
+			if (firstValue !== null && secondValue !== null) {
+				const order = compareSortValues(firstValue, secondValue);
+				if (order !== 0) {
+					return direction === "asc" ? order : -order;
+				}
+			}
+		}
+		return 0;
+	}
+	return sort.length === 0 ? rows : rows.toSorted(compareRows);
+}
+
+/** Une sous-ligne vue comme une ligne du jeu : les données du jeu, et celles de la variante à la place des agrégats */
+function toCandidateRow(gameRow: GameRow, variantRow: VariantRow): GameRow {
+	return {
+		...gameRow,
+		versionTitle: variantRow.versionTitle,
+		releaseDate: variantRow.releaseDate,
+		isCancelled: false,
+		platform: variantRow.platform,
+		status: variantRow.status,
+		owned: variantRow.owned,
+		playSoon: variantRow.playSoon,
+		finishDate: variantRow.finishDate,
+		sureFinishCount: variantRow.sureFinishCount,
+		probableFinishCount: variantRow.probableFinishCount,
+		doneDlcCount: variantRow.doneDlcCount,
+		dlcCount: variantRow.dlcCount,
+		trackedPlayTimeMinutes: variantRow.trackedPlayTimeMinutes,
+		estimatedPlayTimeMinutes: variantRow.estimatedPlayTimeMinutes,
+		totalPlayTimeMinutes: variantRow.totalPlayTimeMinutes,
+		rating: variantRow.rating,
+		comment: variantRow.comment,
+	};
+}
+
+/** Textes cherchés par un filtre « contient » : le nom VF, VO et le titre de version pour la colonne Nom */
+function getColumnTexts(column: ColumnKey, row: GameRow): string[] {
+	const texts =
+		column === "name"
+			? [row.frenchName, row.name, row.versionTitle]
+			: [getColumnValue(column, row)];
+	return texts.filter((text) => typeof text === "string");
+}
+
+function matchesFilter(row: GameRow, filter: ColumnFilter): boolean {
+	switch (filter.kind) {
+		case "text": {
+			const searched = normalizeText(filter.text);
+			const texts = getColumnTexts(filter.column, row).map(normalizeText);
+			return filter.isExact
+				? texts.includes(searched)
+				: texts.some((text) => text.includes(searched));
+		}
+		case "value":
+			return getColumnValue(filter.column, row) === filter.value;
+		case "boolean":
+			return getColumnValue(filter.column, row) === filter.value;
+		case "numberRange": {
+			const value = getColumnValue(filter.column, row);
+			return (
+				typeof value === "number" &&
+				(filter.min === null || value >= filter.min) &&
+				(filter.max === null || value <= filter.max)
+			);
+		}
+		// dateRange
+		default: {
+			const value = getColumnValue(filter.column, row);
+			return (
+				typeof value === "string" &&
+				(filter.from === null || value >= filter.from) &&
+				(filter.to === null || value <= filter.to)
+			);
+		}
+	}
+}
+
+/** Un jeu reste affiché si sa ligne, ou au moins une de ses variantes, correspond à tous les filtres */
+export function filterGameRows(
+	rows: GameRow[],
+	filters: ColumnFilter[],
+): GameRow[] {
+	if (filters.length === 0) {
+		return rows;
+	}
+	return rows.filter((row) =>
+		[
+			row,
+			...row.variantRows.map((variantRow) => toCandidateRow(row, variantRow)),
+		].some((candidate) =>
+			filters.every((filter) => matchesFilter(candidate, filter)),
+		),
+	);
+}
+
+/** Choix des filtres « liste » : types de fin, statuts, plateformes des variantes du backlog */
+export function getFilterOptions(
+	column: ColumnKey,
+	database: Database,
+): { value: string; label: string }[] {
+	if (column === "endingType") {
+		return endingTypeDefinitions.map(({ key, label }) => ({
+			value: key,
+			label,
+		}));
+	}
+	if (column === "status") {
+		return variantStatusDefinitions.map(({ key, label }) => ({
+			value: key,
+			label,
+		}));
+	}
+	if (column === "platform") {
+		const names = new Set(
+			database.variants.flatMap(
+				({ platformId }) =>
+					findById(database.platforms, platformId)?.name ?? [],
+			),
+		);
+		return [...names]
+			.toSorted((first, second) => first.localeCompare(second, "fr"))
+			.map((name) => ({ value: name, label: name }));
+	}
+	return [];
+}
+
+/** Clic sur un en-tête : ⬆️, puis ⬇️, puis plus de tri sur cette colonne ; une nouvelle colonne passe après les autres */
+export function toggleSort(
+	sort: SortCriterion[],
+	column: ColumnKey,
+): SortCriterion[] {
+	const current = sort.find((criterion) => criterion.column === column);
+	if (current === undefined) {
+		return [...sort, { column, direction: "asc" }];
+	}
+	if (current.direction === "asc") {
+		return sort.map((criterion) =>
+			criterion.column === column ? { column, direction: "desc" } : criterion,
+		);
+	}
+	return sort.filter((criterion) => criterion.column !== column);
+}
+
+/** Remplace le filtre d'une colonne, à sa place ; `null` le retire */
+export function setColumnFilter(
+	filters: ColumnFilter[],
+	column: ColumnKey,
+	filter: ColumnFilter | null,
+): ColumnFilter[] {
+	if (filter === null) {
+		return filters.filter((current) => current.column !== column);
+	}
+	return filters.some((current) => current.column === column)
+		? filters.map((current) => (current.column === column ? filter : current))
+		: [...filters, filter];
+}
+
+/** Une colonne masquée sort du tri et des filtres */
+export function keepVisibleColumns<T extends { column: ColumnKey }>(
+	items: T[],
+	columns: ColumnSetting[],
+): T[] {
+	return items.filter(({ column }) =>
+		columns.some((setting) => setting.key === column && setting.isVisible),
+	);
+}
+
+export function toggleColumnVisibility(
+	columns: ColumnSetting[],
+	key: ColumnKey,
+): ColumnSetting[] {
+	// La colonne Actions reste visible : sans elle, plus de menu
+	if (key === "actions") {
+		return columns;
+	}
+	return columns.map((setting) =>
+		setting.key === key
+			? { ...setting, isVisible: !setting.isVisible }
+			: setting,
+	);
+}
+
+export function moveColumn(
+	columns: ColumnSetting[],
+	key: ColumnKey,
+	offset: -1 | 1,
+): ColumnSetting[] {
+	const index = columns.findIndex((setting) => setting.key === key);
+	const target = index + offset;
+	if (index === -1 || target < 0 || target >= columns.length) {
+		return columns;
+	}
+	const moved = [...columns];
+	[moved[index], moved[target]] = [moved[target], moved[index]];
+	return moved;
+}
+
+const columnsStorageKey = "backlog.columns";
+
+/** Disposition des colonnes sauvegardée dans le navigateur ; `null` si absente ou illisible. Une colonne inconnue est ignorée, une nouvelle s'ajoute à la fin */
+export function loadSavedColumns(): ColumnSetting[] | null {
+	try {
+		const saved: unknown = JSON.parse(
+			window.localStorage.getItem(columnsStorageKey) ?? "null",
+		);
+		if (!Array.isArray(saved)) {
+			return null;
+		}
+		const items: unknown[] = saved;
+		const columns: ColumnSetting[] = [];
+		for (const item of items) {
+			if (
+				typeof item === "object" &&
+				item !== null &&
+				"key" in item &&
+				"isVisible" in item &&
+				typeof item.isVisible === "boolean"
+			) {
+				const definition = columnDefinitions.find(
+					({ key }) => key === item.key,
+				);
+				if (
+					definition !== undefined &&
+					!columns.some(({ key }) => key === definition.key)
+				) {
+					columns.push({
+						key: definition.key,
+						isVisible: definition.key === "actions" || item.isVisible,
+					});
+				}
+			}
+		}
+		for (const { key } of columnDefinitions) {
+			if (!columns.some((setting) => setting.key === key)) {
+				columns.push({ key, isVisible: true });
+			}
+		}
+		return columns;
+	} catch {
+		return null;
+	}
+}
+
+export function saveColumns(columns: ColumnSetting[]): void {
+	try {
+		window.localStorage.setItem(columnsStorageKey, JSON.stringify(columns));
+	} catch {
+		// Stockage indisponible (navigation privée…) : la disposition ne sera pas gardée
+	}
+}
+
+function formatFilterParam(filter: ColumnFilter): string {
+	switch (filter.kind) {
+		case "text":
+			return filter.isExact ? `=${filter.text}` : filter.text;
+		case "value":
+			return filter.value;
+		case "boolean":
+			return filter.value ? "oui" : "non";
+		case "numberRange":
+			return `${filter.min ?? ""}..${filter.max ?? ""}`;
+		// dateRange
+		default:
+			return `${filter.from ?? ""}..${filter.to ?? ""}`;
+	}
+}
+
+function parseNumber(text: string): number | null {
+	if (text.trim() === "") {
+		return null;
+	}
+	const number = Number(text);
+	return Number.isFinite(number) ? number : null;
+}
+
+function parseFilterParam(
+	column: ColumnKey,
+	text: string,
+): ColumnFilter | null {
+	const [rangeStart = "", rangeEnd = ""] = text.split("..");
+	switch (columnFilterKinds[column]) {
+		case "text": {
+			const isExact = text.startsWith("=");
+			const searched = isExact ? text.slice(1) : text;
+			return searched === ""
+				? null
+				: { column, kind: "text", text: searched, isExact };
+		}
+		case "value":
+			return text === "" ? null : { column, kind: "value", value: text };
+		case "boolean":
+			return text === "oui" || text === "non"
+				? { column, kind: "boolean", value: text === "oui" }
+				: null;
+		case "numberRange": {
+			const min = parseNumber(rangeStart);
+			const max = parseNumber(rangeEnd);
+			return min === null && max === null
+				? null
+				: { column, kind: "numberRange", min, max };
+		}
+		case "dateRange": {
+			const from = parseIsoDate(rangeStart);
+			const to = parseIsoDate(rangeEnd);
+			return from === null && to === null
+				? null
+				: { column, kind: "dateRange", from, to };
+		}
+		default:
+			return null;
+	}
+}
+
+/** Tri et filtres dans l'URL, ex. `?sort=releaseDate:desc,name:asc&franchise==The+Witcher&rating=10..18` ; `sort` y est toujours, même vide */
+export function buildViewSearch(
+	sort: SortCriterion[],
+	filters: ColumnFilter[],
+): string {
+	const params = new URLSearchParams();
+	params.set(
+		"sort",
+		sort.map(({ column, direction }) => `${column}:${direction}`).join(","),
+	);
+	for (const filter of filters) {
+		params.set(filter.column, formatFilterParam(filter));
+	}
+	return params.toString();
+}
+
+/** Tri et filtres lus dans l'URL ; `null` si elle n'en porte pas (pas de `sort`) : `initialState` s'applique alors */
+export function readViewFromUrl(
+	search: string,
+): { sort: SortCriterion[]; filters: ColumnFilter[] } | null {
+	const params = new URLSearchParams(search);
+	const sortParam = params.get("sort");
+	if (sortParam === null) {
+		return null;
+	}
+	const sort = sortParam.split(",").flatMap((part): SortCriterion[] => {
+		const [columnName, direction] = part.split(":");
+		const definition = columnDefinitions.find(({ key }) => key === columnName);
+		return definition !== undefined &&
+			isSortableColumn(definition.key) &&
+			(direction === "asc" || direction === "desc")
+			? [{ column: definition.key, direction }]
+			: [];
+	});
+	const filters = columnDefinitions.flatMap(({ key }) => {
+		const text = params.get(key);
+		const filter = text === null ? null : parseFilterParam(key, text);
+		return filter === null ? [] : [filter];
+	});
+	return { sort, filters };
+}
+
+function describeRange(min: string | null, max: string | null): string {
+	if (min !== null && max !== null) {
+		return `entre ${min} et ${max}`;
+	}
+	return min === null ? `≤ ${max ?? ""}` : `≥ ${min}`;
+}
+
+function describeFilterValue(filter: ColumnFilter): string {
+	switch (filter.kind) {
+		case "text":
+			return filter.isExact
+				? `= « ${filter.text} »`
+				: `contient « ${filter.text} »`;
+		case "value": {
+			const label =
+				[...variantStatusDefinitions, ...endingTypeDefinitions].find(
+					({ key }) => key === filter.value,
+				)?.label ?? filter.value;
+			return `= ${label}`;
+		}
+		case "boolean":
+			return filter.value ? "= oui" : "= non";
+		case "numberRange": {
+			function format(value: number | null): string | null {
+				if (value === null) {
+					return null;
+				}
+				return isDurationColumn(filter.column)
+					? formatDuration(value)
+					: String(value);
+			}
+			return describeRange(format(filter.min), format(filter.max));
+		}
+		// dateRange
+		default:
+			return describeRange(
+				filter.from === null ? null : formatIsoDate(filter.from),
+				filter.to === null ? null : formatIsoDate(filter.to),
+			);
+	}
+}
+
 // ---------- Annuler / rétablir (section 10) ----------
 
 /** Actions gardées dans l'historique : la 21e efface la plus ancienne */
@@ -940,7 +1484,10 @@ export function describeSort(sort: SortCriterion[]): string {
 export function describeFilters(filters: ColumnFilter[]): string {
 	return (
 		filters
-			.map(({ column, value }) => `${getColumnLabel(column)} = « ${value} »`)
+			.map(
+				(filter) =>
+					`${getColumnLabel(filter.column)} ${describeFilterValue(filter)}`,
+			)
 			.join(", ") || "aucun"
 	);
 }
