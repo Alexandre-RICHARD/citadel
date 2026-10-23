@@ -294,7 +294,10 @@ export type Database = {
 
 // ---------- Interface ----------
 
-/** Résultat de recherche : une fiche IGDB, jeu ou version */
+/** Où cherche la barre de recherche : sur IGDB, ou parmi les jeux déjà en base, sans requête IGDB (section 8) */
+export type SearchSource = "igdb" | "local";
+
+/** Résultat de recherche : une fiche IGDB, jeu ou version, ou un jeu déjà en base */
 export type SearchResult = {
 	/** id IGDB de la fiche ; « déjà en base » si une version porte cet id */
 	id: number;
@@ -411,7 +414,11 @@ export type ColumnFilter =
 export type AppState = {
 	database: Database;
 	searchQuery: string;
+	/** Résultats IGDB seulement : ceux de la base se recalculent à chaque affichage */
 	searchResults: SearchResult[];
+	searchSource: SearchSource;
+	/** Liste des résultats ouverte sous la barre de recherche */
+	isSearchOpen: boolean;
 	modal: Modal | null;
 	popover: Popover | null;
 	isEditMode: boolean;
@@ -555,10 +562,13 @@ export type IgdbAlternativeName = {
 	comment?: string;
 };
 
-/** Fiche renvoyée par la recherche */
+/** Fiche renvoyée par la recherche, avec de quoi remonter à son original */
 export type IgdbSearchGame = {
 	id: number;
 	name: string;
+	game_type?: number;
+	version_parent?: number;
+	parent_game?: number;
 	/** Timestamp Unix, en secondes */
 	first_release_date?: number;
 	cover?: { image_id: IgdbImageId };

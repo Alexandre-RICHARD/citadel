@@ -14,6 +14,7 @@ import {
 	mapGameRows,
 	mapSearchResult,
 	mapStoredGameImport,
+	mapStoredSearchResult,
 } from "./mappers";
 import {
 	type AppState,
@@ -33,6 +34,7 @@ import {
 	type Platform,
 	type Popover,
 	type SearchResult,
+	type SearchSource,
 	type SortCriterion,
 	type TableHandlers,
 	type Variant,
@@ -90,6 +92,7 @@ import {
 	receiveGameImport,
 	removeVariants,
 	saveColumns,
+	searchDatabaseGames,
 	searchDelayMs,
 	searchIgdbGames,
 	setColumnFilter,
@@ -381,34 +384,81 @@ function DateField({
 
 // ---------- Recherche ----------
 
+const searchSourceLabels: Record<
+	SearchSource,
+	{ button: string; placeholder: string }
+> = {
+	igdb: { button: "🌐 IGDB", placeholder: "Rechercher un jeu sur IGDB" },
+	local: {
+		button: "📚 Ma base",
+		placeholder: "Rechercher un jeu déjà en base (sans IGDB)",
+	},
+};
+
 function SearchBar({
 	query,
+	source,
+	isOpen,
 	results,
 	isSearching,
 	error,
 	database,
 	onQueryChange,
+	onSourceChange,
+	onOpenChange,
 	onSelect,
 }: {
 	query: string;
+	source: SearchSource;
+	isOpen: boolean;
 	results: SearchResult[];
 	isSearching: boolean;
 	error: string | null;
 	database: Database;
 	onQueryChange: (query: string) => void;
+	onSourceChange: (source: SearchSource) => void;
+	onOpenChange: (isOpen: boolean) => void;
 	onSelect: (result: SearchResult) => void;
 }) {
 	return (
-		<div className={styles.search}>
+		<div
+			className={styles.search}
+			data-search
+		>
+			<div
+				className={styles.searchSources}
+				role="group"
+				aria-label="Source de la recherche"
+			>
+				{(["igdb", "local"] as const).map((key) => (
+					<button
+						key={key}
+						type="button"
+						className={
+							key === source ? styles.searchSourceActive : styles.searchSource
+						}
+						aria-pressed={key === source}
+						onClick={() => onSourceChange(key)}
+					>
+						{searchSourceLabels[key].button}
+					</button>
+				))}
+			</div>
 			<input
 				type="search"
 				className={styles.searchInput}
-				placeholder="🔍 Rechercher un jeu sur IGDB"
-				aria-label="Rechercher un jeu sur IGDB"
+				placeholder={`🔍 ${searchSourceLabels[source].placeholder}`}
+				aria-label={searchSourceLabels[source].placeholder}
 				value={query}
 				onChange={(event) => onQueryChange(event.target.value)}
+				onFocus={() => onOpenChange(true)}
+				onKeyDown={(event) => {
+					if (event.key === "Escape") {
+						onOpenChange(false);
+					}
+				}}
 			/>
-			{query.trim() !== "" && (
+			{isOpen && query.trim() !== "" && (
 				<ul className={styles.searchResults}>
 					{isSearching && (
 						<li className={styles.searchMessage}>⏳ Recherche…</li>
@@ -442,11 +492,19 @@ function SearchBar({
 										</span>
 									)}
 								</span>
-								{database.versions.some(({ id }) => id === result.id) && (
-									<span className={styles.inDatabaseBadge}>
-										✅ déjà en base
-									</span>
-								)}
+								{/* Sur IGDB, ce qui est déjà en base ; dans la base, ce qui est déjà dans le backlog */}
+								{source === "igdb" &&
+									database.versions.some(({ id }) => id === result.id) && (
+										<span className={styles.inDatabaseBadge}>
+											✅ déjà en base
+										</span>
+									)}
+								{source === "local" &&
+									getGameVariantIds(database, result.id).length > 0 && (
+										<span className={styles.inDatabaseBadge}>
+											📋 dans le backlog
+										</span>
+									)}
 							</button>
 						</li>
 					))}
@@ -2286,6 +2344,12 @@ export function Backlog() {
 	const [searchResults, setSearchResults] = useState<AppState["searchResults"]>(
 		initialState.searchResults,
 	);
+	const [searchSource, setSearchSource] = useState<AppState["searchSource"]>(
+		initialState.searchSource,
+	);
+	const [isSearchOpen, setIsSearchOpen] = useState<AppState["isSearchOpen"]>(
+		initialState.isSearchOpen,
+	);
 	const [modal, setModal] = useState<AppState["modal"]>(initialState.modal);
 	const [popover, setPopover] = useState<AppState["popover"]>(
 		initialState.popover,
@@ -2359,6 +2423,7 @@ export function Backlog() {
 
 	function changeSearchQuery(query: string) {
 		setSearchQuery(query);
+		setIsSearchOpen(true);
 		if (query.trim() === "") {
 			setSearchResults([]);
 			setIsSearching(false);
@@ -2366,9 +2431,26 @@ export function Backlog() {
 		}
 	}
 
-	/** Un résultat déjà en base mène à l'ajout d'une variante, sinon à la modale d'ajout ; la fiche choisie est la version pré-sélectionnée */
+	/** Changer de source relance la saisie en cours sur la nouvelle source */
+	function changeSearchSource(source: SearchSource) {
+		setIsSearchOpen(true);
+		if (source === searchSource) {
+			return;
+		}
+		setSearchSource(source);
+		setSearchResults([]);
+		setSearchError(null);
+		// La requête IGDB part après la temporisation : la liste affiche déjà « Recherche… »
+		setIsSearching(source === "igdb" && searchQuery.trim() !== "");
+	}
+
+	/**
+	 * Un résultat déjà en base mène à l'ajout d'une variante, sans requête IGDB ; sinon à la modale d'ajout.
+	 * Un résultat est toujours un jeu original (section 8) : sa version originale est pré-sélectionnée.
+	 */
 	function selectSearchResult(result: SearchResult) {
 		const version = database.versions.find(({ id }) => id === result.id);
+		setIsSearchOpen(false);
 		setModalError(null);
 		setModal(
 			version === undefined
@@ -2543,10 +2625,11 @@ export function Backlog() {
 		setLoadedPageCount((count) => count + 1);
 	}, []);
 
-	// Recherche temporisée : une requête 300 ms après la dernière frappe, la précédente est annulée
+	// Recherche IGDB temporisée : une requête 300 ms après la dernière frappe, la précédente est annulée.
+	// La recherche dans la base ne fait aucune requête : ses résultats se calculent à l'affichage.
 	useEffect(() => {
 		const query = searchQuery.trim();
-		if (query === "") {
+		if (query === "" || searchSource !== "igdb") {
 			return undefined;
 		}
 		const controller = new AbortController();
@@ -2572,7 +2655,7 @@ export function Backlog() {
 			window.clearTimeout(timer);
 			controller.abort();
 		};
-	}, [searchQuery]);
+	}, [searchQuery, searchSource]);
 
 	// Modale d'ajout ouverte sans ses données : on les charge depuis IGDB (aussi après un réimport d'état)
 	const igdbIdToLoad =
@@ -2659,6 +2742,24 @@ export function Backlog() {
 			document.removeEventListener("pointerdown", closeOnOutsideClick);
 	}, [isPopoverOpen]);
 
+	// Un clic hors de la barre de recherche ferme la liste des résultats ; revenir dans le champ la rouvre
+	useEffect(() => {
+		if (!isSearchOpen) {
+			return undefined;
+		}
+		function closeOnOutsideClick(event: PointerEvent) {
+			if (!(
+				event.target instanceof Element &&
+				event.target.closest("[data-search]") !== null
+			)) {
+				setIsSearchOpen(false);
+			}
+		}
+		document.addEventListener("pointerdown", closeOnOutsideClick);
+		return () =>
+			document.removeEventListener("pointerdown", closeOnOutsideClick);
+	}, [isSearchOpen]);
+
 	// Mode édition : retour en lecture seule après 1 minute d'inactivité (section 9).
 	// Une cellule en cours d'édition suspend le minuteur, une modale ouverte aussi.
 	useEffect(() => {
@@ -2717,6 +2818,8 @@ export function Backlog() {
 		database,
 		searchQuery,
 		searchResults,
+		searchSource,
+		isSearchOpen,
 		modal,
 		popover,
 		isEditMode,
@@ -2733,13 +2836,46 @@ export function Backlog() {
 				<h1 className={styles.title}>🎮 Backlog</h1>
 				<SearchBar
 					query={searchQuery}
-					results={searchResults}
+					source={searchSource}
+					isOpen={isSearchOpen}
+					results={
+						searchSource === "igdb"
+							? searchResults
+							: searchDatabaseGames(database, searchQuery).map((game) =>
+									mapStoredSearchResult(database, game),
+								)
+					}
 					isSearching={isSearching}
 					error={searchError}
 					database={database}
 					onQueryChange={changeSearchQuery}
+					onSourceChange={changeSearchSource}
+					onOpenChange={setIsSearchOpen}
 					onSelect={selectSearchResult}
 				/>
+				{/* Ctrl+Z et Ctrl+Y à la souris (section 10) */}
+				<div className={styles.historyButtons}>
+					<button
+						type="button"
+						className={styles.button}
+						title="Annuler la dernière action (Ctrl+Z)"
+						aria-label="Annuler la dernière action"
+						disabled={undoHistory.length === 0}
+						onClick={undo}
+					>
+						↩️
+					</button>
+					<button
+						type="button"
+						className={styles.button}
+						title="Rétablir l’action annulée (Ctrl+Y)"
+						aria-label="Rétablir l’action annulée"
+						disabled={redoHistory.length === 0}
+						onClick={redo}
+					>
+						↪️
+					</button>
+				</div>
 				<button
 					type="button"
 					className={styles.button}
