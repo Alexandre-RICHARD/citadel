@@ -439,7 +439,7 @@ export type SortCriterion = {
 export type ColumnFilter =
 	/** « contient », ou valeur exacte après un clic sur une franchise */
 	| { column: ColumnKey; kind: "text"; text: string; isExact: boolean }
-	/** Une valeur de liste : clé du type de fin ou du statut, id de la plateforme */
+	/** Une valeur de liste : clé du type de fin ou du statut, nom de la plateforme */
 	| { column: ColumnKey; kind: "value"; value: string }
 	| { column: ColumnKey; kind: "boolean"; value: boolean }
 	/** Bornes incluses ; les temps sont en minutes */
@@ -569,6 +569,21 @@ export type GameRow = {
 	igdbUrl: string;
 	/** Une sous-ligne par variante ; la ligne est dépliable à partir de deux */
 	variantRows: VariantRow[];
+};
+
+/** Index de la base, construits une fois par calcul des lignes : chaque recherche est directe, sans reparcourir la base */
+export type RowIndexes = {
+	versions: Map<number, Version>;
+	platforms: Map<number, Platform>;
+	series: Map<number, Series>;
+	franchises: Map<number, Franchise>;
+	companies: Map<number, Company>;
+	/** Clé `${versionId}-${platformId}` */
+	releaseDates: Map<string, IsoDate | null>;
+	/** Clé `null` : version introuvable, la variante n'a pas de ligne */
+	variantsByGameId: Map<number | null, Variant[]>;
+	dlcIdsByGameId: Map<number, Set<number>>;
+	doneDlcIdsByVariantId: Map<number, number[]>;
 };
 
 // ---------- Réponses IGDB : seulement les champs demandés, absents quand IGDB n'a pas de valeur ----------
