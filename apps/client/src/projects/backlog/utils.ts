@@ -484,7 +484,7 @@ export async function fetchIgdbGameData(
 	// 3. Détail des versions, puis données propres au jeu sur sa fiche originale
 	const versions = await requestIgdb<IgdbVersionGame[]>(
 		"games",
-		`fields name, version_title, cover.image_id, url, platforms.name, platforms.abbreviation, platforms.slug, release_dates.date, release_dates.platform, dlcs, expansions; where id = (${[...versionNodes.keys()].join(",")}); limit 500;`,
+		`fields name, version_title, game_type.type, cover.image_id, url, platforms.name, platforms.abbreviation, platforms.slug, release_dates.date, release_dates.platform, dlcs, expansions; where id = (${[...versionNodes.keys()].join(",")}); limit 500;`,
 		signal,
 	);
 	const originalGame = (
