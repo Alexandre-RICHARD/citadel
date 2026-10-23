@@ -61,7 +61,7 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Statut de sortie | Mention « à venir » ou « annulé » | `game_status` |
 | Plateformes | Plateformes de chaque version (nom et nom technique) ; choix de la plateforme d'une variante | `platforms` |
 | Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; mener une fiche trouvée par la recherche à son jeu ; exclure mods et forks de la recherche | `game_type` |
-| Versions | Toutes les versions, récupérées à l'ajout | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
+| Versions | Toutes les versions, proposées à l'ajout ; seules celles cochées sont stockées | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
 | DLC | Colonne DLC | `dlcs`, `expansions` ; `parent_game` côté DLC |
 | Extensions standalone | Jeux distincts | `standalone_expansions` |
 | Bundles | Recherche : un bundle mène aux jeux qu'il contient | `bundles`, côté jeu contenu |
@@ -171,7 +171,8 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Deux noms** : un jeu a un nom VO et un nom VF éventuel. Les autres noms alternatifs d'IGDB ne sont pas stockés.
 - **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu.
 - **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément : la recherche mène d'un bundle à ses jeux (section 8). Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
-- **Jeu original toujours en base** : ajouter un jeu récupère aussi son original et toutes ses versions, nécessaires pour la ligne dépliable et le choix des variantes.
+- **Versions choisies** : la modale d'ajout propose toutes les versions qu'IGDB rattache au jeu, et seules celles cochées sont enregistrées. Le backlog est personnel : inutile de stocker des éditions qu'on ne jouera jamais.
+- **Jeu original toujours en base** : sa version originale est toujours enregistrée, cochée d'office et non décochable, car elle porte l'id et la page IGDB du jeu. Les autres versions sont décochées à l'ouverture.
 
 ### Affichage replié / déplié
 
@@ -282,8 +283,9 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
    - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
    - Le type de fin du jeu (section 6) ; Histoire par défaut.
    - Le numéro du jeu dans sa série, si le jeu en a une.
-4. **Ajout au backlog** (option dans la modale) : j'indique la version jouée, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). Cela créera la variante.
-5. **Validation** : « Valider » enregistre le jeu, son original, toutes ses versions et tous ses DLC, ainsi que la variante si l'option est remplie.
+   - Les versions à enregistrer (section 5) : l'originale cochée d'office, les autres à cocher.
+4. **Ajout au backlog** (option dans la modale) : j'indique la version jouée, parmi les versions cochées, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). Cela créera la variante.
+5. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées et tous ses DLC, ainsi que la variante si l'option est remplie.
 
 ### Ajout depuis la base
 
@@ -409,7 +411,7 @@ Trace des idées qui ne seront pas faites.
 - Champ « Origine » distinct (vu mais pas fait, abonnement, émulation, officiel, gratuit).
 - Ajout manuel d'un jeu.
 - Modifier ou nettoyer les données IGDB avant de les enregistrer.
-- Choisir à l'ajout les versions et les jeux de la franchise à importer.
+- Choisir à l'ajout les jeux de la franchise à importer.
 - Colonne « Jeux liés ».
 - Stocker les images elles-mêmes (base64 ou fichiers).
 - Stocker les noms alternatifs : seuls les noms VO et VF sont gardés.

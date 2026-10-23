@@ -356,6 +356,8 @@ export type Modal =
 			igdbId: number;
 			gameImport: GameImport | null;
 			choices: GameChoices;
+			/** Versions cochées, seules enregistrées à « Valider » ; l'originale l'est toujours */
+			versionIds: number[];
 			variantChoice: VariantChoice;
 	  }
 	/** « Modifier le jeu » ; `imageIds` rechargés depuis IGDB à l'ouverture */

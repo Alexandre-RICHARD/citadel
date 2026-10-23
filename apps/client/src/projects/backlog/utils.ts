@@ -561,7 +561,10 @@ export function getIgdbImageUrl(
 
 // ---------- Modales : versions et plateformes ----------
 
-/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée, version pré-sélectionnée gardée si elle existe */
+/**
+ * Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée,
+ * seule la version originale cochée, et pré-sélectionnée pour la variante si elle l'était
+ */
 export function receiveGameImport(
 	modal: Modal | null,
 	igdbId: number,
@@ -574,7 +577,7 @@ export function receiveGameImport(
 	) {
 		return modal;
 	}
-	const { versionId } = modal.variantChoice;
+	const originalId = gameImport.game.id;
 	return {
 		...modal,
 		gameImport,
@@ -582,12 +585,52 @@ export function receiveGameImport(
 			...modal.choices,
 			imageId: modal.choices.imageId ?? gameImport.imageIds.at(0) ?? null,
 		},
+		versionIds: [originalId],
 		variantChoice: {
 			...modal.variantChoice,
-			versionId: gameImport.versions.some(({ id }) => id === versionId)
-				? versionId
-				: null,
+			versionId:
+				modal.variantChoice.versionId === originalId ? originalId : null,
 		},
+	};
+}
+
+/** Coche ou décoche une version à enregistrer ; l'originale reste cochée. Décocher la version choisie pour la variante annule ce choix */
+export function toggleImportedVersion(
+	modal: Extract<Modal, { kind: "addGame" }>,
+	versionId: number,
+): Extract<Modal, { kind: "addGame" }> {
+	if (versionId === modal.gameImport?.game.id) {
+		return modal;
+	}
+	if (!modal.versionIds.includes(versionId)) {
+		return { ...modal, versionIds: [...modal.versionIds, versionId] };
+	}
+	return {
+		...modal,
+		versionIds: modal.versionIds.filter((id) => id !== versionId),
+		variantChoice:
+			modal.variantChoice.versionId === versionId
+				? { versionId: null, platformId: null }
+				: modal.variantChoice,
+	};
+}
+
+/** Les données IGDB réduites aux versions cochées, à leurs plateformes et à leurs dates de sortie */
+export function keepImportedVersions(
+	gameImport: GameImport,
+	versionIds: number[],
+): GameImport {
+	const keptIds = [gameImport.game.id, ...versionIds];
+	const versionPlatforms = gameImport.versionPlatforms.filter(({ versionId }) =>
+		keptIds.includes(versionId),
+	);
+	return {
+		...gameImport,
+		versions: gameImport.versions.filter(({ id }) => keptIds.includes(id)),
+		versionPlatforms,
+		platforms: gameImport.platforms.filter(({ id }) =>
+			versionPlatforms.some(({ platformId }) => platformId === id),
+		),
 	};
 }
 
@@ -783,7 +826,7 @@ export function addVariant(
 }
 
 /**
- * « Valider » de la modale d'ajout (section 8) : le jeu, toutes ses versions, ses DLC, sa série,
+ * « Valider » de la modale d'ajout (section 8) : le jeu, les versions cochées (`keepImportedVersions`), ses DLC, sa série,
  * sa franchise et ses sociétés, sans doublon ; puis la variante si version et plateforme sont choisies.
  * Un jeu déjà en base garde ses choix : seules les fiches manquantes s'ajoutent.
  */

@@ -666,6 +666,25 @@ $toolbar-height: 4.5rem;
   font-size: 1.15rem;
 }
 
+// Liste à cocher (versions à enregistrer) : la case remplace la puce
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  list-style: none;
+
+  &,
+  .dialogBody & {
+    padding-left: 0;
+  }
+
+  label {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+}
+
 .imageChoices {
   display: flex;
   flex-wrap: wrap;
