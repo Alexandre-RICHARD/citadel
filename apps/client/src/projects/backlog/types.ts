@@ -133,7 +133,6 @@ export const columnDefinitions = [
 	{ key: "name", label: "Nom" },
 	{ key: "series", label: "Série" },
 	{ key: "seriesNumber", label: "N° dans la série" },
-	{ key: "franchise", label: "Franchise" },
 	{ key: "developer", label: "Développeur" },
 	{ key: "publisher", label: "Éditeur" },
 	{ key: "releaseDate", label: "Date de sortie" },
@@ -175,10 +174,12 @@ export type Game = {
 	imageId: IgdbImageId | null;
 	/** Choisi à l'ajout */
 	endingType: EndingType;
+	/** Choisie à l'ajout : celle proposée par IGDB, une autre, ou aucune */
 	seriesId: number | null;
-	/** Choisi à l'ajout, décimales possibles */
+	/** Série proposée par IGDB à l'ajout, `null` s'il n'en propose pas : ✏️ dans le tableau quand `seriesId` en diffère */
+	originalSeriesId: number | null;
+	/** Choisi à l'ajout, décimales possibles ; `null` sans série */
 	seriesNumber: number | null;
-	franchiseId: number | null;
 	developerId: number | null;
 	publisherId: number | null;
 };
@@ -222,16 +223,16 @@ export type Dlc = {
 	name: string;
 };
 
-/** Série (`collections`) */
+/** Série (section 3) : la collection IGDB la plus large du jeu, sinon sa franchise ; ou une série créée à la main (section 8) */
 export type Series = {
+	/** id interne : une collection et une franchise IGDB peuvent avoir le même id */
 	id: number;
+	/** Nom IGDB, ou saisi pour une série créée à la main ; pas de nom VF */
 	name: string;
-};
-
-/** Franchise (`franchise`, `franchises`) */
-export type Franchise = {
-	id: number;
-	name: string;
+	/** `collections` ; `null` pour une série tirée d'une franchise ou créée à la main */
+	igdbCollectionId: number | null;
+	/** `franchise`, sinon le premier de `franchises`, pour un jeu sans collection ; `null` sinon */
+	igdbFranchiseId: number | null;
 };
 
 /** Société : développeur ou éditeur (`involved_companies` → `companies`) */
@@ -286,7 +287,6 @@ export type Database = {
 	platforms: Platform[];
 	dlcs: Dlc[];
 	series: Series[];
-	franchises: Franchise[];
 	companies: Company[];
 	variants: Variant[];
 	variantDlcs: VariantDlc[];
@@ -312,10 +312,22 @@ export type SearchResult = {
 	platformNames: string[];
 };
 
-/** Les trois choix de la modale du jeu (section 8) */
+/** Série choisie dans la modale du jeu (section 8) */
+export type SeriesChoice =
+	/** Celle proposée par IGDB, ou aucune s'il n'en propose pas */
+	| { kind: "original" }
+	/** Une autre série de la base */
+	| { kind: "stored"; seriesId: number }
+	/** Créée à « Valider » ; un nom déjà pris rejoint la série existante */
+	| { kind: "new"; name: string }
+	| { kind: "none" };
+
+/** Les choix de la modale du jeu (section 8) */
 export type GameChoices = {
 	imageId: IgdbImageId | null;
 	endingType: EndingType;
+	series: SeriesChoice;
+	/** Ignoré sans série */
 	seriesNumber: number | null;
 };
 
@@ -333,14 +345,15 @@ export type VariantDraft = Omit<Variant, "id" | "versionId" | "platformId"> & {
 
 /** Données IGDB chargées dans la modale d'ajout, écrites en base à « Valider » seulement */
 export type GameImport = {
-	game: Omit<Game, keyof GameChoices>;
+	/** La série se règle à « Valider », selon le choix (`GameChoices.series`) */
+	game: Omit<Game, keyof GameChoices | "seriesId" | "originalSeriesId">;
 	versions: Version[];
 	versionPlatforms: VersionPlatform[];
 	/** Plateformes IGDB des versions, ajoutées en base si absentes */
 	platforms: Platform[];
 	dlcs: Dlc[];
-	series: Series | null;
-	franchise: Franchise | null;
+	/** Série proposée par IGDB, sans id tant qu'elle n'est pas en base ; pour « Modifier le jeu », celle proposée à l'ajout */
+	series: Omit<Series, "id"> | null;
 	developer: Company | null;
 	publisher: Company | null;
 	/** Images proposées : la cover d'abord, puis les artworks */
@@ -437,7 +450,7 @@ export type SortCriterion = {
 
 /** Filtre d'une colonne (section 9), un seul par colonne */
 export type ColumnFilter =
-	/** « contient », ou valeur exacte après un clic sur une franchise */
+	/** « contient », ou valeur exacte après un clic sur une série */
 	| { column: ColumnKey; kind: "text"; text: string; isExact: boolean }
 	/** Une valeur de liste : clé du type de fin ou du statut, nom de la plateforme */
 	| { column: ColumnKey; kind: "value"; value: string }
@@ -493,8 +506,8 @@ export type TableHandlers = {
 	removeGameFromBacklog: (gameId: number) => void;
 	removeVariant: (variantId: number) => void;
 	logLine: (gameId: number, variantId: number | null) => void;
-	/** Un clic sur un nom de franchise filtre le tableau sur ses jeux (section 9) */
-	filterOnFranchise: (franchiseName: string) => void;
+	/** Un clic sur un nom de série filtre le tableau sur ses jeux (section 9) */
+	filterOnSeries: (seriesName: string) => void;
 };
 
 // ---------- Lignes du tableau : calculées par les mappers, jamais stockées ----------
@@ -536,8 +549,9 @@ export type GameRow = {
 	/** Ligne à variante unique : titre de sa version, s'il ne s'agit pas de l'originale */
 	versionTitle: string | null;
 	series: Series | null;
+	/** Série proposée par IGDB : ✏️ quand elle diffère de `series` */
+	originalSeries: Series | null;
 	seriesNumber: number | null;
-	franchise: Franchise | null;
 	developer: Company | null;
 	publisher: Company | null;
 	/** Date originale du jeu */
@@ -576,7 +590,6 @@ export type RowIndexes = {
 	versions: Map<number, Version>;
 	platforms: Map<number, Platform>;
 	series: Map<number, Series>;
-	franchises: Map<number, Franchise>;
 	companies: Map<number, Company>;
 	/** Clé `${versionId}-${platformId}` */
 	releaseDates: Map<string, IsoDate | null>;
@@ -696,7 +709,12 @@ export type IgdbOriginalGame = {
 	first_release_date?: number;
 	game_status?: number;
 	artworks?: { image_id: IgdbImageId }[];
-	collections?: { id: number; name: string }[];
+	/** `as_child_relations` : de quoi garder la plus large (section 3) */
+	collections?: {
+		id: number;
+		name: string;
+		as_child_relations?: { parent_collection?: number }[];
+	}[];
 	franchise?: { id: number; name: string };
 	franchises?: { id: number; name: string }[];
 	involved_companies?: {
