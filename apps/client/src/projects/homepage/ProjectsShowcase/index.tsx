@@ -24,7 +24,7 @@ export function ProjectsShowcase({ projects }: Props) {
 
 						<div className={styles.icon}>
 							<img
-								src={project.favicon}
+								src={project.illustration}
 								alt=""
 							/>
 						</div>

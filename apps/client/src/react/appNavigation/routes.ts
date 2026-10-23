@@ -61,7 +61,6 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		} satisfies RouteMeta,
 		index: true,
 	},
-
 	[ProjectsEnum.Backlog]: {
 		path: `${projects[ProjectsEnum.Backlog].path}/*`,
 		lazy: async () => {
@@ -73,6 +72,20 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 			documentTitle: projects[ProjectsEnum.Backlog].documentTitle,
 			favicon: projects[ProjectsEnum.Backlog].favicon,
 			basePath: projects[ProjectsEnum.Backlog].path,
+		} satisfies RouteMeta,
+		index: true,
+	},
+	[ProjectsEnum.AngersIrigo]: {
+		path: `${projects[ProjectsEnum.AngersIrigo].path}/*`,
+		lazy: async () => {
+			const { AngersIrigo } = await import("../../projects/angersIrigo");
+			return { Component: AngersIrigo };
+		},
+		handle: {
+			project: ProjectsEnum.AngersIrigo,
+			documentTitle: projects[ProjectsEnum.AngersIrigo].documentTitle,
+			favicon: projects[ProjectsEnum.AngersIrigo].favicon,
+			basePath: projects[ProjectsEnum.AngersIrigo].path,
 		} satisfies RouteMeta,
 		index: true,
 	},
