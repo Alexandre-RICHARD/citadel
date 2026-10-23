@@ -7,14 +7,15 @@ import {
 	type ColumnSetting,
 	type Database,
 	type Dlc,
+	type DoneDlc,
 	type EndingType,
 	endingTypeDefinitions,
 	type Game,
-	type GameChoices,
 	type GameImport,
 	type GameRow,
 	type IgdbDlcGame,
 	type IgdbGameData,
+	type IgdbGameImages,
 	type IgdbGameNode,
 	type IgdbGameStatus,
 	type IgdbGameType,
@@ -32,12 +33,13 @@ import {
 	type Series,
 	type SeriesChoice,
 	type SortCriterion,
-	type Variant,
-	type VariantDlc,
-	type VariantDraft,
-	type VariantRow,
-	type VariantStatus,
-	variantStatusDefinitions,
+	type Status,
+	statusDefinitions,
+	type UserGame,
+	type UserGameDraft,
+	type UserVersion,
+	type UserVersionDraft,
+	type UserVersionRow,
 	type Version,
 	type VersionPlatform,
 } from "./types";
@@ -477,7 +479,7 @@ export async function fetchIgdbGameData(
 			} else if (isNew) {
 				skippedIds.add(candidate.id);
 				skippedEntries.push({
-					reason: `« ${candidate.name} » est rattaché comme version, mais son type est « ${typeName} » : fiche ignorée.`,
+					message: `« ${candidate.name} » est rattaché comme version, mais son type est « ${typeName} » : fiche ignorée.`,
 					entry: candidate,
 				});
 			}
@@ -535,6 +537,24 @@ export async function fetchIgdbGameData(
 	};
 }
 
+/** Images d'un jeu, une seule requête : à l'ajout au backlog et pour « Personnaliser » (section 8) */
+export async function fetchIgdbGameImages(
+	gameId: number,
+	signal: AbortSignal,
+): Promise<IgdbGameImages> {
+	const game = (
+		await requestIgdb<IgdbGameImages[]>(
+			"games",
+			`fields cover.image_id, artworks.image_id; where id = ${gameId};`,
+			signal,
+		)
+	).at(0);
+	if (game === undefined) {
+		throw new Error(`Fiche IGDB ${gameId} introuvable.`);
+	}
+	return game;
+}
+
 /** Seule fonction qui construit l'URL d'une image IGDB ; `t_thumb` (90 × 90) pour une miniature */
 export function getIgdbImageUrl(
 	imageId: IgdbImageId,
@@ -546,11 +566,13 @@ export function getIgdbImageUrl(
 
 // ---------- Modales : versions, DLC et plateformes ----------
 
-/** Valeurs d'une nouvelle variante : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
-export const defaultVariantDraft: VariantDraft = {
+/** Valeurs d'une nouvelle version jouée : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
+export const defaultUserVersionDraft: UserVersionDraft = {
+	versionId: null,
+	platformId: null,
 	status: "notStarted",
-	owned: false,
-	playSoon: false,
+	isOwned: false,
+	isUpNext: false,
 	finishDate: null,
 	sureFinishCount: 0,
 	probableFinishCount: 0,
@@ -565,11 +587,80 @@ export const defaultVariantDraft: VariantDraft = {
 export const emptyImportSelection: ImportSelection = {
 	versionIds: [],
 	dlcIds: [],
-	dlcGameIds: [],
+	dlcAsGameIds: [],
 };
 
+export function findUserGame(
+	database: Database,
+	gameId: number,
+): UserGame | null {
+	return (
+		database.userGames.find((userGame) => userGame.gameId === gameId) ?? null
+	);
+}
+
+/** Personnalisation par défaut à l'ajout au backlog (section 8) : l'image donnée, Histoire, la série proposée par IGDB */
+function getDefaultUserGameDraft(imageId: IgdbImageId | null): UserGameDraft {
+	return {
+		imageId,
+		endingType: "story",
+		series: { kind: "proposed" },
+		seriesNumber: null,
+	};
+}
+
+function getSeriesChoice(
+	proposedSeriesId: number | null,
+	seriesId: number | null,
+): SeriesChoice {
+	if (seriesId === proposedSeriesId) {
+		return { kind: "proposed" };
+	}
+	return seriesId === null ? { kind: "none" } : { kind: "other", seriesId };
+}
+
+/** Personnalisation d'un jeu du backlog, reprise dans « Personnaliser » */
+export function getUserGameDraft(
+	game: Game,
+	userGame: UserGame,
+): UserGameDraft {
+	return {
+		imageId: userGame.imageId,
+		endingType: userGame.endingType,
+		series: getSeriesChoice(game.proposedSeriesId, userGame.seriesId),
+		seriesNumber: userGame.seriesNumber,
+	};
+}
+
 /**
- * Modale d'un jeu choisi par son id IGDB (section 8) : déjà en base, l'ajout d'une variante, sa version pré-sélectionnée ;
+ * Ajout au backlog (section 8) : version, plateforme et données du joueur ; la personnalisation en plus si le jeu n'y est pas encore.
+ * Ses images viennent de l'ajout du jeu qui précède (`imageIds`), sinon d'IGDB, relu à l'ouverture : en attendant, la cover de l'original.
+ */
+export function getAddUserVersionModal(
+	database: Database,
+	gameId: number,
+	versionId: number | null,
+	imageIds: IgdbImageId[] | null,
+	queuedGameIds: number[],
+): Extract<Modal, { kind: "addUserVersion" }> {
+	const isInBacklog = findUserGame(database, gameId) !== null;
+	const defaultImageId =
+		imageIds === null
+			? (database.versions.find(({ id }) => id === gameId)?.coverImageId ??
+				null)
+			: (imageIds.at(0) ?? null);
+	return {
+		kind: "addUserVersion",
+		gameId,
+		draft: { ...defaultUserVersionDraft, versionId },
+		userGameDraft: isInBacklog ? null : getDefaultUserGameDraft(defaultImageId),
+		imageIds: isInBacklog ? [] : imageIds,
+		queuedGameIds,
+	};
+}
+
+/**
+ * Modale d'un jeu choisi par son id IGDB (section 8) : déjà en base, l'ajout au backlog, sa version pré-sélectionnée ;
  * sinon la modale d'ajout
  */
 export function getGameModal(
@@ -583,23 +674,17 @@ export function getGameModal(
 				kind: "addGame",
 				igdbId,
 				gameImport: null,
-				choices: {
-					imageId: null,
-					endingType: "story",
-					series: { kind: "original" },
-					seriesNumber: null,
-				},
 				selection: emptyImportSelection,
 				isAddingToBacklog: true,
 				queuedGameIds,
 			}
-		: {
-				kind: "addVariant",
-				gameId: version.gameId,
-				variantChoice: { versionId: version.id, platformId: null },
-				draft: defaultVariantDraft,
+		: getAddUserVersionModal(
+				database,
+				version.gameId,
+				version.id,
+				null,
 				queuedGameIds,
-			};
+			);
 }
 
 /** File des DLC à ajouter comme jeux, portée par la modale ouverte (section 8) */
@@ -619,12 +704,12 @@ export function getNextQueuedModal(
 }
 
 /** DLC cochés « comme jeu », dans l'ordre de la liste des DLC */
-export function getDlcGameQueue(
+export function getDlcAsGameQueue(
 	dlcs: Dlc[],
 	selection: ImportSelection,
 ): number[] {
 	return dlcs
-		.filter(({ id }) => selection.dlcGameIds.includes(id))
+		.filter(({ id }) => selection.dlcAsGameIds.includes(id))
 		.map(({ id }) => id);
 }
 
@@ -633,7 +718,7 @@ export function toggleId(ids: number[], id: number): number[] {
 	return ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id];
 }
 
-/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée, version originale et tous les DLC cochés */
+/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : version originale et tous les DLC cochés */
 export function receiveGameImport(
 	modal: Modal | null,
 	igdbId: number,
@@ -649,14 +734,10 @@ export function receiveGameImport(
 	return {
 		...modal,
 		gameImport,
-		choices: {
-			...modal.choices,
-			imageId: modal.choices.imageId ?? gameImport.imageIds.at(0) ?? null,
-		},
 		selection: {
 			versionIds: [gameImport.game.id],
 			dlcIds: gameImport.dlcs.map(({ id }) => id),
-			dlcGameIds: [],
+			dlcAsGameIds: [],
 		},
 	};
 }
@@ -665,16 +746,54 @@ export function receiveGameImport(
 export function receiveEditGameImport(
 	modal: Modal | null,
 	gameId: number,
-	igdbImport: GameImport,
+	gameImport: GameImport,
 ): Modal | null {
 	if (
 		modal?.kind !== "editGame" ||
 		modal.gameId !== gameId ||
-		modal.igdbImport !== null
+		modal.gameImport !== null
 	) {
 		return modal;
 	}
-	return { ...modal, igdbImport };
+	return { ...modal, gameImport };
+}
+
+/**
+ * Range les images IGDB dans l'ajout au backlog ou « Personnaliser » si la modale attend toujours ce jeu.
+ * L'image déjà choisie reste proposée, même si IGDB ne l'a plus ; sans choix, la première est pré-sélectionnée.
+ */
+export function receiveGameImages(
+	modal: Modal | null,
+	gameId: number,
+	imageIds: IgdbImageId[],
+): Modal | null {
+	if (
+		!(
+			(modal?.kind === "addUserVersion" && modal.userGameDraft !== null) ||
+			modal?.kind === "customizeGame"
+		) ||
+		modal.gameId !== gameId ||
+		modal.imageIds !== null
+	) {
+		return modal;
+	}
+	const draft =
+		modal.kind === "customizeGame" ? modal.draft : modal.userGameDraft;
+	if (draft === null) {
+		return modal;
+	}
+	const { imageId } = draft;
+	const proposedImageIds =
+		imageId === null || imageIds.includes(imageId)
+			? imageIds
+			: [imageId, ...imageIds];
+	const receivedDraft = {
+		...draft,
+		imageId: imageId ?? proposedImageIds.at(0) ?? null,
+	};
+	return modal.kind === "customizeGame"
+		? { ...modal, draft: receivedDraft, imageIds: proposedImageIds }
+		: { ...modal, userGameDraft: receivedDraft, imageIds: proposedImageIds };
 }
 
 /** Range les DLC IGDB dans « Rechercher d'autres DLC » si elle attend toujours ce jeu ; rien n'est coché */
@@ -713,7 +832,7 @@ export function keepSelection(
 	};
 }
 
-/** Plateformes proposées pour une variante (section 5) : celles de la version, puis les émulateurs de ces consoles */
+/** Plateformes proposées pour une version jouée (section 5) : celles de la version, puis les émulateurs de ces consoles */
 export function getPlatformOptions(
 	versionId: number,
 	versionPlatforms: VersionPlatform[],
@@ -743,7 +862,7 @@ export function getVersionLabel(
 		.filter((versionPlatform) => versionPlatform.versionId === version.id)
 		.flatMap(
 			({ platformId }) =>
-				platforms.find(({ id }) => id === platformId)?.name ?? [],
+				platforms.find(({ id }) => id === platformId)?.shortName ?? [],
 		);
 	const title = version.title ?? `${gameName} (originale)`;
 	return platformNames.length === 0
@@ -761,7 +880,8 @@ export function describeVersionPlatforms(
 		.filter((versionPlatform) => versionPlatform.versionId === versionId)
 		.map(({ platformId, releaseDate }) => {
 			const name =
-				platforms.find(({ id }) => id === platformId)?.name ?? `#${platformId}`;
+				platforms.find(({ id }) => id === platformId)?.shortName ??
+				`#${platformId}`;
 			return `${name} ${releaseDate === null ? "(date inconnue)" : formatIsoDate(releaseDate)}`;
 		})
 		.join(" · ");
@@ -776,33 +896,28 @@ export function findById<T extends { id: number }>(
 	return id === null ? null : (items.find((item) => item.id === id) ?? null);
 }
 
-function getStatusRank(status: VariantStatus): number | null {
-	return (
-		variantStatusDefinitions.find(({ key }) => key === status)?.rank ?? null
-	);
+function getStatusRank(status: Status): number | null {
+	return statusDefinitions.find(({ key }) => key === status)?.rank ?? null;
 }
 
-/** Rang 5 ou plus : la variante est finie (section 6) */
-export function isFinishedStatus(status: VariantStatus): boolean {
+/** Rang 5 ou plus : la version jouée est finie (section 6) */
+export function isFinishedStatus(status: Status): boolean {
 	return (getStatusRank(status) ?? 0) >= 5;
 }
 
 /** Les statuts proposés dépendent du type de fin du jeu (section 6) */
 export function isStatusAllowed(
-	status: VariantStatus,
+	status: Status,
 	endingType: EndingType,
 ): boolean {
-	return variantStatusDefinitions.some((definition) => {
+	return statusDefinitions.some((definition) => {
 		const endingTypes: readonly EndingType[] = definition.endingTypes;
 		return definition.key === status && endingTypes.includes(endingType);
 	});
 }
 
 /** Statut devenu incompatible avec un nouveau type de fin (section 8) : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé */
-export function convertStatus(
-	status: VariantStatus,
-	endingType: EndingType,
-): VariantStatus {
+export function convertStatus(status: Status, endingType: EndingType): Status {
 	if (isStatusAllowed(status, endingType)) {
 		return status;
 	}
@@ -836,47 +951,49 @@ export function mergeById<T extends { id: number }>(
 	return merged;
 }
 
-/** id interne de la prochaine variante créée */
-export function getNextVariantId(database: Database): number {
-	return Math.max(0, ...database.variants.map(({ id }) => id)) + 1;
+/** id interne de la prochaine version jouée créée */
+export function getNextUserVersionId(database: Database): number {
+	return Math.max(0, ...database.userVersions.map(({ id }) => id)) + 1;
 }
 
 /** Au rang 5 ou plus, « fois fini (sûr) » passe à 1 s'il était à 0 (section 6) */
-function countFirstFinish(variant: Variant): Variant {
-	return isFinishedStatus(variant.status) && variant.sureFinishCount === 0
-		? { ...variant, sureFinishCount: 1 }
-		: variant;
+function applyFirstFinish(userVersion: UserVersion): UserVersion {
+	return isFinishedStatus(userVersion.status) &&
+		userVersion.sureFinishCount === 0
+		? { ...userVersion, sureFinishCount: 1 }
+		: userVersion;
 }
 
 /**
- * Ajoute une variante avec les données pré-remplies et ses DLC faits, sauf si la même version + plateforme existe déjà (section 5).
+ * Ajoute une version jouée avec les données pré-remplies et ses DLC faits, sauf si la même version + plateforme existe déjà (section 5).
  * Son statut suit les règles d'un changement de statut (section 6).
  */
-export function addVariant(
+export function addUserVersion(
 	database: Database,
 	versionId: number,
 	platformId: number,
-	draft: VariantDraft,
+	draft: UserVersionDraft,
 ): Database {
 	if (
-		database.variants.some(
-			(variant) =>
-				variant.versionId === versionId && variant.platformId === platformId,
+		database.userVersions.some(
+			(userVersion) =>
+				userVersion.versionId === versionId &&
+				userVersion.platformId === platformId,
 		)
 	) {
 		return database;
 	}
 	const { doneDlcIds, ...data } = draft;
-	const variantId = getNextVariantId(database);
+	const userVersionId = getNextUserVersionId(database);
 	return {
 		...database,
-		variants: [
-			...database.variants,
-			countFirstFinish({ id: variantId, versionId, platformId, ...data }),
+		userVersions: [
+			...database.userVersions,
+			applyFirstFinish({ ...data, id: userVersionId, versionId, platformId }),
 		],
-		variantDlcs: [
-			...database.variantDlcs,
-			...doneDlcIds.map((dlcId) => ({ variantId, dlcId })),
+		doneDlcs: [
+			...database.doneDlcs,
+			...doneDlcIds.map((dlcId) => ({ userVersionId, dlcId })),
 		],
 	};
 }
@@ -907,16 +1024,16 @@ function findSeriesByName(database: Database, name: string): Series | null {
 	);
 }
 
-/** Valeur du choix de la série dans sa liste ; sans série IGDB, « aucune » est la série d'origine */
+/** Valeur du choix de la série dans sa liste ; sans série proposée par IGDB, « aucune » est la proposition d'IGDB */
 export function formatSeriesValue(
 	choice: SeriesChoice,
-	hasOriginalSeries: boolean,
+	hasProposedSeries: boolean,
 ): string {
 	switch (choice.kind) {
-		case "stored":
-			return `stored-${choice.seriesId}`;
+		case "other":
+			return `other-${choice.seriesId}`;
 		case "none":
-			return hasOriginalSeries ? "none" : "original";
+			return hasProposedSeries ? "none" : "proposed";
 		default:
 			return choice.kind;
 	}
@@ -924,8 +1041,8 @@ export function formatSeriesValue(
 
 /** Choix de la série lu dans sa liste ; « Nouvelle série » part d'un nom vide */
 export function parseSeriesValue(value: string): SeriesChoice {
-	if (value.startsWith("stored-")) {
-		return { kind: "stored", seriesId: Number(value.slice("stored-".length)) };
+	if (value.startsWith("other-")) {
+		return { kind: "other", seriesId: Number(value.slice("other-".length)) };
 	}
 	switch (value) {
 		case "none":
@@ -933,7 +1050,7 @@ export function parseSeriesValue(value: string): SeriesChoice {
 		case "new":
 			return { kind: "new", name: "" };
 		default:
-			return { kind: "original" };
+			return { kind: "proposed" };
 	}
 }
 
@@ -946,15 +1063,15 @@ export function isSeriesChoiceValid(choice: SeriesChoice): boolean {
  * id de la série choisie (section 8) ; `undefined` pour une nouvelle série, qui n'existe qu'à « Valider ».
  * Un nom déjà pris désigne la série existante.
  */
-export function getChosenSeriesId(
+function getChosenSeriesId(
 	database: Database,
-	originalSeriesId: number | null,
+	proposedSeriesId: number | null,
 	choice: SeriesChoice,
 ): number | null | undefined {
 	switch (choice.kind) {
-		case "original":
-			return originalSeriesId;
-		case "stored":
+		case "proposed":
+			return proposedSeriesId;
+		case "other":
 			return choice.seriesId;
 		case "new":
 			return findSeriesByName(database, choice.name)?.id;
@@ -987,62 +1104,27 @@ function storeSeries(
 	};
 }
 
-/** Range le jeu dans la série choisie, créée si besoin ; sans série, il perd son numéro. Une série qui n'a plus de jeu quitte la base */
-function setGameSeries(
-	database: Database,
-	gameId: number,
-	choice: SeriesChoice,
-	seriesNumber: number | null,
-): Database {
-	const game = findById(database.games, gameId);
-	if (game === null) {
-		return database;
-	}
-	const chosen =
-		choice.kind === "new"
-			? storeSeries(
-					database,
-					{
-						name: choice.name.trim(),
-						igdbCollectionId: null,
-						igdbFranchiseId: null,
-					},
-					findSeriesByName(database, choice.name),
-				)
-			: {
-					database,
-					seriesId:
-						getChosenSeriesId(database, game.originalSeriesId, choice) ?? null,
-				};
-	const games = chosen.database.games.map((other) =>
-		other.id === gameId
-			? {
-					...other,
-					seriesId: chosen.seriesId,
-					seriesNumber: chosen.seriesId === null ? null : seriesNumber,
-				}
-			: other,
-	);
+/** Une série qu'aucun jeu ne propose et qu'aucun jeu du backlog n'a choisie quitte la base */
+function removeUnusedSeries(database: Database): Database {
 	return {
-		...chosen.database,
-		games,
-		series: chosen.database.series.filter(({ id }) =>
-			games.some(
-				(other) => other.seriesId === id || other.originalSeriesId === id,
-			),
+		...database,
+		series: database.series.filter(
+			({ id }) =>
+				database.games.some(
+					({ proposedSeriesId }) => proposedSeriesId === id,
+				) || database.userGames.some(({ seriesId }) => seriesId === id),
 		),
 	};
 }
 
 /**
- * « Valider » de la modale d'ajout (section 8) : le jeu, les versions et DLC cochés (`keepSelection`), sa série
- * et ses sociétés, sans doublon. La variante s'ajoute ensuite, à part.
- * Un jeu déjà en base garde ses choix et ses versions : seules les fiches manquantes s'ajoutent (aussi pour « Modifier le jeu »).
+ * « Valider » de la modale d'ajout (section 8) : le jeu, les versions et DLC cochés (`keepSelection`), sa série proposée
+ * et ses sociétés, sans doublon. L'ajout au backlog suit, à part.
+ * Un jeu déjà en base garde ses versions : seules les fiches manquantes s'ajoutent (aussi pour « Modifier le jeu »).
  */
 export function addGameImport(
 	database: Database,
 	gameImport: GameImport,
-	choices: GameChoices,
 ): Database {
 	const newVersionIds = new Set(
 		gameImport.versions
@@ -1070,29 +1152,92 @@ export function addGameImport(
 	if (findById(database.games, gameImport.game.id) !== null) {
 		return merged;
 	}
-	// Nouveau jeu : la série proposée par IGDB entre en base, puis le jeu rejoint la série choisie
-	const original =
-		gameImport.series === null
+	// Nouveau jeu : la série proposée par IGDB entre en base avec lui
+	const { proposedSeries } = gameImport;
+	const stored =
+		proposedSeries === null
 			? { database: merged, seriesId: null }
 			: storeSeries(
 					merged,
-					gameImport.series,
-					findStoredSeries(merged, gameImport.series),
+					proposedSeries,
+					findStoredSeries(merged, proposedSeries),
 				);
-	const game: Game = {
-		...gameImport.game,
-		imageId: choices.imageId,
-		endingType: choices.endingType,
-		seriesId: original.seriesId,
-		originalSeriesId: original.seriesId,
-		seriesNumber: null,
+	return {
+		...stored.database,
+		games: [
+			...stored.database.games,
+			{ ...gameImport.game, proposedSeriesId: stored.seriesId },
+		],
 	};
-	return setGameSeries(
-		{ ...original.database, games: [...original.database.games, game] },
-		game.id,
-		choices.series,
-		choices.seriesNumber,
-	);
+}
+
+export function getGameUserVersionIds(
+	database: Database,
+	gameId: number,
+): number[] {
+	const versionIds = database.versions
+		.filter((version) => version.gameId === gameId)
+		.map(({ id }) => id);
+	return database.userVersions
+		.filter(({ versionId }) => versionIds.includes(versionId))
+		.map(({ id }) => id);
+}
+
+/**
+ * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser » (section 8) : la série choisie,
+ * créée si besoin, et sans série, pas de numéro. Les statuts que le type de fin rend incompatibles sont convertis.
+ */
+export function saveUserGame(
+	database: Database,
+	gameId: number,
+	draft: UserGameDraft,
+): Database {
+	const game = findById(database.games, gameId);
+	if (game === null) {
+		return database;
+	}
+	const { series, ...choices } = draft;
+	const chosen =
+		series.kind === "new"
+			? storeSeries(
+					database,
+					{
+						name: series.name.trim(),
+						igdbCollectionId: null,
+						igdbFranchiseId: null,
+					},
+					findSeriesByName(database, series.name),
+				)
+			: {
+					database,
+					seriesId:
+						getChosenSeriesId(database, game.proposedSeriesId, series) ?? null,
+				};
+	const userGame: UserGame = {
+		...choices,
+		gameId,
+		seriesId: chosen.seriesId,
+		seriesNumber: chosen.seriesId === null ? null : choices.seriesNumber,
+	};
+	const { userGames } = chosen.database;
+	const userVersionIds = getGameUserVersionIds(chosen.database, gameId);
+	return removeUnusedSeries({
+		...chosen.database,
+		userGames:
+			findUserGame(chosen.database, gameId) === null
+				? [...userGames, userGame]
+				: userGames.map((other) =>
+						other.gameId === gameId ? userGame : other,
+					),
+		userVersions: chosen.database.userVersions.map((userVersion) =>
+			userVersionIds.includes(userVersion.id)
+				? {
+						...userVersion,
+						status: convertStatus(userVersion.status, userGame.endingType),
+					}
+				: userVersion,
+		),
+	});
 }
 
 /** « Rechercher d'autres DLC » (section 9) : les DLC cochés rejoignent leur jeu, sans doublon */
@@ -1100,159 +1245,145 @@ export function addDlcs(database: Database, dlcs: Dlc[]): Database {
 	return { ...database, dlcs: mergeById(database.dlcs, dlcs) };
 }
 
-export function updateVariant(
+export function updateUserVersion(
 	database: Database,
-	variantId: number,
-	update: (variant: Variant) => Variant,
+	userVersionId: number,
+	update: (userVersion: UserVersion) => UserVersion,
 ): Database {
 	return {
 		...database,
-		variants: database.variants.map((variant) =>
-			variant.id === variantId ? update(variant) : variant,
+		userVersions: database.userVersions.map((userVersion) =>
+			userVersion.id === userVersionId ? update(userVersion) : userVersion,
 		),
 	};
 }
 
-/** Statut d'une variante ; au rang 5 ou plus, « fois fini (sûr) » passe à 1 s'il était à 0 (section 6) */
-export function setVariantStatus(
+/** Statut d'une version jouée ; au rang 5 ou plus, « fois fini (sûr) » passe à 1 s'il était à 0 (section 6) */
+export function setUserVersionStatus(
 	database: Database,
-	variantId: number,
-	status: VariantStatus,
+	userVersionId: number,
+	status: Status,
 ): Database {
-	return updateVariant(database, variantId, (variant) =>
-		countFirstFinish({ ...variant, status }),
+	return updateUserVersion(database, userVersionId, (userVersion) =>
+		applyFirstFinish({ ...userVersion, status }),
 	);
 }
 
-/** Coche ou décoche un DLC comme fait sur une variante */
-export function toggleVariantDlc(
+/** Coche ou décoche un DLC comme fait sur une version jouée */
+export function toggleDoneDlc(
 	database: Database,
-	variantId: number,
+	userVersionId: number,
 	dlcId: number,
 ): Database {
-	function isThisDlc(variantDlc: VariantDlc): boolean {
-		return variantDlc.variantId === variantId && variantDlc.dlcId === dlcId;
+	function isThisDlc(doneDlc: DoneDlc): boolean {
+		return doneDlc.userVersionId === userVersionId && doneDlc.dlcId === dlcId;
 	}
 	return {
 		...database,
-		variantDlcs: database.variantDlcs.some(isThisDlc)
-			? database.variantDlcs.filter((variantDlc) => !isThisDlc(variantDlc))
-			: [...database.variantDlcs, { variantId, dlcId }],
+		doneDlcs: database.doneDlcs.some(isThisDlc)
+			? database.doneDlcs.filter((doneDlc) => !isThisDlc(doneDlc))
+			: [...database.doneDlcs, { userVersionId, dlcId }],
 	};
 }
 
-export function getGameVariantIds(
+/**
+ * Retire des versions jouées et leurs DLC faits (section 8). Un jeu sans version jouée quitte le backlog avec sa personnalisation,
+ * mais reste en base ; une série créée à la main qui n'a plus de jeu part avec lui.
+ */
+export function removeUserVersions(
 	database: Database,
-	gameId: number,
-): number[] {
-	const versionIds = database.versions
-		.filter((version) => version.gameId === gameId)
-		.map(({ id }) => id);
-	return database.variants
-		.filter(({ versionId }) => versionIds.includes(versionId))
-		.map(({ id }) => id);
-}
-
-/** Retire des variantes et leurs DLC faits ; un jeu sans variante quitte le backlog mais reste en base (section 8) */
-export function removeVariants(
-	database: Database,
-	variantIds: number[],
+	userVersionIds: number[],
 ): Database {
-	return {
-		...database,
-		variants: database.variants.filter(({ id }) => !variantIds.includes(id)),
-		variantDlcs: database.variantDlcs.filter(
-			({ variantId }) => !variantIds.includes(variantId),
+	const userVersions = database.userVersions.filter(
+		({ id }) => !userVersionIds.includes(id),
+	);
+	const playedGameIds = new Set(
+		userVersions.flatMap(
+			({ versionId }) => findById(database.versions, versionId)?.gameId ?? [],
 		),
-	};
+	);
+	return removeUnusedSeries({
+		...database,
+		userGames: database.userGames.filter(({ gameId }) =>
+			playedGameIds.has(gameId),
+		),
+		userVersions,
+		doneDlcs: database.doneDlcs.filter(
+			({ userVersionId }) => !userVersionIds.includes(userVersionId),
+		),
+	});
 }
 
-/** « Modifier le jeu » change-t-il la base (section 8) : un des choix, ou une version ou un DLC absent de la base coché */
+/** « Modifier le jeu » change-t-il la base (section 8) : une version ou un DLC absent de la base coché */
 export function hasGameEditChanges(
 	database: Database,
 	modal: Extract<Modal, { kind: "editGame" }>,
 ): boolean {
-	const game = findById(database.games, modal.gameId);
-	if (game === null) {
+	const { selection } = modal;
+	return (
+		selection.versionIds.some(
+			(id) => findById(database.versions, id) === null,
+		) || selection.dlcIds.some((id) => findById(database.dlcs, id) === null)
+	);
+}
+
+/** « Personnaliser » change-t-il la base (section 8) : un nouveau choix d'image, de type de fin, de série ou de numéro */
+export function hasUserGameChanges(
+	database: Database,
+	gameId: number,
+	draft: UserGameDraft,
+): boolean {
+	const game = findById(database.games, gameId);
+	const userGame = findUserGame(database, gameId);
+	if (game === null || userGame === null) {
 		return false;
 	}
-	const { choices, selection } = modal;
 	// Une nouvelle série (`undefined`) est toujours un changement ; sans série, le numéro ne compte pas
 	const seriesId = getChosenSeriesId(
 		database,
-		game.originalSeriesId,
-		choices.series,
+		game.proposedSeriesId,
+		draft.series,
 	);
 	return (
-		choices.imageId !== game.imageId ||
-		choices.endingType !== game.endingType ||
-		seriesId !== game.seriesId ||
-		(seriesId === null ? null : choices.seriesNumber) !== game.seriesNumber ||
-		selection.versionIds.some(
-			(id) => findById(database.versions, id) === null,
-		) ||
-		selection.dlcIds.some((id) => findById(database.dlcs, id) === null)
+		draft.imageId !== userGame.imageId ||
+		draft.endingType !== userGame.endingType ||
+		seriesId !== userGame.seriesId ||
+		(seriesId === null ? null : draft.seriesNumber) !== userGame.seriesNumber
 	);
 }
 
-/** « Modifier le jeu » (section 8) : les choix, puis la conversion des statuts que le nouveau type de fin rend incompatibles */
-export function updateGameChoices(
+/**
+ * « Logger cette ligne » (section 9) : le jeu, sa personnalisation, ses versions et ses versions jouées tels qu'ils sont stockés ;
+ * une sous-ligne s'en tient à sa version jouée
+ */
+export function getRowData(
 	database: Database,
 	gameId: number,
-	choices: GameChoices,
-): Database {
-	const variantIds = getGameVariantIds(database, gameId);
-	const updated = setGameSeries(
-		database,
-		gameId,
-		choices.series,
-		choices.seriesNumber,
-	);
-	return {
-		...updated,
-		games: updated.games.map((game) =>
-			game.id === gameId
-				? {
-						...game,
-						imageId: choices.imageId,
-						endingType: choices.endingType,
-					}
-				: game,
-		),
-		variants: updated.variants.map((variant) =>
-			variantIds.includes(variant.id)
-				? {
-						...variant,
-						status: convertStatus(variant.status, choices.endingType),
-					}
-				: variant,
-		),
-	};
-}
-
-/** « Logger cette ligne » (section 9) : le jeu, ses versions et ses variantes tels qu'ils sont stockés ; une sous-ligne s'en tient à sa variante */
-export function getStoredLine(
-	database: Database,
-	gameId: number,
-	variantId: number | null,
-): { game: Game | null; versions: Version[]; variants: Variant[] } {
+	userVersionId: number | null,
+): {
+	game: Game | null;
+	userGame: UserGame | null;
+	versions: Version[];
+	userVersions: UserVersion[];
+} {
 	const versions = database.versions.filter(
 		(version) => version.gameId === gameId,
 	);
-	const variants = database.variants.filter(
-		(variant) =>
-			versions.some(({ id }) => id === variant.versionId) &&
-			(variantId === null || variant.id === variantId),
+	const userVersions = database.userVersions.filter(
+		(userVersion) =>
+			versions.some(({ id }) => id === userVersion.versionId) &&
+			(userVersionId === null || userVersion.id === userVersionId),
 	);
 	return {
 		game: findById(database.games, gameId),
+		userGame: findUserGame(database, gameId),
 		versions:
-			variantId === null
+			userVersionId === null
 				? versions
 				: versions.filter(({ id }) =>
-						variants.some((variant) => variant.versionId === id),
+						userVersions.some((userVersion) => userVersion.versionId === id),
 					),
-		variants,
+		userVersions,
 	};
 }
 
@@ -1264,10 +1395,8 @@ export const backlogPageSize = 25;
 /** Mode édition : retour automatique en lecture seule après 1 minute d'inactivité (section 9) */
 export const editModeIdleMs = 60_000;
 
-export function getStatusLabel(status: VariantStatus): string {
-	return (
-		variantStatusDefinitions.find(({ key }) => key === status)?.label ?? status
-	);
+export function getStatusLabel(status: Status): string {
+	return statusDefinitions.find(({ key }) => key === status)?.label ?? status;
 }
 
 export function getEndingTypeLabel(endingType: EndingType): string {
@@ -1278,8 +1407,8 @@ export function getEndingTypeLabel(endingType: EndingType): string {
 }
 
 /** Le statut de plus haut rang ; « Abandonné », hors échelle, n'est jamais retenu */
-function getHighestStatus(statuses: VariantStatus[]): VariantStatus | null {
-	let highest: VariantStatus | null = null;
+function getHighestStatus(statuses: Status[]): Status | null {
+	let highest: Status | null = null;
 	let highestRank = 0;
 	for (const status of statuses) {
 		const rank = getStatusRank(status);
@@ -1292,10 +1421,10 @@ function getHighestStatus(statuses: VariantStatus[]): VariantStatus | null {
 }
 
 /**
- * Statut de la ligne du jeu (section 6) : les « Pas commencé » sont ignorées tant qu'une autre variante
+ * Statut de la ligne du jeu (section 6) : les « Pas commencé » sont ignorées tant qu'une autre version jouée
  * a un statut, puis la première situation qui correspond l'emporte. `null` : impossible de choisir.
  */
-export function getGameStatus(statuses: VariantStatus[]): VariantStatus | null {
+export function getGameStatus(statuses: Status[]): Status | null {
 	const played = statuses.filter((status) => status !== "notStarted");
 	// Toutes « Pas commencé »
 	if (played.length === 0) {
@@ -1369,7 +1498,7 @@ export const columnFilterKinds: Record<ColumnKey, ColumnFilter["kind"] | null> =
 		endingType: "value",
 		platform: "value",
 		status: "value",
-		playSoon: "boolean",
+		upNext: "boolean",
 		owned: "boolean",
 		finishDate: "dateRange",
 		finishCount: "numberRange",
@@ -1416,13 +1545,13 @@ function getColumnValue(
 		case "endingType":
 			return row.endingType;
 		case "platform":
-			return row.platform?.name ?? null;
+			return row.platform?.shortName ?? null;
 		case "status":
 			return row.status;
-		case "playSoon":
-			return row.playSoon;
+		case "upNext":
+			return row.isUpNext;
 		case "owned":
-			return row.owned;
+			return row.isOwned;
 		case "finishDate":
 			return row.finishDate;
 		case "finishCount":
@@ -1449,7 +1578,7 @@ function getSortValue(column: ColumnKey, row: GameRow): string | number | null {
 	if (column === "status") {
 		return row.status === null
 			? null
-			: variantStatusDefinitions.findIndex(({ key }) => key === row.status);
+			: statusDefinitions.findIndex(({ key }) => key === row.status);
 	}
 	if (column === "endingType") {
 		return endingTypeDefinitions.findIndex(({ key }) => key === row.endingType);
@@ -1498,27 +1627,30 @@ export function sortGameRows(
 	return sort.length === 0 ? rows : rows.toSorted(compareRows);
 }
 
-/** Une sous-ligne vue comme une ligne du jeu : les données du jeu, et celles de la variante à la place des agrégats */
-function toCandidateRow(gameRow: GameRow, variantRow: VariantRow): GameRow {
+/** Une sous-ligne vue comme une ligne du jeu : les données du jeu, et celles de la version jouée à la place des agrégats */
+function toCandidateRow(
+	gameRow: GameRow,
+	userVersionRow: UserVersionRow,
+): GameRow {
 	return {
 		...gameRow,
-		versionTitle: variantRow.versionTitle,
-		releaseDate: variantRow.releaseDate,
+		versionTitle: userVersionRow.versionTitle,
+		releaseDate: userVersionRow.releaseDate,
 		isCancelled: false,
-		platform: variantRow.platform,
-		status: variantRow.status,
-		owned: variantRow.owned,
-		playSoon: variantRow.playSoon,
-		finishDate: variantRow.finishDate,
-		sureFinishCount: variantRow.sureFinishCount,
-		probableFinishCount: variantRow.probableFinishCount,
-		doneDlcCount: variantRow.doneDlcCount,
-		dlcCount: variantRow.dlcCount,
-		trackedPlayTimeMinutes: variantRow.trackedPlayTimeMinutes,
-		estimatedPlayTimeMinutes: variantRow.estimatedPlayTimeMinutes,
-		totalPlayTimeMinutes: variantRow.totalPlayTimeMinutes,
-		rating: variantRow.rating,
-		comment: variantRow.comment,
+		platform: userVersionRow.platform,
+		status: userVersionRow.status,
+		isOwned: userVersionRow.isOwned,
+		isUpNext: userVersionRow.isUpNext,
+		finishDate: userVersionRow.finishDate,
+		sureFinishCount: userVersionRow.sureFinishCount,
+		probableFinishCount: userVersionRow.probableFinishCount,
+		doneDlcCount: userVersionRow.doneDlcCount,
+		dlcCount: userVersionRow.dlcCount,
+		trackedPlayTimeMinutes: userVersionRow.trackedPlayTimeMinutes,
+		estimatedPlayTimeMinutes: userVersionRow.estimatedPlayTimeMinutes,
+		totalPlayTimeMinutes: userVersionRow.totalPlayTimeMinutes,
+		rating: userVersionRow.rating,
+		comment: userVersionRow.comment,
 	};
 }
 
@@ -1564,7 +1696,7 @@ function matchesFilter(row: GameRow, filter: ColumnFilter): boolean {
 	}
 }
 
-/** Un jeu reste affiché si sa ligne, ou au moins une de ses variantes, correspond à tous les filtres */
+/** Un jeu reste affiché si sa ligne, ou au moins une de ses versions jouées, correspond à tous les filtres */
 export function filterGameRows(
 	rows: GameRow[],
 	filters: ColumnFilter[],
@@ -1575,14 +1707,16 @@ export function filterGameRows(
 	return rows.filter((row) =>
 		[
 			row,
-			...row.variantRows.map((variantRow) => toCandidateRow(row, variantRow)),
+			...row.userVersionRows.map((userVersionRow) =>
+				toCandidateRow(row, userVersionRow),
+			),
 		].some((candidate) =>
 			filters.every((filter) => matchesFilter(candidate, filter)),
 		),
 	);
 }
 
-/** Choix des filtres « liste » : types de fin, statuts, plateformes des variantes du backlog */
+/** Choix des filtres « liste » : types de fin, statuts, plateformes des versions jouées du backlog */
 export function getFilterOptions(
 	column: ColumnKey,
 	database: Database,
@@ -1594,16 +1728,16 @@ export function getFilterOptions(
 		}));
 	}
 	if (column === "status") {
-		return variantStatusDefinitions.map(({ key, label }) => ({
+		return statusDefinitions.map(({ key, label }) => ({
 			value: key,
 			label,
 		}));
 	}
 	if (column === "platform") {
 		const names = new Set(
-			database.variants.flatMap(
+			database.userVersions.flatMap(
 				({ platformId }) =>
-					findById(database.platforms, platformId)?.name ?? [],
+					findById(database.platforms, platformId)?.shortName ?? [],
 			),
 		);
 		return [...names]
@@ -1857,7 +1991,7 @@ function describeFilterValue(filter: ColumnFilter): string {
 				: `contient « ${filter.text} »`;
 		case "value": {
 			const label =
-				[...variantStatusDefinitions, ...endingTypeDefinitions].find(
+				[...statusDefinitions, ...endingTypeDefinitions].find(
 					({ key }) => key === filter.value,
 				)?.label ?? filter.value;
 			return `= ${label}`;
@@ -1913,20 +2047,6 @@ export function buildInitialStateFile(state: AppState): string {
 /** La base garde l'ordre d'ajout : le dernier jeu du tableau est le dernier ajouté */
 export function getLastAddedGame(database: Database): Game | null {
 	return database.games.at(-1) ?? null;
-}
-
-/** Un jeu est dans le backlog s'il a au moins une variante */
-export function countBacklogGames(database: Database): number {
-	const gameIds = new Set<number>();
-	for (const variant of database.variants) {
-		const version = database.versions.find(
-			({ id }) => id === variant.versionId,
-		);
-		if (version) {
-			gameIds.add(version.gameId);
-		}
-	}
-	return gameIds.size;
 }
 
 export function getColumnLabel(key: ColumnKey): string {

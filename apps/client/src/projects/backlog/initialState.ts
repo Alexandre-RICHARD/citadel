@@ -9,25 +9,25 @@ export const initialState = {
 		"platforms": [
 			{
 				"id": 8,
-				"name": "PS2",
+				"shortName": "PS2",
 				"technicalName": "ps2",
 				"emulatedPlatformId": null
 			},
 			{
 				"id": 9,
-				"name": "PS3",
+				"shortName": "PS3",
 				"technicalName": "ps3",
 				"emulatedPlatformId": null
 			},
 			{
 				"id": -1,
-				"name": "PCSX2",
+				"shortName": "PCSX2",
 				"technicalName": "pcsx2",
 				"emulatedPlatformId": 8
 			},
 			{
 				"id": -2,
-				"name": "RPCS3",
+				"shortName": "RPCS3",
 				"technicalName": "rpcs3",
 				"emulatedPlatformId": 9
 			},
@@ -35,8 +35,9 @@ export const initialState = {
 		"dlcs": [],
 		"series": [],
 		"companies": [],
-		"variants": [],
-		"variantDlcs": []
+		"userGames": [],
+		"userVersions": [],
+		"doneDlcs": []
 	},
 	"searchQuery": "",
 	"searchResults": [],
@@ -88,7 +89,7 @@ export const initialState = {
 			"isVisible": true
 		},
 		{
-			"key": "playSoon",
+			"key": "upNext",
 			"isVisible": true
 		},
 		{

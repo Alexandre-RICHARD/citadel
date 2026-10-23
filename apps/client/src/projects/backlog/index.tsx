@@ -11,11 +11,12 @@ import {
 import styles from "./backlog.module.scss";
 import { initialState } from "./initialState";
 import {
-	mapEditedGameImport,
+	mapDatabaseSearchResult,
+	mapEditGameImport,
+	mapGameImages,
 	mapGameImport,
 	mapGameRows,
 	mapSearchResult,
-	mapStoredSearchResult,
 } from "./mappers";
 import {
 	type AppState,
@@ -27,7 +28,6 @@ import {
 	type Dlc,
 	type EndingType,
 	endingTypeDefinitions,
-	type GameChoices,
 	type GameImport,
 	type GameRow,
 	type IgdbImageId,
@@ -38,59 +38,63 @@ import {
 	type Popover,
 	type SearchResult,
 	type SearchSource,
+	type Series,
 	type SortCriterion,
+	type Status,
+	statusDefinitions,
 	type TableHandlers,
-	type Variant,
-	type VariantChoice,
-	type VariantDraft,
-	type VariantRow,
-	type VariantStatus,
-	variantStatusDefinitions,
+	type UserGameDraft,
+	type UserVersion,
+	type UserVersionDraft,
+	type UserVersionRow,
 	type Version,
 	type VersionPlatform,
 } from "./types";
 import {
 	addDlcs,
 	addGameImport,
-	addVariant,
+	addUserVersion,
 	backlogPageSize,
 	buildInitialStateFile,
 	buildViewSearch,
 	columnFilterKinds,
-	countBacklogGames,
-	defaultVariantDraft,
+	convertStatus,
 	describeFilters,
 	describeSort,
 	describeVersionPlatforms,
 	editModeIdleMs,
 	emptyImportSelection,
 	fetchIgdbGameData,
+	fetchIgdbGameImages,
 	filterGameRows,
 	findById,
-	findStoredSeries,
+	findUserGame,
 	formatDlcProgress,
 	formatDuration,
 	formatFinishCount,
 	formatIsoDate,
 	formatReleaseDate,
 	formatSeriesValue,
+	getAddUserVersionModal,
 	getColumnLabel,
-	getDlcGameQueue,
+	getDlcAsGameQueue,
 	getEndingTypeLabel,
 	getFilterOptions,
 	getGameModal,
-	getGameVariantIds,
+	getGameUserVersionIds,
 	getIgdbImageUrl,
 	getLastAddedGame,
 	getNextQueuedModal,
-	getNextVariantId,
+	getNextUserVersionId,
 	getPlatformOptions,
 	getQueuedGameIds,
+	getRowData,
 	getStatusLabel,
-	getStoredLine,
 	getTodayIsoDate,
+	getUserGameDraft,
 	getVersionLabel,
 	hasGameEditChanges,
+	hasUserGameChanges,
 	isDurationColumn,
 	isFinishedStatus,
 	isSeriesChoiceValid,
@@ -106,22 +110,23 @@ import {
 	readViewFromUrl,
 	receiveEditGameImport,
 	receiveGameDlcs,
+	receiveGameImages,
 	receiveGameImport,
-	removeVariants,
+	removeUserVersions,
 	saveColumns,
+	saveUserGame,
 	searchDatabaseGames,
 	searchDelayMs,
 	searchIgdbGames,
 	setColumnFilter,
-	setVariantStatus,
+	setUserVersionStatus,
 	sortGameRows,
 	toggleColumnVisibility,
+	toggleDoneDlc,
 	toggleId,
 	toggleSort,
-	toggleVariantDlc,
 	trimToNull,
-	updateGameChoices,
-	updateVariant,
+	updateUserVersion,
 } from "./utils";
 
 // ---------- Petits composants ----------
@@ -179,12 +184,12 @@ function PlatformLabel({ platform }: { platform: Platform }) {
 					alt=""
 				/>
 			)}
-			<span>{platform.name}</span>
+			<span>{platform.shortName}</span>
 		</span>
 	);
 }
 
-function Dialog({
+function ModalFrame({
 	title,
 	isCompact = false,
 	actions,
@@ -198,14 +203,14 @@ function Dialog({
 	return (
 		<div className={styles.overlay}>
 			<div
-				className={isCompact ? styles.compactDialog : styles.dialog}
+				className={isCompact ? styles.compactModal : styles.modal}
 				role="dialog"
 				aria-modal="true"
 				aria-label={title}
 			>
-				<h2 className={styles.dialogTitle}>{title}</h2>
-				<div className={styles.dialogBody}>{children}</div>
-				<div className={styles.dialogActions}>{actions}</div>
+				<h2 className={styles.modalTitle}>{title}</h2>
+				<div className={styles.modalBody}>{children}</div>
+				<div className={styles.modalActions}>{actions}</div>
 			</div>
 		</div>
 	);
@@ -407,8 +412,8 @@ const searchSourceLabels: Record<
 	{ button: string; placeholder: string }
 > = {
 	igdb: { button: "🌐 IGDB", placeholder: "Rechercher un jeu sur IGDB" },
-	local: {
-		button: "📚 Ma base",
+	database: {
+		button: "📚 En base",
 		placeholder: "Rechercher un jeu déjà en base (sans IGDB)",
 	},
 };
@@ -448,7 +453,7 @@ function SearchBar({
 				role="group"
 				aria-label="Source de la recherche"
 			>
-				{(["igdb", "local"] as const).map((key) => (
+				{(["igdb", "database"] as const).map((key) => (
 					<button
 						key={key}
 						type="button"
@@ -523,8 +528,8 @@ function SearchBar({
 											✅ déjà en base
 										</span>
 									)}
-								{source === "local" &&
-									getGameVariantIds(database, result.id).length > 0 && (
+								{source === "database" &&
+									findUserGame(database, result.id) !== null && (
 										<span className={styles.inDatabaseBadge}>
 											📋 dans le backlog
 										</span>
@@ -540,25 +545,25 @@ function SearchBar({
 
 // ---------- Modales (sections 6 et 8) ----------
 
-/** Version puis plateforme d'une nouvelle variante : plateformes de la version, puis émulateurs de ces consoles */
-function VariantChoiceFields({
+/** Version puis plateforme d'une nouvelle version jouée : plateformes de la version, puis émulateurs de ces consoles */
+function VersionPlatformFields({
 	gameName,
 	versions,
 	versionPlatforms,
 	platforms,
-	variants,
-	variantChoice,
+	userVersions,
+	draft,
 	onChange,
 }: {
 	gameName: string;
 	versions: Version[];
 	versionPlatforms: VersionPlatform[];
 	platforms: Platform[];
-	variants: Variant[];
-	variantChoice: VariantChoice;
-	onChange: (variantChoice: VariantChoice) => void;
+	userVersions: UserVersion[];
+	draft: UserVersionDraft;
+	onChange: (draft: UserVersionDraft) => void;
 }) {
-	const { versionId, platformId } = variantChoice;
+	const { versionId, platformId } = draft;
 	const platformOptions =
 		versionId === null
 			? []
@@ -572,6 +577,7 @@ function VariantChoiceFields({
 					value={versionId ?? ""}
 					onChange={(event) =>
 						onChange({
+							...draft,
 							versionId:
 								event.target.value === "" ? null : Number(event.target.value),
 							platformId: null,
@@ -596,7 +602,7 @@ function VariantChoiceFields({
 					disabled={versionId === null}
 					onChange={(event) =>
 						onChange({
-							versionId,
+							...draft,
 							platformId:
 								event.target.value === "" ? null : Number(event.target.value),
 						})
@@ -604,10 +610,10 @@ function VariantChoiceFields({
 				>
 					<option value="">— Choisir —</option>
 					{platformOptions.map((platform) => {
-						const isInBacklog = variants.some(
-							(variant) =>
-								variant.versionId === versionId &&
-								variant.platformId === platform.id,
+						const isInBacklog = userVersions.some(
+							(userVersion) =>
+								userVersion.versionId === versionId &&
+								userVersion.platformId === platform.id,
 						);
 						return (
 							<option
@@ -615,7 +621,7 @@ function VariantChoiceFields({
 								value={platform.id}
 								disabled={isInBacklog}
 							>
-								{`${platform.name}${platform.emulatedPlatformId === null ? "" : " (émulateur)"}${isInBacklog ? " — déjà dans le backlog" : ""}`}
+								{`${platform.shortName}${platform.emulatedPlatformId === null ? "" : " (émulateur)"}${isInBacklog ? " — déjà dans le backlog" : ""}`}
 							</option>
 						);
 					})}
@@ -626,25 +632,205 @@ function VariantChoiceFields({
 }
 
 /**
- * Tout ce qui est stocké, en lecture seule, et les trois choix : miniature, type de fin, n° dans la série.
- * Les versions et les DLC se cochent (`selection`) ; ce qui est déjà en base l'est d'office (section 8).
- * Un DLC peut aussi être coché « comme jeu », pour l'ajouter ensuite comme jeu à part (section 5).
+ * Personnalisation d'un jeu du backlog (section 8), à l'ajout au backlog ou par « Personnaliser » :
+ * miniature, type de fin, série et numéro dans la série. `imageIds` à `null` : images IGDB en cours de chargement.
+ */
+function UserGameFields({
+	draft,
+	proposedSeries,
+	database,
+	imageIds,
+	imageError,
+	onChange,
+}: {
+	draft: UserGameDraft;
+	proposedSeries: Series | null;
+	database: Database;
+	imageIds: IgdbImageId[] | null;
+	imageError: string | null;
+	onChange: (draft: UserGameDraft) => void;
+}) {
+	const endingType = endingTypeDefinitions.find(
+		({ key }) => key === draft.endingType,
+	);
+	// En attendant IGDB, ou s'il échoue, seule l'image déjà choisie est proposée
+	const shownImageIds =
+		imageIds ?? (draft.imageId === null ? [] : [draft.imageId]);
+	// La série proposée par IGDB est en tête de liste ; les autres séries de la base suivent, par nom
+	const otherSeries = database.series
+		.filter(({ id }) => id !== proposedSeries?.id)
+		.toSorted((first, second) => first.name.localeCompare(second.name));
+	const seriesValue = formatSeriesValue(draft.series, proposedSeries !== null);
+	const hasSeries =
+		seriesValue !== "none" &&
+		!(seriesValue === "proposed" && proposedSeries === null);
+
+	return (
+		<>
+			<section>
+				<h3>Miniature</h3>
+				{imageIds === null && imageError === null && (
+					<p>⏳ Chargement des images IGDB…</p>
+				)}
+				{imageError !== null && <p>⚠️ {imageError}</p>}
+				{imageIds !== null && shownImageIds.length === 0 && (
+					<p>Aucune image sur IGDB</p>
+				)}
+				{shownImageIds.length > 0 && (
+					<div className={styles.imageChoices}>
+						{shownImageIds.map((imageId) => (
+							<button
+								key={imageId}
+								type="button"
+								className={
+									imageId === draft.imageId
+										? styles.selectedImageChoice
+										: styles.imageChoice
+								}
+								aria-pressed={imageId === draft.imageId}
+								onClick={() => onChange({ ...draft, imageId })}
+							>
+								<Thumbnail imageId={imageId} />
+							</button>
+						))}
+					</div>
+				)}
+			</section>
+
+			<section className={styles.choiceRow}>
+				<label>
+					Type de fin
+					<select
+						value={draft.endingType}
+						onChange={(event) =>
+							onChange({
+								...draft,
+								endingType:
+									endingTypeDefinitions.find(
+										({ key }) => key === event.target.value,
+									)?.key ?? draft.endingType,
+							})
+						}
+					>
+						{endingTypeDefinitions.map(({ key, label }) => (
+							<option
+								key={key}
+								value={key}
+							>
+								{label}
+							</option>
+						))}
+					</select>
+				</label>
+				<span className={styles.hint}>{endingType?.meaning}</span>
+			</section>
+
+			<section className={styles.choiceRow}>
+				<label>
+					Série
+					<select
+						value={seriesValue}
+						onChange={(event) =>
+							onChange({
+								...draft,
+								series: parseSeriesValue(event.target.value),
+							})
+						}
+					>
+						<option value="proposed">
+							{proposedSeries === null
+								? "Aucune (IGDB n’en propose pas)"
+								: `${proposedSeries.name} (IGDB)`}
+						</option>
+						{proposedSeries !== null && <option value="none">Aucune</option>}
+						{otherSeries.map(({ id, name }) => (
+							<option
+								key={id}
+								value={`other-${id}`}
+							>
+								{name}
+							</option>
+						))}
+						<option value="new">➕ Nouvelle série…</option>
+					</select>
+				</label>
+				{draft.series.kind === "new" && (
+					<label>
+						Nom de la nouvelle série
+						<input
+							type="text"
+							value={draft.series.name}
+							// eslint-disable-next-line jsx-a11y/no-autofocus -- le champ apparaît au choix de « Nouvelle série »
+							autoFocus
+							onChange={(event) =>
+								onChange({
+									...draft,
+									series: { kind: "new", name: event.target.value },
+								})
+							}
+						/>
+					</label>
+				)}
+				{seriesValue !== "proposed" && (
+					<button
+						type="button"
+						className={styles.iconButton}
+						title={`Revenir à la série proposée par IGDB : ${proposedSeries?.name ?? "aucune"}`}
+						onClick={() => onChange({ ...draft, series: { kind: "proposed" } })}
+					>
+						↩️ Série IGDB
+					</button>
+				)}
+				{hasSeries && (
+					<label>
+						N° dans la série
+						<input
+							type="number"
+							min={0}
+							step="any"
+							defaultValue={draft.seriesNumber ?? ""}
+							onChange={(event) => {
+								if (event.target.validity.valid) {
+									onChange({
+										...draft,
+										seriesNumber:
+											event.target.value === ""
+												? null
+												: Number(event.target.value),
+									});
+								}
+							}}
+							onBlur={(event) => {
+								// Une valeur refusée (négative) remet le champ au dernier numéro accepté
+								const input = event.currentTarget;
+								if (!input.validity.valid) {
+									input.value =
+										draft.seriesNumber === null
+											? ""
+											: String(draft.seriesNumber);
+								}
+							}}
+						/>
+					</label>
+				)}
+			</section>
+		</>
+	);
+}
+
+/**
+ * Tout ce qui est stocké en base globale, en lecture seule (section 8) ; seules les versions et les DLC se cochent (`selection`),
+ * ce qui est déjà en base l'étant d'office. Un DLC peut aussi être coché « comme jeu », pour l'ajouter ensuite comme jeu à part (section 5).
  */
 function GamePreview({
 	gameImport,
 	database,
-	choices,
 	selection,
-	isLoadingImages,
-	onChoicesChange,
 	onSelectionChange,
 }: {
 	gameImport: GameImport;
 	database: Database;
-	choices: GameChoices;
 	selection: ImportSelection;
-	isLoadingImages: boolean;
-	onChoicesChange: (choices: GameChoices) => void;
 	onSelectionChange: (selection: ImportSelection) => void;
 }) {
 	const {
@@ -653,25 +839,12 @@ function GamePreview({
 		versionPlatforms,
 		platforms,
 		dlcs,
-		series,
+		proposedSeries,
 		developer,
 		publisher,
-		imageIds,
 		warnings,
 	} = gameImport;
 	const originalVersion = versions.find(({ id }) => id === game.id);
-	const endingType = endingTypeDefinitions.find(
-		({ key }) => key === choices.endingType,
-	);
-	// La série proposée par IGDB est en tête de liste ; les autres séries de la base suivent, par nom
-	const storedSeries =
-		series === null ? null : findStoredSeries(database, series);
-	const otherSeries = database.series
-		.filter(({ id }) => id !== storedSeries?.id)
-		.toSorted((first, second) => first.name.localeCompare(second.name));
-	const seriesValue = formatSeriesValue(choices.series, series !== null);
-	const hasSeries =
-		seriesValue !== "none" && !(seriesValue === "original" && series === null);
 	// L'originale est toujours enregistrée ; une version ou un DLC déjà en base reste coché
 	function isVersionLocked(versionId: number): boolean {
 		return (
@@ -705,7 +878,7 @@ function GamePreview({
 						<>
 							{" · "}
 							<a
-								href={originalVersion.url}
+								href={originalVersion.igdbUrl}
 								target="_blank"
 								rel="noreferrer"
 							>
@@ -716,154 +889,9 @@ function GamePreview({
 				</p>
 			</section>
 
-			<section>
-				<h3>Miniature</h3>
-				{isLoadingImages && <p>⏳ Chargement des images IGDB…</p>}
-				{!isLoadingImages && imageIds.length === 0 && (
-					<p>Aucune image sur IGDB</p>
-				)}
-				{!isLoadingImages && imageIds.length > 0 && (
-					<div className={styles.imageChoices}>
-						{imageIds.map((imageId) => (
-							<button
-								key={imageId}
-								type="button"
-								className={
-									imageId === choices.imageId
-										? styles.selectedImageChoice
-										: styles.imageChoice
-								}
-								aria-pressed={imageId === choices.imageId}
-								onClick={() => onChoicesChange({ ...choices, imageId })}
-							>
-								<Thumbnail imageId={imageId} />
-							</button>
-						))}
-					</div>
-				)}
-			</section>
-
-			<section className={styles.choiceRow}>
-				<label>
-					Type de fin
-					<select
-						value={choices.endingType}
-						onChange={(event) =>
-							onChoicesChange({
-								...choices,
-								endingType:
-									endingTypeDefinitions.find(
-										({ key }) => key === event.target.value,
-									)?.key ?? choices.endingType,
-							})
-						}
-					>
-						{endingTypeDefinitions.map(({ key, label }) => (
-							<option
-								key={key}
-								value={key}
-							>
-								{label}
-							</option>
-						))}
-					</select>
-				</label>
-				<span className={styles.hint}>{endingType?.meaning}</span>
-			</section>
-
-			<section className={styles.choiceRow}>
-				<label>
-					Série
-					<select
-						value={seriesValue}
-						onChange={(event) =>
-							onChoicesChange({
-								...choices,
-								series: parseSeriesValue(event.target.value),
-							})
-						}
-					>
-						<option value="original">
-							{series === null
-								? "Aucune (IGDB n’en propose pas)"
-								: `${series.name} (IGDB)`}
-						</option>
-						{series !== null && <option value="none">Aucune</option>}
-						{otherSeries.map(({ id, name }) => (
-							<option
-								key={id}
-								value={`stored-${id}`}
-							>
-								{name}
-							</option>
-						))}
-						<option value="new">➕ Nouvelle série…</option>
-					</select>
-				</label>
-				{choices.series.kind === "new" && (
-					<label>
-						Nom de la nouvelle série
-						<input
-							type="text"
-							value={choices.series.name}
-							// eslint-disable-next-line jsx-a11y/no-autofocus -- le champ apparaît au choix de « Nouvelle série »
-							autoFocus
-							onChange={(event) =>
-								onChoicesChange({
-									...choices,
-									series: { kind: "new", name: event.target.value },
-								})
-							}
-						/>
-					</label>
-				)}
-				{seriesValue !== "original" && (
-					<button
-						type="button"
-						className={styles.iconButton}
-						title={`Revenir à la série proposée par IGDB : ${series?.name ?? "aucune"}`}
-						onClick={() =>
-							onChoicesChange({ ...choices, series: { kind: "original" } })
-						}
-					>
-						↩️ Série IGDB
-					</button>
-				)}
-				{hasSeries && (
-					<label>
-						N° dans la série
-						<input
-							type="number"
-							min={0}
-							step="any"
-							defaultValue={choices.seriesNumber ?? ""}
-							onChange={(event) => {
-								if (event.target.validity.valid) {
-									onChoicesChange({
-										...choices,
-										seriesNumber:
-											event.target.value === ""
-												? null
-												: Number(event.target.value),
-									});
-								}
-							}}
-							onBlur={(event) => {
-								// Une valeur refusée (négative) remet le champ au dernier numéro accepté
-								const input = event.currentTarget;
-								if (!input.validity.valid) {
-									input.value =
-										choices.seriesNumber === null
-											? ""
-											: String(choices.seriesNumber);
-								}
-							}}
-						/>
-					</label>
-				)}
-			</section>
-
 			<dl className={styles.facts}>
+				<dt>Série proposée</dt>
+				<dd>{proposedSeries?.name ?? "—"}</dd>
 				<dt>Développeur</dt>
 				<dd>
 					<CompanyLabel company={developer} />
@@ -961,12 +989,12 @@ function GamePreview({
 									>
 										<input
 											type="checkbox"
-											checked={selection.dlcGameIds.includes(id)}
+											checked={selection.dlcAsGameIds.includes(id)}
 											disabled={isGameStored}
 											onChange={() =>
 												onSelectionChange({
 													...selection,
-													dlcGameIds: toggleId(selection.dlcGameIds, id),
+													dlcAsGameIds: toggleId(selection.dlcAsGameIds, id),
 												})
 											}
 										/>
@@ -982,10 +1010,10 @@ function GamePreview({
 			{warnings.length > 0 && (
 				<section className={styles.warnings}>
 					<h3>⚠️ Données IGDB hors modèle ({warnings.length})</h3>
-					{warnings.map(({ message, igdbData }) => (
-						<details key={igdbData}>
+					{warnings.map(({ message, entryJson }) => (
+						<details key={entryJson}>
 							<summary>{message}</summary>
-							<pre>{igdbData}</pre>
+							<pre>{entryJson}</pre>
 						</details>
 					))}
 				</section>
@@ -994,7 +1022,7 @@ function GamePreview({
 	);
 }
 
-function DialogActions({
+function ModalActions({
 	validateLabel = "Valider",
 	cancelLabel = "Annuler",
 	canValidate,
@@ -1028,7 +1056,7 @@ function DialogActions({
 	);
 }
 
-function AddGameDialog({
+function AddGameModal({
 	modal,
 	database,
 	error,
@@ -1046,13 +1074,13 @@ function AddGameDialog({
 	const { gameImport } = modal;
 
 	return (
-		<Dialog
+		<ModalFrame
 			title="Ajouter un jeu"
 			actions={
 				<>
 					<label
 						className={styles.actionsOption}
-						title="Après « Valider », ouvre l’ajout d’une variante : version, plateforme et tes données"
+						title="Après « Valider », ouvre l’ajout au backlog : personnalisation, version jouée, plateforme et tes données"
 					>
 						<input
 							type="checkbox"
@@ -1066,10 +1094,8 @@ function AddGameDialog({
 						/>
 						Ajouter à mon backlog
 					</label>
-					<DialogActions
-						canValidate={
-							gameImport !== null && isSeriesChoiceValid(modal.choices.series)
-						}
+					<ModalActions
+						canValidate={gameImport !== null}
 						onCancel={onCancel}
 						onValidate={onValidate}
 					/>
@@ -1085,31 +1111,28 @@ function AddGameDialog({
 					{database.games.some(({ id }) => id === gameImport.game.id) && (
 						<p className={styles.notice}>
 							ℹ️ Ce jeu est déjà en base : seules les fiches manquantes
-							s’ajouteront, ses choix actuels sont conservés.
+							s’ajouteront.
 						</p>
 					)}
 					<GamePreview
 						gameImport={gameImport}
 						database={database}
-						choices={modal.choices}
 						selection={modal.selection}
-						isLoadingImages={false}
-						onChoicesChange={(choices) => onModalChange({ ...modal, choices })}
 						onSelectionChange={(selection) =>
 							onModalChange({ ...modal, selection })
 						}
 					/>
 				</>
 			)}
-		</Dialog>
+		</ModalFrame>
 	);
 }
 
 /**
  * « Modifier le jeu » (section 8) : la même modale, données de la base en lecture seule.
- * IGDB est relu à l'ouverture : ses images, et ses versions et DLC absents de la base, à cocher pour les ajouter.
+ * IGDB est relu à l'ouverture : ses versions et DLC absents de la base, à cocher pour les ajouter.
  */
-function EditGameDialog({
+function EditGameModal({
 	modal,
 	database,
 	error,
@@ -1125,19 +1148,17 @@ function EditGameDialog({
 	onValidate: () => void;
 }) {
 	const game = findById(database.games, modal.gameId);
-	const isLoadingIgdb = modal.igdbImport === null && error === null;
+	const isLoadingIgdb = modal.gameImport === null && error === null;
 
 	return (
-		<Dialog
+		<ModalFrame
 			title="Modifier le jeu"
 			actions={
-				// Sans rien de changé, ou sans nom pour une nouvelle série, « Valider » reste inactif ;
-				// un DLC coché « comme jeu » compte comme un changement
-				<DialogActions
+				// Sans rien de coché en plus, « Valider » reste inactif ; un DLC coché « comme jeu » compte comme un changement
+				<ModalActions
 					canValidate={
-						isSeriesChoiceValid(modal.choices.series) &&
-						(hasGameEditChanges(database, modal) ||
-							modal.selection.dlcGameIds.length > 0)
+						hasGameEditChanges(database, modal) ||
+						modal.selection.dlcAsGameIds.length > 0
 					}
 					onCancel={onCancel}
 					onValidate={onValidate}
@@ -1148,37 +1169,86 @@ function EditGameDialog({
 				<p>Jeu introuvable en base.</p>
 			) : (
 				<>
-					{modal.choices.endingType !== game.endingType && (
-						<p className={styles.notice}>
-							ℹ️ Changer le type de fin convertit les statuts devenus
-							incompatibles : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé.
-						</p>
-					)}
 					{error !== null && <p className={styles.notice}>⚠️ {error}</p>}
 					{isLoadingIgdb && (
 						<p className={styles.notice}>
-							⏳ Chargement des versions, DLC et images IGDB absents de la base…
+							⏳ Chargement des versions et DLC IGDB absents de la base…
 						</p>
 					)}
 					<GamePreview
-						gameImport={mapEditedGameImport(database, game, modal.igdbImport)}
+						gameImport={mapEditGameImport(database, game, modal.gameImport)}
 						database={database}
-						choices={modal.choices}
 						selection={modal.selection}
-						isLoadingImages={isLoadingIgdb}
-						onChoicesChange={(choices) => onModalChange({ ...modal, choices })}
 						onSelectionChange={(selection) =>
 							onModalChange({ ...modal, selection })
 						}
 					/>
 				</>
 			)}
-		</Dialog>
+		</ModalFrame>
+	);
+}
+
+/** « Personnaliser » (section 8) : miniature, type de fin, série et numéro d'un jeu du backlog ; IGDB est relu à l'ouverture pour les images */
+function CustomizeGameModal({
+	modal,
+	database,
+	error,
+	onModalChange,
+	onCancel,
+	onValidate,
+}: {
+	modal: Extract<Modal, { kind: "customizeGame" }>;
+	database: Database;
+	error: string | null;
+	onModalChange: (modal: Extract<Modal, { kind: "customizeGame" }>) => void;
+	onCancel: () => void;
+	onValidate: () => void;
+}) {
+	const game = findById(database.games, modal.gameId);
+	const userGame = findUserGame(database, modal.gameId);
+
+	return (
+		<ModalFrame
+			title={`Personnaliser : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
+			actions={
+				// Sans rien de changé, ou sans nom pour une nouvelle série, « Valider » reste inactif
+				<ModalActions
+					canValidate={
+						isSeriesChoiceValid(modal.draft.series) &&
+						hasUserGameChanges(database, modal.gameId, modal.draft)
+					}
+					onCancel={onCancel}
+					onValidate={onValidate}
+				/>
+			}
+		>
+			{game === null || userGame === null ? (
+				<p>Jeu introuvable dans le backlog.</p>
+			) : (
+				<>
+					{modal.draft.endingType !== userGame.endingType && (
+						<p className={styles.notice}>
+							ℹ️ Changer le type de fin convertit les statuts devenus
+							incompatibles : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé.
+						</p>
+					)}
+					<UserGameFields
+						draft={modal.draft}
+						proposedSeries={findById(database.series, game.proposedSeriesId)}
+						database={database}
+						imageIds={modal.imageIds}
+						imageError={error}
+						onChange={(draft) => onModalChange({ ...modal, draft })}
+					/>
+				</>
+			)}
+		</ModalFrame>
 	);
 }
 
 /** « Rechercher d'autres DLC » (section 9) : tous les DLC IGDB du jeu ; ceux déjà en base sont cochés d'office, les autres s'ajoutent au jeu */
-function AddDlcsDialog({
+function AddDlcsModal({
 	modal,
 	database,
 	error,
@@ -1196,10 +1266,10 @@ function AddDlcsDialog({
 	const game = findById(database.games, modal.gameId);
 
 	return (
-		<Dialog
+		<ModalFrame
 			title={`Autres DLC : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
 			actions={
-				<DialogActions
+				<ModalActions
 					canValidate={modal.dlcIds.length > 0}
 					onCancel={onCancel}
 					onValidate={onValidate}
@@ -1214,7 +1284,7 @@ function AddDlcsDialog({
 				<>
 					<p className={styles.notice}>
 						ℹ️ Les DLC cochés rejoignent le jeu : ils s’ajoutent à la liste des
-						DLC de toutes ses variantes.
+						DLC de toutes ses versions jouées.
 					</p>
 					<ul className={styles.checkList}>
 						{modal.dlcs.map(({ id, name }) => {
@@ -1241,22 +1311,22 @@ function AddDlcsDialog({
 					</ul>
 				</>
 			)}
-		</Dialog>
+		</ModalFrame>
 	);
 }
 
 /* eslint-disable jsx-a11y/label-has-associated-control -- les champs maison (DateField, NumberField…) rendent leur <input> dans le <label> */
-/** Données du joueur de la nouvelle variante, saisies comme dans le tableau ; les règles du statut s'appliquent à « Valider » (section 6) */
-function VariantDraftFields({
+/** Données du joueur de la nouvelle version jouée, saisies comme dans le tableau ; les règles du statut s'appliquent à « Valider » (section 6) */
+function UserVersionDraftFields({
 	draft,
 	endingType,
 	dlcs,
 	onChange,
 }: {
-	draft: VariantDraft;
+	draft: UserVersionDraft;
 	endingType: EndingType;
 	dlcs: Dlc[];
-	onChange: (draft: VariantDraft) => void;
+	onChange: (draft: UserVersionDraft) => void;
 }) {
 	return (
 		<>
@@ -1266,7 +1336,7 @@ function VariantDraftFields({
 					<select
 						value={draft.status}
 						onChange={(event) => {
-							const status = variantStatusDefinitions.find(
+							const status = statusDefinitions.find(
 								({ key }) => key === event.target.value,
 							)?.key;
 							if (status !== undefined) {
@@ -1275,7 +1345,7 @@ function VariantDraftFields({
 						}}
 					>
 						{/* Liste filtrée par type de fin (section 6) */}
-						{variantStatusDefinitions
+						{statusDefinitions
 							.filter(({ key }) => isStatusAllowed(key, endingType))
 							.map(({ key, label }) => (
 								<option
@@ -1327,26 +1397,26 @@ function VariantDraftFields({
 				<label>
 					<input
 						type="checkbox"
-						checked={draft.playSoon}
-						onChange={() => onChange({ ...draft, playSoon: !draft.playSoon })}
+						checked={draft.isUpNext}
+						onChange={() => onChange({ ...draft, isUpNext: !draft.isUpNext })}
 					/>
 					À jouer bientôt
 				</label>
 				<label>
 					<input
 						type="checkbox"
-						checked={draft.owned}
-						onChange={() => onChange({ ...draft, owned: !draft.owned })}
+						checked={draft.isOwned}
+						onChange={() => onChange({ ...draft, isOwned: !draft.isOwned })}
 					/>
 					Possédé
 				</label>
 			</div>
 			<div className={styles.choiceRow}>
 				<label>
-					Temps réel
+					Temps relevé
 					<DurationField
 						minutes={draft.trackedPlayTimeMinutes}
-						label="Temps réel"
+						label="Temps relevé"
 						onCommit={(minutes) =>
 							onChange({ ...draft, trackedPlayTimeMinutes: minutes })
 						}
@@ -1416,102 +1486,152 @@ function VariantDraftFields({
 
 /* eslint-enable jsx-a11y/label-has-associated-control */
 
-/** « Ajouter une variante » (section 8) : version, plateforme, puis les données du joueur, toutes optionnelles */
-function AddVariantDialog({
+/**
+ * Ajout au backlog (section 8) : la personnalisation si le jeu n'y est pas encore, puis version, plateforme et données du joueur,
+ * toutes optionnelles. Pour un jeu déjà dans le backlog, « Ajouter une version jouée ».
+ */
+function AddUserVersionModal({
 	modal,
 	database,
+	error,
 	onModalChange,
 	onCancel,
 	onValidate,
 }: {
-	modal: Extract<Modal, { kind: "addVariant" }>;
+	modal: Extract<Modal, { kind: "addUserVersion" }>;
 	database: Database;
-	onModalChange: (modal: Extract<Modal, { kind: "addVariant" }>) => void;
+	error: string | null;
+	onModalChange: (modal: Extract<Modal, { kind: "addUserVersion" }>) => void;
 	onCancel: () => void;
 	onValidate: () => void;
 }) {
 	const game = findById(database.games, modal.gameId);
-	const { versionId, platformId } = modal.variantChoice;
-	const isInBacklog = getGameVariantIds(database, modal.gameId).length > 0;
+	const { draft, userGameDraft } = modal;
+	const { versionId, platformId } = draft;
+	const endingType =
+		userGameDraft?.endingType ??
+		findUserGame(database, modal.gameId)?.endingType ??
+		"story";
 	const canValidate =
 		versionId !== null &&
 		platformId !== null &&
-		!database.variants.some(
-			(variant) =>
-				variant.versionId === versionId && variant.platformId === platformId,
-		);
+		!database.userVersions.some(
+			(userVersion) =>
+				userVersion.versionId === versionId &&
+				userVersion.platformId === platformId,
+		) &&
+		(userGameDraft === null || isSeriesChoiceValid(userGameDraft.series));
+	const gameName =
+		game === null ? "jeu introuvable" : (game.frenchName ?? game.name);
 
 	return (
-		<Dialog
-			title={`Ajouter une variante : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
+		<ModalFrame
+			title={
+				userGameDraft === null
+					? `Ajouter une version jouée : ${gameName}`
+					: `Ajouter au backlog : ${gameName}`
+			}
 			actions={
-				<DialogActions
+				<ModalActions
 					canValidate={canValidate}
 					onCancel={onCancel}
 					onValidate={onValidate}
 				/>
 			}
 		>
+			{game !== null && userGameDraft !== null && (
+				<section className={styles.backlogOption}>
+					<h3>Personnalisation</h3>
+					<UserGameFields
+						draft={userGameDraft}
+						proposedSeries={findById(database.series, game.proposedSeriesId)}
+						database={database}
+						imageIds={modal.imageIds}
+						imageError={error}
+						onChange={(nextUserGameDraft) =>
+							onModalChange({
+								...modal,
+								userGameDraft: nextUserGameDraft,
+								// Le statut pré-rempli suit le type de fin (section 6)
+								draft: {
+									...draft,
+									status: convertStatus(
+										draft.status,
+										nextUserGameDraft.endingType,
+									),
+								},
+							})
+						}
+					/>
+				</section>
+			)}
 			<p className={styles.notice}>
 				ℹ️ Choisis la version jouée, puis la plateforme.
-				{!isInBacklog && " Annuler laisse le jeu en base, hors du backlog."}
+				{userGameDraft !== null &&
+					" Annuler laisse le jeu en base, hors du backlog."}
 			</p>
-			<VariantChoiceFields
+			<VersionPlatformFields
 				gameName={game?.name ?? ""}
 				versions={database.versions.filter(
 					({ gameId }) => gameId === modal.gameId,
 				)}
 				versionPlatforms={database.versionPlatforms}
 				platforms={database.platforms}
-				variants={database.variants}
-				variantChoice={modal.variantChoice}
-				onChange={(variantChoice) => onModalChange({ ...modal, variantChoice })}
+				userVersions={database.userVersions}
+				draft={draft}
+				onChange={(nextDraft) => onModalChange({ ...modal, draft: nextDraft })}
 			/>
 			{game !== null && (
 				<section className={styles.backlogOption}>
 					<h3>Mes données (optionnel)</h3>
-					<VariantDraftFields
-						draft={modal.draft}
-						endingType={game.endingType}
+					<UserVersionDraftFields
+						draft={draft}
+						endingType={endingType}
 						dlcs={database.dlcs.filter(({ gameId }) => gameId === game.id)}
-						onChange={(draft) => onModalChange({ ...modal, draft })}
+						onChange={(nextDraft) =>
+							onModalChange({ ...modal, draft: nextDraft })
+						}
 					/>
 				</section>
 			)}
-		</Dialog>
+		</ModalFrame>
 	);
 }
 
-/** Proposée au passage d'une variante au rang 5 ou plus sans date de fin (section 6) */
-function FinishDateDialog({
+/** Proposée au passage d'une version jouée au rang 5 ou plus sans date de fin (section 6) */
+function FinishDateModal({
 	modal,
 	database,
 	onModalChange,
 	onCancel,
 	onValidate,
 }: {
-	modal: Extract<Modal, { kind: "finishDate" }>;
+	modal: Extract<Modal, { kind: "setFinishDate" }>;
 	database: Database;
-	onModalChange: (modal: Extract<Modal, { kind: "finishDate" }>) => void;
+	onModalChange: (modal: Extract<Modal, { kind: "setFinishDate" }>) => void;
 	onCancel: () => void;
 	onValidate: () => void;
 }) {
-	const variant = findById(database.variants, modal.variantId);
+	const userVersion = findById(database.userVersions, modal.userVersionId);
 	const version =
-		variant === null ? null : findById(database.versions, variant.versionId);
+		userVersion === null
+			? null
+			: findById(database.versions, userVersion.versionId);
 	const game =
 		version === null ? null : findById(database.games, version.gameId);
 	const platform =
-		variant === null ? null : findById(database.platforms, variant.platformId);
+		userVersion === null
+			? null
+			: findById(database.platforms, userVersion.platformId);
 
 	return (
-		<Dialog
+		<ModalFrame
 			title="Date de fin"
 			isCompact
 			actions={
-				<DialogActions
+				<ModalActions
 					cancelLabel="Plus tard"
-					canValidate={variant !== null}
+					canValidate={userVersion !== null}
 					onCancel={onCancel}
 					onValidate={onValidate}
 				/>
@@ -1519,8 +1639,8 @@ function FinishDateDialog({
 		>
 			<p>
 				🏁 {game === null ? "Ce jeu" : (game.frenchName ?? game.name)}
-				{platform === null ? "" : ` sur ${platform.name}`} : quand l’as-tu fini
-				pour la première fois ?
+				{platform === null ? "" : ` sur ${platform.shortName}`} : quand l’as-tu
+				fini pour la première fois ?
 			</p>
 			<div className={styles.choiceRow}>
 				<label>
@@ -1537,7 +1657,7 @@ function FinishDateDialog({
 					/>
 				</label>
 			</div>
-		</Dialog>
+		</ModalFrame>
 	);
 }
 
@@ -1548,7 +1668,7 @@ const columnHelp: Partial<Record<ColumnKey, string>> = {
 	endingType: endingTypeDefinitions
 		.map(({ label, meaning }) => `${label} : ${meaning}`)
 		.join("\n"),
-	status: variantStatusDefinitions
+	status: statusDefinitions
 		.map(({ rank, label, meaning }) => `${rank ?? "–"} · ${label} : ${meaning}`)
 		.join("\n"),
 };
@@ -1558,7 +1678,7 @@ const gameInfoRenderers: Partial<
 	Record<ColumnKey, (row: GameRow) => ReactNode>
 > = {
 	thumbnail: (row) => <Thumbnail imageId={row.imageId} />,
-	// Nom VF, nom VO en dessous s'il diffère ; ligne à variante unique : titre de sa version
+	// Nom VF, nom VO en dessous s'il diffère ; ligne à version jouée unique : titre de sa version
 	name: (row) => (
 		<span className={styles.nameCell}>
 			<strong>{row.frenchName ?? row.name}</strong>
@@ -1582,10 +1702,10 @@ const gameInfoRenderers: Partial<
 };
 
 /** Colonnes propres à la version de la sous-ligne ; les colonnes du jeu y restent vides */
-const variantInfoRenderers: Partial<
-	Record<ColumnKey, (row: VariantRow) => ReactNode>
+const userVersionInfoRenderers: Partial<
+	Record<ColumnKey, (row: UserVersionRow) => ReactNode>
 > = {
-	thumbnail: (row) => <Thumbnail imageId={row.imageId} />,
+	thumbnail: (row) => <Thumbnail imageId={row.coverImageId} />,
 	name: (row) => (
 		<span className={styles.versionTitle}>
 			{row.versionTitle ?? "Version originale"}
@@ -1651,7 +1771,7 @@ function ColumnHeader({
  * En mode édition, elle mène aussi à « Rechercher d'autres DLC », même pour un jeu sans DLC (« ➕ »).
  */
 function DlcCell({
-	variant,
+	userVersion,
 	gameId,
 	label,
 	database,
@@ -1659,7 +1779,7 @@ function DlcCell({
 	popover,
 	handlers,
 }: {
-	variant: Variant;
+	userVersion: UserVersion;
 	gameId: number;
 	label: string;
 	database: Database;
@@ -1667,7 +1787,8 @@ function DlcCell({
 	popover: Popover | null;
 	handlers: TableHandlers;
 }) {
-	const isOpen = popover?.kind === "dlc" && popover.variantId === variant.id;
+	const isOpen =
+		popover?.kind === "dlc" && popover.userVersionId === userVersion.id;
 	const dlcs = database.dlcs.filter((dlc) => dlc.gameId === gameId);
 
 	return (
@@ -1681,7 +1802,7 @@ function DlcCell({
 				aria-expanded={isOpen}
 				onClick={() =>
 					handlers.setPopover(
-						isOpen ? null : { kind: "dlc", variantId: variant.id },
+						isOpen ? null : { kind: "dlc", userVersionId: userVersion.id },
 					)
 				}
 			>
@@ -1698,14 +1819,14 @@ function DlcCell({
 								<label>
 									<input
 										type="checkbox"
-										checked={database.variantDlcs.some(
-											(variantDlc) =>
-												variantDlc.variantId === variant.id &&
-												variantDlc.dlcId === dlc.id,
+										checked={database.doneDlcs.some(
+											(doneDlc) =>
+												doneDlc.userVersionId === userVersion.id &&
+												doneDlc.dlcId === dlc.id,
 										)}
 										disabled={!isEditMode}
 										onChange={() =>
-											handlers.toggleVariantDlc(variant.id, dlc.id)
+											handlers.toggleDoneDlc(userVersion.id, dlc.id)
 										}
 									/>
 									{dlc.name}
@@ -1731,14 +1852,14 @@ function DlcCell({
 /** Menu « 3 points verticaux » (section 9) : ouvrir sur IGDB et logger restent disponibles en lecture seule */
 function ActionsCell({
 	gameId,
-	variantId,
+	userVersionId,
 	igdbUrl,
 	isEditMode,
 	popover,
 	handlers,
 }: {
 	gameId: number;
-	variantId: number | null;
+	userVersionId: number | null;
 	igdbUrl: string;
 	isEditMode: boolean;
 	popover: Popover | null;
@@ -1747,16 +1868,22 @@ function ActionsCell({
 	const isOpen =
 		popover?.kind === "actionsMenu" &&
 		popover.gameId === gameId &&
-		popover.variantId === variantId;
-	// Ligne du jeu, ou à variante unique : le menu du jeu ; sous-ligne : le menu de la variante
+		popover.userVersionId === userVersionId;
+	// Ligne du jeu, ou à version jouée unique : le menu du jeu ; sous-ligne : le menu de la version jouée
 	const entries: {
 		label: string;
 		href: string | null;
 		isEditOnly: boolean;
 		onSelect: () => void;
 	}[] =
-		variantId === null
+		userVersionId === null
 			? [
+					{
+						label: "🎨 Personnaliser",
+						href: null,
+						isEditOnly: true,
+						onSelect: () => handlers.openCustomizeGame(gameId),
+					},
 					{
 						label: "✏️ Modifier le jeu",
 						href: null,
@@ -1764,10 +1891,10 @@ function ActionsCell({
 						onSelect: () => handlers.openEditGame(gameId),
 					},
 					{
-						label: "➕ Ajouter une variante",
+						label: "➕ Ajouter une version jouée",
 						href: null,
 						isEditOnly: true,
-						onSelect: () => handlers.openAddVariant(gameId),
+						onSelect: () => handlers.openAddUserVersion(gameId),
 					},
 					{
 						label: "🔗 Ouvrir sur IGDB",
@@ -1785,7 +1912,7 @@ function ActionsCell({
 						label: "🪵 Logger cette ligne",
 						href: null,
 						isEditOnly: false,
-						onSelect: () => handlers.logLine(gameId, null),
+						onSelect: () => handlers.logRow(gameId, null),
 					},
 				]
 			: [
@@ -1796,16 +1923,16 @@ function ActionsCell({
 						onSelect: () => undefined,
 					},
 					{
-						label: "🗑️ Retirer la variante",
+						label: "🗑️ Retirer la version jouée",
 						href: null,
 						isEditOnly: true,
-						onSelect: () => handlers.removeVariant(variantId),
+						onSelect: () => handlers.removeUserVersion(userVersionId),
 					},
 					{
 						label: "🪵 Logger cette ligne",
 						href: null,
 						isEditOnly: false,
-						onSelect: () => handlers.logLine(gameId, variantId),
+						onSelect: () => handlers.logRow(gameId, userVersionId),
 					},
 				];
 
@@ -1822,7 +1949,7 @@ function ActionsCell({
 				aria-expanded={isOpen}
 				onClick={() =>
 					handlers.setPopover(
-						isOpen ? null : { kind: "actionsMenu", gameId, variantId },
+						isOpen ? null : { kind: "actionsMenu", gameId, userVersionId },
 					)
 				}
 			>
@@ -1880,13 +2007,13 @@ function renderAmount(amount: number, text: string): ReactNode {
 }
 
 /**
- * Colonnes des données de l'utilisateur (section 7). Ligne du jeu à plusieurs variantes : agrégats en lecture seule.
- * Sous-ligne ou ligne à variante unique : les valeurs de la variante, modifiables en mode édition.
+ * Colonnes des données de l'utilisateur (section 7). Ligne du jeu à plusieurs versions jouées : agrégats en lecture seule.
+ * Sous-ligne ou ligne à version jouée unique : les valeurs de la version jouée, modifiables en mode édition.
  */
-function VariantDataCell({
+function UserVersionDataCell({
 	column,
 	values,
-	variant,
+	userVersion,
 	gameId,
 	endingType,
 	database,
@@ -1895,8 +2022,8 @@ function VariantDataCell({
 	handlers,
 }: {
 	column: ColumnKey;
-	values: GameRow | VariantRow;
-	variant: Variant | null;
+	values: GameRow | UserVersionRow;
+	userVersion: UserVersion | null;
 	gameId: number;
 	endingType: EndingType;
 	database: Database;
@@ -1904,22 +2031,22 @@ function VariantDataCell({
 	popover: Popover | null;
 	handlers: TableHandlers;
 }) {
-	const editableVariant = isEditMode ? variant : null;
+	const editableUserVersion = isEditMode ? userVersion : null;
 
 	function renderCheckbox(
 		checked: boolean,
 		label: string,
-		toggle: (current: Variant) => Variant,
+		toggle: (current: UserVersion) => UserVersion,
 	) {
 		return (
 			<input
 				type="checkbox"
 				checked={checked}
-				disabled={editableVariant === null}
+				disabled={editableUserVersion === null}
 				aria-label={label}
 				onChange={() => {
-					if (editableVariant !== null) {
-						handlers.updateVariant(editableVariant.id, toggle);
+					if (editableUserVersion !== null) {
+						handlers.updateUserVersion(editableUserVersion.id, toggle);
 					}
 				}}
 			/>
@@ -1928,28 +2055,28 @@ function VariantDataCell({
 
 	switch (column) {
 		case "status": {
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return values.status === null ? null : getStatusLabel(values.status);
 			}
 			return (
 				<select
 					className={styles.cellField}
-					value={editableVariant.status}
+					value={editableUserVersion.status}
 					aria-label="Statut"
 					onChange={(event) => {
-						const status = variantStatusDefinitions.find(
+						const status = statusDefinitions.find(
 							({ key }) => key === event.target.value,
 						)?.key;
 						if (status !== undefined) {
-							handlers.changeVariantStatus(editableVariant.id, status);
+							handlers.changeUserVersionStatus(editableUserVersion.id, status);
 						}
 					}}
 				>
 					{/* Liste filtrée par type de fin (section 6) */}
-					{variantStatusDefinitions
+					{statusDefinitions
 						.filter(
 							({ key }) =>
-								key === editableVariant.status ||
+								key === editableUserVersion.status ||
 								isStatusAllowed(key, endingType),
 						)
 						.map(({ key, label }) => (
@@ -1963,28 +2090,28 @@ function VariantDataCell({
 				</select>
 			);
 		}
-		case "playSoon":
-			return renderCheckbox(values.playSoon, "À jouer bientôt", (current) => ({
+		case "upNext":
+			return renderCheckbox(values.isUpNext, "À jouer bientôt", (current) => ({
 				...current,
-				playSoon: !current.playSoon,
+				isUpNext: !current.isUpNext,
 			}));
 		case "owned":
-			return renderCheckbox(values.owned, "Possédé", (current) => ({
+			return renderCheckbox(values.isOwned, "Possédé", (current) => ({
 				...current,
-				owned: !current.owned,
+				isOwned: !current.isOwned,
 			}));
 		case "finishDate":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return values.finishDate === null
 					? null
 					: formatIsoDate(values.finishDate);
 			}
 			return (
 				<DateField
-					value={editableVariant.finishDate}
+					value={editableUserVersion.finishDate}
 					label="Date de fin"
 					onCommit={(finishDate) =>
-						handlers.updateVariant(editableVariant.id, (current) => ({
+						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
 							finishDate,
 						}))
@@ -1992,7 +2119,7 @@ function VariantDataCell({
 				/>
 			);
 		case "finishCount":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return renderAmount(
 					values.sureFinishCount + values.probableFinishCount,
 					formatFinishCount(values.sureFinishCount, values.probableFinishCount),
@@ -2001,13 +2128,13 @@ function VariantDataCell({
 			return (
 				<span className={styles.fieldGroup}>
 					<NumberField
-						value={editableVariant.sureFinishCount}
+						value={editableUserVersion.sureFinishCount}
 						min={0}
 						max={null}
 						isNullable={false}
 						label="Fois fini, sûr"
 						onCommit={(count) =>
-							handlers.updateVariant(editableVariant.id, (current) => ({
+							handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 								...current,
 								sureFinishCount: count ?? 0,
 							}))
@@ -2015,13 +2142,13 @@ function VariantDataCell({
 					/>
 					+
 					<NumberField
-						value={editableVariant.probableFinishCount}
+						value={editableUserVersion.probableFinishCount}
 						min={0}
 						max={null}
 						isNullable={false}
 						label="Fois fini, probable"
 						onCommit={(count) =>
-							handlers.updateVariant(editableVariant.id, (current) => ({
+							handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 								...current,
 								probableFinishCount: count ?? 0,
 							}))
@@ -2031,8 +2158,8 @@ function VariantDataCell({
 				</span>
 			);
 		case "dlc":
-			// La ligne d'un jeu à plusieurs variantes affiche « faits / total » en lecture seule
-			if (variant === null) {
+			// La ligne d'un jeu à plusieurs versions jouées affiche « faits / total » en lecture seule
+			if (userVersion === null) {
 				return values.dlcCount === 0
 					? null
 					: formatDlcProgress(values.doneDlcCount, values.dlcCount);
@@ -2043,7 +2170,7 @@ function VariantDataCell({
 			}
 			return (
 				<DlcCell
-					variant={variant}
+					userVersion={userVersion}
 					gameId={gameId}
 					label={
 						values.dlcCount === 0
@@ -2057,7 +2184,7 @@ function VariantDataCell({
 				/>
 			);
 		case "trackedPlayTime":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return renderAmount(
 					values.trackedPlayTimeMinutes,
 					formatDuration(values.trackedPlayTimeMinutes),
@@ -2065,10 +2192,10 @@ function VariantDataCell({
 			}
 			return (
 				<DurationField
-					minutes={editableVariant.trackedPlayTimeMinutes}
-					label="Temps réel"
+					minutes={editableUserVersion.trackedPlayTimeMinutes}
+					label="Temps relevé"
 					onCommit={(minutes) =>
-						handlers.updateVariant(editableVariant.id, (current) => ({
+						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
 							trackedPlayTimeMinutes: minutes,
 						}))
@@ -2076,7 +2203,7 @@ function VariantDataCell({
 				/>
 			);
 		case "estimatedPlayTime":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return renderAmount(
 					values.estimatedPlayTimeMinutes,
 					formatDuration(values.estimatedPlayTimeMinutes),
@@ -2084,10 +2211,10 @@ function VariantDataCell({
 			}
 			return (
 				<DurationField
-					minutes={editableVariant.estimatedPlayTimeMinutes}
+					minutes={editableUserVersion.estimatedPlayTimeMinutes}
 					label="Temps estimé"
 					onCommit={(minutes) =>
-						handlers.updateVariant(editableVariant.id, (current) => ({
+						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
 							estimatedPlayTimeMinutes: minutes,
 						}))
@@ -2100,18 +2227,18 @@ function VariantDataCell({
 				formatDuration(values.totalPlayTimeMinutes),
 			);
 		case "rating":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return values.rating === null ? null : `${values.rating}/20`;
 			}
 			return (
 				<NumberField
-					value={editableVariant.rating}
+					value={editableUserVersion.rating}
 					min={0}
 					max={20}
 					isNullable
 					label="Note sur 20"
 					onCommit={(rating) =>
-						handlers.updateVariant(editableVariant.id, (current) => ({
+						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
 							rating,
 						}))
@@ -2119,7 +2246,7 @@ function VariantDataCell({
 				/>
 			);
 		case "comment":
-			if (editableVariant === null) {
+			if (editableUserVersion === null) {
 				return values.comment === null ? null : (
 					<span
 						className={styles.comment}
@@ -2131,10 +2258,10 @@ function VariantDataCell({
 			}
 			return (
 				<TextField
-					value={editableVariant.comment}
+					value={editableUserVersion.comment}
 					label="Commentaire"
 					onCommit={(comment) =>
-						handlers.updateVariant(editableVariant.id, (current) => ({
+						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
 							comment,
 						}))
@@ -2146,7 +2273,7 @@ function VariantDataCell({
 	}
 }
 
-/** Ligne du jeu, puis ses sous-lignes de variantes si elle est dépliée */
+/** Ligne du jeu, puis ses sous-lignes de versions jouées si elle est dépliée */
 function GameRowGroup({
 	row,
 	columns,
@@ -2164,11 +2291,14 @@ function GameRowGroup({
 	popover: Popover | null;
 	handlers: TableHandlers;
 }) {
-	const isExpandable = row.variantRows.length > 1;
-	// Ligne à variante unique : ses données se modifient directement sur la ligne du jeu
-	const singleVariant = isExpandable
+	const isExpandable = row.userVersionRows.length > 1;
+	// Ligne à version jouée unique : ses données se modifient directement sur la ligne du jeu
+	const singleUserVersion = isExpandable
 		? null
-		: findById(database.variants, row.variantRows.at(0)?.variantId ?? null);
+		: findById(
+				database.userVersions,
+				row.userVersionRows.at(0)?.userVersionId ?? null,
+			);
 
 	function renderGameCell(column: ColumnKey): ReactNode {
 		const renderInfo = gameInfoRenderers[column];
@@ -2177,7 +2307,7 @@ function GameRowGroup({
 		}
 		// Un clic sur la série filtre le tableau sur ses jeux, aussi en lecture seule ; ✏️ : ce n'est pas celle d'IGDB
 		if (column === "series") {
-			const { series, originalSeries } = row;
+			const { series, proposedSeries } = row;
 			return series === null ? null : (
 				<>
 					<button
@@ -2188,10 +2318,10 @@ function GameRowGroup({
 					>
 						{series.name}
 					</button>
-					{series.id !== originalSeries?.id && (
+					{series.id !== proposedSeries?.id && (
 						<span
 							className={styles.help}
-							title={`Série modifiée ; IGDB propose : ${originalSeries?.name ?? "aucune"}`}
+							title={`Série modifiée ; IGDB propose : ${proposedSeries?.name ?? "aucune"}`}
 						>
 							{" "}
 							✏️
@@ -2204,7 +2334,7 @@ function GameRowGroup({
 			return (
 				<ActionsCell
 					gameId={row.gameId}
-					variantId={null}
+					userVersionId={null}
 					igdbUrl={row.igdbUrl}
 					isEditMode={isEditMode}
 					popover={popover}
@@ -2213,10 +2343,10 @@ function GameRowGroup({
 			);
 		}
 		return (
-			<VariantDataCell
+			<UserVersionDataCell
 				column={column}
 				values={row}
-				variant={singleVariant}
+				userVersion={singleUserVersion}
 				gameId={row.gameId}
 				endingType={row.endingType}
 				database={database}
@@ -2227,20 +2357,20 @@ function GameRowGroup({
 		);
 	}
 
-	function renderVariantCell(
+	function renderUserVersionCell(
 		column: ColumnKey,
-		variantRow: VariantRow,
+		userVersionRow: UserVersionRow,
 	): ReactNode {
-		const renderInfo = variantInfoRenderers[column];
+		const renderInfo = userVersionInfoRenderers[column];
 		if (renderInfo !== undefined) {
-			return renderInfo(variantRow);
+			return renderInfo(userVersionRow);
 		}
 		if (column === "actions") {
 			return (
 				<ActionsCell
 					gameId={row.gameId}
-					variantId={variantRow.variantId}
-					igdbUrl={variantRow.igdbUrl}
+					userVersionId={userVersionRow.userVersionId}
+					igdbUrl={userVersionRow.igdbUrl}
 					isEditMode={isEditMode}
 					popover={popover}
 					handlers={handlers}
@@ -2248,10 +2378,13 @@ function GameRowGroup({
 			);
 		}
 		return (
-			<VariantDataCell
+			<UserVersionDataCell
 				column={column}
-				values={variantRow}
-				variant={findById(database.variants, variantRow.variantId)}
+				values={userVersionRow}
+				userVersion={findById(
+					database.userVersions,
+					userVersionRow.userVersionId,
+				)}
 				gameId={row.gameId}
 				endingType={row.endingType}
 				database={database}
@@ -2264,7 +2397,7 @@ function GameRowGroup({
 
 	return (
 		<>
-			<tr className={row.playSoon ? styles.playSoonRow : styles.gameRow}>
+			<tr className={row.isUpNext ? styles.upNextRow : styles.gameRow}>
 				{/* Chevron et badge sur une ligne dépliable, espace vide sur une ligne simple */}
 				<td className={styles.expandCell}>
 					{isExpandable && (
@@ -2278,8 +2411,8 @@ function GameRowGroup({
 							>
 								{isExpanded ? "🔽" : "▶️"}
 							</button>
-							<span className={styles.variantBadge}>
-								{row.variantRows.length} variantes
+							<span className={styles.userVersionBadge}>
+								{row.userVersionRows.length} versions jouées
 							</span>
 						</>
 					)}
@@ -2290,14 +2423,16 @@ function GameRowGroup({
 			</tr>
 			{isExpandable &&
 				isExpanded &&
-				row.variantRows.map((variantRow) => (
+				row.userVersionRows.map((userVersionRow) => (
 					<tr
-						key={variantRow.variantId}
-						className={styles.variantRow}
+						key={userVersionRow.userVersionId}
+						className={styles.userVersionRow}
 					>
 						<td className={styles.expandCell} />
 						{columns.map((column) => (
-							<td key={column}>{renderVariantCell(column, variantRow)}</td>
+							<td key={column}>
+								{renderUserVersionCell(column, userVersionRow)}
+							</td>
 						))}
 					</tr>
 				))}
@@ -2614,7 +2749,7 @@ function BacklogTable({
 					<tr>
 						<th
 							className={styles.expandCell}
-							aria-label="Variantes"
+							aria-label="Versions jouées"
 						/>
 						{visibleColumns.map((column) => (
 							<ColumnHeader
@@ -2696,7 +2831,7 @@ function BacklogTable({
 }
 
 /** Visibilité et ordre des colonnes (section 9) : appliqués tout de suite, gardés dans le navigateur */
-function ColumnsDialog({
+function ColumnsModal({
 	columns,
 	onToggleVisibility,
 	onMove,
@@ -2708,7 +2843,7 @@ function ColumnsDialog({
 	onClose: () => void;
 }) {
 	return (
-		<Dialog
+		<ModalFrame
 			title="Colonnes"
 			isCompact
 			actions={
@@ -2767,7 +2902,7 @@ function ColumnsDialog({
 					);
 				})}
 			</ol>
-		</Dialog>
+		</ModalFrame>
 	);
 }
 
@@ -2821,8 +2956,8 @@ function DebugFooter({
 				{database.versions.length} · DLC : {database.dlcs.length}
 			</span>
 			<span>
-				Backlog — jeux : {countBacklogGames(database)} · variantes :{" "}
-				{database.variants.length}
+				Backlog — jeux : {database.userGames.length} · versions jouées :{" "}
+				{database.userVersions.length}
 			</span>
 			<span>
 				Historique d’annulation : {undoHistoryLength} · à rétablir :{" "}
@@ -2930,7 +3065,7 @@ export function Backlog() {
 	// Seule fonction qui modifie la base : chaque appel est une action, annulable avec Ctrl+Z (section 10)
 	function changeDatabase(change: (current: Database) => Database) {
 		const next = change(database);
-		// Rien n'a changé (ex. variante déjà présente) : pas d'action
+		// Rien n'a changé (ex. version jouée déjà présente) : pas d'action
 		if (next === database) {
 			return;
 		}
@@ -2984,7 +3119,7 @@ export function Backlog() {
 	}
 
 	/**
-	 * Un résultat déjà en base mène à l'ajout d'une variante, sans requête IGDB, sa version originale pré-sélectionnée
+	 * Un résultat déjà en base mène à l'ajout au backlog, sa version originale pré-sélectionnée
 	 * (un résultat est toujours un jeu original, section 8) ; sinon à la modale d'ajout.
 	 */
 	function selectSearchResult(result: SearchResult) {
@@ -3005,55 +3140,68 @@ export function Backlog() {
 	}
 
 	/**
-	 * Enregistre le jeu ; avec « Ajouter à mon backlog », ouvre ensuite l'ajout d'une variante, action distincte (section 8).
-	 * La version originale y est pré-sélectionnée si c'est la seule cochée. Les DLC cochés « comme jeu » suivent, dans l'ordre.
+	 * Enregistre le jeu ; avec « Ajouter à mon backlog », ouvre ensuite l'ajout au backlog, action distincte (section 8),
+	 * avec les images déjà lues sur IGDB. La version originale y est pré-sélectionnée si c'est la seule cochée.
+	 * Les DLC cochés « comme jeu » suivent, dans l'ordre.
 	 */
 	function validateAddGame(addGameModal: Extract<Modal, { kind: "addGame" }>) {
-		const { gameImport, choices, selection, isAddingToBacklog } = addGameModal;
+		const { gameImport, selection, isAddingToBacklog } = addGameModal;
 		if (gameImport === null) {
 			return;
 		}
 		const queuedGameIds = [
-			...getDlcGameQueue(gameImport.dlcs, selection),
+			...getDlcAsGameQueue(gameImport.dlcs, selection),
 			...addGameModal.queuedGameIds,
 		];
-		changeDatabase((current) =>
-			addGameImport(current, keepSelection(gameImport, selection), choices),
+		const nextDatabase = addGameImport(
+			database,
+			keepSelection(gameImport, selection),
 		);
+		changeDatabase(() => nextDatabase);
 		if (!isAddingToBacklog) {
 			openNextQueuedModal(queuedGameIds);
 			return;
 		}
-		setModal({
-			kind: "addVariant",
-			gameId: gameImport.game.id,
-			variantChoice: {
-				versionId:
-					selection.versionIds.length === 1 ? gameImport.game.id : null,
-				platformId: null,
-			},
-			draft: defaultVariantDraft,
-			queuedGameIds,
-		});
+		setModalError(null);
+		setModal(
+			getAddUserVersionModal(
+				nextDatabase,
+				gameImport.game.id,
+				selection.versionIds.length === 1 ? gameImport.game.id : null,
+				gameImport.imageIds,
+				queuedGameIds,
+			),
+		);
 	}
 
-	/** Comme un changement de statut dans le tableau : au rang 5 ou plus sans date de fin, la petite fenêtre la propose (section 6) */
-	function validateAddVariant(
-		addVariantModal: Extract<Modal, { kind: "addVariant" }>,
+	/**
+	 * La personnalisation si le jeu entre dans le backlog, puis la version jouée, en une seule action.
+	 * Comme un changement de statut dans le tableau : au rang 5 ou plus sans date de fin, la petite fenêtre la propose (section 6).
+	 */
+	function validateAddUserVersion(
+		addUserVersionModal: Extract<Modal, { kind: "addUserVersion" }>,
 	) {
-		const { variantChoice, draft, queuedGameIds } = addVariantModal;
-		const { versionId, platformId } = variantChoice;
+		const { gameId, draft, userGameDraft, queuedGameIds } = addUserVersionModal;
+		const { versionId, platformId } = draft;
 		if (versionId === null || platformId === null) {
 			return;
 		}
-		const variantId = getNextVariantId(database);
+		const userVersionId = getNextUserVersionId(database);
 		changeDatabase((current) =>
-			addVariant(current, versionId, platformId, draft),
+			addUserVersion(
+				userGameDraft === null
+					? current
+					: saveUserGame(current, gameId, userGameDraft),
+				versionId,
+				platformId,
+				draft,
+			),
 		);
+		setModalError(null);
 		if (isFinishedStatus(draft.status) && draft.finishDate === null) {
 			setModal({
-				kind: "finishDate",
-				variantId,
+				kind: "setFinishDate",
+				userVersionId,
 				finishDate: getTodayIsoDate(),
 				queuedGameIds,
 			});
@@ -3063,31 +3211,30 @@ export function Backlog() {
 	}
 
 	/**
-	 * Les trois choix, puis les versions et DLC cochés en plus, en une seule action ; les DLC cochés « comme jeu » suivent.
+	 * Les versions et DLC cochés en plus, en une seule action ; les DLC cochés « comme jeu » suivent.
 	 * Avec seulement des DLC « comme jeu » cochés, la base ne change pas : pas d'action vide.
 	 */
 	function validateEditGame(
 		editGameModal: Extract<Modal, { kind: "editGame" }>,
 	) {
-		const { gameId, choices, igdbImport, selection } = editGameModal;
-		if (hasGameEditChanges(database, editGameModal)) {
+		const { gameImport, selection } = editGameModal;
+		if (gameImport !== null && hasGameEditChanges(database, editGameModal)) {
 			changeDatabase((current) =>
-				updateGameChoices(
-					igdbImport === null
-						? current
-						: addGameImport(
-								current,
-								keepSelection(igdbImport, selection),
-								choices,
-							),
-					gameId,
-					choices,
-				),
+				addGameImport(current, keepSelection(gameImport, selection)),
 			);
 		}
 		openNextQueuedModal(
-			igdbImport === null ? [] : getDlcGameQueue(igdbImport.dlcs, selection),
+			gameImport === null ? [] : getDlcAsGameQueue(gameImport.dlcs, selection),
 		);
+	}
+
+	/** La personnalisation, puis la conversion des statuts que le nouveau type de fin rend incompatibles, en une seule action */
+	function validateCustomizeGame(
+		customizeGameModal: Extract<Modal, { kind: "customizeGame" }>,
+	) {
+		const { gameId, draft } = customizeGameModal;
+		changeDatabase((current) => saveUserGame(current, gameId, draft));
+		closeModal();
 	}
 
 	function validateAddDlcs(addDlcsModal: Extract<Modal, { kind: "addDlcs" }>) {
@@ -3102,12 +3249,12 @@ export function Backlog() {
 	}
 
 	function validateFinishDate(
-		finishDateModal: Extract<Modal, { kind: "finishDate" }>,
+		finishDateModal: Extract<Modal, { kind: "setFinishDate" }>,
 	) {
-		const { variantId, finishDate } = finishDateModal;
+		const { userVersionId, finishDate } = finishDateModal;
 		changeDatabase((current) =>
-			updateVariant(current, variantId, (variant) => ({
-				...variant,
+			updateUserVersion(current, userVersionId, (userVersion) => ({
+				...userVersion,
 				finishDate,
 			})),
 		);
@@ -3123,71 +3270,70 @@ export function Backlog() {
 	}
 
 	/** Au rang 5 ou plus sans date de fin, une petite fenêtre la propose, pré-remplie avec la date du jour (section 6) */
-	function changeVariantStatus(variantId: number, status: VariantStatus) {
-		const variant = findById(database.variants, variantId);
-		changeDatabase((current) => setVariantStatus(current, variantId, status));
+	function changeUserVersionStatus(userVersionId: number, status: Status) {
+		const userVersion = findById(database.userVersions, userVersionId);
+		changeDatabase((current) =>
+			setUserVersionStatus(current, userVersionId, status),
+		);
 		if (
-			variant !== null &&
+			userVersion !== null &&
 			isFinishedStatus(status) &&
-			variant.finishDate === null
+			userVersion.finishDate === null
 		) {
 			setModal({
-				kind: "finishDate",
-				variantId,
+				kind: "setFinishDate",
+				userVersionId,
 				finishDate: getTodayIsoDate(),
 				queuedGameIds: [],
 			});
 		}
 	}
 
-	function openEditGame(gameId: number) {
+	function openCustomizeGame(gameId: number) {
 		const game = findById(database.games, gameId);
-		if (game === null) {
+		const userGame = findUserGame(database, gameId);
+		if (game === null || userGame === null) {
 			return;
 		}
 		setModalError(null);
 		setModal({
-			kind: "editGame",
+			kind: "customizeGame",
 			gameId,
-			igdbImport: null,
-			selection: emptyImportSelection,
-			choices: {
-				imageId: game.imageId,
-				endingType: game.endingType,
-				series:
-					game.seriesId === game.originalSeriesId
-						? { kind: "original" }
-						: game.seriesId === null
-							? { kind: "none" }
-							: { kind: "stored", seriesId: game.seriesId },
-				seriesNumber: game.seriesNumber,
-			},
+			draft: getUserGameDraft(game, userGame),
+			imageIds: null,
 		});
 	}
 
-	function logLine(gameId: number, variantId: number | null) {
-		const line = getStoredLine(database, gameId, variantId);
+	function logRow(gameId: number, userVersionId: number | null) {
+		const rowData = getRowData(database, gameId, userVersionId);
 		// eslint-disable-next-line no-console -- « Logger cette ligne » (section 9)
-		console.log(`🪵 ${line.game?.name ?? `Jeu ${gameId}`}`, line);
+		console.log(`🪵 ${rowData.game?.name ?? `Jeu ${gameId}`}`, rowData);
 	}
 
 	const tableHandlers: TableHandlers = {
 		toggleExpanded,
 		setPopover,
-		updateVariant: (variantId, update) =>
-			changeDatabase((current) => updateVariant(current, variantId, update)),
-		changeVariantStatus,
-		toggleVariantDlc: (variantId, dlcId) =>
-			changeDatabase((current) => toggleVariantDlc(current, variantId, dlcId)),
-		openEditGame,
-		openAddVariant: (gameId) =>
+		updateUserVersion: (userVersionId, update) =>
+			changeDatabase((current) =>
+				updateUserVersion(current, userVersionId, update),
+			),
+		changeUserVersionStatus,
+		toggleDoneDlc: (userVersionId, dlcId) =>
+			changeDatabase((current) => toggleDoneDlc(current, userVersionId, dlcId)),
+		openCustomizeGame,
+		openEditGame: (gameId) => {
+			setModalError(null);
 			setModal({
-				kind: "addVariant",
+				kind: "editGame",
 				gameId,
-				variantChoice: { versionId: null, platformId: null },
-				draft: defaultVariantDraft,
-				queuedGameIds: [],
-			}),
+				gameImport: null,
+				selection: emptyImportSelection,
+			});
+		},
+		openAddUserVersion: (gameId) => {
+			setModalError(null);
+			setModal(getAddUserVersionModal(database, gameId, null, null, []));
+		},
 		openAddDlcs: (gameId) => {
 			setPopover(null);
 			setModalError(null);
@@ -3195,11 +3341,11 @@ export function Backlog() {
 		},
 		removeGameFromBacklog: (gameId) =>
 			changeDatabase((current) =>
-				removeVariants(current, getGameVariantIds(current, gameId)),
+				removeUserVersions(current, getGameUserVersionIds(current, gameId)),
 			),
-		removeVariant: (variantId) =>
-			changeDatabase((current) => removeVariants(current, [variantId])),
-		logLine,
+		removeUserVersion: (userVersionId) =>
+			changeDatabase((current) => removeUserVersions(current, [userVersionId])),
+		logRow,
 		filterOnSeries: (seriesName) =>
 			setFilters(
 				setColumnFilter(filters, "series", {
@@ -3302,7 +3448,7 @@ export function Backlog() {
 
 	// « Modifier le jeu » et « Rechercher d'autres DLC » : le jeu est relu sur IGDB à l'ouverture (sections 8 et 9)
 	const gameIdToReload =
-		(modal?.kind === "editGame" && modal.igdbImport === null) ||
+		(modal?.kind === "editGame" && modal.gameImport === null) ||
 		(modal?.kind === "addDlcs" && modal.dlcs === null)
 			? modal.gameId
 			: null;
@@ -3313,12 +3459,12 @@ export function Backlog() {
 		const controller = new AbortController();
 		fetchIgdbGameData(gameIdToReload, controller.signal)
 			.then((data) => mapGameImport(data))
-			.then((igdbImport) =>
+			.then((gameImport) =>
 				setModal((current) =>
 					receiveGameDlcs(
-						receiveEditGameImport(current, gameIdToReload, igdbImport),
+						receiveEditGameImport(current, gameIdToReload, gameImport),
 						gameIdToReload,
-						igdbImport.dlcs,
+						gameImport.dlcs,
 					),
 				),
 			)
@@ -3329,6 +3475,32 @@ export function Backlog() {
 			});
 		return () => controller.abort();
 	}, [gameIdToReload]);
+
+	// Ajout au backlog et « Personnaliser » : les images du jeu sont relues sur IGDB à l'ouverture (section 8)
+	const gameIdToLoadImages =
+		((modal?.kind === "addUserVersion" && modal.userGameDraft !== null) ||
+			modal?.kind === "customizeGame") &&
+		modal.imageIds === null
+			? modal.gameId
+			: null;
+	useEffect(() => {
+		if (gameIdToLoadImages === null) {
+			return undefined;
+		}
+		const controller = new AbortController();
+		fetchIgdbGameImages(gameIdToLoadImages, controller.signal)
+			.then((images) =>
+				setModal((current) =>
+					receiveGameImages(current, gameIdToLoadImages, mapGameImages(images)),
+				),
+			)
+			.catch((error: unknown) => {
+				if (!controller.signal.aborted) {
+					setModalError(error instanceof Error ? error.message : String(error));
+				}
+			});
+		return () => controller.abort();
+	}, [gameIdToLoadImages]);
 
 	// Échap ferme le popover ouvert, sinon la modale comme « Annuler » (DLC suivant de la file) ; rien n'est enregistré avant « Valider »
 	const isModalOpen = modal !== null;
@@ -3472,7 +3644,7 @@ export function Backlog() {
 						searchSource === "igdb"
 							? searchResults
 							: searchDatabaseGames(database, searchQuery).map((game) =>
-									mapStoredSearchResult(database, game),
+									mapDatabaseSearchResult(database, game),
 								)
 					}
 					isSearching={isSearching}
@@ -3509,7 +3681,7 @@ export function Backlog() {
 				<button
 					type="button"
 					className={styles.button}
-					onClick={() => setModal({ kind: "columns" })}
+					onClick={() => setModal({ kind: "editColumns" })}
 				>
 					🧩 Colonnes
 				</button>
@@ -3546,7 +3718,7 @@ export function Backlog() {
 				/>
 			</main>
 			{modal?.kind === "addGame" && (
-				<AddGameDialog
+				<AddGameModal
 					modal={modal}
 					database={database}
 					error={modalError}
@@ -3556,7 +3728,7 @@ export function Backlog() {
 				/>
 			)}
 			{modal?.kind === "editGame" && (
-				<EditGameDialog
+				<EditGameModal
 					modal={modal}
 					database={database}
 					error={modalError}
@@ -3566,7 +3738,7 @@ export function Backlog() {
 				/>
 			)}
 			{modal?.kind === "addDlcs" && (
-				<AddDlcsDialog
+				<AddDlcsModal
 					modal={modal}
 					database={database}
 					error={modalError}
@@ -3575,25 +3747,36 @@ export function Backlog() {
 					onValidate={() => validateAddDlcs(modal)}
 				/>
 			)}
-			{modal?.kind === "addVariant" && (
-				<AddVariantDialog
+			{modal?.kind === "customizeGame" && (
+				<CustomizeGameModal
 					modal={modal}
 					database={database}
+					error={modalError}
 					onModalChange={setModal}
 					onCancel={closeModal}
-					onValidate={() => validateAddVariant(modal)}
+					onValidate={() => validateCustomizeGame(modal)}
 				/>
 			)}
-			{modal?.kind === "columns" && (
-				<ColumnsDialog
+			{modal?.kind === "addUserVersion" && (
+				<AddUserVersionModal
+					modal={modal}
+					database={database}
+					error={modalError}
+					onModalChange={setModal}
+					onCancel={closeModal}
+					onValidate={() => validateAddUserVersion(modal)}
+				/>
+			)}
+			{modal?.kind === "editColumns" && (
+				<ColumnsModal
 					columns={columns}
 					onToggleVisibility={changeColumnVisibility}
 					onMove={(key, offset) => setColumns(moveColumn(columns, key, offset))}
 					onClose={closeModal}
 				/>
 			)}
-			{modal?.kind === "finishDate" && (
-				<FinishDateDialog
+			{modal?.kind === "setFinishDate" && (
+				<FinishDateModal
 					modal={modal}
 					database={database}
 					onModalChange={setModal}

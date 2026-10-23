@@ -17,13 +17,15 @@ import type {
 	RowIndexes,
 	SearchResult,
 	Series,
-	Variant,
-	VariantRow,
+	UserGame,
+	UserVersion,
+	UserVersionRow,
 	Version,
 	VersionPlatform,
 } from "./types";
 import {
 	findById,
+	findUserGame,
 	getEarliestDate,
 	getGameStatus,
 	getHighestValue,
@@ -73,8 +75,11 @@ export function mapSearchResult({
 	};
 }
 
-/** Jeu déjà en base → résultat de recherche : son id est celui de son original, son image celle choisie à l'ajout, ses plateformes celles de toutes ses versions */
-export function mapStoredSearchResult(
+/**
+ * Jeu déjà en base → résultat de recherche : son id est celui de son original, ses plateformes celles de toutes ses versions.
+ * Son image : celle choisie à l'ajout au backlog, sinon la cover de l'original.
+ */
+export function mapDatabaseSearchResult(
 	database: Database,
 	game: Game,
 ): SearchResult {
@@ -95,9 +100,12 @@ export function mapStoredSearchResult(
 			game.firstReleaseDate === null
 				? null
 				: Number(game.firstReleaseDate.slice(0, 4)),
-		coverImageId: game.imageId,
+		coverImageId:
+			findUserGame(database, game.id)?.imageId ??
+			findById(database.versions, game.id)?.coverImageId ??
+			null,
 		platformNames: [...platformIds].flatMap(
-			(platformId) => findById(database.platforms, platformId)?.name ?? [],
+			(platformId) => findById(database.platforms, platformId)?.shortName ?? [],
 		),
 	};
 }
@@ -108,7 +116,7 @@ export function mapStoredSearchResult(
 function mapPlatform(platform: IgdbPlatform): Platform {
 	return {
 		id: platform.id,
-		name: trimToNull(platform.abbreviation) ?? platform.name,
+		shortName: trimToNull(platform.abbreviation) ?? platform.name,
 		technicalName: platform.slug,
 		emulatedPlatformId: null,
 	};
@@ -204,6 +212,20 @@ function getIgdbSeries(original: IgdbOriginalGame): Omit<Series, "id"> | null {
 			};
 }
 
+/** Images proposées pour la miniature (section 8) : la cover de l'original d'abord, puis les artworks */
+export function mapGameImages({
+	cover,
+	artworks = [],
+}: {
+	cover?: { image_id: IgdbImageId } | undefined;
+	artworks?: { image_id: IgdbImageId }[] | undefined;
+}): IgdbImageId[] {
+	return [
+		...(cover === undefined ? [] : [cover.image_id]),
+		...artworks.map((artwork) => artwork.image_id),
+	];
+}
+
 /** Réponses IGDB → données de la base, montrées dans la modale puis écrites à « Valider » (section 8) */
 export function mapGameImport(data: IgdbGameData): GameImport {
 	const { original } = data;
@@ -237,8 +259,6 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			platforms.set(platform.id, mapPlatform(platform));
 		}
 	}
-	const originalCover = versions.find(({ id }) => id === gameId)?.cover
-		?.image_id;
 
 	return {
 		game: {
@@ -256,21 +276,21 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			title:
 				version.id === gameId ? null : getVersionTitle(version, original.name),
 			coverImageId: version.cover?.image_id ?? null,
-			url: version.url,
+			igdbUrl: version.url,
 		})),
 		versionPlatforms: versions.flatMap(mapVersionPlatforms),
 		platforms: [...platforms.values()],
 		dlcs: data.dlcs.map(({ id, name }) => ({ id, gameId, name })),
-		series: getIgdbSeries(original),
+		proposedSeries: getIgdbSeries(original),
 		developer: developer === null ? null : mapCompany(developer),
 		publisher: publisher === null ? null : mapCompany(publisher),
-		imageIds: [
-			...(originalCover === undefined ? [] : [originalCover]),
-			...(original.artworks ?? []).map((artwork) => artwork.image_id),
-		],
-		warnings: data.skippedEntries.map(({ reason, entry }) => ({
-			message: reason,
-			igdbData: JSON.stringify(entry, null, 2),
+		imageIds: mapGameImages({
+			cover: versions.find(({ id }) => id === gameId)?.cover,
+			artworks: original.artworks,
+		}),
+		warnings: data.skippedEntries.map(({ message, entry }) => ({
+			message,
+			entryJson: JSON.stringify(entry, null, 2),
 		})),
 	};
 }
@@ -300,6 +320,7 @@ function groupBy<T, K>(items: T[], getKey: (item: T) => K): Map<K, T[]> {
 function buildRowIndexes(database: Database): RowIndexes {
 	const versions = indexById(database.versions);
 	return {
+		games: indexById(database.games),
 		versions,
 		platforms: indexById(database.platforms),
 		series: indexById(database.series),
@@ -312,8 +333,8 @@ function buildRowIndexes(database: Database): RowIndexes {
 				],
 			),
 		),
-		variantsByGameId: groupBy(
-			database.variants,
+		userVersionsByGameId: groupBy(
+			database.userVersions,
 			({ versionId }) => versions.get(versionId)?.gameId ?? null,
 		),
 		dlcIdsByGameId: new Map(
@@ -321,11 +342,11 @@ function buildRowIndexes(database: Database): RowIndexes {
 				([gameId, dlcs]) => [gameId, new Set(dlcs.map(({ id }) => id))],
 			),
 		),
-		doneDlcIdsByVariantId: new Map(
-			[...groupBy(database.variantDlcs, ({ variantId }) => variantId)].map(
-				([variantId, variantDlcs]) => [
-					variantId,
-					variantDlcs.map(({ dlcId }) => dlcId),
+		doneDlcIdsByUserVersionId: new Map(
+			[...groupBy(database.doneDlcs, ({ userVersionId }) => userVersionId)].map(
+				([userVersionId, doneDlcs]) => [
+					userVersionId,
+					doneDlcs.map(({ dlcId }) => dlcId),
 				],
 			),
 		),
@@ -336,141 +357,144 @@ function getIndexed<T>(index: Map<number, T>, id: number | null): T | null {
 	return id === null ? null : (index.get(id) ?? null);
 }
 
-function mapVariantRow(
+function mapUserVersionRow(
 	indexes: RowIndexes,
-	variant: Variant,
+	userVersion: UserVersion,
 	dlcIds: Set<number>,
-): VariantRow {
-	const version = getIndexed(indexes.versions, variant.versionId);
-	const platform = getIndexed(indexes.platforms, variant.platformId) ?? {
-		id: variant.platformId,
-		name: `#${variant.platformId}`,
+): UserVersionRow {
+	const version = getIndexed(indexes.versions, userVersion.versionId);
+	const platform = getIndexed(indexes.platforms, userVersion.platformId) ?? {
+		id: userVersion.platformId,
+		shortName: `#${userVersion.platformId}`,
 		technicalName: "",
 		emulatedPlatformId: null,
 	};
 	// Un émulateur reprend la date de sortie de la version sur la console qu'il émule
 	const releasePlatformId = platform.emulatedPlatformId ?? platform.id;
 	return {
-		variantId: variant.id,
-		versionId: variant.versionId,
-		imageId: version?.coverImageId ?? null,
+		userVersionId: userVersion.id,
+		versionId: userVersion.versionId,
+		coverImageId: version?.coverImageId ?? null,
 		versionTitle: version?.title ?? null,
 		releaseDate:
-			indexes.releaseDates.get(`${variant.versionId}-${releasePlatformId}`) ??
-			null,
+			indexes.releaseDates.get(
+				`${userVersion.versionId}-${releasePlatformId}`,
+			) ?? null,
 		platform,
-		status: variant.status,
-		owned: variant.owned,
-		playSoon: variant.playSoon,
-		finishDate: variant.finishDate,
-		sureFinishCount: variant.sureFinishCount,
-		probableFinishCount: variant.probableFinishCount,
-		doneDlcCount: (indexes.doneDlcIdsByVariantId.get(variant.id) ?? []).filter(
-			(dlcId) => dlcIds.has(dlcId),
-		).length,
+		status: userVersion.status,
+		isOwned: userVersion.isOwned,
+		isUpNext: userVersion.isUpNext,
+		finishDate: userVersion.finishDate,
+		sureFinishCount: userVersion.sureFinishCount,
+		probableFinishCount: userVersion.probableFinishCount,
+		doneDlcCount: (
+			indexes.doneDlcIdsByUserVersionId.get(userVersion.id) ?? []
+		).filter((dlcId) => dlcIds.has(dlcId)).length,
 		dlcCount: dlcIds.size,
-		trackedPlayTimeMinutes: variant.trackedPlayTimeMinutes,
-		estimatedPlayTimeMinutes: variant.estimatedPlayTimeMinutes,
+		trackedPlayTimeMinutes: userVersion.trackedPlayTimeMinutes,
+		estimatedPlayTimeMinutes: userVersion.estimatedPlayTimeMinutes,
 		totalPlayTimeMinutes:
-			variant.trackedPlayTimeMinutes + variant.estimatedPlayTimeMinutes,
-		rating: variant.rating,
-		comment: variant.comment,
-		igdbUrl: version?.url ?? "",
+			userVersion.trackedPlayTimeMinutes + userVersion.estimatedPlayTimeMinutes,
+		rating: userVersion.rating,
+		comment: userVersion.comment,
+		igdbUrl: version?.igdbUrl ?? "",
 	};
 }
 
-/** Ligne du jeu : ses données et les agrégats de ses variantes (section 7), vides quand il est impossible de choisir */
+/** Ligne d'un jeu du backlog : ses données, sa personnalisation et les agrégats de ses versions jouées (section 7), vides quand il est impossible de choisir */
 function mapGameRow(
 	indexes: RowIndexes,
 	game: Game,
-	variantRows: VariantRow[],
+	userGame: UserGame,
+	userVersionRows: UserVersionRow[],
 	dlcIds: Set<number>,
 ): GameRow {
-	const singleVariantRow =
-		variantRows.length === 1 ? (variantRows.at(0) ?? null) : null;
-	// Un DLC compte comme fait s'il l'est sur au moins une variante
+	const singleUserVersionRow =
+		userVersionRows.length === 1 ? (userVersionRows.at(0) ?? null) : null;
+	// Un DLC compte comme fait s'il l'est sur au moins une version jouée
 	const doneDlcIds = new Set(
-		variantRows.flatMap(({ variantId }) =>
-			(indexes.doneDlcIdsByVariantId.get(variantId) ?? []).filter((dlcId) =>
-				dlcIds.has(dlcId),
+		userVersionRows.flatMap(({ userVersionId }) =>
+			(indexes.doneDlcIdsByUserVersionId.get(userVersionId) ?? []).filter(
+				(dlcId) => dlcIds.has(dlcId),
 			),
 		),
 	);
-	const comments = variantRows.flatMap(({ comment }) =>
+	const comments = userVersionRows.flatMap(({ comment }) =>
 		comment === null ? [] : [comment],
 	);
 
 	return {
 		gameId: game.id,
-		imageId: game.imageId,
+		imageId: userGame.imageId,
 		name: game.name,
 		frenchName: game.frenchName,
-		// Ligne à variante unique : le titre de sa version sous le nom, sauf pour l'originale
-		versionTitle: singleVariantRow?.versionTitle ?? null,
-		series: getIndexed(indexes.series, game.seriesId),
-		originalSeries: getIndexed(indexes.series, game.originalSeriesId),
-		seriesNumber: game.seriesNumber,
+		// Ligne à version jouée unique : le titre de sa version sous le nom, sauf pour l'originale
+		versionTitle: singleUserVersionRow?.versionTitle ?? null,
+		series: getIndexed(indexes.series, userGame.seriesId),
+		proposedSeries: getIndexed(indexes.series, game.proposedSeriesId),
+		seriesNumber: userGame.seriesNumber,
 		developer: getIndexed(indexes.companies, game.developerId),
 		publisher: getIndexed(indexes.companies, game.publisherId),
 		releaseDate: game.firstReleaseDate,
 		isCancelled: game.isCancelled,
-		endingType: game.endingType,
-		platform: singleVariantRow?.platform ?? null,
-		status: getGameStatus(variantRows.map(({ status }) => status)),
-		owned: variantRows.some(({ owned }) => owned),
-		playSoon: variantRows.some(({ playSoon }) => playSoon),
+		endingType: userGame.endingType,
+		platform: singleUserVersionRow?.platform ?? null,
+		status: getGameStatus(userVersionRows.map(({ status }) => status)),
+		isOwned: userVersionRows.some(({ isOwned }) => isOwned),
+		isUpNext: userVersionRows.some(({ isUpNext }) => isUpNext),
 		finishDate: getEarliestDate(
-			variantRows.map(({ finishDate }) => finishDate),
+			userVersionRows.map(({ finishDate }) => finishDate),
 		),
 		sureFinishCount: sum(
-			variantRows.map(({ sureFinishCount }) => sureFinishCount),
+			userVersionRows.map(({ sureFinishCount }) => sureFinishCount),
 		),
 		probableFinishCount: sum(
-			variantRows.map(({ probableFinishCount }) => probableFinishCount),
+			userVersionRows.map(({ probableFinishCount }) => probableFinishCount),
 		),
 		doneDlcCount: doneDlcIds.size,
 		dlcCount: dlcIds.size,
 		trackedPlayTimeMinutes: sum(
-			variantRows.map(({ trackedPlayTimeMinutes }) => trackedPlayTimeMinutes),
+			userVersionRows.map(
+				({ trackedPlayTimeMinutes }) => trackedPlayTimeMinutes,
+			),
 		),
 		estimatedPlayTimeMinutes: sum(
-			variantRows.map(
+			userVersionRows.map(
 				({ estimatedPlayTimeMinutes }) => estimatedPlayTimeMinutes,
 			),
 		),
 		totalPlayTimeMinutes: sum(
-			variantRows.map(({ totalPlayTimeMinutes }) => totalPlayTimeMinutes),
+			userVersionRows.map(({ totalPlayTimeMinutes }) => totalPlayTimeMinutes),
 		),
-		rating: getHighestValue(variantRows.map(({ rating }) => rating)),
+		rating: getHighestValue(userVersionRows.map(({ rating }) => rating)),
 		comment: comments.length === 1 ? (comments.at(0) ?? null) : null,
 		// La fiche originale du jeu porte le même id que lui
-		igdbUrl: getIndexed(indexes.versions, game.id)?.url ?? "",
-		variantRows,
+		igdbUrl: getIndexed(indexes.versions, game.id)?.igdbUrl ?? "",
+		userVersionRows,
 	};
 }
 
-/** Base → lignes du tableau : une ligne par jeu qui a au moins une variante, dans l'ordre d'ajout (section 5) */
+/** Base → lignes du tableau : une ligne par jeu du backlog, dans l'ordre d'ajout au backlog (section 5) */
 export function mapGameRows(database: Database): GameRow[] {
 	const indexes = buildRowIndexes(database);
-	return database.games.flatMap((game) => {
-		const dlcIds = indexes.dlcIdsByGameId.get(game.id) ?? new Set<number>();
-		const variantRows = (indexes.variantsByGameId.get(game.id) ?? []).map(
-			(variant) => mapVariantRow(indexes, variant, dlcIds),
-		);
-		return variantRows.length === 0
+	return database.userGames.flatMap((userGame) => {
+		const game = getIndexed(indexes.games, userGame.gameId);
+		const dlcIds =
+			indexes.dlcIdsByGameId.get(userGame.gameId) ?? new Set<number>();
+		const userVersionRows = (
+			indexes.userVersionsByGameId.get(userGame.gameId) ?? []
+		).map((userVersion) => mapUserVersionRow(indexes, userVersion, dlcIds));
+		// Un jeu du backlog a toujours une version jouée ; sinon, ou sans son jeu en base, pas de ligne
+		return game === null || userVersionRows.length === 0
 			? []
-			: [mapGameRow(indexes, game, variantRows, dlcIds)];
+			: [mapGameRow(indexes, game, userGame, userVersionRows, dlcIds)];
 	});
 }
 
 // ---------- Base → modale « Modifier le jeu » (section 8) ----------
 
 /** Un jeu de la base sous la forme de la modale d'ajout : la même modale sert à le modifier */
-function mapStoredGameImport(
-	database: Database,
-	game: Game,
-	imageIds: IgdbImageId[],
-): GameImport {
+function mapStoredGameImport(database: Database, game: Game): GameImport {
 	const versions = database.versions.filter(
 		(version) => version.gameId === game.id,
 	);
@@ -479,7 +503,7 @@ function mapStoredGameImport(
 		versionIds.includes(versionId),
 	);
 	const platformIds = versionPlatforms.map(({ platformId }) => platformId);
-	const originalSeries = findById(database.series, game.originalSeriesId);
+	const proposedSeries = findById(database.series, game.proposedSeriesId);
 	return {
 		game: {
 			id: game.id,
@@ -494,18 +518,18 @@ function mapStoredGameImport(
 		versionPlatforms,
 		platforms: database.platforms.filter(({ id }) => platformIds.includes(id)),
 		dlcs: database.dlcs.filter((dlc) => dlc.gameId === game.id),
-		// La série proposée à l'ajout, pas celle d'IGDB aujourd'hui : « ↩️ » y ramène
-		series:
-			originalSeries === null
+		// La série proposée à l'ajout, pas celle d'IGDB aujourd'hui
+		proposedSeries:
+			proposedSeries === null
 				? null
 				: {
-						name: originalSeries.name,
-						igdbCollectionId: originalSeries.igdbCollectionId,
-						igdbFranchiseId: originalSeries.igdbFranchiseId,
+						name: proposedSeries.name,
+						igdbCollectionId: proposedSeries.igdbCollectionId,
+						igdbFranchiseId: proposedSeries.igdbFranchiseId,
 					},
 		developer: findById(database.companies, game.developerId),
 		publisher: findById(database.companies, game.publisherId),
-		imageIds,
+		imageIds: [],
 		warnings: [],
 	};
 }
@@ -522,38 +546,30 @@ function mergeInIgdbOrder<T extends { id: number }>(
 }
 
 /**
- * « Modifier le jeu » (section 8) : le jeu tel qu'il est en base, complété par les versions, DLC et images IGDB absents de la base.
- * Tant qu'IGDB n'a pas répondu, ou s'il échoue, seule l'image choisie est proposée. Elle le reste même si IGDB ne l'a plus.
+ * « Modifier le jeu » (section 8) : le jeu tel qu'il est en base, complété par les versions et DLC IGDB absents de la base.
+ * Tant qu'IGDB n'a pas répondu, ou s'il échoue, seul ce qui est en base s'affiche.
  */
-export function mapEditedGameImport(
+export function mapEditGameImport(
 	database: Database,
 	game: Game,
-	igdbImport: GameImport | null,
+	gameImport: GameImport | null,
 ): GameImport {
-	const stored = mapStoredGameImport(
-		database,
-		game,
-		game.imageId === null ? [] : [game.imageId],
-	);
-	if (igdbImport === null) {
+	const stored = mapStoredGameImport(database, game);
+	if (gameImport === null) {
 		return stored;
 	}
 	const storedVersionIds = stored.versions.map(({ id }) => id);
 	return {
 		...stored,
-		versions: mergeInIgdbOrder(igdbImport.versions, stored.versions),
+		versions: mergeInIgdbOrder(gameImport.versions, stored.versions),
 		versionPlatforms: [
 			...stored.versionPlatforms,
-			...igdbImport.versionPlatforms.filter(
+			...gameImport.versionPlatforms.filter(
 				({ versionId }) => !storedVersionIds.includes(versionId),
 			),
 		],
-		platforms: mergeById(stored.platforms, igdbImport.platforms),
-		dlcs: mergeInIgdbOrder(igdbImport.dlcs, stored.dlcs),
-		imageIds:
-			game.imageId === null || igdbImport.imageIds.includes(game.imageId)
-				? igdbImport.imageIds
-				: [game.imageId, ...igdbImport.imageIds],
-		warnings: igdbImport.warnings,
+		platforms: mergeById(stored.platforms, gameImport.platforms),
+		dlcs: mergeInIgdbOrder(gameImport.dlcs, stored.dlcs),
+		warnings: gameImport.warnings,
 	};
 }

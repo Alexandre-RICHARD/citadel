@@ -44,8 +44,8 @@ const allEndingTypes = [
 	"multiplayer",
 ] as const satisfies readonly EndingType[];
 
-/** Statuts d'une variante : rangs 1 à 8, « Abandonné » hors échelle (rang `null`). `endingTypes` : types de fin qui proposent ce statut */
-export const variantStatusDefinitions = [
+/** Statuts d'une version jouée : rangs 1 à 8, « Abandonné » hors échelle (rang `null`). `endingTypes` : types de fin qui proposent ce statut */
+export const statusDefinitions = [
 	{
 		key: "notStarted",
 		rank: 1,
@@ -125,7 +125,7 @@ export const variantStatusDefinitions = [
 	endingTypes: readonly EndingType[];
 }[];
 
-export type VariantStatus = (typeof variantStatusDefinitions)[number]["key"];
+export type Status = (typeof statusDefinitions)[number]["key"];
 
 /** Colonnes du tableau (section 7), dans l'ordre par défaut */
 export const columnDefinitions = [
@@ -139,12 +139,12 @@ export const columnDefinitions = [
 	{ key: "endingType", label: "Type de fin" },
 	{ key: "platform", label: "Plateforme" },
 	{ key: "status", label: "Statut" },
-	{ key: "playSoon", label: "À jouer bientôt" },
+	{ key: "upNext", label: "À jouer bientôt" },
 	{ key: "owned", label: "Possédé" },
 	{ key: "finishDate", label: "Date de fin" },
 	{ key: "finishCount", label: "Fois fini" },
 	{ key: "dlc", label: "DLC" },
-	{ key: "trackedPlayTime", label: "Temps réel" },
+	{ key: "trackedPlayTime", label: "Temps relevé" },
 	{ key: "estimatedPlayTime", label: "Temps estimé" },
 	{ key: "totalPlayTime", label: "Temps total" },
 	{ key: "rating", label: "Note" },
@@ -154,10 +154,10 @@ export const columnDefinitions = [
 
 export type ColumnKey = (typeof columnDefinitions)[number]["key"];
 
-// ---------- Base globale : données IGDB (les `id` sont ceux d'IGDB) ----------
+// ---------- Base globale : données IGDB, partagées (les `id` sont ceux d'IGDB, sauf mention) ----------
 
 /**
- * Jeu : l'œuvre, une ligne du backlog. Son `id` est celui de sa fiche IGDB originale,
+ * Jeu : l'œuvre. Son `id` est celui de sa fiche IGDB originale,
  * qui est aussi sa version originale : le lien IGDB du jeu est celui de cette version.
  */
 export type Game = {
@@ -170,16 +170,8 @@ export type Game = {
 	firstReleaseDate: IsoDate | null;
 	/** `game_status` = Cancelled : « annulé » */
 	isCancelled: boolean;
-	/** Miniature choisie à l'ajout, parmi la cover et les artworks */
-	imageId: IgdbImageId | null;
-	/** Choisi à l'ajout */
-	endingType: EndingType;
-	/** Choisie à l'ajout : celle proposée par IGDB, une autre, ou aucune */
-	seriesId: number | null;
-	/** Série proposée par IGDB à l'ajout, `null` s'il n'en propose pas : ✏️ dans le tableau quand `seriesId` en diffère */
-	originalSeriesId: number | null;
-	/** Choisi à l'ajout, décimales possibles ; `null` sans série */
-	seriesNumber: number | null;
+	/** Série proposée par IGDB à l'ajout du jeu, `null` s'il n'en propose pas : ✏️ dans le tableau quand la série choisie en diffère */
+	proposedSeriesId: number | null;
 	developerId: number | null;
 	publisherId: number | null;
 };
@@ -193,7 +185,7 @@ export type Version = {
 	/** Miniature de la sous-ligne */
 	coverImageId: IgdbImageId | null;
 	/** « Ouvrir la version sur IGDB » */
-	url: string;
+	igdbUrl: string;
 };
 
 /** Version × plateforme : la version est sortie sur cette plateforme */
@@ -208,8 +200,8 @@ export type VersionPlatform = {
 export type Platform = {
 	/** id IGDB ; un émulateur, absent d'IGDB, a un id négatif */
 	id: number;
-	/** Abréviation IGDB (`abbreviation`), sinon `name` ; nom choisi à la main pour un émulateur */
-	name: string;
+	/** Nom affiché : abréviation IGDB (`abbreviation`), sinon `name` ; nom choisi à la main pour un émulateur */
+	shortName: string;
 	/** `slug` IGDB, ou slug choisi à la main pour un émulateur ; nomme l'icône `icons/<technicalName>.svg` */
 	technicalName: string;
 	/** Console émulée ; `null` pour une plateforme IGDB */
@@ -243,29 +235,44 @@ export type Company = {
 	logoImageId: IgdbImageId | null;
 };
 
-// ---------- Base utilisateur ----------
+// ---------- Base utilisateur : le backlog (les `id` sont internes) ----------
 
 /**
- * Variante : une version jouée sur une plateforme, unique par version + plateforme.
- * Elle porte toutes les données de l'utilisateur ; son jeu se retrouve par sa version.
+ * Jeu du backlog : le jeu et sa personnalisation, choisie à l'ajout au backlog (section 8).
+ * Il n'existe qu'avec au moins une version jouée : retirer la dernière le retire. Un seul par jeu (POC sans utilisateur).
  */
-export type Variant = {
+export type UserGame = {
+	gameId: number;
+	/** Miniature, parmi la cover et les artworks IGDB */
+	imageId: IgdbImageId | null;
+	endingType: EndingType;
+	/** Celle proposée par IGDB (`Game.proposedSeriesId`), une autre, ou aucune */
+	seriesId: number | null;
+	/** Décimales possibles ; `null` sans série */
+	seriesNumber: number | null;
+};
+
+/**
+ * Version jouée : une version sur une plateforme, unique par version + plateforme.
+ * Elle porte les données de jeu de l'utilisateur ; son jeu se retrouve par sa version.
+ */
+export type UserVersion = {
 	/** id interne, sans équivalent IGDB */
 	id: number;
 	versionId: number;
 	platformId: number;
-	status: VariantStatus;
+	status: Status;
 	/** « Possédé » */
-	owned: boolean;
+	isOwned: boolean;
 	/** « À jouer bientôt » */
-	playSoon: boolean;
+	isUpNext: boolean;
 	/** « Date de fin » : la première fin, `null` si pas fini */
 	finishDate: IsoDate | null;
 	/** « Fois fini », compteur sûr */
 	sureFinishCount: number;
 	/** « Fois fini », compteur probable */
 	probableFinishCount: number;
-	/** « Temps réel », en minutes : temps relevé sur la plateforme */
+	/** « Temps relevé », en minutes : temps relevé sur la plateforme */
 	trackedPlayTimeMinutes: number;
 	/** « Temps estimé », en minutes : estimation manuelle du temps non relevé */
 	estimatedPlayTimeMinutes: number;
@@ -274,9 +281,9 @@ export type Variant = {
 	comment: string | null;
 };
 
-/** DLC fait : un DLC du jeu coché comme fait sur une variante */
-export type VariantDlc = {
-	variantId: number;
+/** DLC fait : un DLC du jeu coché comme fait sur une version jouée */
+export type DoneDlc = {
+	userVersionId: number;
 	dlcId: number;
 };
 
@@ -288,14 +295,15 @@ export type Database = {
 	dlcs: Dlc[];
 	series: Series[];
 	companies: Company[];
-	variants: Variant[];
-	variantDlcs: VariantDlc[];
+	userGames: UserGame[];
+	userVersions: UserVersion[];
+	doneDlcs: DoneDlc[];
 };
 
 // ---------- Interface ----------
 
 /** Où cherche la barre de recherche : sur IGDB, ou parmi les jeux déjà en base, sans requête IGDB (section 8) */
-export type SearchSource = "igdb" | "local";
+export type SearchSource = "igdb" | "database";
 
 /** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu déjà en base */
 export type SearchResult = {
@@ -312,51 +320,46 @@ export type SearchResult = {
 	platformNames: string[];
 };
 
-/** Série choisie dans la modale du jeu (section 8) */
+/** Série choisie pour un jeu du backlog (section 8) */
 export type SeriesChoice =
 	/** Celle proposée par IGDB, ou aucune s'il n'en propose pas */
-	| { kind: "original" }
+	| { kind: "proposed" }
 	/** Une autre série de la base */
-	| { kind: "stored"; seriesId: number }
+	| { kind: "other"; seriesId: number }
 	/** Créée à « Valider » ; un nom déjà pris rejoint la série existante */
 	| { kind: "new"; name: string }
 	| { kind: "none" };
 
-/** Les choix de la modale du jeu (section 8) */
-export type GameChoices = {
-	imageId: IgdbImageId | null;
-	endingType: EndingType;
+/** Personnalisation d'un jeu du backlog en cours de saisie : à l'ajout au backlog ou par « Personnaliser » (section 8) */
+export type UserGameDraft = Omit<UserGame, "gameId" | "seriesId"> & {
 	series: SeriesChoice;
-	/** Ignoré sans série */
-	seriesNumber: number | null;
 };
 
-/** Version puis plateforme d'une nouvelle variante ; la variante n'est créée que si les deux sont choisies */
-export type VariantChoice = {
+/** Nouvelle version jouée en cours de saisie (section 8) : créée seulement quand la version et la plateforme sont choisies */
+export type UserVersionDraft = Omit<
+	UserVersion,
+	"id" | "versionId" | "platformId"
+> & {
 	versionId: number | null;
 	platformId: number | null;
-};
-
-/** Données du joueur pré-remplies dans « Ajouter une variante » (section 8) */
-export type VariantDraft = Omit<Variant, "id" | "versionId" | "platformId"> & {
 	/** DLC du jeu cochés comme faits */
 	doneDlcIds: number[];
 };
 
 /** Données IGDB chargées dans la modale d'ajout, écrites en base à « Valider » seulement */
 export type GameImport = {
-	/** La série se règle à « Valider », selon le choix (`GameChoices.series`) */
-	game: Omit<Game, keyof GameChoices | "seriesId" | "originalSeriesId">;
+	/** La série proposée entre en base à « Valider » : son id n'est pas encore connu */
+	game: Omit<Game, "proposedSeriesId">;
 	versions: Version[];
 	versionPlatforms: VersionPlatform[];
 	/** Plateformes IGDB des versions, ajoutées en base si absentes */
 	platforms: Platform[];
 	dlcs: Dlc[];
 	/** Série proposée par IGDB, sans id tant qu'elle n'est pas en base ; pour « Modifier le jeu », celle proposée à l'ajout */
-	series: Omit<Series, "id"> | null;
+	proposedSeries: Omit<Series, "id"> | null;
 	developer: Company | null;
 	publisher: Company | null;
-	/** Images proposées : la cover d'abord, puis les artworks */
+	/** Images proposées pour la miniature : la cover d'abord, puis les artworks ; reprises par l'ajout au backlog qui suit */
 	imageIds: IgdbImageId[];
 	/** Fiches IGDB qui ne rentrent pas dans le modèle, montrées dans la modale */
 	warnings: ImportWarning[];
@@ -369,13 +372,13 @@ export type ImportSelection = {
 	/** DLC à enregistrer */
 	dlcIds: number[];
 	/** DLC à ajouter ensuite comme jeux à part, qu'ils soient aussi enregistrés comme DLC ou non */
-	dlcGameIds: number[];
+	dlcAsGameIds: number[];
 };
 
-/** Donnée IGDB hors modèle : le cas et la réponse brute d'IGDB (JSON) */
+/** Fiche IGDB hors modèle : le cas et la fiche brute (`IgdbGameData.skippedEntries`, en JSON) */
 export type ImportWarning = {
 	message: string;
-	igdbData: string;
+	entryJson: string;
 };
 
 /**
@@ -388,27 +391,37 @@ export type Modal =
 			kind: "addGame";
 			igdbId: number;
 			gameImport: GameImport | null;
-			choices: GameChoices;
 			selection: ImportSelection;
-			/** « Ajouter à mon backlog » : « Valider » ouvre ensuite « Ajouter une variante » */
+			/** « Ajouter à mon backlog » : « Valider » ouvre ensuite l'ajout au backlog */
 			isAddingToBacklog: boolean;
 			queuedGameIds: number[];
 	  }
-	/** « Modifier le jeu » ; `igdbImport` (versions, DLC, images) rechargé depuis IGDB à l'ouverture, `null` en attendant */
+	/** « Modifier le jeu » ; `gameImport` (versions, DLC) rechargé depuis IGDB à l'ouverture, `null` en attendant */
 	| {
 			kind: "editGame";
 			gameId: number;
-			igdbImport: GameImport | null;
-			choices: GameChoices;
+			gameImport: GameImport | null;
 			/** Versions et DLC à ajouter, absents de la base */
 			selection: ImportSelection;
 	  }
-	/** « Ajouter une variante » : depuis le menu, un résultat de recherche déjà en base, ou après l'ajout d'un jeu */
+	/** « Personnaliser » ; `imageIds` relus sur IGDB à l'ouverture, `null` en attendant */
 	| {
-			kind: "addVariant";
+			kind: "customizeGame";
 			gameId: number;
-			variantChoice: VariantChoice;
-			draft: VariantDraft;
+			draft: UserGameDraft;
+			imageIds: IgdbImageId[] | null;
+	  }
+	/**
+	 * Ajout au backlog, ou « Ajouter une version jouée » pour un jeu qui y est déjà : depuis le menu, un résultat de recherche
+	 * déjà en base, ou après l'ajout d'un jeu. `userGameDraft` : la personnalisation, `null` si le jeu est déjà dans le backlog ;
+	 * ses `imageIds` sont relus sur IGDB, `null` en attendant.
+	 */
+	| {
+			kind: "addUserVersion";
+			gameId: number;
+			draft: UserVersionDraft;
+			userGameDraft: UserGameDraft | null;
+			imageIds: IgdbImageId[] | null;
 			queuedGameIds: number[];
 	  }
 	/** « Rechercher d'autres DLC » (section 9) : tous les DLC IGDB du jeu, `null` tant qu'ils ne sont pas chargés */
@@ -421,18 +434,18 @@ export type Modal =
 	  }
 	/** Date de fin proposée au passage au rang 5 ou plus */
 	| {
-			kind: "finishDate";
-			variantId: number;
+			kind: "setFinishDate";
+			userVersionId: number;
 			finishDate: IsoDate;
 			queuedGameIds: number[];
 	  }
 	/** Visibilité et ordre des colonnes */
-	| { kind: "columns" };
+	| { kind: "editColumns" };
 
 export type Popover =
-	| { kind: "dlc"; variantId: number }
-	/** `variantId` à `null` : menu de la ligne du jeu */
-	| { kind: "actionsMenu"; gameId: number; variantId: number | null };
+	| { kind: "dlc"; userVersionId: number }
+	/** `userVersionId` à `null` : menu de la ligne du jeu */
+	| { kind: "actionsMenu"; gameId: number; userVersionId: number | null };
 
 /** L'ordre du tableau `columns` est l'ordre d'affichage */
 export type ColumnSetting = {
@@ -493,39 +506,39 @@ export type AppState = {
 export type TableHandlers = {
 	toggleExpanded: (gameId: number) => void;
 	setPopover: (popover: Popover | null) => void;
-	updateVariant: (
-		variantId: number,
-		update: (variant: Variant) => Variant,
+	updateUserVersion: (
+		userVersionId: number,
+		update: (userVersion: UserVersion) => UserVersion,
 	) => void;
-	changeVariantStatus: (variantId: number, status: VariantStatus) => void;
-	toggleVariantDlc: (variantId: number, dlcId: number) => void;
+	changeUserVersionStatus: (userVersionId: number, status: Status) => void;
+	toggleDoneDlc: (userVersionId: number, dlcId: number) => void;
+	openCustomizeGame: (gameId: number) => void;
 	openEditGame: (gameId: number) => void;
-	openAddVariant: (gameId: number) => void;
+	openAddUserVersion: (gameId: number) => void;
 	/** « Rechercher d'autres DLC », depuis le popover des DLC (section 9) */
 	openAddDlcs: (gameId: number) => void;
 	removeGameFromBacklog: (gameId: number) => void;
-	removeVariant: (variantId: number) => void;
-	logLine: (gameId: number, variantId: number | null) => void;
+	removeUserVersion: (userVersionId: number) => void;
+	logRow: (gameId: number, userVersionId: number | null) => void;
 	/** Un clic sur un nom de série filtre le tableau sur ses jeux (section 9) */
 	filterOnSeries: (seriesName: string) => void;
 };
 
 // ---------- Lignes du tableau : calculées par les mappers, jamais stockées ----------
 
-/** Sous-ligne : une variante */
-export type VariantRow = {
-	variantId: number;
+/** Sous-ligne : une version jouée */
+export type UserVersionRow = {
+	userVersionId: number;
 	versionId: number;
-	/** Cover de la version */
-	imageId: IgdbImageId | null;
+	coverImageId: IgdbImageId | null;
 	/** `null` pour la version originale */
 	versionTitle: string | null;
 	/** Sortie de la version sur cette plateforme */
 	releaseDate: IsoDate | null;
 	platform: Platform;
-	status: VariantStatus;
-	owned: boolean;
-	playSoon: boolean;
+	status: Status;
+	isOwned: boolean;
+	isUpNext: boolean;
 	finishDate: IsoDate | null;
 	sureFinishCount: number;
 	probableFinishCount: number;
@@ -539,18 +552,18 @@ export type VariantRow = {
 	igdbUrl: string;
 };
 
-/** Ligne du jeu : données du jeu et agrégats de ses variantes ; `null` quand il est impossible de choisir */
+/** Ligne d'un jeu du backlog : données du jeu, sa personnalisation et les agrégats de ses versions jouées ; `null` quand il est impossible de choisir */
 export type GameRow = {
 	gameId: number;
-	/** Image choisie à l'ajout */
+	/** Image choisie à l'ajout au backlog */
 	imageId: IgdbImageId | null;
 	name: string;
 	frenchName: string | null;
-	/** Ligne à variante unique : titre de sa version, s'il ne s'agit pas de l'originale */
+	/** Ligne à version jouée unique : titre de sa version, s'il ne s'agit pas de l'originale */
 	versionTitle: string | null;
 	series: Series | null;
 	/** Série proposée par IGDB : ✏️ quand elle diffère de `series` */
-	originalSeries: Series | null;
+	proposedSeries: Series | null;
 	seriesNumber: number | null;
 	developer: Company | null;
 	publisher: Company | null;
@@ -558,19 +571,19 @@ export type GameRow = {
 	releaseDate: IsoDate | null;
 	isCancelled: boolean;
 	endingType: EndingType;
-	/** `null` si plusieurs variantes */
+	/** `null` si plusieurs versions jouées */
 	platform: Platform | null;
 	/** Meilleur statut (section 6) */
-	status: VariantStatus | null;
-	/** Au moins une variante */
-	owned: boolean;
-	/** Au moins une variante ; la ligne est mise en valeur */
-	playSoon: boolean;
+	status: Status | null;
+	/** Au moins une version jouée */
+	isOwned: boolean;
+	/** Au moins une version jouée ; la ligne est mise en valeur */
+	isUpNext: boolean;
 	/** La plus ancienne */
 	finishDate: IsoDate | null;
 	sureFinishCount: number;
 	probableFinishCount: number;
-	/** Un DLC compte comme fait s'il l'est sur au moins une variante */
+	/** Un DLC compte comme fait s'il l'est sur au moins une version jouée */
 	doneDlcCount: number;
 	dlcCount: number;
 	trackedPlayTimeMinutes: number;
@@ -581,22 +594,23 @@ export type GameRow = {
 	/** Le commentaire s'il n'y en a qu'un */
 	comment: string | null;
 	igdbUrl: string;
-	/** Une sous-ligne par variante ; la ligne est dépliable à partir de deux */
-	variantRows: VariantRow[];
+	/** Une sous-ligne par version jouée ; la ligne est dépliable à partir de deux */
+	userVersionRows: UserVersionRow[];
 };
 
 /** Index de la base, construits une fois par calcul des lignes : chaque recherche est directe, sans reparcourir la base */
 export type RowIndexes = {
+	games: Map<number, Game>;
 	versions: Map<number, Version>;
 	platforms: Map<number, Platform>;
 	series: Map<number, Series>;
 	companies: Map<number, Company>;
 	/** Clé `${versionId}-${platformId}` */
 	releaseDates: Map<string, IsoDate | null>;
-	/** Clé `null` : version introuvable, la variante n'a pas de ligne */
-	variantsByGameId: Map<number | null, Variant[]>;
+	/** Clé `null` : version introuvable, la version jouée n'a pas de ligne */
+	userVersionsByGameId: Map<number | null, UserVersion[]>;
 	dlcIdsByGameId: Map<number, Set<number>>;
-	doneDlcIdsByVariantId: Map<number, number[]>;
+	doneDlcIdsByUserVersionId: Map<number, number[]>;
 };
 
 // ---------- Réponses IGDB : seulement les champs demandés, absents quand IGDB n'a pas de valeur ----------
@@ -724,6 +738,13 @@ export type IgdbOriginalGame = {
 	}[];
 };
 
+/** Images d'un jeu, relues à l'ajout au backlog et par « Personnaliser » */
+export type IgdbGameImages = {
+	id: number;
+	cover?: { image_id: IgdbImageId };
+	artworks?: { image_id: IgdbImageId }[];
+};
+
 export type IgdbDlcGame = {
 	id: number;
 	name: string;
@@ -740,5 +761,5 @@ export type IgdbGameData = {
 	/** Nom du `game_status` de l'original (ex. « Cancelled ») */
 	gameStatus: string | null;
 	/** Fiches rattachées comme versions mais d'un autre type (bundle…), donc ignorées */
-	skippedEntries: { reason: string; entry: IgdbGameNode }[];
+	skippedEntries: { message: string; entry: IgdbGameNode }[];
 };
