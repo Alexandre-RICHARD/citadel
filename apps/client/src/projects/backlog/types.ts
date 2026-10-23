@@ -325,6 +325,12 @@ export type VariantChoice = {
 	platformId: number | null;
 };
 
+/** Données du joueur pré-remplies dans « Ajouter une variante » (section 8) */
+export type VariantDraft = Omit<Variant, "id" | "versionId" | "platformId"> & {
+	/** DLC du jeu cochés comme faits */
+	doneDlcIds: number[];
+};
+
 /** Données IGDB chargées dans la modale d'ajout, écrites en base à « Valider » seulement */
 export type GameImport = {
 	game: Omit<Game, keyof GameChoices>;
@@ -358,7 +364,8 @@ export type Modal =
 			choices: GameChoices;
 			/** Versions cochées, seules enregistrées à « Valider » ; l'originale l'est toujours */
 			versionIds: number[];
-			variantChoice: VariantChoice;
+			/** « Ajouter à mon backlog » : « Valider » ouvre ensuite « Ajouter une variante » */
+			isAddingToBacklog: boolean;
 	  }
 	/** « Modifier le jeu » ; `imageIds` rechargés depuis IGDB à l'ouverture */
 	| {
@@ -367,8 +374,13 @@ export type Modal =
 			imageIds: IgdbImageId[] | null;
 			choices: GameChoices;
 	  }
-	/** « Ajouter une variante », ou résultat de recherche déjà en base */
-	| { kind: "addVariant"; gameId: number; variantChoice: VariantChoice }
+	/** « Ajouter une variante » : depuis le menu, un résultat de recherche déjà en base, ou après l'ajout d'un jeu */
+	| {
+			kind: "addVariant";
+			gameId: number;
+			variantChoice: VariantChoice;
+			draft: VariantDraft;
+	  }
 	/** Date de fin proposée au passage au rang 5 ou plus */
 	| { kind: "finishDate"; variantId: number; finishDate: IsoDate }
 	/** Visibilité et ordre des colonnes */

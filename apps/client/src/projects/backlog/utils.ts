@@ -30,8 +30,8 @@ import {
 	type Platform,
 	type SortCriterion,
 	type Variant,
-	type VariantChoice,
 	type VariantDlc,
+	type VariantDraft,
 	type VariantRow,
 	type VariantStatus,
 	variantStatusDefinitions,
@@ -561,10 +561,7 @@ export function getIgdbImageUrl(
 
 // ---------- Modales : versions et plateformes ----------
 
-/**
- * Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée,
- * seule la version originale cochée, et pré-sélectionnée pour la variante si elle l'était
- */
+/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée, seule la version originale cochée */
 export function receiveGameImport(
 	modal: Modal | null,
 	igdbId: number,
@@ -577,7 +574,6 @@ export function receiveGameImport(
 	) {
 		return modal;
 	}
-	const originalId = gameImport.game.id;
 	return {
 		...modal,
 		gameImport,
@@ -585,16 +581,11 @@ export function receiveGameImport(
 			...modal.choices,
 			imageId: modal.choices.imageId ?? gameImport.imageIds.at(0) ?? null,
 		},
-		versionIds: [originalId],
-		variantChoice: {
-			...modal.variantChoice,
-			versionId:
-				modal.variantChoice.versionId === originalId ? originalId : null,
-		},
+		versionIds: [gameImport.game.id],
 	};
 }
 
-/** Coche ou décoche une version à enregistrer ; l'originale reste cochée. Décocher la version choisie pour la variante annule ce choix */
+/** Coche ou décoche une version à enregistrer ; l'originale reste cochée */
 export function toggleImportedVersion(
 	modal: Extract<Modal, { kind: "addGame" }>,
 	versionId: number,
@@ -602,16 +593,11 @@ export function toggleImportedVersion(
 	if (versionId === modal.gameImport?.game.id) {
 		return modal;
 	}
-	if (!modal.versionIds.includes(versionId)) {
-		return { ...modal, versionIds: [...modal.versionIds, versionId] };
-	}
 	return {
 		...modal,
-		versionIds: modal.versionIds.filter((id) => id !== versionId),
-		variantChoice:
-			modal.variantChoice.versionId === versionId
-				? { versionId: null, platformId: null }
-				: modal.variantChoice,
+		versionIds: modal.versionIds.includes(versionId)
+			? modal.versionIds.filter((id) => id !== versionId)
+			: [...modal.versionIds, versionId],
 	};
 }
 
@@ -780,33 +766,42 @@ export function mergeById<T extends { id: number }>(
 	return merged;
 }
 
-function createVariant(
-	database: Database,
-	versionId: number,
-	platformId: number,
-): Variant {
-	return {
-		id: Math.max(0, ...database.variants.map(({ id }) => id)) + 1,
-		versionId,
-		platformId,
-		status: "notStarted",
-		owned: false,
-		playSoon: false,
-		finishDate: null,
-		sureFinishCount: 0,
-		probableFinishCount: 0,
-		trackedPlayTimeMinutes: 0,
-		estimatedPlayTimeMinutes: 0,
-		rating: null,
-		comment: null,
-	};
+/** Valeurs d'une nouvelle variante : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
+export const defaultVariantDraft: VariantDraft = {
+	status: "notStarted",
+	owned: false,
+	playSoon: false,
+	finishDate: null,
+	sureFinishCount: 0,
+	probableFinishCount: 0,
+	trackedPlayTimeMinutes: 0,
+	estimatedPlayTimeMinutes: 0,
+	rating: null,
+	comment: null,
+	doneDlcIds: [],
+};
+
+/** id interne de la prochaine variante créée */
+export function getNextVariantId(database: Database): number {
+	return Math.max(0, ...database.variants.map(({ id }) => id)) + 1;
 }
 
-/** Ajoute une variante, sauf si la même version + plateforme existe déjà (section 5) */
+/** Au rang 5 ou plus, « fois fini (sûr) » passe à 1 s'il était à 0 (section 6) */
+function countFirstFinish(variant: Variant): Variant {
+	return isFinishedStatus(variant.status) && variant.sureFinishCount === 0
+		? { ...variant, sureFinishCount: 1 }
+		: variant;
+}
+
+/**
+ * Ajoute une variante avec les données pré-remplies et ses DLC faits, sauf si la même version + plateforme existe déjà (section 5).
+ * Son statut suit les règles d'un changement de statut (section 6).
+ */
 export function addVariant(
 	database: Database,
 	versionId: number,
 	platformId: number,
+	draft: VariantDraft,
 ): Database {
 	if (
 		database.variants.some(
@@ -816,25 +811,30 @@ export function addVariant(
 	) {
 		return database;
 	}
+	const { doneDlcIds, ...data } = draft;
+	const variantId = getNextVariantId(database);
 	return {
 		...database,
 		variants: [
 			...database.variants,
-			createVariant(database, versionId, platformId),
+			countFirstFinish({ id: variantId, versionId, platformId, ...data }),
+		],
+		variantDlcs: [
+			...database.variantDlcs,
+			...doneDlcIds.map((dlcId) => ({ variantId, dlcId })),
 		],
 	};
 }
 
 /**
  * « Valider » de la modale d'ajout (section 8) : le jeu, les versions cochées (`keepImportedVersions`), ses DLC, sa série,
- * sa franchise et ses sociétés, sans doublon ; puis la variante si version et plateforme sont choisies.
+ * sa franchise et ses sociétés, sans doublon. La variante s'ajoute ensuite, à part.
  * Un jeu déjà en base garde ses choix : seules les fiches manquantes s'ajoutent.
  */
 export function addGameImport(
 	database: Database,
 	gameImport: GameImport,
 	choices: GameChoices,
-	variantChoice: VariantChoice,
 ): Database {
 	const game: Game = {
 		...gameImport.game,
@@ -846,7 +846,7 @@ export function addGameImport(
 			({ versionId, platformId }) => `${versionId}-${platformId}`,
 		),
 	);
-	const withGame: Database = {
+	return {
 		...database,
 		games: mergeById(database.games, [game]),
 		versions: mergeById(database.versions, gameImport.versions),
@@ -874,10 +874,6 @@ export function addGameImport(
 			),
 		),
 	};
-	const { versionId, platformId } = variantChoice;
-	return versionId === null || platformId === null
-		? withGame
-		: addVariant(withGame, versionId, platformId);
 }
 
 export function updateVariant(
@@ -899,14 +895,9 @@ export function setVariantStatus(
 	variantId: number,
 	status: VariantStatus,
 ): Database {
-	return updateVariant(database, variantId, (variant) => ({
-		...variant,
-		status,
-		sureFinishCount:
-			isFinishedStatus(status) && variant.sureFinishCount === 0
-				? 1
-				: variant.sureFinishCount,
-	}));
+	return updateVariant(database, variantId, (variant) =>
+		countFirstFinish({ ...variant, status }),
+	);
 }
 
 /** Coche ou décoche un DLC comme fait sur une variante */
