@@ -1,0 +1,123 @@
+.button {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: vars.$radius-md;
+  transition:
+    background-color vars.$duration vars.$ease,
+    border-color vars.$duration vars.$ease,
+    color vars.$duration vars.$ease,
+    box-shadow vars.$duration vars.$ease;
+  user-select: none;
+
+  &:active:not(:disabled) {
+    translate: 0 0.5px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.md {
+  height: vars.$control-md;
+  padding: 0 1.4rem;
+  font-size: vars.$text-md;
+
+  .icon {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  &.iconOnly {
+    width: vars.$control-md;
+    padding: 0;
+  }
+}
+
+.sm {
+  height: vars.$control-sm;
+  padding: 0 1rem;
+  font-size: vars.$text-sm;
+  border-radius: vars.$radius-sm;
+
+  .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  &.iconOnly {
+    width: vars.$control-sm;
+    padding: 0;
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.primary {
+  color: vars.$accent-contrast;
+  background: vars.$accent;
+  box-shadow:
+    vars.$shadow-xs,
+    inset 0 1px 0 rgb(255 255 255 / 12%);
+
+  &:hover:not(:disabled) {
+    background: vars.$accent-hover;
+  }
+}
+
+.secondary {
+  color: vars.$text;
+  background: vars.$surface;
+  border-color: vars.$border-strong;
+  box-shadow: vars.$shadow-xs;
+
+  &:hover:not(:disabled) {
+    background: vars.$surface-2;
+    border-color: vars.$border-field;
+  }
+
+  // Bouton à bascule enfoncé (ex. mode édition)
+  &[aria-pressed="true"] {
+    color: vars.$accent-text;
+    background: vars.$accent-subtle;
+    border-color: vars.$accent-border;
+  }
+}
+
+.ghost {
+  color: vars.$text-muted;
+
+  &:hover:not(:disabled),
+  &[aria-expanded="true"] {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
+}
+
+.danger {
+  color: #fff;
+  background: vars.$danger;
+
+  &:hover:not(:disabled) {
+    background: vars.$danger-hover;
+  }
+}

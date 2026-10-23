@@ -1,0 +1,18 @@
+.field {
+  @include vars.field;
+
+  width: 100%;
+  height: vars.$control-md;
+  padding: 0 1.1rem;
+}
+
+// Toujours avec `.field`, qu'elle complète
+.inline {
+  @include vars.inline-field;
+
+  height: vars.$control-sm;
+  margin-left: -0.6rem;
+  padding: 0 0.6rem;
+  text-overflow: ellipsis;
+  border-radius: vars.$radius-sm;
+}

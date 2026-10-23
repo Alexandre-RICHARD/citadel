@@ -1,356 +1,42 @@
-// Hauteur de la barre du haut, fixe : la page et les en-têtes du tableau se calent dessous
-$toolbar-height: 4.5rem;
+// Styles de la page du backlog ; les jetons (couleurs, rayons, mixins) viennent de variables.scss, injecté sous le nom `vars`
+
+// ---------- Thème et page ----------
+
+// Posée sur <html> par la page : le thème habille aussi le fond hors de la page et les panneaux en portail
+.themeRoot {
+  @include vars.theme;
+
+  font-family: vars.$font-family;
+  background: vars.$bg;
+  scrollbar-gutter: stable;
+  -webkit-font-smoothing: antialiased;
+}
 
 .page {
   box-sizing: border-box;
-  // La page s'élargit avec le tableau : popovers et menus ne sont jamais coupés
+  // La page s'élargit avec le tableau et défile en largeur ; la barre du haut et le footer restent fixes
   width: max-content;
   min-width: 100%;
   min-height: 100svh;
-  // Place pour la barre du haut et le footer de debug, tous deux fixes
-  padding: $toolbar-height 0 5rem;
-  color: #1f1f1f;
-  background: #f6f6f6;
+  padding: vars.$toolbar-height 0 calc(vars.$footer-height + 2.4rem);
+  font-size: vars.$text-base;
+  line-height: 1.45;
+  color: vars.$text;
+  background: vars.$bg;
 }
 
-// ---------- Boutons (le style global de l'app les remet à zéro) ----------
-
-.button,
-.primaryButton,
-.editModeButton,
-.editModeButtonActive {
-  padding: 0.4rem 1rem;
-  font: inherit;
-  white-space: nowrap;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.button,
-.editModeButton {
-  color: #1f1f1f;
-  background: #fff;
-  border: 1px solid #bbb;
-
-  &:hover {
-    background: #f1f5f9;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-}
-
-.primaryButton,
-.editModeButtonActive {
-  color: #fff;
-  background: #2563eb;
-  border: 1px solid #2563eb;
-
-  &:hover {
-    background: #1d4ed8;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-}
-
-.linkButton {
-  padding: 0;
-  font: inherit;
-  color: #2563eb;
-  text-decoration: underline dotted;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-// ---------- Barre du haut et recherche ----------
-
-.toolbar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 30;
-  box-sizing: border-box;
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  height: $toolbar-height;
-  padding: 0 1rem;
-  background: #f6f6f6;
-  border-bottom: 1px solid #ddd;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.4rem;
-  white-space: nowrap;
-}
-
-.search {
-  position: relative;
-  display: flex;
-  flex: 1;
-  gap: 0.5rem;
-  max-width: 48rem;
-}
-
-.historyButtons {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.searchInput {
-  box-sizing: border-box;
-  flex: 1;
-  min-width: 0;
-  padding: 0.5rem 0.75rem;
-  font: inherit;
-  color: #1f1f1f;
-  background: #fff;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-}
-
-.searchResults {
-  position: absolute;
-  top: calc(100% + 0.25rem);
-  right: 0;
-  left: 0;
-  max-height: 70vh;
-  margin: 0;
-  padding: 0.25rem 0;
-  overflow-y: auto;
-  list-style: none;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 6px 20px rgb(0 0 0 / 15%);
-}
-
-// « 📚 Ma base » : la liste défile seule, le filtre reste au-dessus
-.databaseGameFilter {
-  @extend .searchInput;
-
-  width: 100%;
-}
-
-.databaseGameList {
-  height: 60vh;
-  margin: 0.75rem 0 0 !important;
-  padding: 0 !important;
-  overflow-y: auto;
-  list-style: none;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
-}
-
-.searchMessage {
-  padding: 0.5rem 0.75rem;
-  color: #555;
-}
-
-.searchResult {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.375rem 0.75rem;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background: #f1f5f9;
-  }
-}
-
-.searchResultName {
-  flex: 1;
-}
-
-.originalName {
-  color: #666;
-}
-
-// « via … » : la fiche qui a fait trouver le jeu, sous son nom
-.matchedName {
+.main {
   display: block;
-  font-size: 0.8rem;
-  color: #666;
 }
 
-.inDatabaseBadge {
-  padding: 0.125rem 0.5rem;
-  font-size: 0.8rem;
+.visuallyHidden {
+  @include vars.visually-hidden;
+}
+
+.number {
+  @include vars.tabular;
+
   white-space: nowrap;
-  color: #14532d;
-  background: #dcfce7;
-  border-radius: 999px;
-}
-
-// ---------- Miniatures, sociétés et plateformes ----------
-
-.thumbnail,
-.thumbnailPlaceholder {
-  flex: none;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 4px;
-}
-
-.thumbnail {
-  display: block;
-  object-fit: cover;
-}
-
-.thumbnailPlaceholder {
-  display: grid;
-  place-items: center;
-  font-size: 1.5rem;
-  background: #e5e5e5;
-}
-
-.company {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.25rem;
-
-  img {
-    align-self: flex-start;
-    max-width: 6rem;
-    max-height: 2rem;
-    object-fit: contain;
-  }
-}
-
-.platform {
-  display: inline-flex;
-  gap: 0.35rem;
-  align-items: center;
-  white-space: nowrap;
-
-  img {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-}
-
-// ---------- Tableau ----------
-
-.tableWrapper {
-  padding: 1rem;
-}
-
-.table {
-  width: max-content;
-  min-width: 100%;
-  font-size: 0.9rem;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-collapse: collapse;
-
-  th,
-  td {
-    padding: 0.4rem 0.6rem;
-    text-align: left;
-    vertical-align: middle;
-    border-bottom: 1px solid #eee;
-  }
-
-  th {
-    position: sticky;
-    top: $toolbar-height;
-    z-index: 5;
-    font-weight: 600;
-    white-space: nowrap;
-    background: #f1f1f1;
-    border-bottom: 1px solid #ddd;
-  }
-}
-
-// Mode édition : le tableau est encadré
-.editingTable {
-  @extend .table;
-
-  outline: 2px solid #2563eb;
-}
-
-.gameRow {
-  background: #fff;
-}
-
-// Jeux « À jouer bientôt » mis en valeur
-.upNextRow {
-  background: #fef9c3;
-}
-
-// Sous-lignes : fond plus discret, légèrement indentées
-.userVersionRow {
-  font-size: 0.85rem;
-  background: #f8fafc;
-
-  td:nth-child(2) {
-    padding-left: 1.75rem;
-  }
-}
-
-.expandCell {
-  width: 6rem;
-  white-space: nowrap;
-}
-
-.chevron {
-  padding: 0;
-  font: inherit;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.userVersionBadge {
-  margin-left: 0.25rem;
-  padding: 0.05rem 0.4rem;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  color: #1e3a8a;
-  background: #dbeafe;
-  border-radius: 999px;
-}
-
-.nameCell {
-  display: flex;
-  flex-direction: column;
-  min-width: 12rem;
-}
-
-.versionTitle {
-  font-size: 0.85rem;
-  font-style: italic;
-  color: #475569;
-}
-
-// Commentaire tronqué, complet au survol
-.comment {
-  display: inline-block;
-  max-width: 14rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-
-.help {
-  cursor: help;
 }
 
 // Temps et compteurs à zéro : estompés, ils laissent ressortir les valeurs saisies
@@ -358,104 +44,2057 @@ $toolbar-height: 4.5rem;
   opacity: 0.2;
 }
 
-// ---------- Tri, filtres et colonnes ----------
+.emptyValue {
+  color: vars.$text-faint;
+}
+
+// ---------- Barre du haut ----------
+
+.toolbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: vars.$z-toolbar;
+  box-sizing: border-box;
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  height: vars.$toolbar-height;
+  padding: 0 2.4rem;
+  background: color-mix(in srgb, vars.$bg 84%, transparent);
+  border-bottom: 1px solid vars.$border;
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+.brand {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1rem;
+  align-items: center;
+  margin-right: 1.2rem;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  color: #fff;
+  background: linear-gradient(
+    140deg,
+    vars.$accent,
+    color-mix(in srgb, vars.$accent 55%, #d946ef)
+  );
+  border-radius: vars.$radius-lg;
+  box-shadow:
+    0 6px 14px -6px color-mix(in srgb, vars.$accent 70%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 25%);
+
+  svg {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.toolbarEnd {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.8rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.historyButtons {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 2.4rem;
+  margin: 0 0.4rem;
+  background: vars.$border;
+}
+
+.countBadge {
+  @include vars.tabular;
+
+  min-width: 2rem;
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.7rem;
+  font-size: vars.$text-xs;
+  font-weight: 600;
+  line-height: 1.6rem;
+  color: vars.$accent-text;
+  text-align: center;
+  background: vars.$accent-subtle;
+  border-radius: vars.$radius-full;
+}
+
+// Mode édition : un interrupteur, toujours visible dans la barre du haut
+.editToggle {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.8rem;
+  align-items: center;
+  height: vars.$control-md;
+  padding: 0 0.8rem 0 1.2rem;
+  font-size: vars.$text-md;
+  font-weight: 500;
+  color: vars.$text-muted;
+  background: vars.$surface;
+  border: 1px solid vars.$border-strong;
+  border-radius: vars.$radius-md;
+  box-shadow: vars.$shadow-xs;
+  transition:
+    background-color vars.$duration vars.$ease,
+    border-color vars.$duration vars.$ease,
+    color vars.$duration vars.$ease;
+
+  &:hover {
+    color: vars.$text;
+    background: vars.$surface-2;
+  }
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.editToggleTrack {
+  position: relative;
+  width: 3rem;
+  height: 1.8rem;
+  background: vars.$border-strong;
+  border-radius: vars.$radius-full;
+  transition: background-color vars.$duration vars.$ease;
+
+  &::before {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    content: "";
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgb(16 24 40 / 30%);
+    transition: translate vars.$duration vars.$ease;
+  }
+}
+
+.editToggleOn {
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
+
+  &:hover {
+    color: vars.$accent-text;
+    background: vars.$accent-subtle-hover;
+  }
+
+  .editToggleTrack {
+    background: vars.$accent;
+
+    &::before {
+      translate: 1.2rem 0;
+    }
+  }
+}
+
+// ---------- Recherche IGDB ----------
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 24rem;
+  max-width: 56rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1.3rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  color: vars.$text-subtle;
+  pointer-events: none;
+}
+
+.searchInput {
+  @include vars.field;
+
+  width: 100%;
+  height: 3.8rem;
+  padding: 0 4.4rem 0 4.1rem;
+  font-size: vars.$text-md;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-xs;
+
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+// Spécificité doublée : le bouton d'effacement passe avant la position du module des boutons
+.search .searchShortcut,
+.search .searchSpinner,
+.search .searchClear {
+  position: absolute;
+  right: 0.8rem;
+}
+
+// Dans l'enveloppe de son info-bulle, le bouton n'est plus centré par la recherche : il se centre seul
+.search .searchClear {
+  top: calc(50% - #{vars.$control-sm} / 2);
+  right: 0.5rem;
+}
+
+.searchShortcut {
+  display: grid;
+  place-items: center;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.6rem;
+  font-family: vars.$font-mono;
+  font-size: vars.$text-xs;
+  color: vars.$text-subtle;
+  pointer-events: none;
+  background: vars.$surface-2;
+  border: 1px solid vars.$border;
+  border-bottom-width: 2px;
+  border-radius: vars.$radius-sm;
+
+  .searchInput:focus ~ & {
+    display: none;
+  }
+}
+
+.search .searchSpinner {
+  right: 1.2rem;
+}
+
+.searchPanel {
+  @include vars.floating-panel;
+  @include vars.pop-in;
+
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  right: 0;
+  left: 0;
+  max-height: 70vh;
+  padding: 0.6rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.listMessage {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  margin: 0;
+  padding: 1.2rem 1rem;
+  color: vars.$text-muted;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+}
+
+.errorMessage {
+  color: vars.$danger-text;
+}
+
+.resultList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  border-radius: vars.$radius-md;
+}
+
+.activeResult {
+  background: vars.$surface-3;
+}
+
+.resultText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.resultName {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.8rem;
+  align-items: baseline;
+  font-size: vars.$text-md;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.resultYear {
+  @include vars.tabular;
+
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}
+
+.resultMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.morePlatforms {
+  font-size: vars.$text-xs;
+  font-weight: 600;
+  color: vars.$text-subtle;
+}
+
+// « via … » : la fiche qui a fait trouver le jeu
+.matchedName {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-left: 0.4rem;
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+// ---------- Miniatures, jaquette, sociétés, plateformes ----------
+
+.thumbnail {
+  display: block;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-md;
+  box-shadow: 0 0 0 1px color-mix(in srgb, vars.$text 8%, transparent);
+}
+
+.thumbnailSm {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: vars.$radius-sm;
+}
+
+.thumbnailMd {
+  width: 4rem;
+  height: 4rem;
+}
+
+.thumbnailLg {
+  width: 7.2rem;
+  height: 7.2rem;
+}
+
+.thumbnailPlaceholder {
+  display: grid;
+  place-items: center;
+  color: vars.$text-faint;
+
+  svg {
+    width: 40%;
+    height: 40%;
+  }
+}
+
+.cover {
+  display: block;
+  flex-shrink: 0;
+  width: 9rem;
+  height: 12.8rem;
+  object-fit: cover;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-md;
+}
+
+.coverPlaceholder {
+  display: grid;
+  place-items: center;
+  color: vars.$text-faint;
+
+  svg {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+}
+
+.company {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 11rem;
+}
+
+// Tous les logos dans la même plaque claire : larges, carrés, sombres ou sur fond plein, ils restent alignés et lisibles
+.companyLogo {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 6.4rem;
+  height: 2.6rem;
+  padding: 0.3rem 0.5rem;
+  background: vars.$logo-plate;
+  border-radius: vars.$radius-sm;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, vars.$text 6%, transparent);
+
+  // Tailles fixes : une hauteur en % ne se résout pas dans une piste de grille à la taille du contenu
+  img {
+    display: block;
+    max-width: 5.4rem;
+    max-height: 2rem;
+    object-fit: contain;
+  }
+}
+
+.companyName {
+  font-size: vars.$text-sm;
+  line-height: 1.3;
+  color: vars.$text-muted;
+}
+
+.platform {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  height: 2.2rem;
+  padding: 0 0.7rem;
+  font-size: vars.$text-sm;
+  font-weight: 500;
+  color: vars.$text-muted;
+  white-space: nowrap;
+  background: vars.$surface-2;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-sm;
+
+  img,
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+// Émulateur : bord en pointillé et icône de puce
+.emulator {
+  border-style: dashed;
+  border-color: vars.$border-strong;
+}
+
+// ---------- Pastilles : statuts, dates, notes ----------
+
+.badge {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: 2.4rem;
+  padding: 0 0.9rem 0 0.7rem;
+  font-size: vars.$text-sm;
+  font-weight: 500;
+  color: var(--tone-fg);
+  white-space: nowrap;
+  background: var(--tone-bg);
+  border-radius: vars.$radius-full;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+}
+
+.toneGray {
+  @include vars.tone(gray);
+}
+
+.toneViolet {
+  @include vars.tone(violet);
+}
+
+.toneBlue {
+  @include vars.tone(blue);
+}
+
+.toneCyan {
+  @include vars.tone(cyan);
+}
+
+.toneGreen {
+  @include vars.tone(green);
+}
+
+.toneTeal {
+  @include vars.tone(teal);
+}
+
+.toneIndigo {
+  @include vars.tone(indigo);
+}
+
+.toneAmber {
+  @include vars.tone(amber);
+}
+
+.toneRed {
+  @include vars.tone(red);
+}
+
+.endingType {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  white-space: nowrap;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    opacity: 0.6;
+  }
+}
+
+.rating {
+  @include vars.tabular;
+
+  display: inline-flex;
+  align-items: baseline;
+  padding: 0.2rem 0.8rem;
+  font-weight: 700;
+  color: var(--tone-fg);
+  background: var(--tone-bg);
+  border-radius: vars.$radius-full;
+}
+
+.ratingScale {
+  margin-left: 0.1rem;
+  font-size: vars.$text-xs;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.tag {
+  padding: 0.1rem 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: vars.$accent-text;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: vars.$accent-subtle;
+  border-radius: vars.$radius-xs;
+}
+
+// ---------- Tableau ----------
+
+.tableArea {
+  padding: 2rem 2.4rem 0;
+}
+
+// Résumé du backlog : calé à gauche quand la page défile en largeur
+.tableCaption {
+  position: sticky;
+  left: 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100vw - 6.4rem);
+  margin-bottom: 1.2rem;
+  color: vars.$text-muted;
+
+  strong {
+    @include vars.tabular;
+
+    font-weight: 650;
+    color: vars.$text;
+  }
+}
+
+.captionSeparator {
+  margin: 0 0.8rem;
+  color: vars.$text-faint;
+}
+
+.captionFilters {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-weight: 500;
+  color: vars.$accent-text;
+}
+
+.editModeTag {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.3rem 1rem 0.3rem 0.8rem;
+  font-size: vars.$text-sm;
+  font-weight: 600;
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-radius: vars.$radius-full;
+}
+
+.editModeHint {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.table {
+  @include vars.tabular;
+
+  width: max-content;
+  min-width: 100%;
+  font-size: vars.$text-base;
+  background: vars.$surface;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-xl;
+  border-collapse: separate;
+  border-spacing: 0;
+  box-shadow: vars.$shadow-sm;
+  transition:
+    border-color vars.$duration vars.$ease,
+    box-shadow vars.$duration vars.$ease;
+
+  th,
+  td {
+    padding: 0.8rem;
+    text-align: left;
+    vertical-align: middle;
+    background: var(--row-bg);
+    border-bottom: 1px solid vars.$border;
+  }
+
+  // Coins arrondis : les fonds des cellules d'angle suivent l'arrondi du tableau
+  thead tr:first-child th:first-child {
+    border-top-left-radius: vars.$radius-xl;
+  }
+
+  thead tr:first-child th:last-child {
+    border-top-right-radius: vars.$radius-xl;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+
+    &:first-child {
+      border-bottom-left-radius: vars.$radius-xl;
+    }
+
+    &:last-child {
+      border-bottom-right-radius: vars.$radius-xl;
+    }
+  }
+
+  .alignCenter {
+    text-align: center;
+  }
+
+  .alignEnd {
+    text-align: right;
+  }
+
+  // Colonne du chevron, toujours collée à gauche
+  .expandCell {
+    position: sticky;
+    left: 0;
+    z-index: vars.$z-sticky-cell;
+    box-sizing: border-box;
+    width: 4.4rem;
+    min-width: 4.4rem;
+    max-width: 4.4rem;
+    padding: 0 0.2rem 0 0.8rem;
+  }
+
+  // Miniature et nom : collés au défilement horizontal, pour toujours savoir de quel jeu parle la ligne
+  .stickyCell {
+    position: sticky;
+    z-index: vars.$z-sticky-cell;
+  }
+
+  .thumbnailCell {
+    box-sizing: border-box;
+    width: 5.6rem;
+    min-width: 5.6rem;
+    max-width: 5.6rem;
+    padding-right: 0.8rem;
+    padding-left: 0.8rem;
+  }
+}
+
+// Mode édition : le tableau est encadré de la couleur d'accent
+.editingTable {
+  border-color: vars.$accent-border;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, vars.$accent 14%, transparent),
+    vars.$shadow-sm;
+}
+
+.stickyThumbnail {
+  left: 4.4rem;
+}
+
+.stickyName {
+  left: 4.4rem;
+}
+
+.stickyNameAfterThumbnail {
+  left: 10rem;
+}
+
+// Dernière colonne collante : un trait et une ombre légère la séparent des colonnes qui passent dessous
+.stickyEdge::after {
+  position: absolute;
+  top: 0;
+  right: -0.8rem;
+  bottom: -1px;
+  width: 0.8rem;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, vars.$text 5%, transparent),
+    transparent
+  );
+  border-left: 1px solid vars.$border;
+}
+
+// En-têtes : collés sous la barre du haut
+.headerRow {
+  --row-bg: #{vars.$surface-2};
+
+  th {
+    position: sticky;
+    top: vars.$toolbar-height;
+    z-index: vars.$z-sticky-head;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-size: vars.$text-sm;
+    font-weight: 600;
+    color: vars.$text-muted;
+    white-space: nowrap;
+  }
+
+  .editingTable & th {
+    border-bottom-color: vars.$accent-border;
+  }
+}
+
+.table .headerRow .expandCell,
+.table .headerRow .stickyCell {
+  z-index: vars.$z-sticky-corner;
+}
+
+.headerContent {
+  display: inline-flex;
+  gap: 0.2rem;
+  align-items: center;
+  vertical-align: middle;
+}
 
 .sortButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
   display: inline-flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
   align-items: center;
-  padding: 0;
-  font: inherit;
+  margin: -0.3rem -0.5rem;
+  padding: 0.3rem 0.5rem;
   white-space: nowrap;
-  color: inherit;
-  background: none;
-  border: none;
-  cursor: pointer;
+  border-radius: vars.$radius-sm;
+  transition:
+    background-color vars.$duration vars.$ease,
+    color vars.$duration vars.$ease;
+
+  &:hover {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
+}
+
+.sortedColumn {
+  color: vars.$accent-text;
+
+  &:hover {
+    color: vars.$accent-text;
+  }
 }
 
 .sortIndicator {
-  font-size: 0.8rem;
+  display: inline-flex;
+  gap: 0.1rem;
+  align-items: center;
+
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
 }
 
-// La ligne des filtres défile sous la ligne des en-têtes, seule à rester visible
-.filterRow th {
-  position: static;
-  font-weight: normal;
-  background: #fafafa;
+.sortPriority {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: vars.$accent-contrast;
+  background: vars.$accent;
+  border-radius: vars.$radius-full;
 }
 
-.filterField,
-.rangeField {
-  box-sizing: border-box;
-  padding: 0.15rem 0.3rem;
-  font: inherit;
-  font-weight: normal;
-  color: #1f1f1f;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.headerIcon {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
-.filterField {
+.staticHeader {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.helpButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: vars.$text-faint;
+  border-radius: vars.$radius-full;
+
+  &:hover {
+    color: vars.$accent-text;
+    background: vars.$accent-subtle;
+  }
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+}
+
+// Bulle explicative des types de fin et des statuts
+.helpList {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.8rem 1.2rem;
+  align-items: center;
+  margin: 0;
+
+  > div {
+    display: contents;
+  }
+
+  dt {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  dd {
+    margin: 0;
+    font-size: vars.$text-sm;
+    color: vars.$tooltip-muted;
+  }
+}
+
+.helpRank {
+  @include vars.tabular;
+
+  width: 1.4rem;
+  font-size: vars.$text-xs;
+  font-weight: 700;
+  color: vars.$tooltip-muted;
+  text-align: right;
+}
+
+// ---------- Ligne des filtres ----------
+
+.filterRow {
+  --row-bg: #{vars.$surface};
+
+  th {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    font-weight: 400;
+  }
+}
+
+.filterRowIcon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 auto;
+  color: vars.$text-faint;
+}
+
+.clearFiltersButton {
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+
+  &:hover:not(:disabled) {
+    color: vars.$accent-text;
+    background: vars.$accent-subtle-hover;
+  }
+}
+
+.textFilter {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  min-width: 9rem;
+}
+
+.filterInput {
+  @include vars.field;
+
   width: 100%;
-  min-width: 6rem;
-  max-width: 12rem;
+  height: vars.$control-sm;
+  padding: 0 0.8rem;
+  font-size: vars.$text-sm;
+  border-radius: vars.$radius-sm;
+}
+
+.textFilter.activeFilter .filterInput {
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
+}
+
+// Filtre exact, après un clic sur une série
+.exactMark {
+  font-weight: 700;
+  color: vars.$accent-text;
+}
+
+// Spécificité doublée : passe avant la largeur minimale du champ de la liste déroulante
+.filterRow .filterSelect {
+  width: 100%;
+  min-width: 0;
+}
+
+.filterAllMark {
+  color: vars.$text-faint;
+}
+
+.filterTrigger {
+  @include vars.field;
+
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 5.6rem;
+  height: vars.$control-sm;
+  padding: 0 0.6rem 0 0.8rem;
+  font-size: vars.$text-sm;
+  color: vars.$text-faint;
+  text-align: left;
+  cursor: pointer;
+  border-radius: vars.$radius-sm;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.3rem;
+    height: 1.3rem;
+    color: vars.$text-subtle;
+  }
+
+  &[aria-expanded="true"] {
+    border-color: vars.$accent;
+  }
+}
+
+.filterTrigger.activeFilter {
+  font-weight: 500;
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
+
+  svg {
+    color: vars.$accent-text;
+  }
+}
+
+.filterSummary {
+  @include vars.tabular;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rangePopover {
+  padding: 1.2rem 1.4rem 1.4rem;
+
+  .popoverTitle {
+    margin-bottom: 1rem;
+  }
+}
+
+.rangeFields {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-end;
 }
 
 .rangeField {
-  width: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
-.columnList {
-  margin: 0.75rem 0 0 !important;
-  padding: 0 !important;
+.rangeInputGroup {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.rangeInput {
+  @include vars.field;
+  @include vars.tabular;
+
+  width: 9rem;
+  height: vars.$control-md;
+  padding: 0 1rem;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+}
+
+.rangeDash {
+  padding-bottom: 0.9rem;
+  color: vars.$text-subtle;
+}
+
+// ---------- Lignes ----------
+
+// Le fond de la ligne passe par --row-bg : les cellules collantes le reprennent, survol compris
+.gameRow {
+  --row-bg: #{vars.$row};
+
+  &:hover {
+    --row-bg: #{vars.$row-hover};
+  }
+}
+
+// « À jouer bientôt » : la ligne est mise en valeur, teintée et marquée d'un trait à gauche
+.upNextRow {
+  --row-bg: #{vars.$up-next-row};
+
+  &:hover {
+    --row-bg: #{vars.$up-next-row-hover};
+  }
+
+  .expandCell {
+    box-shadow: inset 3px 0 0 vars.$up-next;
+  }
+}
+
+.expandedRow td {
+  border-bottom-color: transparent;
+}
+
+// Sous-lignes : fond plus discret, nom en retrait derrière un coude
+.userVersionRow {
+  --row-bg: #{vars.$subrow};
+
+  &:hover {
+    --row-bg: #{vars.$subrow-hover};
+  }
+
+  td {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    border-bottom-color: color-mix(in srgb, vars.$border 55%, transparent);
+  }
+}
+
+.lastUserVersionRow td {
+  border-bottom-color: vars.$border;
+}
+
+.expandButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: inline-flex;
+  gap: 0.1rem;
+  align-items: center;
+  height: 2.6rem;
+  padding: 0 0.5rem 0 0.2rem;
+  font-size: vars.$text-xs;
+  font-weight: 700;
+  color: vars.$text-muted;
+  border-radius: vars.$radius-sm;
+
+  &:hover {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
+
+  &[aria-expanded="true"] .chevron {
+    rotate: 90deg;
+  }
+}
+
+.chevron {
+  width: 1.6rem;
+  height: 1.6rem;
+  transition: rotate vars.$duration vars.$ease;
+}
+
+.versionCount {
+  min-width: 1.6rem;
+  padding: 0 0.4rem;
+  line-height: 1.7rem;
+  color: vars.$accent-text;
+  text-align: center;
+  background: vars.$accent-subtle;
+  border-radius: vars.$radius-full;
+}
+
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 14rem;
+  max-width: 24rem;
+  text-wrap: pretty;
+}
+
+.primaryName {
+  font-weight: 600;
+  line-height: 1.3;
+  color: vars.$text;
+}
+
+.secondaryName {
+  font-size: vars.$text-sm;
+  line-height: 1.35;
+  color: vars.$text-subtle;
+}
+
+// Ligne à version jouée unique : le titre de sa version
+.versionTitle {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.2rem;
+  font-size: vars.$text-sm;
+  color: vars.$accent-text;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+.subRowName {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding-left: 0.6rem;
+  color: vars.$text-muted;
+
+  svg {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    color: vars.$text-faint;
+  }
+}
+
+.seriesCell {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  max-width: 16rem;
+}
+
+// Un clic sur la série filtre le tableau sur elle
+.seriesButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  text-align: left;
+  text-decoration: underline dotted vars.$border-strong;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35rem;
+  border-radius: vars.$radius-xs;
+  transition:
+    color vars.$duration vars.$ease,
+    text-decoration-color vars.$duration vars.$ease;
+
+  &:hover {
+    color: vars.$accent-text;
+    text-decoration: underline solid currentcolor;
+  }
+}
+
+// Série choisie à la main, autre que celle d'IGDB
+.modifiedMark {
+  display: inline-grid;
+  flex-shrink: 0;
+  color: vars.$text-faint;
+
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+// Cases en lecture seule : une icône pour « oui », rien pour « non »
+.booleanMark {
+  display: inline-grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: vars.$success-text;
+  vertical-align: middle;
+
+  svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+}
+
+.upNextMark {
+  color: vars.$up-next;
+
+  svg {
+    fill: currentcolor;
+  }
+}
+
+.cellCheckbox {
+  vertical-align: middle;
+}
+
+.inlinePair {
+  display: inline-flex;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.fieldUnit {
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}
+
+.commentTooltip {
+  max-width: 16rem;
+}
+
+// Commentaire tronqué, complet dans l'info-bulle
+.comment {
+  display: block;
+  max-width: 16rem;
+  overflow: hidden;
+  color: vars.$text-muted;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commentField {
+  width: 16rem;
+}
+
+// ---------- DLC ----------
+
+.popoverAnchor {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.dlcButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.8rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: vars.$radius-sm;
+  transition: background-color vars.$duration vars.$ease;
+
+  &:hover {
+    background: vars.$surface-3;
+  }
+
+  &[aria-expanded="true"] {
+    background: vars.$accent-subtle;
+  }
+}
+
+// Jeu sans DLC, en mode édition : de quoi en rechercher
+.addDlcButton {
+  width: 2.8rem;
+  min-width: 0;
+  height: 2.8rem;
+  padding: 0;
+  color: vars.$text-subtle;
+  border: 1px dashed vars.$border-strong;
+
+  &:hover {
+    color: vars.$accent-text;
+    border-color: vars.$accent;
+  }
+}
+
+.dlcProgress {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: center;
+  min-width: 3.6rem;
+  font-size: vars.$text-sm;
+}
+
+.dlcGauge {
+  width: 100%;
+  height: 0.3rem;
+  overflow: hidden;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-full;
+}
+
+.dlcGaugeFill {
+  display: block;
+  height: 100%;
+  background: vars.$accent;
+  border-radius: vars.$radius-full;
+}
+
+.dlcComplete {
+  .number {
+    font-weight: 600;
+    color: vars.$success-text;
+  }
+
+  .dlcGaugeFill {
+    background: vars.$success;
+  }
+}
+
+.dlcPopover {
+  width: max-content;
+  min-width: 26rem;
+  max-width: 38rem;
+}
+
+.popoverHeader {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 1.2rem 1.4rem 0.8rem;
+}
+
+.popoverTitle {
+  margin: 0;
+  font-size: vars.$text-md;
+  font-weight: 600;
+}
+
+.readOnlyTag {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-left: auto;
+  font-size: vars.$text-xs;
+  color: vars.$text-subtle;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+.dlcList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-height: 30rem;
+  margin: 0;
+  padding: 0.4rem 1.4rem 1.2rem;
+  overflow-y: auto;
   list-style: none;
+}
 
-  li {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid #f1f1f1;
-  }
+.readOnlyDlc {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  color: vars.$text-muted;
+}
 
-  label {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+.doneMark {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  box-sizing: border-box;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin-top: 0.1rem;
+  border: 1.5px solid vars.$border-strong;
+  border-radius: vars.$radius-xs;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
   }
 }
 
-// « Réorganiser la série » : une ligne par jeu, à glisser-déposer ; les sous-jeux décalés à droite
+.doneDlc {
+  color: vars.$text;
+
+  .doneMark {
+    color: vars.$success-text;
+    background: vars.$success-subtle;
+    border-color: vars.$success-border;
+  }
+}
+
+.popoverFooter {
+  padding: 0.6rem 0.8rem;
+  border-top: 1px solid vars.$border;
+}
+
+.sectionCount {
+  @include vars.tabular;
+
+  padding: 0.1rem 0.7rem;
+  font-size: vars.$text-xs;
+  font-weight: 600;
+  color: vars.$text-subtle;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-full;
+}
+
+// ---------- États vides et chargement ----------
+
+.emptyState {
+  position: sticky;
+  left: 2.4rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  max-width: calc(100vw - 6.4rem);
+  padding: 5.6rem 2.4rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 6.4rem;
+  height: 6.4rem;
+  margin-bottom: 0.6rem;
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-radius: vars.$radius-full;
+
+  svg {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: vars.$text-lg;
+  font-weight: 650;
+}
+
+.emptyText {
+  margin: 0 0 0.8rem;
+  color: vars.$text-muted;
+}
+
+.loadMore {
+  position: sticky;
+  left: 2.4rem;
+  box-sizing: border-box;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: calc(100vw - 6.4rem);
+  padding: 2.4rem;
+  color: vars.$text-muted;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: center;
+  justify-content: center;
+  padding: 5.6rem 0;
+  color: vars.$text-muted;
+}
+
+.loadingSpinner {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+
+.inlineStatus {
+  display: inline-flex;
+  gap: 0.8rem;
+  align-items: center;
+  color: vars.$text-muted;
+}
+
+.emptyHint {
+  margin: 0;
+  color: vars.$text-subtle;
+}
+
+// ---------- Formulaires des modales ----------
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.modalSection {
+  & + & {
+    margin-top: 2.8rem;
+    padding-top: 2.4rem;
+    border-top: 1px solid vars.$border;
+  }
+}
+
+.sectionTitle {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  margin: 0 0 1.2rem;
+  font-size: vars.$text-md;
+  font-weight: 650;
+  color: vars.$text;
+}
+
+.optionalTag {
+  padding: 0.1rem 0.7rem;
+  font-size: vars.$text-xs;
+  font-weight: 500;
+  color: vars.$text-subtle;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-full;
+}
+
+.modalIntro {
+  margin: 0 0 1.6rem;
+  color: vars.$text-muted;
+}
+
+.modalQuestion {
+  margin: 0;
+  font-size: vars.$text-md;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.formLabel {
+  padding: 0;
+  font-size: vars.$text-sm;
+  font-weight: 600;
+  color: vars.$text-muted;
+}
+
+.formHint {
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  align-items: flex-end;
+}
+
+.formRowButton {
+  align-self: flex-end;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.8rem 2rem;
+
+  @media (width <= 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.switchRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 3.2rem;
+}
+
+.fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 1rem;
+  }
+}
+
+.checkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
+  gap: 1rem 2.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fieldPair {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.versionField {
+  flex: 1 1 32rem;
+}
+
+.textInput {
+  @include vars.field;
+
+  min-width: 22rem;
+  height: vars.$control-md;
+  padding: 0 1.1rem;
+}
+
+.seriesSelect {
+  min-width: 24rem;
+  max-width: 36rem;
+}
+
+.seriesNumberField {
+  @include vars.field;
+  @include vars.tabular;
+
+  width: 8rem;
+  height: vars.$control-md;
+  padding: 0 1rem;
+  text-align: right;
+}
+
+.optionWithTag,
+.optionWithIcon {
+  display: inline-flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.optionWithIcon svg {
+  color: vars.$accent-text;
+}
+
+// Choix de la miniature
+.imageChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.imageChoice {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  position: relative;
+  padding: 0.3rem;
+  border: 2px solid transparent;
+  border-radius: vars.$radius-lg;
+  transition:
+    border-color vars.$duration vars.$ease,
+    box-shadow vars.$duration vars.$ease;
+
+  &:hover {
+    border-color: vars.$border-strong;
+  }
+}
+
+.selectedImageChoice {
+  border-color: vars.$accent;
+  box-shadow: 0 0 0 3px color-mix(in srgb, vars.$accent 22%, transparent);
+
+  &:hover {
+    border-color: vars.$accent;
+  }
+}
+
+.imageChoiceCheck {
+  position: absolute;
+  top: -0.7rem;
+  right: -0.7rem;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  color: #fff;
+  background: vars.$accent;
+  border: 2px solid vars.$surface;
+  border-radius: vars.$radius-full;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    stroke-width: 3;
+  }
+}
+
+// ---------- Prévisualisation d'un jeu IGDB ----------
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+
+.previewHero {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.previewHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding-top: 0.4rem;
+}
+
+.previewName {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.previewMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 2rem;
+  align-items: center;
+  margin: 1rem 0 0;
+  color: vars.$text-muted;
+}
+
+.previewRelease {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+
+  > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: vars.$text-subtle;
+  }
+}
+
+.externalLink {
+  @include vars.focus-visible;
+
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-weight: 500;
+  color: vars.$accent-text;
+  text-decoration: none;
+  border-radius: vars.$radius-xs;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin: 0;
+}
+
+.fact {
+  padding: 1.2rem 1.4rem;
+  background: vars.$surface-2;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
+
+  dt {
+    margin-bottom: 0.6rem;
+    font-size: vars.$text-xs;
+    font-weight: 600;
+    color: vars.$text-subtle;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Listes à cocher : versions et DLC à enregistrer, DLC à ajouter
+.choiceList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
+}
+
+.choiceItem {
+  padding: 1rem 1.4rem;
+  transition: background-color vars.$duration vars.$ease;
+
+  & + & {
+    border-top: 1px solid vars.$border;
+  }
+
+  &:hover {
+    background: vars.$surface-2;
+  }
+
+  &:first-child {
+    border-radius: vars.$radius-lg vars.$radius-lg 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 vars.$radius-lg vars.$radius-lg;
+  }
+
+  &:only-child {
+    border-radius: vars.$radius-lg;
+  }
+}
+
+// Un DLC : sa case DLC, puis « Comme jeu » poussé à droite
+.dlcChoice {
+  display: flex;
+  gap: 1.6rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.platformDates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
+  margin-top: 0.4rem;
+}
+
+.platformDate {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}
+
+.calloutTitle {
+  margin: 0 0 0.6rem;
+  font-weight: 600;
+}
+
+.warningDetails {
+  margin-top: 0.4rem;
+
+  summary {
+    cursor: pointer;
+  }
+
+  pre {
+    max-height: 20rem;
+    margin: 0.6rem 0 0;
+    padding: 1rem;
+    overflow: auto;
+    font-family: vars.$font-mono;
+    font-size: vars.$text-xs;
+    white-space: pre-wrap;
+    background: vars.$surface;
+    border: 1px solid vars.$border;
+    border-radius: vars.$radius-md;
+  }
+}
+
+// ---------- « Ma base » ----------
+
+.filterBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.filterBoxIcon {
+  position: absolute;
+  left: 1.3rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: vars.$text-subtle;
+  pointer-events: none;
+}
+
+.filterBoxInput {
+  @include vars.field;
+
+  width: 100%;
+  height: 4rem;
+  padding: 0 1.2rem 0 4rem;
+  font-size: vars.$text-md;
+  border-radius: vars.$radius-lg;
+}
+
+// La liste défile seule, le filtre reste au-dessus
+.databaseList {
+  box-sizing: border-box;
+  height: min(56rem, 55vh);
+  padding: 0.6rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
+}
+
+.listBox {
+  justify-content: center;
+  padding: 3.2rem;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
+}
+
+// ---------- « Réorganiser la série » ----------
+
+.seriesHint {
+  margin-bottom: 1.6rem;
+}
+
 .seriesList {
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
   list-style: none;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
 }
 
+// Une ligne par jeu, à glisser-déposer ; les sous-jeux décalés à droite
 .seriesEntry {
   position: relative;
   display: grid;
-  grid-template-columns: 1.5rem 4rem 1fr 7rem 1.5rem;
-  gap: 0.75rem;
+  grid-template-columns: 2.4rem 7.2rem minmax(0, 1fr) max-content 2.4rem;
+  gap: 1.2rem;
   align-items: center;
-  padding: 0.4rem 0.5rem;
-  border-bottom: 1px solid #f1f1f1;
+  padding: 0.8rem 1.2rem;
+  background: vars.$surface;
+  border-bottom: 1px solid vars.$border;
 
-  // Sous-jeu : décalé de 2rem, comme le glisser qui en fait un
-  &[data-sub] {
-    padding-left: 2.5rem;
+  &:first-child {
+    border-radius: vars.$radius-lg vars.$radius-lg 0 0;
   }
 
-  // Le jeu d'où le menu a été ouvert
+  &:last-child {
+    border-bottom: 0;
+    border-radius: 0 0 vars.$radius-lg vars.$radius-lg;
+  }
+
+  // Sous-jeu : décalé de 3,2rem, comme le glisser qui en fait un
+  &[data-sub] {
+    padding-left: 4.4rem;
+  }
+
+  // Le jeu d'où le menu a été ouvert : en gras, marqué d'un trait d'accent
   &[data-current] {
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: inset 3px 0 0 vars.$accent;
+
+    .primaryName {
+      font-weight: 700;
+    }
   }
 
   // Sorti avant un jeu placé plus haut
   &[data-conflict] {
-    background: #fee2e2;
+    background: vars.$danger-subtle;
   }
 
   &[data-dragged] {
@@ -465,474 +2104,208 @@ $toolbar-height: 4.5rem;
   // Le trait de dépôt : plein pour un principal, décalé à droite pour un sous-jeu
   &[data-drop-side]::before {
     position: absolute;
-    right: 0;
-    left: 0;
-    height: 3px;
+    right: 0.8rem;
+    left: 0.8rem;
+    z-index: 1;
+    height: 2px;
     content: "";
-    background: #2563eb;
+    background: vars.$accent;
+    border-radius: vars.$radius-full;
+    box-shadow: 0 0 0 2px color-mix(in srgb, vars.$accent 25%, transparent);
   }
 
   &[data-drop-side="above"]::before {
-    top: -2px;
+    top: -1px;
   }
 
   &[data-drop-side="below"]::before {
-    bottom: -2px;
+    bottom: -1px;
   }
 
   &[data-drop-level="sub"]::before {
-    left: 2rem;
+    left: 4rem;
   }
 }
 
 .dragHandle {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 3.2rem;
+  color: vars.$text-faint;
   cursor: grab;
+  border-radius: vars.$radius-sm;
+
+  &:hover {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
-.seriesNumberField {
-  width: 3.5rem;
-  font: inherit;
-  text-align: right;
+.seriesEntryNumber {
+  width: 6.4rem;
+  height: vars.$control-sm;
+  border-radius: vars.$radius-sm;
 }
 
-// Numéro changé depuis l'ouverture ; l'ancien au survol
-.changedSeriesNumberField {
-  @extend .seriesNumberField;
-
+// Numéro changé depuis l'ouverture ; l'ancien en info-bulle
+.changedSeriesNumber {
   font-weight: 700;
-  color: #2563eb;
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
 }
 
-.iconButton {
-  padding: 0.1rem 0.3rem;
-  font: inherit;
-  background: none;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
+.seriesEntryWarning {
+  display: flex;
+  justify-content: center;
+}
+
+.conflictIcon {
+  display: inline-grid;
+  color: vars.$danger-text;
+
+  svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+}
+
+// ---------- Colonnes ----------
+
+.columnList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-lg;
+}
+
+.columnItem {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem 0.6rem 1.2rem;
+
+  & + & {
+    border-top: 1px solid vars.$border;
+  }
+
+  &:hover {
+    background: vars.$surface-2;
+  }
+
+  &:first-child {
+    border-radius: vars.$radius-lg vars.$radius-lg 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 vars.$radius-lg vars.$radius-lg;
+  }
+}
+
+.hiddenColumn {
+  color: vars.$text-subtle;
+}
+
+.columnMoves {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.moveButton {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  color: vars.$text-subtle;
+  border-radius: vars.$radius-sm;
+
+  &:hover:not(:disabled) {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }
 
-.emptyMessage {
-  padding: 1rem;
-  color: #666;
-}
-
-// ---------- Champs d'édition des cellules ----------
-
-.cellField,
-.numberField,
-.textField,
-.dateField {
-  box-sizing: border-box;
-  padding: 0.15rem 0.3rem;
-  font: inherit;
-  color: #1f1f1f;
-  background: #fff;
-  border: 1px solid #bbb;
-  border-radius: 4px;
-}
-
-.numberField {
-  width: 3.75rem;
-}
-
-.textField {
-  width: 12rem;
-}
-
-.fieldGroup {
-  display: inline-flex;
-  gap: 0.25rem;
-  align-items: center;
-  white-space: nowrap;
-}
-
-// ---------- Popover des DLC et menu Actions ----------
-
-.popoverAnchor {
-  position: relative;
-  display: inline-block;
-}
-
-.popover,
-.menu {
-  position: absolute;
-  top: calc(100% + 0.25rem);
-  z-index: 20;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 6px 20px rgb(0 0 0 / 15%);
-}
-
-.popover {
-  left: 0;
-  width: max-content;
-  max-width: 24rem;
-  max-height: 18rem;
-  padding: 0.5rem 0.75rem;
-  overflow-y: auto;
-
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  label {
-    display: flex;
-    gap: 0.4rem;
-    align-items: flex-start;
-    padding: 0.2rem 0;
-  }
-}
-
-.popoverTitle {
-  margin: 0 0 0.35rem;
-  font-weight: 600;
-}
-
-// Dernière colonne : le menu s'ouvre vers la gauche
-.menu {
-  right: 0;
-  min-width: 15rem;
-  margin: 0;
-  padding: 0.25rem 0;
-  list-style: none;
-
-  a,
-  button {
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-    padding: 0.4rem 0.75rem;
-    font: inherit;
-    color: inherit;
-    white-space: nowrap;
-    text-align: left;
-    text-decoration: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      background: #f1f5f9;
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.45;
-    }
-  }
-}
-
-.actionsButton {
-  padding: 0 0.5rem;
-  font: inherit;
-  font-size: 1.1rem;
-  background: none;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:hover {
-    background: #f1f5f9;
-  }
-}
-
-// ---------- Modales ----------
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgb(0 0 0 / 45%);
-}
-
-.modal,
-.compactModal {
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100svh - 2rem);
-  color: #1f1f1f;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 20px 50px rgb(0 0 0 / 30%);
-}
-
-.modal {
-  width: min(56rem, 100%);
-}
-
-.compactModal {
-  width: min(28rem, 100%);
-}
-
-.modalTitle {
-  margin: 0;
-  padding: 1rem 1.25rem;
-  font-size: 1.2rem;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.modalBody {
-  flex: 1;
-  padding: 1rem 1.25rem;
-  overflow-y: auto;
-
-  h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-  }
-
-  p {
-    margin: 0;
-  }
-
-  ul {
-    margin: 0;
-    padding-left: 1.25rem;
-  }
-
-  a {
-    color: #2563eb;
-  }
-}
-
-.modalActions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  padding: 0.75rem 1.25rem;
-  border-top: 1px solid #e5e5e5;
-}
-
-// Case à côté des boutons (« Ajouter à mon backlog »)
-.actionsOption {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  margin-right: 0.5rem;
-}
-
-.preview {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.previewName {
-  font-size: 1.15rem;
-}
-
-// Liste à cocher (versions à enregistrer) : la case remplace la puce
-.checkList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  list-style: none;
-
-  &,
-  .modalBody & {
-    padding-left: 0;
-  }
-
-  label {
-    display: flex;
-    gap: 0.5rem;
-    align-items: baseline;
-  }
-}
-
-// Un DLC : sa case DLC, puis « 🧩 comme jeu » poussé à droite
-.dlcChoice {
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  align-items: baseline;
-
-  label:last-child {
-    flex-shrink: 0;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    color: #555;
-  }
-}
-
-.imageChoices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.imageChoice,
-.selectedImageChoice {
-  padding: 2px;
-  background: none;
-  border: 3px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.selectedImageChoice {
-  border-color: #2563eb;
-}
-
-.choiceRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
-  margin-top: 0.75rem;
-
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-weight: 600;
-  }
-
-  select,
-  input {
-    max-width: 100%;
-    padding: 0.35rem 0.5rem;
-    font: inherit;
-    font-weight: normal;
-    color: #1f1f1f;
-    background: #fff;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-
-    &:disabled {
-      opacity: 0.5;
-    }
-  }
-
-  .textField {
-    width: 24rem;
-  }
-}
-
-// Cases du joueur côte à côte (« À jouer bientôt », « Possédé »)
-.checkRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 0.75rem;
-
-  label {
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-    font-weight: 600;
-  }
-}
-
-.checkGroup {
-  margin: 0.75rem 0 0;
-  padding: 0;
-  border: none;
-
-  legend {
-    margin-bottom: 0.25rem;
-    padding: 0;
-    font-weight: 600;
-  }
-}
-
-.hint {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.notice {
-  margin-bottom: 1rem !important;
-  padding: 0.5rem 0.75rem;
-  background: #eff6ff;
-  border-radius: 6px;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.5rem 1rem;
-  margin: 0;
-
-  dt {
-    font-weight: 600;
-  }
-
-  dd {
-    margin: 0;
-  }
-}
-
-.backlogOption {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e5e5;
-}
-
-.warnings {
-  padding: 0.75rem;
-  background: #fff7ed;
-  border: 1px solid #fdba74;
-  border-radius: 6px;
-
-  summary {
-    cursor: pointer;
-  }
-
-  pre {
-    max-height: 15rem;
-    overflow: auto;
-    font-size: 0.75rem;
-    white-space: pre-wrap;
-  }
-}
-
-// ---------- Footer de debug ----------
+// ---------- Footer de debug : sombre dans les deux thèmes ----------
 
 .debugFooter {
   position: fixed;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 30;
+  z-index: vars.$z-toolbar;
+  box-sizing: border-box;
   display: flex;
-  flex-wrap: wrap;
+  gap: 1.6rem;
   align-items: center;
-  gap: 0.25rem 1.5rem;
-  padding: 0.5rem 1rem;
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: #e5e5e5;
-  background: #1f1f1f;
-  border-top: 1px solid #444;
+  height: vars.$footer-height;
+  padding: 0 0.6rem 0 1.6rem;
+  font-family: vars.$font-mono;
+  font-size: 1.15rem;
+  color: #aeb6c4;
+  background: #0b0e13;
+  border-top: 1px solid #1f2530;
 
-  button {
-    margin-left: auto;
-    padding: 0.25rem 0.75rem;
-    font: inherit;
-    color: #1f1f1f;
-    background: #e5e5e5;
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background: #fff;
-    }
+  strong {
+    font-weight: 600;
+    color: #eef0f4;
   }
+}
+
+.debugItems {
+  display: flex;
+  flex: 1;
+  gap: 2.4rem;
+  align-items: center;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.debugTitle {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  font-weight: 700;
+  color: #fbbf24;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+}
+
+.debugSort {
+  display: inline-flex;
+  align-items: center;
+
+  span {
+    display: inline-flex;
+    gap: 0.2rem;
+    align-items: center;
+  }
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+.copyButton {
+  flex-shrink: 0;
 }

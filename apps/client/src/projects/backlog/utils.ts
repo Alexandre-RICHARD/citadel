@@ -1,4 +1,6 @@
 /* eslint-disable citadel/max-one-export -- le cahier des charges impose 6 fichiers, dont utils.ts pour toutes les fonctions */
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
+
 import {
 	type AppState,
 	columnDefinitions,
@@ -369,9 +371,9 @@ export async function searchIgdbGames(
 	return [...hits.values()].slice(0, searchResultLimit);
 }
 
-// ---------- Base : « 📚 Ma base », sans requête IGDB ----------
+// ---------- Base : « Ma base », sans requête IGDB ----------
 
-/** Jeux affichés par page dans « 📚 Ma base » (section 8) */
+/** Jeux affichés par page dans « Ma base » (section 8) */
 export const databasePageSize = 50;
 
 /**
@@ -1503,23 +1505,6 @@ export function getVersionLabel(
 		: `${title} · ${platformNames.join(", ")}`;
 }
 
-/** Plateformes d'une version avec leur date de sortie, ex. « PS3 11/11/2011 · PC 11/11/2011 » */
-export function describeVersionPlatforms(
-	versionId: number,
-	versionPlatforms: VersionPlatform[],
-	platforms: Platform[],
-): string {
-	return versionPlatforms
-		.filter((versionPlatform) => versionPlatform.versionId === versionId)
-		.map(({ platformId, releaseDate }) => {
-			const name =
-				platforms.find(({ id }) => id === platformId)?.shortName ??
-				`#${platformId}`;
-			return `${name} ${releaseDate === null ? "(date inconnue)" : formatIsoDate(releaseDate)}`;
-		})
-		.join(" · ");
-}
-
 // ---------- Données et statuts ----------
 
 export function findById<T extends { id: number }>(
@@ -2367,7 +2352,7 @@ export function getFilterOptions(
 	return [];
 }
 
-/** Clic sur un en-tête : ⬆️, puis ⬇️, puis plus de tri sur cette colonne ; une nouvelle colonne passe après les autres */
+/** Clic sur un en-tête : croissant, puis décroissant, puis plus de tri sur cette colonne ; une nouvelle colonne passe après les autres */
 export function toggleSort(
 	sort: SortCriterion[],
 	column: ColumnKey,
@@ -2673,17 +2658,6 @@ export function getColumnLabel(key: ColumnKey): string {
 	return columnDefinitions.find((column) => column.key === key)?.label ?? key;
 }
 
-export function describeSort(sort: SortCriterion[]): string {
-	return (
-		sort
-			.map(
-				({ column, direction }) =>
-					`${getColumnLabel(column)} ${direction === "asc" ? "⬆️" : "⬇️"}`,
-			)
-			.join(", ") || "aucun"
-	);
-}
-
 export function describeFilters(filters: ColumnFilter[]): string {
 	return (
 		filters
@@ -2692,5 +2666,38 @@ export function describeFilters(filters: ColumnFilter[]): string {
 					`${getColumnLabel(filter.column)} ${describeFilterValue(filter)}`,
 			)
 			.join(", ") || "aucun"
+	);
+}
+
+// ---------- Composants d'interface ----------
+
+/** Champs enregistrés en quittant le champ : Entrée le quitte, donc l'enregistre */
+export function blurOnEnter(event: ReactKeyboardEvent<HTMLElement>): void {
+	if (event.key === "Enter") {
+		event.currentTarget.blur();
+	}
+}
+
+/** Classes CSS d'un élément ; les valeurs vides sont ignorées */
+export function joinClassNames(
+	...classNames: (string | false | null | undefined)[]
+): string {
+	return classNames.filter(Boolean).join(" ");
+}
+
+const focusableSelector = [
+	"a[href]",
+	"button:not(:disabled)",
+	"input:not(:disabled)",
+	"select:not(:disabled)",
+	"textarea:not(:disabled)",
+	'[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+/** Éléments atteignables avec Tab dans un conteneur, dans l'ordre du document */
+export function getFocusableElements(container: HTMLElement): HTMLElement[] {
+	return [...container.querySelectorAll<HTMLElement>(focusableSelector)].filter(
+		(element) =>
+			!element.closest("[inert]") && element.getClientRects().length > 0,
 	);
 }

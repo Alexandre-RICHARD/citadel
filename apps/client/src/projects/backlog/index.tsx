@@ -1,14 +1,99 @@
 import {
-	type KeyboardEvent as ReactKeyboardEvent,
+	ArrowDown,
+	ArrowUp,
+	BadgeCheck,
+	Ban,
+	Blocks,
+	Bookmark,
+	BookOpen,
+	Bug,
+	CalendarClock,
+	CalendarDays,
+	Check,
+	ChevronDown,
+	ChevronRight,
+	ChevronUp,
+	CircleAlert,
+	CircleCheck,
+	CircleDashed,
+	ClipboardCheck,
+	ClipboardX,
+	Columns3,
+	Copy,
+	CopyPlus,
+	CornerDownRight,
+	Cpu,
+	Crown,
+	Database as DatabaseIcon,
+	EllipsisVertical,
+	ExternalLink,
+	Eye,
+	Flag,
+	FunnelX,
+	Gamepad2,
+	Gauge,
+	Globe,
+	GripVertical,
+	ImageIcon,
+	ImageOff,
+	Info,
+	Layers,
+	LibraryBig,
+	ListFilter,
+	ListOrdered,
+	Lock,
+	type LucideIcon,
+	LucideProvider,
+	Minus,
+	PackageCheck,
+	Palette,
+	Pencil,
+	PencilLine,
+	Play,
+	Plus,
+	Puzzle,
+	Redo2,
+	Repeat,
+	Search,
+	SearchX,
+	SquarePen,
+	Terminal,
+	Timer,
+	Trash2,
+	TriangleAlert,
+	Trophy,
+	Undo2,
+	Users,
+	X,
+} from "lucide-react";
+import {
 	type ReactNode,
+	type RefObject,
 	useCallback,
 	useEffect,
+	useId,
 	useMemo,
 	useRef,
 	useState,
 } from "react";
 
 import styles from "./backlog.module.scss";
+import { Button } from "./components/Button";
+import { Callout } from "./components/Callout";
+import { Checkbox } from "./components/Checkbox";
+import { DateField } from "./components/DateField";
+import { DurationField } from "./components/DurationField";
+import { Menu } from "./components/Menu";
+import type { MenuItem } from "./components/Menu/menuItem.type";
+import { Modal as ModalDialog } from "./components/Modal";
+import { NumberField } from "./components/NumberField";
+import { Popover as FloatingPanel } from "./components/Popover";
+import { SegmentedControl } from "./components/SegmentedControl";
+import { Select } from "./components/Select";
+import type { SelectOption } from "./components/Select/selectOption.type";
+import { Spinner } from "./components/Spinner";
+import { TextField } from "./components/TextField";
+import { Tooltip } from "./components/Tooltip";
 import { initialState } from "./initialState";
 import {
 	mapDatabaseSearchResult,
@@ -56,14 +141,13 @@ import {
 	addGameImport,
 	addUserVersion,
 	backlogPageSize,
+	blurOnEnter,
 	buildInitialStateFile,
 	buildViewSearch,
 	columnFilterKinds,
 	convertStatus,
 	databasePageSize,
 	describeFilters,
-	describeSort,
-	describeVersionPlatforms,
 	dropSeriesEntry,
 	editModeIdleMs,
 	emptyImportSelection,
@@ -112,11 +196,11 @@ import {
 	isSeriesSubNumber,
 	isSortableColumn,
 	isStatusAllowed,
+	joinClassNames,
 	keepSelection,
 	keepVisibleColumns,
 	loadSavedColumns,
 	moveColumn,
-	parseIsoDate,
 	parseSeriesNumber,
 	parseSeriesValue,
 	placeSeriesEntry,
@@ -140,7 +224,6 @@ import {
 	toggleDoneDlc,
 	toggleId,
 	toggleSort,
-	trimToNull,
 	updateUserVersion,
 } from "./utils";
 
@@ -153,14 +236,31 @@ const platformIconUrls = import.meta.glob<string>("./icons/*.svg", {
 	import: "default",
 });
 
-/** Miniature IGDB : `t_thumb`, et `t_thumb_2x` pour les écrans haute densité */
-function Thumbnail({ imageId }: { imageId: IgdbImageId | null }) {
+const thumbnailSizes = {
+	sm: styles.thumbnailSm,
+	md: styles.thumbnailMd,
+	lg: styles.thumbnailLg,
+};
+
+/** Miniature IGDB : `t_thumb`, et `t_thumb_2x` pour les écrans haute densité ; sans image, une icône */
+function Thumbnail({
+	imageId,
+	size = "md",
+}: {
+	imageId: IgdbImageId | null;
+	size?: keyof typeof thumbnailSizes;
+}) {
+	const className = joinClassNames(styles.thumbnail, thumbnailSizes[size]);
 	if (imageId === null) {
-		return <span className={styles.thumbnailPlaceholder}>🎮</span>;
+		return (
+			<span className={joinClassNames(className, styles.thumbnailPlaceholder)}>
+				<ImageOff aria-hidden />
+			</span>
+		);
 	}
 	return (
 		<img
-			className={styles.thumbnail}
+			className={className}
 			src={getIgdbImageUrl(imageId, "thumb")}
 			srcSet={`${getIgdbImageUrl(imageId, "thumb", true)} 2x`}
 			alt=""
@@ -169,254 +269,211 @@ function Thumbnail({ imageId }: { imageId: IgdbImageId | null }) {
 	);
 }
 
-/** Société : logo au-dessus du nom */
+/** Jaquette de la prévisualisation : `t_cover_small`, en portrait */
+function Cover({ imageId }: { imageId: IgdbImageId | null }) {
+	if (imageId === null) {
+		return (
+			<span className={joinClassNames(styles.cover, styles.coverPlaceholder)}>
+				<ImageOff aria-hidden />
+			</span>
+		);
+	}
+	return (
+		<img
+			className={styles.cover}
+			src={getIgdbImageUrl(imageId, "cover_small")}
+			srcSet={`${getIgdbImageUrl(imageId, "cover_small", true)} 2x`}
+			alt=""
+		/>
+	);
+}
+
+/** Société : logo au-dessus du nom, posé sur une plaque claire en thème sombre */
 function CompanyLabel({ company }: { company: Company | null }) {
 	if (company === null) {
-		return <span>—</span>;
+		return <span className={styles.emptyValue}>—</span>;
 	}
 	return (
 		<span className={styles.company}>
 			{company.logoImageId !== null && (
-				<img
-					src={getIgdbImageUrl(company.logoImageId, "logo_med")}
-					alt=""
-				/>
+				<span className={styles.companyLogo}>
+					<img
+						src={getIgdbImageUrl(company.logoImageId, "logo_med")}
+						alt=""
+						loading="lazy"
+					/>
+				</span>
 			)}
-			<span>{company.name}</span>
+			<span className={styles.companyName}>{company.name}</span>
 		</span>
 	);
 }
 
-/** Plateforme : icône et nom, le nom seul si l'icône manque */
+/** Plateforme : icône et nom, le nom seul si l'icône manque ; un émulateur est signalé */
 function PlatformLabel({ platform }: { platform: Platform }) {
 	const iconUrl: string | undefined =
 		platformIconUrls[`./icons/${platform.technicalName}.svg`];
+	const isEmulator = platform.emulatedPlatformId !== null;
 	return (
-		<span className={styles.platform}>
-			{iconUrl !== undefined && (
-				<img
-					src={iconUrl}
-					alt=""
-				/>
-			)}
-			<span>{platform.shortName}</span>
+		<Tooltip content={isEmulator ? "Émulateur" : null}>
+			<span
+				className={joinClassNames(
+					styles.platform,
+					isEmulator && styles.emulator,
+				)}
+			>
+				{iconUrl === undefined ? (
+					isEmulator && <Cpu aria-hidden />
+				) : (
+					<img
+						src={iconUrl}
+						alt=""
+					/>
+				)}
+				{platform.shortName}
+			</span>
+		</Tooltip>
+	);
+}
+
+/** Icône et teinte de chaque statut : du gris (pas commencé) à l'or (complété et platiné), rouge pour abandonné */
+const statusAppearances: Record<Status, { icon: LucideIcon; tone: string }> = {
+	notStarted: { icon: CircleDashed, tone: styles.toneGray },
+	watched: { icon: Eye, tone: styles.toneViolet },
+	started: { icon: Play, tone: styles.toneBlue },
+	wellUnderway: { icon: Gauge, tone: styles.toneCyan },
+	finished: { icon: Flag, tone: styles.toneGreen },
+	deemedFinished: { icon: CircleCheck, tone: styles.toneGreen },
+	completed: { icon: BadgeCheck, tone: styles.toneTeal },
+	platinum: { icon: Trophy, tone: styles.toneIndigo },
+	completedAndPlatinum: { icon: Crown, tone: styles.toneAmber },
+	abandoned: { icon: Ban, tone: styles.toneRed },
+};
+
+function StatusBadge({ status }: { status: Status }) {
+	const { icon: Icon, tone } = statusAppearances[status];
+	return (
+		<span className={joinClassNames(styles.badge, tone)}>
+			<Icon aria-hidden />
+			{getStatusLabel(status)}
 		</span>
 	);
 }
 
-function ModalFrame({
-	title,
-	isCompact = false,
-	actions,
+const endingTypeIcons: Record<EndingType, LucideIcon> = {
+	story: BookOpen,
+	runs: Repeat,
+	sandbox: Blocks,
+	multiplayer: Users,
+};
+
+function EndingTypeLabel({ endingType }: { endingType: EndingType }) {
+	const Icon = endingTypeIcons[endingType];
+	return (
+		<span className={styles.endingType}>
+			<Icon aria-hidden />
+			{getEndingTypeLabel(endingType)}
+		</span>
+	);
+}
+
+/** Libellé de `formatReleaseDate` sans date : « à venir » */
+const upcomingReleaseLabel = formatReleaseDate(null, false);
+
+/** Date de sortie (section 7) : la date, ou une pastille « à venir » ou « annulé » */
+function ReleaseDateLabel({
+	date,
+	isCancelled,
+}: {
+	date: IsoDate | null;
+	isCancelled: boolean;
+}) {
+	const label = formatReleaseDate(date, isCancelled);
+	if (isCancelled) {
+		return (
+			<span className={joinClassNames(styles.badge, styles.toneRed)}>
+				<Ban aria-hidden />
+				{label}
+			</span>
+		);
+	}
+	if (label === upcomingReleaseLabel) {
+		return (
+			<span className={joinClassNames(styles.badge, styles.toneViolet)}>
+				<CalendarClock aria-hidden />
+				{label}
+			</span>
+		);
+	}
+	return <span className={styles.number}>{label}</span>;
+}
+
+/** Note sur 20, teintée : vert à partir de 16, sarcelle à 12, ambre à 8, rouge en dessous */
+function RatingBadge({ rating }: { rating: number }) {
+	let tone = styles.toneRed;
+	if (rating >= 16) {
+		tone = styles.toneGreen;
+	} else if (rating >= 12) {
+		tone = styles.toneTeal;
+	} else if (rating >= 8) {
+		tone = styles.toneAmber;
+	}
+	return (
+		<span className={joinClassNames(styles.rating, tone)}>
+			{rating}
+			<span className={styles.ratingScale}>/20</span>
+		</span>
+	);
+}
+
+/** Champ d'un formulaire de modale : son libellé au-dessus, une aide éventuelle en dessous */
+function FormField({
+	label,
+	hint,
+	isGroup = false,
+	className,
 	children,
 }: {
-	title: string;
-	isCompact?: boolean;
-	actions: ReactNode;
+	label: string;
+	hint?: ReactNode;
+	/** Plusieurs champs (boutons radio, cases) : pas de <label>, qui ne viserait que le premier */
+	isGroup?: boolean;
+	className?: string | undefined;
+	children: ReactNode;
+}) {
+	const content = (
+		<>
+			<span className={styles.formLabel}>{label}</span>
+			{children}
+			{hint !== undefined && hint !== null && (
+				<span className={styles.formHint}>{hint}</span>
+			)}
+		</>
+	);
+	return isGroup ? (
+		<div className={joinClassNames(styles.formField, className)}>{content}</div>
+	) : (
+		<label className={joinClassNames(styles.formField, className)}>
+			{content}
+		</label>
+	);
+}
+
+/** Titre d'une section de modale, avec un compteur éventuel (« 2 / 5 ») */
+function SectionTitle({
+	count,
+	children,
+}: {
+	count?: string | undefined;
 	children: ReactNode;
 }) {
 	return (
-		<div className={styles.overlay}>
-			<div
-				className={isCompact ? styles.compactModal : styles.modal}
-				role="dialog"
-				aria-modal="true"
-				aria-label={title}
-			>
-				<h2 className={styles.modalTitle}>{title}</h2>
-				<div className={styles.modalBody}>{children}</div>
-				<div className={styles.modalActions}>{actions}</div>
-			</div>
-		</div>
-	);
-}
-
-// ---------- Champs d'édition des cellules : enregistrés à la sortie du champ, une seule modification par saisie ----------
-
-function blurOnEnter(event: ReactKeyboardEvent<HTMLElement>) {
-	if (event.key === "Enter") {
-		event.currentTarget.blur();
-	}
-}
-
-/** Nombre entier ; une valeur refusée remet le champ à la valeur enregistrée */
-function NumberField({
-	value,
-	min,
-	max,
-	isNullable,
-	label,
-	onCommit,
-}: {
-	value: number | null;
-	min: number;
-	max: number | null;
-	isNullable: boolean;
-	label: string;
-	onCommit: (value: number | null) => void;
-}) {
-	return (
-		<input
-			key={value ?? ""}
-			type="number"
-			className={styles.numberField}
-			min={min}
-			max={max ?? undefined}
-			step={1}
-			defaultValue={value ?? ""}
-			aria-label={label}
-			onKeyDown={blurOnEnter}
-			onBlur={(event) => {
-				const input = event.currentTarget;
-				const text = input.value.trim();
-				const number = text === "" ? null : Number(text);
-				const isValid =
-					number === null
-						? isNullable
-						: Number.isInteger(number) &&
-							number >= min &&
-							(max === null || number <= max);
-				if (!isValid) {
-					input.value = value === null ? "" : String(value);
-				} else if (number !== value) {
-					onCommit(number);
-				}
-			}}
-		/>
-	);
-}
-
-/** Durée saisie en heures et minutes, enregistrée en minutes quand le focus quitte les deux champs */
-function DurationField({
-	minutes,
-	label,
-	onCommit,
-}: {
-	minutes: number;
-	label: string;
-	onCommit: (minutes: number) => void;
-}) {
-	const hoursRef = useRef<HTMLInputElement>(null);
-	const minutesRef = useRef<HTMLInputElement>(null);
-
-	function commit() {
-		const hoursInput = hoursRef.current;
-		const minutesInput = minutesRef.current;
-		if (hoursInput === null || minutesInput === null) {
-			return;
-		}
-		const hours = Number(hoursInput.value || "0");
-		const extraMinutes = Number(minutesInput.value || "0");
-		if (
-			!Number.isInteger(hours) ||
-			!Number.isInteger(extraMinutes) ||
-			hours < 0 ||
-			extraMinutes < 0
-		) {
-			hoursInput.value = String(Math.floor(minutes / 60));
-			minutesInput.value = String(minutes % 60);
-			return;
-		}
-		const total = hours * 60 + extraMinutes;
-		if (total !== minutes) {
-			onCommit(total);
-		}
-	}
-
-	return (
-		<span
-			key={minutes}
-			className={styles.fieldGroup}
-			onBlur={(event) => {
-				// Passer des heures aux minutes n'enregistre rien : seulement en quittant les deux champs
-				if (!(
-					event.relatedTarget instanceof Node &&
-					event.currentTarget.contains(event.relatedTarget)
-				)) {
-					commit();
-				}
-			}}
-		>
-			<input
-				ref={hoursRef}
-				type="number"
-				className={styles.numberField}
-				min={0}
-				step={1}
-				defaultValue={Math.floor(minutes / 60)}
-				aria-label={`${label} : heures`}
-				onKeyDown={blurOnEnter}
-			/>
-			h
-			<input
-				ref={minutesRef}
-				type="number"
-				className={styles.numberField}
-				min={0}
-				step={1}
-				defaultValue={minutes % 60}
-				aria-label={`${label} : minutes`}
-				onKeyDown={blurOnEnter}
-			/>
-		</span>
-	);
-}
-
-function TextField({
-	value,
-	label,
-	onCommit,
-}: {
-	value: string | null;
-	label: string;
-	onCommit: (value: string | null) => void;
-}) {
-	return (
-		<input
-			key={value ?? ""}
-			type="text"
-			className={styles.textField}
-			defaultValue={value ?? ""}
-			aria-label={label}
-			onKeyDown={blurOnEnter}
-			onBlur={(event) => {
-				const text = trimToNull(event.currentTarget.value);
-				if (text !== value) {
-					onCommit(text);
-				}
-			}}
-		/>
-	);
-}
-
-function DateField({
-	value,
-	label,
-	onCommit,
-}: {
-	value: IsoDate | null;
-	label: string;
-	onCommit: (value: IsoDate | null) => void;
-}) {
-	return (
-		<input
-			key={value ?? ""}
-			type="date"
-			className={styles.dateField}
-			defaultValue={value ?? ""}
-			aria-label={label}
-			onKeyDown={blurOnEnter}
-			onBlur={(event) => {
-				const input = event.currentTarget;
-				const date = input.value === "" ? null : parseIsoDate(input.value);
-				// Une date à moitié saisie n'efface pas la date enregistrée
-				if (input.validity.badInput || (input.value !== "" && date === null)) {
-					input.value = value ?? "";
-				} else if (date !== value) {
-					onCommit(date);
-				}
-			}}
-		/>
+		<h3 className={styles.sectionTitle}>
+			{children}
+			{count !== undefined && (
+				<span className={styles.sectionCount}>{count}</span>
+			)}
+		</h3>
 	);
 }
 
@@ -432,7 +489,6 @@ function SeriesNumberField({
 	entries,
 	isLive,
 	className,
-	title,
 	ariaLabel,
 	onCommit,
 }: {
@@ -440,7 +496,6 @@ function SeriesNumberField({
 	entries: SeriesEntry[];
 	isLive: boolean;
 	className?: string;
-	title?: string | undefined;
 	ariaLabel?: string;
 	onCommit: (seriesNumber: number) => void;
 }) {
@@ -451,8 +506,7 @@ function SeriesNumberField({
 			key={isLive ? undefined : text}
 			type="text"
 			inputMode="decimal"
-			className={className ?? styles.seriesNumberField}
-			title={title}
+			className={joinClassNames(styles.seriesNumberField, className)}
 			aria-label={ariaLabel}
 			defaultValue={text}
 			onKeyDown={blurOnEnter}
@@ -475,50 +529,138 @@ function SeriesNumberField({
 	);
 }
 
-/** Une ligne de résultat : miniature, noms, année, plateformes, « via … » ; `badge` à droite */
-function SearchResultButton({
+/**
+ * Résultat actif d'une liste parcourue au clavier depuis son champ (motif « combobox ») : ↓ et ↑ le déplacent, Entrée le choisit.
+ * Il repart de zéro quand `resetKey` change (nouvelle recherche, autre filtre).
+ */
+function useActiveIndex(resetKey: unknown) {
+	const [activeIndex, setActiveIndex] = useState(-1);
+	const [activeKey, setActiveKey] = useState(resetKey);
+	if (resetKey !== activeKey) {
+		setActiveKey(resetKey);
+		setActiveIndex(-1);
+	}
+	return [activeIndex, setActiveIndex] as const;
+}
+
+/** ↓, ↑ et Entrée dans le champ d'une liste de résultats ; `true` si la touche a servi */
+function navigateResults(
+	event: { key: string; preventDefault: () => void },
+	activeIndex: number,
+	count: number,
+	setActiveIndex: (index: number) => void,
+	selectActive: () => void,
+): boolean {
+	if (count === 0) {
+		return false;
+	}
+	if (event.key === "ArrowDown") {
+		event.preventDefault();
+		setActiveIndex(Math.min(activeIndex + 1, count - 1));
+		return true;
+	}
+	if (event.key === "ArrowUp") {
+		event.preventDefault();
+		setActiveIndex(Math.max(activeIndex - 1, 0));
+		return true;
+	}
+	if (event.key === "Enter" && activeIndex >= 0) {
+		event.preventDefault();
+		selectActive();
+		return true;
+	}
+	return false;
+}
+
+/** Le résultat actif reste visible quand la liste défile */
+function useScrollIntoView(elementId: string | undefined) {
+	useEffect(() => {
+		if (elementId !== undefined) {
+			document.getElementById(elementId)?.scrollIntoView({ block: "nearest" });
+		}
+	}, [elementId]);
+}
+
+/** Une ligne de résultat : miniature, noms, année, plateformes (3 au plus, puis le nombre restant), « via … » ; `badge` à droite */
+function SearchResultOption({
+	id,
 	result,
+	isActive,
 	badge,
+	onHover,
 	onSelect,
 }: {
+	id: string;
 	result: SearchResult;
+	isActive: boolean;
 	badge: ReactNode;
+	onHover: () => void;
 	onSelect: (result: SearchResult) => void;
 }) {
+	const shownPlatformNames = result.platformNames.slice(0, 3);
+	const hiddenPlatformCount =
+		result.platformNames.length - shownPlatformNames.length;
+
 	return (
-		<button
-			type="button"
-			className={styles.searchResult}
+		// eslint-disable-next-line jsx-a11y/click-events-have-key-events -- le clavier passe par le champ de la liste (combobox)
+		<li
+			id={id}
+			role="option"
+			aria-selected={isActive}
+			tabIndex={-1}
+			className={joinClassNames(styles.result, isActive && styles.activeResult)}
+			onPointerMove={() => {
+				if (!isActive) {
+					onHover();
+				}
+			}}
 			onClick={() => onSelect(result)}
 		>
 			<Thumbnail imageId={result.coverImageId} />
-			<span className={styles.searchResultName}>
-				<strong>{result.frenchName ?? result.name}</strong>
+			<span className={styles.resultText}>
+				<span className={styles.resultName}>
+					<strong>{result.frenchName ?? result.name}</strong>
+					{result.releaseYear !== null && (
+						<span className={styles.resultYear}>{result.releaseYear}</span>
+					)}
+				</span>
 				{result.frenchName !== null && (
-					<span className={styles.originalName}> {result.name}</span>
+					<span className={styles.secondaryName}>{result.name}</span>
 				)}
-				{result.releaseYear !== null && ` (${result.releaseYear})`}
-				{/* 3 plateformes au plus, puis le nombre restant */}
-				{result.platformNames.length > 0 && (
-					<span className={styles.originalName}>
-						{` · ${result.platformNames.slice(0, 3).join(", ")}`}
-						{result.platformNames.length > 3 &&
-							` +${result.platformNames.length - 3}`}
-					</span>
-				)}
-				{/* Trouvé par une autre fiche que la sienne : édition, bundle, DLC… */}
-				{result.matchedName !== null && (
-					<span className={styles.matchedName}>
-						via « {result.matchedName} »
+				{(shownPlatformNames.length > 0 || result.matchedName !== null) && (
+					<span className={styles.resultMeta}>
+						{shownPlatformNames.map((platformName) => (
+							<span
+								key={platformName}
+								className={styles.platform}
+							>
+								{platformName}
+							</span>
+						))}
+						{hiddenPlatformCount > 0 && (
+							<span className={styles.morePlatforms}>
+								+{hiddenPlatformCount}
+							</span>
+						)}
+						{/* Trouvé par une autre fiche que la sienne : édition, bundle, DLC… */}
+						{result.matchedName !== null && (
+							<span className={styles.matchedName}>
+								<CornerDownRight aria-hidden />
+								via « {result.matchedName} »
+							</span>
+						)}
 					</span>
 				)}
 			</span>
 			{badge}
-		</button>
+		</li>
 	);
 }
 
-/** Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « 📚 Ma base » (section 8) */
+/**
+ * Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « Ma base » (section 8).
+ * Le curseur reste dans le champ : ↓ et ↑ parcourent les résultats, Entrée choisit, Échap ferme la liste.
+ */
 function SearchBar({
 	query,
 	isOpen,
@@ -526,6 +668,7 @@ function SearchBar({
 	isSearching,
 	error,
 	database,
+	inputRef,
 	onQueryChange,
 	onOpenChange,
 	onSelect,
@@ -536,64 +679,159 @@ function SearchBar({
 	isSearching: boolean;
 	error: string | null;
 	database: Database;
+	inputRef: RefObject<HTMLInputElement | null>;
 	onQueryChange: (query: string) => void;
 	onOpenChange: (isOpen: boolean) => void;
 	onSelect: (result: SearchResult) => void;
 }) {
+	const listId = useId();
+	const [activeIndex, setActiveIndex] = useActiveIndex(results);
+	const isListShown = isOpen && query.trim() !== "";
+	const activeResultId =
+		isListShown && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined;
+	useScrollIntoView(activeResultId);
+
+	let fieldEnd: ReactNode = (
+		<kbd
+			className={styles.searchShortcut}
+			aria-hidden
+		>
+			/
+		</kbd>
+	);
+	if (isSearching) {
+		fieldEnd = <Spinner className={styles.searchSpinner} />;
+	} else if (query !== "") {
+		fieldEnd = (
+			<Button
+				icon={X}
+				variant="ghost"
+				size="sm"
+				ariaLabel="Effacer la recherche"
+				className={styles.searchClear}
+				onClick={() => {
+					onQueryChange("");
+					inputRef.current?.focus();
+				}}
+			/>
+		);
+	}
+
 	return (
 		<div
 			className={styles.search}
 			data-search
 		>
+			<Search
+				className={styles.searchIcon}
+				aria-hidden
+			/>
 			<input
+				ref={inputRef}
 				type="search"
+				role="combobox"
 				className={styles.searchInput}
-				placeholder="🔍 Rechercher un jeu sur IGDB"
+				placeholder="Rechercher un jeu sur IGDB"
 				aria-label="Rechercher un jeu sur IGDB"
+				aria-expanded={isListShown}
+				aria-controls={isListShown ? listId : undefined}
+				aria-autocomplete="list"
+				aria-activedescendant={activeResultId}
 				value={query}
 				onChange={(event) => onQueryChange(event.target.value)}
 				onFocus={() => onOpenChange(true)}
 				onKeyDown={(event) => {
 					if (event.key === "Escape") {
 						onOpenChange(false);
+					} else if (!isOpen && event.key === "ArrowDown") {
+						onOpenChange(true);
+					} else if (isListShown) {
+						navigateResults(
+							event,
+							activeIndex,
+							results.length,
+							setActiveIndex,
+							() => {
+								const result = results.at(activeIndex);
+								if (result !== undefined) {
+									onSelect(result);
+								}
+							},
+						);
 					}
 				}}
 			/>
-			{isOpen && query.trim() !== "" && (
-				<ul className={styles.searchResults}>
-					{isSearching && (
-						<li className={styles.searchMessage}>⏳ Recherche…</li>
-					)}
+			{fieldEnd}
+			{isListShown && (
+				<div className={styles.searchPanel}>
 					{error !== null && (
-						<li className={styles.searchMessage}>⚠️ {error}</li>
+						<p
+							className={joinClassNames(
+								styles.listMessage,
+								styles.errorMessage,
+							)}
+							role="alert"
+						>
+							<CircleAlert aria-hidden />
+							{error}
+						</p>
+					)}
+					{isSearching && results.length === 0 && (
+						<p className={styles.listMessage}>
+							<Spinner />
+							Recherche sur IGDB…
+						</p>
 					)}
 					{!isSearching && error === null && results.length === 0 && (
-						<li className={styles.searchMessage}>Aucun résultat</li>
+						<p className={styles.listMessage}>
+							<SearchX aria-hidden />
+							Aucun résultat pour « {query.trim()} »
+						</p>
 					)}
-					{results.map((result) => (
-						<li key={result.id}>
-							<SearchResultButton
-								result={result}
-								badge={
-									database.versions.some(({ id }) => id === result.id) && (
-										<span className={styles.inDatabaseBadge}>
-											✅ déjà en base
-										</span>
-									)
-								}
-								onSelect={onSelect}
-							/>
-						</li>
-					))}
-				</ul>
+					{results.length > 0 && (
+						<ul
+							id={listId}
+							role="listbox"
+							aria-label="Résultats IGDB"
+							className={styles.resultList}
+							// Le curseur reste dans le champ pendant le choix à la souris
+							onMouseDown={(event) => event.preventDefault()}
+						>
+							{results.map((result, index) => (
+								<SearchResultOption
+									key={result.id}
+									id={`${listId}-${index}`}
+									result={result}
+									isActive={index === activeIndex}
+									badge={
+										database.versions.some(({ id }) => id === result.id) && (
+											<span
+												className={joinClassNames(
+													styles.badge,
+													styles.toneGreen,
+												)}
+											>
+												<DatabaseIcon aria-hidden />
+												Déjà en base
+											</span>
+										)
+									}
+									onHover={() => setActiveIndex(index)}
+									onSelect={onSelect}
+								/>
+							))}
+						</ul>
+					)}
+				</div>
 			)}
 		</div>
 	);
 }
 
 /**
- * « 📚 Ma base » (section 8) : les jeux en base hors backlog, triés par nom, filtrés sans requête IGDB.
+ * « Ma base » (section 8) : les jeux en base hors backlog, triés par nom, filtrés sans requête IGDB.
  * 50 jeux, puis la page suivante à l'approche du bas de la liste. Un jeu choisi ouvre l'ajout au backlog.
+ * Comme la recherche, la liste se parcourt au clavier depuis le filtre.
  */
 function AddFromDatabaseModal({
 	modal,
@@ -613,6 +851,12 @@ function AddFromDatabaseModal({
 	const hasMoreGames = shownGames.length < games.length;
 	const listRef = useRef<HTMLUListElement>(null);
 	const loadMoreRef = useRef<HTMLLIElement>(null);
+	const filterRef = useRef<HTMLInputElement>(null);
+	const listId = useId();
+	const [activeIndex, setActiveIndex] = useActiveIndex(modal.query);
+	const activeResultId =
+		activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined;
+	useScrollIntoView(activeResultId);
 
 	// Défilement infini dans la liste, qui défile seule sous le filtre
 	useEffect(() => {
@@ -637,62 +881,94 @@ function AddFromDatabaseModal({
 	}, [hasMoreGames, modal, onModalChange]);
 
 	return (
-		<ModalFrame
-			title="📚 Ajouter depuis ma base"
-			actions={
-				<button
-					type="button"
-					className={styles.button}
-					onClick={onCancel}
-				>
-					Annuler
-				</button>
-			}
+		<ModalDialog
+			title="Ajouter depuis ma base"
+			subtitle="Les jeux déjà en base, hors du backlog : sans passer par IGDB"
+			icon={LibraryBig}
+			initialFocusRef={filterRef}
+			actions={<Button onClick={onCancel}>Annuler</Button>}
+			onClose={onCancel}
 		>
-			<input
-				type="search"
-				className={styles.databaseGameFilter}
-				placeholder="🔍 Filtrer par nom ou titre de version"
-				aria-label="Filtrer les jeux de ma base"
-				value={modal.query}
-				onChange={(event) =>
-					onModalChange({
-						...modal,
-						query: event.target.value,
-						loadedPageCount: 1,
-					})
-				}
-			/>
-			<ul
-				ref={listRef}
-				className={styles.databaseGameList}
-			>
-				{games.length === 0 && (
-					<li className={styles.searchMessage}>
-						{modal.query.trim() === ""
-							? "Tous les jeux de la base sont dans le backlog"
-							: "Aucun résultat"}
-					</li>
-				)}
-				{shownGames.map((game) => (
-					<li key={game.id}>
-						<SearchResultButton
+			<div className={styles.filterBox}>
+				<Search
+					className={styles.filterBoxIcon}
+					aria-hidden
+				/>
+				<input
+					ref={filterRef}
+					type="search"
+					role="combobox"
+					className={styles.filterBoxInput}
+					placeholder="Filtrer par nom ou titre de version"
+					aria-label="Filtrer les jeux de ma base"
+					aria-expanded={games.length > 0}
+					aria-controls={games.length > 0 ? listId : undefined}
+					aria-autocomplete="list"
+					aria-activedescendant={activeResultId}
+					value={modal.query}
+					onChange={(event) =>
+						onModalChange({
+							...modal,
+							query: event.target.value,
+							loadedPageCount: 1,
+						})
+					}
+					onKeyDown={(event) =>
+						navigateResults(
+							event,
+							activeIndex,
+							shownGames.length,
+							setActiveIndex,
+							() => {
+								const game = shownGames.at(activeIndex);
+								if (game !== undefined) {
+									onSelect(mapDatabaseSearchResult(database, game));
+								}
+							},
+						)
+					}
+				/>
+			</div>
+			{games.length === 0 ? (
+				<p className={joinClassNames(styles.listMessage, styles.listBox)}>
+					<SearchX aria-hidden />
+					{modal.query.trim() === ""
+						? "Tous les jeux de la base sont dans le backlog"
+						: "Aucun résultat"}
+				</p>
+			) : (
+				<ul
+					ref={listRef}
+					id={listId}
+					role="listbox"
+					aria-label="Jeux de ma base"
+					className={joinClassNames(styles.resultList, styles.databaseList)}
+					onMouseDown={(event) => event.preventDefault()}
+				>
+					{shownGames.map((game, index) => (
+						<SearchResultOption
+							key={game.id}
+							id={`${listId}-${index}`}
 							result={mapDatabaseSearchResult(database, game)}
+							isActive={index === activeIndex}
 							badge={null}
+							onHover={() => setActiveIndex(index)}
 							onSelect={onSelect}
 						/>
-					</li>
-				))}
-				{hasMoreGames && (
-					<li
-						ref={loadMoreRef}
-						className={styles.searchMessage}
-					>
-						⏳ {games.length - shownGames.length} jeux de plus…
-					</li>
-				)}
-			</ul>
-		</ModalFrame>
+					))}
+					{hasMoreGames && (
+						<li
+							ref={loadMoreRef}
+							role="presentation"
+							className={styles.listMessage}
+						>
+							<Spinner />
+							{games.length - shownGames.length} jeux de plus…
+						</li>
+					)}
+				</ul>
+			)}
+		</ModalDialog>
 	);
 }
 
@@ -723,63 +999,67 @@ function VersionPlatformFields({
 			: getPlatformOptions(versionId, versionPlatforms, platforms);
 
 	return (
-		<div className={styles.choiceRow}>
-			<label>
-				Version
-				<select
-					value={versionId ?? ""}
-					onChange={(event) =>
+		<div className={styles.formRow}>
+			<FormField
+				label="Version"
+				className={styles.versionField}
+			>
+				<Select
+					value={versionId === null ? null : String(versionId)}
+					options={versions.map((version) => ({
+						value: String(version.id),
+						label: getVersionLabel(
+							version,
+							gameName,
+							versionPlatforms,
+							platforms,
+						),
+					}))}
+					placeholder="Choisir la version"
+					ariaLabel="Version"
+					className={styles.fullWidth}
+					onChange={(value) =>
 						onChange({
 							...draft,
-							versionId:
-								event.target.value === "" ? null : Number(event.target.value),
+							versionId: Number(value),
 							platformId: null,
 						})
 					}
-				>
-					<option value="">— Choisir —</option>
-					{versions.map((version) => (
-						<option
-							key={version.id}
-							value={version.id}
-						>
-							{getVersionLabel(version, gameName, versionPlatforms, platforms)}
-						</option>
-					))}
-				</select>
-			</label>
-			<label>
-				Plateforme
-				<select
-					value={platformId ?? ""}
-					disabled={versionId === null}
-					onChange={(event) =>
-						onChange({
-							...draft,
-							platformId:
-								event.target.value === "" ? null : Number(event.target.value),
-						})
-					}
-				>
-					<option value="">— Choisir —</option>
-					{platformOptions.map((platform) => {
+				/>
+			</FormField>
+			<FormField label="Plateforme">
+				<Select
+					value={platformId === null ? null : String(platformId)}
+					options={platformOptions.map((platform) => {
 						const isInBacklog = userVersions.some(
 							(userVersion) =>
 								userVersion.versionId === versionId &&
 								userVersion.platformId === platform.id,
 						);
-						return (
-							<option
-								key={platform.id}
-								value={platform.id}
-								disabled={isInBacklog}
-							>
-								{`${platform.shortName}${platform.emulatedPlatformId === null ? "" : " (émulateur)"}${isInBacklog ? " — déjà dans le backlog" : ""}`}
-							</option>
-						);
+						let hint: string | undefined;
+						if (isInBacklog) {
+							hint = "déjà dans le backlog";
+						} else if (platform.emulatedPlatformId !== null) {
+							hint = "émulateur";
+						}
+						return {
+							value: String(platform.id),
+							label: platform.shortName,
+							hint,
+							disabled: isInBacklog,
+						};
 					})}
-				</select>
-			</label>
+					placeholder={
+						versionId === null ? "D’abord la version" : "Choisir la plateforme"
+					}
+					ariaLabel="Plateforme"
+					disabled={versionId === null}
+					className={styles.fullWidth}
+					onChange={(value) =>
+						onChange({ ...draft, platformId: Number(value) })
+					}
+				/>
+			</FormField>
 		</div>
 	);
 }
@@ -833,98 +1113,122 @@ function UserGameFields({
 		});
 	}
 
+	// La série proposée par IGDB d'abord, puis « Aucune », les autres séries et la création d'une série
+	const seriesOptions: SelectOption<string>[] = [
+		{
+			value: "proposed",
+			label:
+				proposedSeries === null
+					? "Aucune (IGDB n’en propose pas)"
+					: `${proposedSeries.name} (IGDB)`,
+			content:
+				proposedSeries === null ? (
+					"Aucune (IGDB n’en propose pas)"
+				) : (
+					<span className={styles.optionWithTag}>
+						{proposedSeries.name}
+						<span className={styles.tag}>IGDB</span>
+					</span>
+				),
+		},
+		...(proposedSeries === null ? [] : [{ value: "none", label: "Aucune" }]),
+		...otherSeries.map(({ id, name }) => ({
+			value: `other-${id}`,
+			label: name,
+		})),
+		{
+			value: "new",
+			label: "Nouvelle série…",
+			content: (
+				<span className={styles.optionWithIcon}>
+					<Plus aria-hidden />
+					Nouvelle série…
+				</span>
+			),
+		},
+	];
+
 	return (
-		<>
-			<section>
-				<h3>Miniature</h3>
+		<div className={styles.formStack}>
+			<FormField
+				label="Miniature"
+				isGroup
+			>
 				{imageIds === null && imageError === null && (
-					<p>⏳ Chargement des images IGDB…</p>
+					<span className={styles.inlineStatus}>
+						<Spinner />
+						Chargement des images IGDB…
+					</span>
 				)}
-				{imageError !== null && <p>⚠️ {imageError}</p>}
+				{imageError !== null && <Callout tone="danger">{imageError}</Callout>}
 				{imageIds !== null && shownImageIds.length === 0 && (
-					<p>Aucune image sur IGDB</p>
+					<span className={styles.inlineStatus}>Aucune image sur IGDB</span>
 				)}
 				{shownImageIds.length > 0 && (
 					<div className={styles.imageChoices}>
-						{shownImageIds.map((imageId) => (
+						{shownImageIds.map((imageId, index) => (
 							<button
 								key={imageId}
 								type="button"
-								className={
-									imageId === draft.imageId
-										? styles.selectedImageChoice
-										: styles.imageChoice
-								}
+								className={joinClassNames(
+									styles.imageChoice,
+									imageId === draft.imageId && styles.selectedImageChoice,
+								)}
 								aria-pressed={imageId === draft.imageId}
+								aria-label={`Image ${index + 1} sur ${shownImageIds.length}`}
 								onClick={() => onChange({ ...draft, imageId })}
 							>
-								<Thumbnail imageId={imageId} />
+								<Thumbnail
+									imageId={imageId}
+									size="lg"
+								/>
+								{imageId === draft.imageId && (
+									<span className={styles.imageChoiceCheck}>
+										<Check aria-hidden />
+									</span>
+								)}
 							</button>
 						))}
 					</div>
 				)}
-			</section>
+			</FormField>
 
-			<section className={styles.choiceRow}>
-				<label>
-					Type de fin
-					<select
-						value={draft.endingType}
-						onChange={(event) =>
-							onChange({
-								...draft,
-								endingType:
-									endingTypeDefinitions.find(
-										({ key }) => key === event.target.value,
-									)?.key ?? draft.endingType,
-							})
-						}
-					>
-						{endingTypeDefinitions.map(({ key, label }) => (
-							<option
-								key={key}
-								value={key}
-							>
-								{label}
-							</option>
-						))}
-					</select>
-				</label>
-				<span className={styles.hint}>{endingType?.meaning}</span>
-			</section>
+			<FormField
+				label="Type de fin"
+				hint={endingType?.meaning}
+				isGroup
+			>
+				<SegmentedControl
+					value={draft.endingType}
+					options={endingTypeDefinitions.map(({ key, label }) => ({
+						value: key,
+						label,
+						icon: endingTypeIcons[key],
+					}))}
+					ariaLabel="Type de fin"
+					onChange={(nextEndingType) =>
+						onChange({ ...draft, endingType: nextEndingType })
+					}
+				/>
+			</FormField>
 
-			<section className={styles.choiceRow}>
-				<label>
-					Série
-					<select
+			<div className={styles.formRow}>
+				<FormField label="Série">
+					<Select
 						value={seriesValue}
-						onChange={(event) =>
-							changeSeries(parseSeriesValue(event.target.value))
-						}
-					>
-						<option value="proposed">
-							{proposedSeries === null
-								? "Aucune (IGDB n’en propose pas)"
-								: `${proposedSeries.name} (IGDB)`}
-						</option>
-						{proposedSeries !== null && <option value="none">Aucune</option>}
-						{otherSeries.map(({ id, name }) => (
-							<option
-								key={id}
-								value={`other-${id}`}
-							>
-								{name}
-							</option>
-						))}
-						<option value="new">➕ Nouvelle série…</option>
-					</select>
-				</label>
+						options={seriesOptions}
+						ariaLabel="Série"
+						className={styles.seriesSelect}
+						onChange={(value) => changeSeries(parseSeriesValue(value))}
+					/>
+				</FormField>
 				{draft.series.kind === "new" && (
-					<label>
-						Nom de la nouvelle série
+					<FormField label="Nom de la nouvelle série">
 						<input
 							type="text"
+							className={styles.textInput}
 							value={draft.series.name}
+							placeholder="Ex. Souls"
 							// eslint-disable-next-line jsx-a11y/no-autofocus -- le champ apparaît au choix de « Nouvelle série »
 							autoFocus
 							onChange={(event) =>
@@ -934,22 +1238,10 @@ function UserGameFields({
 								})
 							}
 						/>
-					</label>
-				)}
-				{seriesValue !== "proposed" && (
-					<button
-						type="button"
-						className={styles.iconButton}
-						title={`Revenir à la série proposée par IGDB : ${proposedSeries?.name ?? "aucune"}`}
-						onClick={() => changeSeries({ kind: "proposed" })}
-					>
-						↩️ Série IGDB
-					</button>
+					</FormField>
 				)}
 				{hasSeries && (
-					// eslint-disable-next-line jsx-a11y/label-has-associated-control -- le champ est l'input de SeriesNumberField
-					<label>
-						N° dans la série
+					<FormField label="N° dans la série">
 						<SeriesNumberField
 							// Un autre choix de série pré-remplit un autre numéro
 							key={seriesValue}
@@ -958,17 +1250,62 @@ function UserGameFields({
 							isLive
 							onCommit={(seriesNumber) => onChange({ ...draft, seriesNumber })}
 						/>
-					</label>
+					</FormField>
 				)}
-			</section>
+				{seriesValue !== "proposed" && (
+					<Button
+						icon={Undo2}
+						variant="ghost"
+						tooltip={`Revenir à la série proposée par IGDB : ${proposedSeries?.name ?? "aucune"}`}
+						className={styles.formRowButton}
+						onClick={() => changeSeries({ kind: "proposed" })}
+					>
+						Série IGDB
+					</Button>
+				)}
+			</div>
 			{draft.seriesNumber !== null && seriesNumberOwner !== null && (
-				<p className={styles.hint}>
-					ℹ️ N° {formatSeriesNumber(draft.seriesNumber, seriesEntries)} déjà
-					pris par {seriesNumberOwner.frenchName ?? seriesNumberOwner.name} : il
-					sera décalé d’un cran, avec les suivants si besoin.
-				</p>
+				<Callout>
+					N° {formatSeriesNumber(draft.seriesNumber, seriesEntries)} déjà pris
+					par {seriesNumberOwner.frenchName ?? seriesNumberOwner.name} : il sera
+					décalé d’un cran, avec les suivants si besoin.
+				</Callout>
 			)}
-		</>
+		</div>
+	);
+}
+
+/** Plateformes d'une version avec leur date de sortie, ex. « PS3 11/11/2011 · PC 11/11/2011 » */
+function VersionPlatformDates({
+	versionId,
+	versionPlatforms,
+	platforms,
+}: {
+	versionId: number;
+	versionPlatforms: VersionPlatform[];
+	platforms: Platform[];
+}) {
+	return (
+		<span className={styles.platformDates}>
+			{versionPlatforms
+				.filter((versionPlatform) => versionPlatform.versionId === versionId)
+				.map(({ platformId, releaseDate }) => (
+					<span
+						key={platformId}
+						className={styles.platformDate}
+					>
+						<span className={styles.platform}>
+							{platforms.find(({ id }) => id === platformId)?.shortName ??
+								`#${platformId}`}
+						</span>
+						<span className={styles.number}>
+							{releaseDate === null
+								? "date inconnue"
+								: formatIsoDate(releaseDate)}
+						</span>
+					</span>
+				))}
+		</span>
 	);
 }
 
@@ -1019,84 +1356,102 @@ function GamePreview({
 
 	return (
 		<div className={styles.preview}>
-			<section>
-				<p className={styles.previewName}>
-					<strong>{game.frenchName ?? game.name}</strong>
+			<section className={styles.previewHero}>
+				<Cover imageId={originalVersion?.coverImageId ?? null} />
+				<div className={styles.previewHeading}>
+					<p className={styles.previewName}>{game.frenchName ?? game.name}</p>
 					{game.frenchName !== null && (
-						<span className={styles.originalName}> {game.name}</span>
+						<p className={styles.secondaryName}>{game.name}</p>
 					)}
-				</p>
-				<p>
-					Sortie : {formatReleaseDate(game.firstReleaseDate, game.isCancelled)}
-					{originalVersion !== undefined && (
-						<>
-							{" · "}
+					<p className={styles.previewMeta}>
+						<span className={styles.previewRelease}>
+							<CalendarDays aria-hidden />
+							Sortie :
+							<ReleaseDateLabel
+								date={game.firstReleaseDate}
+								isCancelled={game.isCancelled}
+							/>
+						</span>
+						{originalVersion !== undefined && (
 							<a
+								className={styles.externalLink}
 								href={originalVersion.igdbUrl}
 								target="_blank"
 								rel="noreferrer"
 							>
-								Ouvrir sur IGDB ↗️
+								Ouvrir sur IGDB
+								<ExternalLink aria-hidden />
 							</a>
-						</>
-					)}
-				</p>
+						)}
+					</p>
+				</div>
 			</section>
 
 			<dl className={styles.facts}>
-				<dt>Série proposée</dt>
-				<dd>{proposedSeries?.name ?? "—"}</dd>
-				<dt>Développeur</dt>
-				<dd>
-					<CompanyLabel company={developer} />
-				</dd>
-				<dt>Éditeur</dt>
-				<dd>
-					<CompanyLabel company={publisher} />
-				</dd>
+				<div className={styles.fact}>
+					<dt>Série proposée</dt>
+					<dd>{proposedSeries?.name ?? "—"}</dd>
+				</div>
+				<div className={styles.fact}>
+					<dt>Développeur</dt>
+					<dd>
+						<CompanyLabel company={developer} />
+					</dd>
+				</div>
+				<div className={styles.fact}>
+					<dt>Éditeur</dt>
+					<dd>
+						<CompanyLabel company={publisher} />
+					</dd>
+				</div>
 			</dl>
 
 			<section>
-				<h3>
-					Versions à enregistrer (
-					{versions.filter(({ id }) => isVersionChecked(id)).length} /{" "}
-					{versions.length})
-				</h3>
-				<ul className={styles.checkList}>
+				<SectionTitle
+					count={`${versions.filter(({ id }) => isVersionChecked(id)).length} / ${versions.length}`}
+				>
+					Versions à enregistrer
+				</SectionTitle>
+				<ul className={styles.choiceList}>
 					{versions.map((version) => {
 						const isOriginal = version.id === game.id;
+						let lockReason: string | null = null;
+						if (isOriginal) {
+							lockReason = "Toujours enregistrée : c’est la fiche du jeu";
+						} else if (isVersionLocked(version.id)) {
+							lockReason = "Déjà en base";
+						}
 						return (
-							<li key={version.id}>
-								<label
-									title={
-										isOriginal
-											? "Toujours enregistrée : c’est la fiche du jeu"
-											: isVersionLocked(version.id)
-												? "Déjà en base"
-												: undefined
+							<li
+								key={version.id}
+								className={styles.choiceItem}
+							>
+								<Checkbox
+									checked={isVersionChecked(version.id)}
+									disabled={isVersionLocked(version.id)}
+									tooltip={lockReason}
+									label={
+										<span className={styles.optionWithTag}>
+											<strong>{version.title ?? game.name}</strong>
+											{isOriginal && (
+												<span className={styles.tag}>Originale</span>
+											)}
+										</span>
 									}
-								>
-									<input
-										type="checkbox"
-										checked={isVersionChecked(version.id)}
-										disabled={isVersionLocked(version.id)}
-										onChange={() =>
-											onSelectionChange({
-												...selection,
-												versionIds: toggleId(selection.versionIds, version.id),
-											})
-										}
-									/>
-									<strong>{version.title ?? `${game.name} (originale)`}</strong>
-									<span className={styles.hint}>
-										{" "}
-										{describeVersionPlatforms(
-											version.id,
-											versionPlatforms,
-											platforms,
-										)}
-									</span>
-								</label>
+									description={
+										<VersionPlatformDates
+											versionId={version.id}
+											versionPlatforms={versionPlatforms}
+											platforms={platforms}
+										/>
+									}
+									onChange={() =>
+										onSelectionChange({
+											...selection,
+											versionIds: toggleId(selection.versionIds, version.id),
+										})
+									}
+								/>
 							</li>
 						);
 					})}
@@ -1104,56 +1459,57 @@ function GamePreview({
 			</section>
 
 			<section>
-				<h3>
-					DLC à enregistrer ({dlcs.filter(({ id }) => isDlcChecked(id)).length}{" "}
-					/ {dlcs.length})
-				</h3>
+				<SectionTitle
+					count={`${dlcs.filter(({ id }) => isDlcChecked(id)).length} / ${dlcs.length}`}
+				>
+					DLC à enregistrer
+				</SectionTitle>
 				{dlcs.length === 0 ? (
-					<p>Aucun DLC</p>
+					<p className={styles.emptyHint}>Aucun DLC</p>
 				) : (
-					<ul className={styles.checkList}>
+					<ul className={styles.choiceList}>
 						{dlcs.map(({ id, name }) => {
 							const isGameStored = findById(database.games, id) !== null;
 							return (
 								<li
 									key={id}
-									className={styles.dlcChoice}
+									className={joinClassNames(
+										styles.choiceItem,
+										styles.dlcChoice,
+									)}
 								>
-									<label title={isDlcStored(id) ? "Déjà en base" : undefined}>
-										<input
-											type="checkbox"
-											checked={isDlcChecked(id)}
-											disabled={isDlcStored(id)}
-											onChange={() =>
-												onSelectionChange({
-													...selection,
-													dlcIds: toggleId(selection.dlcIds, id),
-												})
-											}
-										/>
-										{name}
-									</label>
+									<Checkbox
+										checked={isDlcChecked(id)}
+										disabled={isDlcStored(id)}
+										tooltip={isDlcStored(id) ? "Déjà en base" : null}
+										label={name}
+										onChange={() =>
+											onSelectionChange({
+												...selection,
+												dlcIds: toggleId(selection.dlcIds, id),
+											})
+										}
+									/>
 									{/* Indépendante de la case DLC : un DLC peut être les deux (section 5) */}
-									<label
-										title={
+									<Checkbox
+										variant="chip"
+										icon={Puzzle}
+										label="Comme jeu"
+										ariaLabel={`${name} : comme jeu`}
+										checked={selection.dlcAsGameIds.includes(id)}
+										disabled={isGameStored}
+										tooltip={
 											isGameStored
 												? "Déjà en base comme jeu"
 												: "Après « Valider », ouvre l’ajout de ce DLC comme jeu à part ; il peut rester DLC en même temps"
 										}
-									>
-										<input
-											type="checkbox"
-											checked={selection.dlcAsGameIds.includes(id)}
-											disabled={isGameStored}
-											onChange={() =>
-												onSelectionChange({
-													...selection,
-													dlcAsGameIds: toggleId(selection.dlcAsGameIds, id),
-												})
-											}
-										/>
-										🧩 comme jeu
-									</label>
+										onChange={() =>
+											onSelectionChange({
+												...selection,
+												dlcAsGameIds: toggleId(selection.dlcAsGameIds, id),
+											})
+										}
+									/>
 								</li>
 							);
 						})}
@@ -1162,15 +1518,20 @@ function GamePreview({
 			</section>
 
 			{warnings.length > 0 && (
-				<section className={styles.warnings}>
-					<h3>⚠️ Données IGDB hors modèle ({warnings.length})</h3>
+				<Callout tone="warning">
+					<p className={styles.calloutTitle}>
+						Données IGDB hors modèle ({warnings.length})
+					</p>
 					{warnings.map(({ message, entryJson }) => (
-						<details key={entryJson}>
+						<details
+							key={entryJson}
+							className={styles.warningDetails}
+						>
 							<summary>{message}</summary>
 							<pre>{entryJson}</pre>
 						</details>
 					))}
-				</section>
+				</Callout>
 			)}
 		</div>
 	);
@@ -1191,22 +1552,34 @@ function ModalActions({
 }) {
 	return (
 		<>
-			<button
-				type="button"
-				className={styles.button}
-				onClick={onCancel}
-			>
-				{cancelLabel}
-			</button>
-			<button
-				type="button"
-				className={styles.primaryButton}
+			<Button onClick={onCancel}>{cancelLabel}</Button>
+			<Button
+				variant="primary"
+				icon={Check}
 				disabled={!canValidate}
 				onClick={onValidate}
 			>
 				{validateLabel}
-			</button>
+			</Button>
 		</>
+	);
+}
+
+/** Données IGDB en cours de chargement, ou leur échec */
+function LoadingState({
+	error,
+	children,
+}: {
+	error: string | null;
+	children: ReactNode;
+}) {
+	return error === null ? (
+		<div className={styles.loadingState}>
+			<Spinner className={styles.loadingSpinner} />
+			{children}
+		</div>
+	) : (
+		<Callout tone="danger">{error}</Callout>
 	);
 }
 
@@ -1228,45 +1601,42 @@ function AddGameModal({
 	const { gameImport } = modal;
 
 	return (
-		<ModalFrame
+		<ModalDialog
 			title="Ajouter un jeu"
-			actions={
-				<>
-					<label
-						className={styles.actionsOption}
-						title="Après « Valider », ouvre l’ajout au backlog : personnalisation, version jouée, plateforme et tes données"
-					>
-						<input
-							type="checkbox"
-							checked={modal.isAddingToBacklog}
-							onChange={() =>
-								onModalChange({
-									...modal,
-									isAddingToBacklog: !modal.isAddingToBacklog,
-								})
-							}
-						/>
-						Ajouter à mon backlog
-					</label>
-					<ModalActions
-						canValidate={gameImport !== null}
-						onCancel={onCancel}
-						onValidate={onValidate}
-					/>
-				</>
+			subtitle="Ce qui sera enregistré en base, tel que le donne IGDB"
+			icon={Plus}
+			size="lg"
+			footerStart={
+				<Checkbox
+					checked={modal.isAddingToBacklog}
+					label="Ajouter à mon backlog"
+					tooltip="Après « Valider », ouvre l’ajout au backlog : personnalisation, version jouée, plateforme et tes données"
+					onChange={() =>
+						onModalChange({
+							...modal,
+							isAddingToBacklog: !modal.isAddingToBacklog,
+						})
+					}
+				/>
 			}
+			actions={
+				<ModalActions
+					canValidate={gameImport !== null}
+					onCancel={onCancel}
+					onValidate={onValidate}
+				/>
+			}
+			onClose={onCancel}
 		>
 			{gameImport === null ? (
-				<p>
-					{error === null ? "⏳ Chargement des données IGDB…" : `⚠️ ${error}`}
-				</p>
+				<LoadingState error={error}>Chargement des données IGDB…</LoadingState>
 			) : (
-				<>
+				<div className={styles.formStack}>
 					{database.games.some(({ id }) => id === gameImport.game.id) && (
-						<p className={styles.notice}>
-							ℹ️ Ce jeu est déjà en base : seules les fiches manquantes
+						<Callout>
+							Ce jeu est déjà en base : seules les fiches manquantes
 							s’ajouteront.
-						</p>
+						</Callout>
 					)}
 					<GamePreview
 						gameImport={gameImport}
@@ -1276,9 +1646,9 @@ function AddGameModal({
 							onModalChange({ ...modal, selection })
 						}
 					/>
-				</>
+				</div>
 			)}
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
@@ -1305,8 +1675,11 @@ function EditGameModal({
 	const isLoadingIgdb = modal.gameImport === null && error === null;
 
 	return (
-		<ModalFrame
+		<ModalDialog
 			title="Modifier le jeu"
+			subtitle="Ajouter les versions et DLC IGDB qui manquent en base"
+			icon={SquarePen}
+			size="lg"
 			actions={
 				// Sans rien de coché en plus, « Valider » reste inactif ; un DLC coché « comme jeu » compte comme un changement
 				<ModalActions
@@ -1318,16 +1691,17 @@ function EditGameModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
 			{game === null ? (
-				<p>Jeu introuvable en base.</p>
+				<Callout tone="danger">Jeu introuvable en base.</Callout>
 			) : (
-				<>
-					{error !== null && <p className={styles.notice}>⚠️ {error}</p>}
+				<div className={styles.formStack}>
+					{error !== null && <Callout tone="danger">{error}</Callout>}
 					{isLoadingIgdb && (
-						<p className={styles.notice}>
-							⏳ Chargement des versions et DLC IGDB absents de la base…
-						</p>
+						<Callout tone="loading">
+							Chargement des versions et DLC IGDB absents de la base…
+						</Callout>
 					)}
 					<GamePreview
 						gameImport={mapEditGameImport(database, game, modal.gameImport)}
@@ -1337,9 +1711,9 @@ function EditGameModal({
 							onModalChange({ ...modal, selection })
 						}
 					/>
-				</>
+				</div>
 			)}
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
@@ -1363,8 +1737,12 @@ function CustomizeGameModal({
 	const userGame = findUserGame(database, modal.gameId);
 
 	return (
-		<ModalFrame
-			title={`Personnaliser : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
+		<ModalDialog
+			title="Personnaliser"
+			subtitle={
+				game === null ? "Jeu introuvable" : (game.frenchName ?? game.name)
+			}
+			icon={Palette}
 			actions={
 				// Sans rien de changé, ou sans nom pour une nouvelle série, « Valider » reste inactif
 				<ModalActions
@@ -1376,16 +1754,17 @@ function CustomizeGameModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
 			{game === null || userGame === null ? (
-				<p>Jeu introuvable dans le backlog.</p>
+				<Callout tone="danger">Jeu introuvable dans le backlog.</Callout>
 			) : (
-				<>
+				<div className={styles.formStack}>
 					{modal.draft.endingType !== userGame.endingType && (
-						<p className={styles.notice}>
-							ℹ️ Changer le type de fin convertit les statuts devenus
-							incompatibles : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé.
-						</p>
+						<Callout tone="warning">
+							Changer le type de fin convertit les statuts devenus incompatibles
+							: Fini ↔ Estimé fini, Vu sans jouer → Pas commencé.
+						</Callout>
 					)}
 					<UserGameFields
 						gameId={modal.gameId}
@@ -1396,13 +1775,13 @@ function CustomizeGameModal({
 						imageError={error}
 						onChange={(draft) => onModalChange({ ...modal, draft })}
 					/>
-				</>
+				</div>
 			)}
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
-/** Décalage d'un sous-jeu dans « Réorganiser la série », en pixels (2rem) : glisser de sa moitié vers la droite en fait un sous-jeu */
+/** Décalage d'un sous-jeu dans « Réorganiser la série », en pixels (3,2rem) : glisser de sa moitié vers la droite en fait un sous-jeu */
 const subEntryIndentPx = 32;
 
 /**
@@ -1455,8 +1834,10 @@ function ReorderSeriesModal({
 	}
 
 	return (
-		<ModalFrame
-			title={`Réorganiser la série : ${series?.name ?? "série introuvable"}`}
+		<ModalDialog
+			title="Réorganiser la série"
+			subtitle={series?.name ?? "Série introuvable"}
+			icon={ListOrdered}
 			actions={
 				// Sans numéro changé, « Valider » reste inactif
 				<ModalActions
@@ -1465,11 +1846,12 @@ function ReorderSeriesModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
-			<p className={styles.notice}>
-				ℹ️ Glisse un jeu par ↕️ entre deux lignes, un peu à droite pour en faire
-				un sous-jeu, ou tape son numéro (3, 3.1).
-			</p>
+			<Callout className={styles.seriesHint}>
+				Glisse un jeu par sa poignée entre deux lignes, un peu à droite pour en
+				faire un sous-jeu, ou tape son numéro (3, 3.1).
+			</Callout>
 			<ol className={styles.seriesList}>
 				{entries.map(({ gameId, seriesNumber }, index) => {
 					const game = findById(database.games, gameId);
@@ -1525,76 +1907,88 @@ function ReorderSeriesModal({
 								endDrag();
 							}}
 						>
-							<span
-								className={styles.dragHandle}
-								draggable
-								title="Glisser pour déplacer"
-								onDragStart={(event) => {
-									// Firefox ne lance le glisser qu'avec une donnée ; l'image glissée est toute la ligne
-									event.dataTransfer.setData("text/plain", String(gameId));
-									const row = event.currentTarget.closest("li");
-									if (row !== null) {
-										event.dataTransfer.setDragImage(row, 0, 0);
-									}
-									dragStartX.current = event.clientX;
-									setDraggedGameId(gameId);
-								}}
-								onDragEnd={endDrag}
-							>
-								↕️
-							</span>
-							<SeriesNumberField
-								value={seriesNumber}
-								entries={otherEntries}
-								isLive={false}
-								className={
-									isChanged
-										? styles.changedSeriesNumberField
-										: styles.seriesNumberField
-								}
-								title={
+							<Tooltip content="Glisser pour déplacer">
+								<span
+									className={styles.dragHandle}
+									draggable
+									onDragStart={(event) => {
+										// Firefox ne lance le glisser qu'avec une donnée ; l'image glissée est toute la ligne
+										event.dataTransfer.setData("text/plain", String(gameId));
+										const row = event.currentTarget.closest("li");
+										if (row !== null) {
+											event.dataTransfer.setDragImage(row, 0, 0);
+										}
+										dragStartX.current = event.clientX;
+										setDraggedGameId(gameId);
+									}}
+									onDragEnd={endDrag}
+								>
+									<GripVertical aria-hidden />
+								</span>
+							</Tooltip>
+							<Tooltip
+								content={
 									isChanged
 										? `Avant : ${storedNumber === undefined || storedNumber === null ? "aucun" : formatSeriesNumber(storedNumber, otherEntries)}`
-										: undefined
+										: null
 								}
-								ariaLabel={`N° de ${game === null ? `jeu ${gameId}` : (game.frenchName ?? game.name)}`}
-								onCommit={(nextNumber) =>
-									onModalChange({
-										...modal,
-										entries: placeSeriesEntry(entries, gameId, nextNumber),
-									})
-								}
-							/>
+							>
+								<SeriesNumberField
+									value={seriesNumber}
+									entries={otherEntries}
+									isLive={false}
+									className={joinClassNames(
+										styles.seriesEntryNumber,
+										isChanged && styles.changedSeriesNumber,
+									)}
+									ariaLabel={`N° de ${game === null ? `jeu ${gameId}` : (game.frenchName ?? game.name)}`}
+									onCommit={(nextNumber) =>
+										onModalChange({
+											...modal,
+											entries: placeSeriesEntry(entries, gameId, nextNumber),
+										})
+									}
+								/>
+							</Tooltip>
 							{game === null ? (
 								<span>Jeu introuvable</span>
 							) : (
 								<>
-									<span className={styles.nameCell}>
-										<strong>{game.frenchName ?? game.name}</strong>
+									<span className={styles.nameBlock}>
+										<span className={styles.primaryName}>
+											{game.frenchName ?? game.name}
+										</span>
 										{game.frenchName !== null && (
-											<span className={styles.originalName}>{game.name}</span>
+											<span className={styles.secondaryName}>{game.name}</span>
 										)}
 									</span>
-									<span>
-										{formatReleaseDate(game.firstReleaseDate, game.isCancelled)}
-									</span>
+									<ReleaseDateLabel
+										date={game.firstReleaseDate}
+										isCancelled={game.isCancelled}
+									/>
 								</>
 							)}
-							<span>
+							<span className={styles.seriesEntryWarning}>
 								{conflict !== undefined && (
-									<span
-										className={styles.help}
-										title={`Sorti avant ${conflict.frenchName ?? conflict.name}, placé plus haut`}
+									<Tooltip
+										content={`Sorti avant ${conflict.frenchName ?? conflict.name}, placé plus haut`}
+										placement="left"
 									>
-										⚠️
-									</span>
+										<span
+											className={styles.conflictIcon}
+											role="img"
+											aria-label={`Sorti avant ${conflict.frenchName ?? conflict.name}, placé plus haut`}
+										>
+											<TriangleAlert aria-hidden />
+										</span>
+									</Tooltip>
 								)}
 							</span>
 						</li>
 					);
 				})}
 			</ol>
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
@@ -1617,8 +2011,12 @@ function AddDlcsModal({
 	const game = findById(database.games, modal.gameId);
 
 	return (
-		<ModalFrame
-			title={`Autres DLC : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
+		<ModalDialog
+			title="Rechercher d’autres DLC"
+			subtitle={
+				game === null ? "Jeu introuvable" : (game.frenchName ?? game.name)
+			}
+			icon={Puzzle}
 			actions={
 				<ModalActions
 					canValidate={modal.dlcIds.length > 0}
@@ -1626,47 +2024,50 @@ function AddDlcsModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
 			{modal.dlcs === null && (
-				<p>{error === null ? "⏳ Chargement des DLC IGDB…" : `⚠️ ${error}`}</p>
+				<LoadingState error={error}>Chargement des DLC IGDB…</LoadingState>
 			)}
-			{modal.dlcs?.length === 0 && <p>Aucun DLC sur IGDB</p>}
+			{modal.dlcs?.length === 0 && (
+				<p className={styles.emptyHint}>Aucun DLC sur IGDB</p>
+			)}
 			{modal.dlcs !== null && modal.dlcs.length > 0 && (
-				<>
-					<p className={styles.notice}>
-						ℹ️ Les DLC cochés rejoignent le jeu : ils s’ajoutent à la liste des
-						DLC de toutes ses versions jouées.
-					</p>
-					<ul className={styles.checkList}>
+				<div className={styles.formStack}>
+					<Callout>
+						Les DLC cochés rejoignent le jeu : ils s’ajoutent à la liste des DLC
+						de toutes ses versions jouées.
+					</Callout>
+					<ul className={styles.choiceList}>
 						{modal.dlcs.map(({ id, name }) => {
 							const isStored = findById(database.dlcs, id) !== null;
 							return (
-								<li key={id}>
-									<label title={isStored ? "Déjà en base" : undefined}>
-										<input
-											type="checkbox"
-											checked={isStored || modal.dlcIds.includes(id)}
-											disabled={isStored}
-											onChange={() =>
-												onModalChange({
-													...modal,
-													dlcIds: toggleId(modal.dlcIds, id),
-												})
-											}
-										/>
-										{name}
-									</label>
+								<li
+									key={id}
+									className={styles.choiceItem}
+								>
+									<Checkbox
+										checked={isStored || modal.dlcIds.includes(id)}
+										disabled={isStored}
+										tooltip={isStored ? "Déjà en base" : null}
+										label={name}
+										onChange={() =>
+											onModalChange({
+												...modal,
+												dlcIds: toggleId(modal.dlcIds, id),
+											})
+										}
+									/>
 								</li>
 							);
 						})}
 					</ul>
-				</>
+				</div>
 			)}
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
-/* eslint-disable jsx-a11y/label-has-associated-control -- les champs maison (DateField, NumberField…) rendent leur <input> dans le <label> */
 /** Données du joueur de la nouvelle version jouée, saisies comme dans le tableau ; les règles du statut s'appliquent à « Valider » (section 6) */
 function UserVersionDraftFields({
 	draft,
@@ -1680,45 +2081,36 @@ function UserVersionDraftFields({
 	onChange: (draft: UserVersionDraft) => void;
 }) {
 	return (
-		<>
-			<div className={styles.choiceRow}>
-				<label>
-					Statut
-					<select
+		<div className={styles.formStack}>
+			<div className={styles.formGrid}>
+				<FormField label="Statut">
+					<Select
 						value={draft.status}
-						onChange={(event) => {
-							const status = statusDefinitions.find(
-								({ key }) => key === event.target.value,
-							)?.key;
-							if (status !== undefined) {
-								onChange({ ...draft, status });
-							}
-						}}
-					>
-						{/* Liste filtrée par type de fin (section 6) */}
-						{statusDefinitions
+						// Liste filtrée par type de fin (section 6)
+						options={statusDefinitions
 							.filter(({ key }) => isStatusAllowed(key, endingType))
-							.map(({ key, label }) => (
-								<option
-									key={key}
-									value={key}
-								>
-									{label}
-								</option>
-							))}
-					</select>
-				</label>
-				<label>
-					Date de fin
+							.map(({ key, label }) => ({
+								value: key,
+								label,
+								content: <StatusBadge status={key} />,
+							}))}
+						ariaLabel="Statut"
+						className={styles.fullWidth}
+						onChange={(status) => onChange({ ...draft, status })}
+					/>
+				</FormField>
+				<FormField label="Date de fin">
 					<DateField
 						value={draft.finishDate}
 						label="Date de fin"
 						onCommit={(finishDate) => onChange({ ...draft, finishDate })}
 					/>
-				</label>
-				<label>
-					Fois fini
-					<span className={styles.fieldGroup}>
+				</FormField>
+				<FormField
+					label="Fois fini"
+					hint="Sûr, puis probable"
+				>
+					<span className={styles.fieldPair}>
 						<NumberField
 							value={draft.sureFinishCount}
 							min={0}
@@ -1729,7 +2121,7 @@ function UserVersionDraftFields({
 								onChange({ ...draft, sureFinishCount: count ?? 0 })
 							}
 						/>
-						+
+						<span className={styles.fieldUnit}>+</span>
 						<NumberField
 							value={draft.probableFinishCount}
 							min={0}
@@ -1740,31 +2132,10 @@ function UserVersionDraftFields({
 								onChange({ ...draft, probableFinishCount: count ?? 0 })
 							}
 						/>
-						?
+						<span className={styles.fieldUnit}>?</span>
 					</span>
-				</label>
-			</div>
-			<div className={styles.checkRow}>
-				<label>
-					<input
-						type="checkbox"
-						checked={draft.isUpNext}
-						onChange={() => onChange({ ...draft, isUpNext: !draft.isUpNext })}
-					/>
-					À jouer bientôt
-				</label>
-				<label>
-					<input
-						type="checkbox"
-						checked={draft.isOwned}
-						onChange={() => onChange({ ...draft, isOwned: !draft.isOwned })}
-					/>
-					Possédé
-				</label>
-			</div>
-			<div className={styles.choiceRow}>
-				<label>
-					Temps relevé
+				</FormField>
+				<FormField label="Temps relevé">
 					<DurationField
 						minutes={draft.trackedPlayTimeMinutes}
 						label="Temps relevé"
@@ -1772,9 +2143,8 @@ function UserVersionDraftFields({
 							onChange({ ...draft, trackedPlayTimeMinutes: minutes })
 						}
 					/>
-				</label>
-				<label>
-					Temps estimé
+				</FormField>
+				<FormField label="Temps estimé">
 					<DurationField
 						minutes={draft.estimatedPlayTimeMinutes}
 						label="Temps estimé"
@@ -1782,60 +2152,71 @@ function UserVersionDraftFields({
 							onChange({ ...draft, estimatedPlayTimeMinutes: minutes })
 						}
 					/>
-				</label>
-				<label>
-					Note sur 20
-					<NumberField
-						value={draft.rating}
-						min={0}
-						max={20}
-						isNullable
-						label="Note sur 20"
-						onCommit={(rating) => onChange({ ...draft, rating })}
-					/>
-				</label>
+				</FormField>
+				<FormField label="Note">
+					<span className={styles.fieldPair}>
+						<NumberField
+							value={draft.rating}
+							min={0}
+							max={20}
+							isNullable
+							label="Note sur 20"
+							digits={2}
+							placeholder="–"
+							onCommit={(rating) => onChange({ ...draft, rating })}
+						/>
+						<span className={styles.fieldUnit}>/ 20</span>
+					</span>
+				</FormField>
 			</div>
-			<div className={styles.choiceRow}>
-				<label>
-					Commentaire
-					<TextField
-						value={draft.comment}
-						label="Commentaire"
-						onCommit={(comment) => onChange({ ...draft, comment })}
-					/>
-				</label>
+			<div className={styles.switchRow}>
+				<Checkbox
+					variant="switch"
+					checked={draft.isUpNext}
+					label="À jouer bientôt"
+					onChange={() => onChange({ ...draft, isUpNext: !draft.isUpNext })}
+				/>
+				<Checkbox
+					variant="switch"
+					checked={draft.isOwned}
+					label="Possédé"
+					onChange={() => onChange({ ...draft, isOwned: !draft.isOwned })}
+				/>
 			</div>
+			<FormField label="Commentaire">
+				<TextField
+					value={draft.comment}
+					label="Commentaire"
+					placeholder="Une note pour plus tard…"
+					onCommit={(comment) => onChange({ ...draft, comment })}
+				/>
+			</FormField>
 			{dlcs.length > 0 && (
-				<fieldset className={styles.checkGroup}>
-					<legend>DLC faits</legend>
-					<ul className={styles.checkList}>
+				<fieldset className={styles.fieldset}>
+					<legend className={styles.formLabel}>DLC faits</legend>
+					<ul className={styles.checkGrid}>
 						{dlcs.map((dlc) => (
 							<li key={dlc.id}>
-								<label>
-									<input
-										type="checkbox"
-										checked={draft.doneDlcIds.includes(dlc.id)}
-										onChange={() =>
-											onChange({
-												...draft,
-												doneDlcIds: draft.doneDlcIds.includes(dlc.id)
-													? draft.doneDlcIds.filter((id) => id !== dlc.id)
-													: [...draft.doneDlcIds, dlc.id],
-											})
-										}
-									/>
-									{dlc.name}
-								</label>
+								<Checkbox
+									checked={draft.doneDlcIds.includes(dlc.id)}
+									label={dlc.name}
+									onChange={() =>
+										onChange({
+											...draft,
+											doneDlcIds: draft.doneDlcIds.includes(dlc.id)
+												? draft.doneDlcIds.filter((id) => id !== dlc.id)
+												: [...draft.doneDlcIds, dlc.id],
+										})
+									}
+								/>
 							</li>
 						))}
 					</ul>
 				</fieldset>
 			)}
-		</>
+		</div>
 	);
 }
-
-/* eslint-enable jsx-a11y/label-has-associated-control */
 
 /**
  * Ajout au backlog (section 8) : la personnalisation si le jeu n'y est pas encore, puis version, plateforme et données du joueur,
@@ -1876,12 +2257,15 @@ function AddUserVersionModal({
 		game === null ? "jeu introuvable" : (game.frenchName ?? game.name);
 
 	return (
-		<ModalFrame
+		<ModalDialog
 			title={
 				userGameDraft === null
-					? `Ajouter une version jouée : ${gameName}`
-					: `Ajouter au backlog : ${gameName}`
+					? "Ajouter une version jouée"
+					: "Ajouter au backlog"
 			}
+			subtitle={gameName}
+			icon={userGameDraft === null ? CopyPlus : LibraryBig}
+			size="lg"
 			actions={
 				<ModalActions
 					canValidate={canValidate}
@@ -1889,10 +2273,11 @@ function AddUserVersionModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
 			{game !== null && userGameDraft !== null && (
-				<section className={styles.backlogOption}>
-					<h3>Personnalisation</h3>
+				<section className={styles.modalSection}>
+					<SectionTitle>Personnalisation</SectionTitle>
 					<UserGameFields
 						gameId={modal.gameId}
 						draft={userGameDraft}
@@ -1917,25 +2302,34 @@ function AddUserVersionModal({
 					/>
 				</section>
 			)}
-			<p className={styles.notice}>
-				ℹ️ Choisis la version jouée, puis la plateforme.
-				{userGameDraft !== null &&
-					" Annuler laisse le jeu en base, hors du backlog."}
-			</p>
-			<VersionPlatformFields
-				gameName={game?.name ?? ""}
-				versions={database.versions.filter(
-					({ gameId }) => gameId === modal.gameId,
-				)}
-				versionPlatforms={database.versionPlatforms}
-				platforms={database.platforms}
-				userVersions={database.userVersions}
-				draft={draft}
-				onChange={(nextDraft) => onModalChange({ ...modal, draft: nextDraft })}
-			/>
+			<section className={styles.modalSection}>
+				<SectionTitle>Version jouée</SectionTitle>
+				<div className={styles.formStack}>
+					<Callout>
+						Choisis la version jouée, puis la plateforme.
+						{userGameDraft !== null &&
+							" Annuler laisse le jeu en base, hors du backlog."}
+					</Callout>
+					<VersionPlatformFields
+						gameName={game?.name ?? ""}
+						versions={database.versions.filter(
+							({ gameId }) => gameId === modal.gameId,
+						)}
+						versionPlatforms={database.versionPlatforms}
+						platforms={database.platforms}
+						userVersions={database.userVersions}
+						draft={draft}
+						onChange={(nextDraft) =>
+							onModalChange({ ...modal, draft: nextDraft })
+						}
+					/>
+				</div>
+			</section>
 			{game !== null && (
-				<section className={styles.backlogOption}>
-					<h3>Mes données (optionnel)</h3>
+				<section className={styles.modalSection}>
+					<SectionTitle>
+						Mes données <span className={styles.optionalTag}>optionnel</span>
+					</SectionTitle>
 					<UserVersionDraftFields
 						draft={draft}
 						endingType={endingType}
@@ -1946,7 +2340,7 @@ function AddUserVersionModal({
 					/>
 				</section>
 			)}
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
@@ -1977,9 +2371,16 @@ function FinishDateModal({
 			: findById(database.platforms, userVersion.platformId);
 
 	return (
-		<ModalFrame
+		<ModalDialog
 			title="Date de fin"
-			isCompact
+			subtitle={
+				<>
+					{game === null ? "Ce jeu" : (game.frenchName ?? game.name)}
+					{platform === null ? "" : ` sur ${platform.shortName}`}
+				</>
+			}
+			icon={Flag}
+			size="sm"
 			actions={
 				<ModalActions
 					cancelLabel="Plus tard"
@@ -1988,42 +2389,121 @@ function FinishDateModal({
 					onValidate={onValidate}
 				/>
 			}
+			onClose={onCancel}
 		>
-			<p>
-				🏁 {game === null ? "Ce jeu" : (game.frenchName ?? game.name)}
-				{platform === null ? "" : ` sur ${platform.shortName}`} : quand l’as-tu
-				fini pour la première fois ?
-			</p>
-			<div className={styles.choiceRow}>
-				<label>
-					Date de fin
-					<input
-						type="date"
+			<div className={styles.formStack}>
+				<p className={styles.modalQuestion}>
+					Quand l’as-tu fini pour la première fois ?
+				</p>
+				<FormField label="Date de fin">
+					<DateField
 						value={modal.finishDate}
-						onChange={(event) => {
-							const finishDate = parseIsoDate(event.target.value);
+						commitOn="change"
+						isNullable={false}
+						label="Date de fin"
+						onCommit={(finishDate) => {
 							if (finishDate !== null) {
 								onModalChange({ ...modal, finishDate });
 							}
 						}}
 					/>
-				</label>
+				</FormField>
 			</div>
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
 // ---------- Tableau (sections 5, 7 et 9) ----------
 
 /** Bulles explicatives des en-têtes : la signification des valeurs */
-const columnHelp: Partial<Record<ColumnKey, string>> = {
-	endingType: endingTypeDefinitions
-		.map(({ label, meaning }) => `${label} : ${meaning}`)
-		.join("\n"),
-	status: statusDefinitions
-		.map(({ rank, label, meaning }) => `${rank ?? "–"} · ${label} : ${meaning}`)
-		.join("\n"),
+const columnHelp: Partial<Record<ColumnKey, ReactNode>> = {
+	endingType: (
+		<dl className={styles.helpList}>
+			{endingTypeDefinitions.map(({ key, meaning }) => (
+				<div key={key}>
+					<dt>
+						<EndingTypeLabel endingType={key} />
+					</dt>
+					<dd>{meaning}</dd>
+				</div>
+			))}
+		</dl>
+	),
+	status: (
+		<dl className={styles.helpList}>
+			{statusDefinitions.map(({ key, rank, meaning }) => (
+				<div key={key}>
+					<dt>
+						<span className={styles.helpRank}>{rank ?? "–"}</span>
+						<StatusBadge status={key} />
+					</dt>
+					<dd>{meaning}</dd>
+				</div>
+			))}
+		</dl>
+	),
 };
+
+/**
+ * En-têtes compacts, pour un tableau moins large : une icône ou un mot à la place d'un libellé bien plus large que les valeurs.
+ * Le libellé complet reste dans l'info-bulle et pour les lecteurs d'écran.
+ */
+const compactHeaders: Partial<
+	Record<ColumnKey, { icon?: LucideIcon; text?: string }>
+> = {
+	thumbnail: { icon: ImageIcon },
+	seriesNumber: { text: "N°" },
+	releaseDate: { text: "Sortie" },
+	upNext: { icon: Bookmark },
+	owned: { icon: PackageCheck },
+	trackedPlayTime: { icon: Timer, text: "Relevé" },
+	estimatedPlayTime: { icon: Timer, text: "Estimé" },
+	totalPlayTime: { icon: Timer, text: "Total" },
+	actions: {},
+};
+
+/** Alignement des colonnes : les nombres à droite, les cases et les petites valeurs au centre */
+const columnAlignments: Partial<Record<ColumnKey, string>> = {
+	seriesNumber: styles.alignCenter,
+	upNext: styles.alignCenter,
+	owned: styles.alignCenter,
+	finishCount: styles.alignEnd,
+	dlc: styles.alignCenter,
+	trackedPlayTime: styles.alignEnd,
+	estimatedPlayTime: styles.alignEnd,
+	totalPlayTime: styles.alignEnd,
+	rating: styles.alignCenter,
+	actions: styles.alignCenter,
+};
+
+/**
+ * Colonnes collantes au défilement horizontal : le nom, et la miniature quand elle le précède.
+ * Elles se calent après la colonne du chevron, la miniature ayant une largeur fixe.
+ */
+function getStickyColumnClassNames(
+	columns: ColumnKey[],
+): Partial<Record<ColumnKey, string>> {
+	const nameIndex = columns.indexOf("name");
+	const thumbnailIndex = columns.indexOf("thumbnail");
+	const isThumbnailSticky =
+		thumbnailIndex !== -1 && (nameIndex === -1 || thumbnailIndex < nameIndex);
+	const classNames: Partial<Record<ColumnKey, string>> = {};
+	if (isThumbnailSticky) {
+		classNames.thumbnail = joinClassNames(
+			styles.stickyCell,
+			styles.stickyThumbnail,
+			nameIndex === -1 && styles.stickyEdge,
+		);
+	}
+	if (nameIndex !== -1) {
+		classNames.name = joinClassNames(
+			styles.stickyCell,
+			isThumbnailSticky ? styles.stickyNameAfterThumbnail : styles.stickyName,
+			styles.stickyEdge,
+		);
+	}
+	return classNames;
+}
 
 /** Colonnes propres au jeu, toujours en lecture seule */
 const gameInfoRenderers: Partial<
@@ -2032,23 +2512,34 @@ const gameInfoRenderers: Partial<
 	thumbnail: (row) => <Thumbnail imageId={row.imageId} />,
 	// Nom VF, nom VO en dessous s'il diffère ; ligne à version jouée unique : titre de sa version
 	name: (row) => (
-		<span className={styles.nameCell}>
-			<strong>{row.frenchName ?? row.name}</strong>
+		<span className={styles.nameBlock}>
+			<span className={styles.primaryName}>{row.frenchName ?? row.name}</span>
 			{row.frenchName !== null && (
-				<span className={styles.originalName}>{row.name}</span>
+				<span className={styles.secondaryName}>{row.name}</span>
 			)}
 			{row.versionTitle !== null && (
-				<span className={styles.versionTitle}>{row.versionTitle}</span>
+				<span className={styles.versionTitle}>
+					<Layers aria-hidden />
+					{row.versionTitle}
+				</span>
 			)}
 		</span>
 	),
-	seriesNumber: (row) => row.seriesNumberLabel,
+	seriesNumber: (row) =>
+		row.seriesNumberLabel === null ? null : (
+			<span className={styles.number}>{row.seriesNumberLabel}</span>
+		),
 	developer: (row) =>
 		row.developer === null ? null : <CompanyLabel company={row.developer} />,
 	publisher: (row) =>
 		row.publisher === null ? null : <CompanyLabel company={row.publisher} />,
-	releaseDate: (row) => formatReleaseDate(row.releaseDate, row.isCancelled),
-	endingType: (row) => getEndingTypeLabel(row.endingType),
+	releaseDate: (row) => (
+		<ReleaseDateLabel
+			date={row.releaseDate}
+			isCancelled={row.isCancelled}
+		/>
+	),
+	endingType: (row) => <EndingTypeLabel endingType={row.endingType} />,
 	platform: (row) =>
 		row.platform === null ? null : <PlatformLabel platform={row.platform} />,
 };
@@ -2057,9 +2548,15 @@ const gameInfoRenderers: Partial<
 const userVersionInfoRenderers: Partial<
 	Record<ColumnKey, (row: UserVersionRow) => ReactNode>
 > = {
-	thumbnail: (row) => <Thumbnail imageId={row.coverImageId} />,
+	thumbnail: (row) => (
+		<Thumbnail
+			imageId={row.coverImageId}
+			size="sm"
+		/>
+	),
 	name: (row) => (
-		<span className={styles.versionTitle}>
+		<span className={styles.subRowName}>
+			<CornerDownRight aria-hidden />
 			{row.versionTitle ?? "Version originale"}
 		</span>
 	),
@@ -2067,65 +2564,157 @@ const userVersionInfoRenderers: Partial<
 	seriesNumber: () => null,
 	developer: () => null,
 	publisher: () => null,
-	releaseDate: (row) => formatReleaseDate(row.releaseDate, false),
+	releaseDate: (row) => (
+		<ReleaseDateLabel
+			date={row.releaseDate}
+			isCancelled={false}
+		/>
+	),
 	endingType: () => null,
 	platform: (row) => <PlatformLabel platform={row.platform} />,
 };
 
-/** En-tête : un clic trie (⬆️, ⬇️, puis sans tri), avec le numéro de priorité du critère */
+/** En-tête : un clic trie (croissant, décroissant, puis sans tri), avec la flèche et le numéro de priorité du critère */
 function ColumnHeader({
 	column,
 	sort,
+	className,
 	onToggleSort,
 }: {
 	column: ColumnKey;
 	sort: SortCriterion[];
+	className: string | undefined;
 	onToggleSort: (column: ColumnKey) => void;
 }) {
 	const help = columnHelp[column];
 	const label = getColumnLabel(column);
+	const compactHeader = compactHeaders[column];
 	const priority = sort.findIndex((criterion) => criterion.column === column);
 	const criterion = sort.find((current) => current.column === column);
+	let ariaSort: "ascending" | "descending" | undefined;
+	if (criterion !== undefined) {
+		ariaSort = criterion.direction === "asc" ? "ascending" : "descending";
+	}
+	const HeaderIcon = compactHeader?.icon;
+	const content = (
+		<>
+			{HeaderIcon !== undefined && (
+				<HeaderIcon
+					className={styles.headerIcon}
+					aria-hidden
+				/>
+			)}
+			{compactHeader === undefined ? label : compactHeader.text}
+		</>
+	);
 
 	return (
-		<th scope="col">
-			{isSortableColumn(column) ? (
-				<button
-					type="button"
-					className={styles.sortButton}
-					title="Trier : ⬆️, puis ⬇️, puis sans tri"
-					onClick={() => onToggleSort(column)}
-				>
-					{label}
-					{criterion !== undefined && (
-						<span className={styles.sortIndicator}>
-							{`${criterion.direction === "asc" ? "⬆️" : "⬇️"}${priority + 1}`}
+		<th
+			scope="col"
+			aria-sort={ariaSort}
+			className={joinClassNames(columnAlignments[column], className)}
+		>
+			<span className={styles.headerContent}>
+				{isSortableColumn(column) ? (
+					<Tooltip
+						content={`${label}\nTrier : croissant, puis décroissant, puis sans tri`}
+						placement="bottom"
+					>
+						<button
+							type="button"
+							className={joinClassNames(
+								styles.sortButton,
+								criterion !== undefined && styles.sortedColumn,
+							)}
+							aria-label={label}
+							onClick={() => onToggleSort(column)}
+						>
+							{content}
+							{criterion !== undefined && (
+								<span className={styles.sortIndicator}>
+									{criterion.direction === "asc" ? (
+										<ArrowUp aria-hidden />
+									) : (
+										<ArrowDown aria-hidden />
+									)}
+									<span className={styles.sortPriority}>{priority + 1}</span>
+								</span>
+							)}
+						</button>
+					</Tooltip>
+				) : (
+					<Tooltip
+						content={compactHeader === undefined ? null : label}
+						placement="bottom"
+					>
+						<span className={styles.staticHeader}>
+							{content}
+							{compactHeader !== undefined && (
+								<span className={styles.visuallyHidden}>{label}</span>
+							)}
 						</span>
-					)}
-				</button>
-			) : (
-				label
-			)}
-			{help !== undefined && (
-				<span
-					className={styles.help}
-					title={help}
-				>
-					{" ℹ️"}
-				</span>
-			)}
+					</Tooltip>
+				)}
+				{help !== undefined && (
+					<Tooltip
+						content={help}
+						placement="bottom"
+						isWide
+					>
+						<button
+							type="button"
+							className={styles.helpButton}
+							aria-label={`Signification : ${label}`}
+						>
+							<Info aria-hidden />
+						</button>
+					</Tooltip>
+				)}
+			</span>
 		</th>
+	);
+}
+
+/** « faits / total », avec une jauge ; complète, elle passe au vert */
+function DlcProgress({
+	doneCount,
+	totalCount,
+}: {
+	doneCount: number;
+	totalCount: number;
+}) {
+	return (
+		<span
+			className={joinClassNames(
+				styles.dlcProgress,
+				doneCount === totalCount && styles.dlcComplete,
+			)}
+		>
+			<span className={styles.number}>
+				{formatDlcProgress(doneCount, totalCount)}
+			</span>
+			<span
+				className={styles.dlcGauge}
+				aria-hidden
+			>
+				<span
+					className={styles.dlcGaugeFill}
+					style={{ width: `${(doneCount / totalCount) * 100}%` }}
+				/>
+			</span>
+		</span>
 	);
 }
 
 /**
  * « faits / total » ; un clic ouvre la liste des DLC du jeu, à cocher en mode édition (section 9).
- * En mode édition, elle mène aussi à « Rechercher d'autres DLC », même pour un jeu sans DLC (« ➕ »).
+ * En mode édition, elle mène aussi à « Rechercher d'autres DLC », même pour un jeu sans DLC (bouton « + »).
  */
 function DlcCell({
 	userVersion,
 	gameId,
-	label,
+	doneCount,
+	totalCount,
 	database,
 	isEditMode,
 	popover,
@@ -2133,12 +2722,14 @@ function DlcCell({
 }: {
 	userVersion: UserVersion;
 	gameId: number;
-	label: string;
+	doneCount: number;
+	totalCount: number;
 	database: Database;
 	isEditMode: boolean;
 	popover: Popover | null;
 	handlers: TableHandlers;
 }) {
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isOpen =
 		popover?.kind === "dlc" && popover.userVersionId === userVersion.id;
 	const dlcs = database.dlcs.filter((dlc) => dlc.gameId === gameId);
@@ -2149,8 +2740,18 @@ function DlcCell({
 			data-popover
 		>
 			<button
+				ref={triggerRef}
 				type="button"
-				className={styles.linkButton}
+				className={joinClassNames(
+					styles.dlcButton,
+					totalCount === 0 && styles.addDlcButton,
+				)}
+				aria-label={
+					totalCount === 0
+						? "DLC : en rechercher"
+						: `DLC faits : ${formatDlcProgress(doneCount, totalCount)}`
+				}
+				aria-haspopup="dialog"
 				aria-expanded={isOpen}
 				onClick={() =>
 					handlers.setPopover(
@@ -2158,44 +2759,88 @@ function DlcCell({
 					)
 				}
 			>
-				{label}
+				{totalCount === 0 ? (
+					<Plus aria-hidden />
+				) : (
+					<DlcProgress
+						doneCount={doneCount}
+						totalCount={totalCount}
+					/>
+				)}
 			</button>
 			{isOpen && (
-				<div className={styles.popover}>
-					<p className={styles.popoverTitle}>
-						{isEditMode ? "DLC faits" : "DLC faits (lecture seule)"}
-					</p>
-					<ul>
-						{dlcs.map((dlc) => (
-							<li key={dlc.id}>
-								<label>
-									<input
-										type="checkbox"
-										checked={database.doneDlcs.some(
-											(doneDlc) =>
-												doneDlc.userVersionId === userVersion.id &&
-												doneDlc.dlcId === dlc.id,
+				<FloatingPanel
+					anchorRef={triggerRef}
+					role="dialog"
+					ariaLabel="DLC faits"
+					focusOnOpen={isEditMode ? "first" : "panel"}
+					returnsFocus
+					className={styles.dlcPopover}
+				>
+					<div className={styles.popoverHeader}>
+						<span className={styles.popoverTitle}>DLC faits</span>
+						{totalCount > 0 && (
+							<span className={styles.sectionCount}>
+								{formatDlcProgress(doneCount, totalCount)}
+							</span>
+						)}
+						{!isEditMode && (
+							<span className={styles.readOnlyTag}>
+								<Lock aria-hidden />
+								Lecture seule
+							</span>
+						)}
+					</div>
+					{dlcs.length > 0 && (
+						<ul className={styles.dlcList}>
+							{dlcs.map((dlc) => {
+								const isDone = database.doneDlcs.some(
+									(doneDlc) =>
+										doneDlc.userVersionId === userVersion.id &&
+										doneDlc.dlcId === dlc.id,
+								);
+								return (
+									<li key={dlc.id}>
+										{isEditMode ? (
+											<Checkbox
+												checked={isDone}
+												label={dlc.name}
+												onChange={() =>
+													handlers.toggleDoneDlc(userVersion.id, dlc.id)
+												}
+											/>
+										) : (
+											// En lecture seule, la liste se consulte : une coche pour un DLC fait
+											<span
+												className={joinClassNames(
+													styles.readOnlyDlc,
+													isDone && styles.doneDlc,
+												)}
+											>
+												<span className={styles.doneMark}>
+													{isDone && <Check aria-label="Fait" />}
+												</span>
+												{dlc.name}
+											</span>
 										)}
-										disabled={!isEditMode}
-										onChange={() =>
-											handlers.toggleDoneDlc(userVersion.id, dlc.id)
-										}
-									/>
-									{dlc.name}
-								</label>
-							</li>
-						))}
-					</ul>
-					{isEditMode && (
-						<button
-							type="button"
-							className={styles.linkButton}
-							onClick={() => handlers.openAddDlcs(gameId)}
-						>
-							🔍 Rechercher d’autres DLC
-						</button>
+									</li>
+								);
+							})}
+						</ul>
 					)}
-				</div>
+					{isEditMode && (
+						<div className={styles.popoverFooter}>
+							<Button
+								icon={Search}
+								variant="ghost"
+								size="sm"
+								onClick={() => handlers.openAddDlcs(gameId)}
+							>
+								Rechercher d’autres DLC
+							</Button>
+						</div>
+					)}
+				</FloatingPanel>
 			)}
 		</span>
 	);
@@ -2219,91 +2864,95 @@ function ActionsCell({
 	popover: Popover | null;
 	handlers: TableHandlers;
 }) {
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isOpen =
 		popover?.kind === "actionsMenu" &&
 		popover.gameId === gameId &&
 		popover.userVersionId === userVersionId;
+	// Entrée inactive en lecture seule, avec sa raison en info-bulle
+	const editOnlyReason = isEditMode ? null : "Disponible en mode édition";
 	// Ligne du jeu, ou à version jouée unique : le menu du jeu ; sous-ligne : le menu de la version jouée
-	const entries: {
-		label: string;
-		href: string | null;
-		isEditOnly: boolean;
-		/** Entrée inactive, avec sa raison au survol */
-		unavailableReason: string | null;
-		onSelect: () => void;
-	}[] =
+	const items: MenuItem[] =
 		userVersionId === null
 			? [
 					{
-						label: "🎨 Personnaliser",
+						label: "Personnaliser",
+						icon: Palette,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: null,
+						disabledReason: editOnlyReason,
 						onSelect: () => handlers.openCustomizeGame(gameId),
 					},
 					{
-						label: "🔢 Réorganiser la série",
+						label: "Réorganiser la série",
+						icon: ListOrdered,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: hasSeries ? null : "Ce jeu n’a pas de série",
+						disabledReason:
+							editOnlyReason ?? (hasSeries ? null : "Ce jeu n’a pas de série"),
 						onSelect: () => handlers.openReorderSeries(gameId),
 					},
 					{
-						label: "✏️ Modifier le jeu",
+						label: "Modifier le jeu",
+						icon: SquarePen,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: null,
+						disabledReason: editOnlyReason,
 						onSelect: () => handlers.openEditGame(gameId),
 					},
 					{
-						label: "➕ Ajouter une version jouée",
+						label: "Ajouter une version jouée",
+						icon: CopyPlus,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: null,
+						disabledReason: editOnlyReason,
 						onSelect: () => handlers.openAddUserVersion(gameId),
 					},
 					{
-						label: "🔗 Ouvrir sur IGDB",
+						label: "Ouvrir sur IGDB",
+						icon: Globe,
 						href: igdbUrl,
-						isEditOnly: false,
-						unavailableReason: null,
+						disabledReason: null,
+						isGroupStart: true,
 						onSelect: () => undefined,
 					},
 					{
-						label: "🗑️ Retirer le jeu du backlog",
+						label: "Retirer le jeu du backlog",
+						icon: Trash2,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: null,
+						disabledReason: editOnlyReason,
+						isDanger: true,
+						isGroupStart: true,
 						onSelect: () => handlers.removeGameFromBacklog(gameId),
 					},
 					{
-						label: "🪵 Logger cette ligne",
+						label: "Logger cette ligne",
+						icon: Terminal,
 						href: null,
-						isEditOnly: false,
-						unavailableReason: null,
+						disabledReason: null,
+						isGroupStart: true,
 						onSelect: () => handlers.logRow(gameId, null),
 					},
 				]
 			: [
 					{
-						label: "🔗 Ouvrir la version sur IGDB",
+						label: "Ouvrir la version sur IGDB",
+						icon: Globe,
 						href: igdbUrl,
-						isEditOnly: false,
-						unavailableReason: null,
+						disabledReason: null,
 						onSelect: () => undefined,
 					},
 					{
-						label: "🗑️ Retirer la version jouée",
+						label: "Retirer la version jouée",
+						icon: Trash2,
 						href: null,
-						isEditOnly: true,
-						unavailableReason: null,
+						disabledReason: editOnlyReason,
+						isDanger: true,
+						isGroupStart: true,
 						onSelect: () => handlers.removeUserVersion(userVersionId),
 					},
 					{
-						label: "🪵 Logger cette ligne",
+						label: "Logger cette ligne",
+						icon: Terminal,
 						href: null,
-						isEditOnly: false,
-						unavailableReason: null,
+						disabledReason: null,
+						isGroupStart: true,
 						onSelect: () => handlers.logRow(gameId, userVersionId),
 					},
 				];
@@ -2313,65 +2962,34 @@ function ActionsCell({
 			className={styles.popoverAnchor}
 			data-popover
 		>
-			<button
-				type="button"
-				className={styles.actionsButton}
-				aria-label="Actions"
-				aria-haspopup="menu"
-				aria-expanded={isOpen}
+			<Button
+				ref={triggerRef}
+				icon={EllipsisVertical}
+				variant="ghost"
+				size="sm"
+				ariaLabel="Actions"
+				ariaHaspopup="menu"
+				ariaExpanded={isOpen}
 				onClick={() =>
 					handlers.setPopover(
 						isOpen ? null : { kind: "actionsMenu", gameId, userVersionId },
 					)
 				}
-			>
-				⋮
-			</button>
+				onKeyDown={(event) => {
+					// ↓ ouvre le menu, comme Entrée
+					if (event.key === "ArrowDown" && !isOpen) {
+						event.preventDefault();
+						handlers.setPopover({ kind: "actionsMenu", gameId, userVersionId });
+					}
+				}}
+			/>
 			{isOpen && (
-				<ul
-					className={styles.menu}
-					role="menu"
-				>
-					{entries.map(
-						({ label, href, isEditOnly, unavailableReason, onSelect }) => {
-							const disabledTitle =
-								isEditOnly && !isEditMode
-									? "Disponible en mode édition"
-									: unavailableReason;
-							return (
-								<li
-									key={label}
-									role="none"
-								>
-									{href === null ? (
-										<button
-											type="button"
-											role="menuitem"
-											disabled={disabledTitle !== null}
-											title={disabledTitle ?? undefined}
-											onClick={() => {
-												handlers.setPopover(null);
-												onSelect();
-											}}
-										>
-											{label}
-										</button>
-									) : (
-										<a
-											role="menuitem"
-											href={href}
-											target="_blank"
-											rel="noreferrer"
-											onClick={() => handlers.setPopover(null)}
-										>
-											{label}
-										</a>
-									)}
-								</li>
-							);
-						},
-					)}
-				</ul>
+				<Menu
+					anchorRef={triggerRef}
+					items={items}
+					ariaLabel="Actions"
+					onClose={() => handlers.setPopover(null)}
+				/>
 			)}
 		</span>
 	);
@@ -2409,22 +3027,36 @@ function UserVersionDataCell({
 }) {
 	const editableUserVersion = isEditMode ? userVersion : null;
 
+	/** Case de la version jouée en mode édition ; sinon, une icône quand la valeur est vraie */
 	function renderCheckbox(
 		checked: boolean,
 		label: string,
+		Icon: LucideIcon,
 		toggle: (current: UserVersion) => UserVersion,
 	) {
+		if (editableUserVersion === null) {
+			return checked ? (
+				<span
+					className={joinClassNames(
+						styles.booleanMark,
+						column === "upNext" && styles.upNextMark,
+					)}
+					role="img"
+					aria-label={label}
+				>
+					<Icon aria-hidden />
+				</span>
+			) : null;
+		}
 		return (
-			<input
-				type="checkbox"
+			<Checkbox
 				checked={checked}
-				disabled={editableUserVersion === null}
-				aria-label={label}
-				onChange={() => {
-					if (editableUserVersion !== null) {
-						handlers.updateUserVersion(editableUserVersion.id, toggle);
-					}
-				}}
+				ariaLabel={label}
+				size="sm"
+				className={styles.cellCheckbox}
+				onChange={() =>
+					handlers.updateUserVersion(editableUserVersion.id, toggle)
+				}
 			/>
 		);
 	}
@@ -2432,60 +3064,67 @@ function UserVersionDataCell({
 	switch (column) {
 		case "status": {
 			if (editableUserVersion === null) {
-				return values.status === null ? null : getStatusLabel(values.status);
+				return values.status === null ? null : (
+					<StatusBadge status={values.status} />
+				);
 			}
 			return (
-				<select
-					className={styles.cellField}
+				<Select
 					value={editableUserVersion.status}
-					aria-label="Statut"
-					onChange={(event) => {
-						const status = statusDefinitions.find(
-							({ key }) => key === event.target.value,
-						)?.key;
-						if (status !== undefined) {
-							handlers.changeUserVersionStatus(editableUserVersion.id, status);
-						}
-					}}
-				>
-					{/* Liste filtrée par type de fin (section 6) */}
-					{statusDefinitions
+					// Liste filtrée par type de fin (section 6), le statut actuel compris
+					options={statusDefinitions
 						.filter(
 							({ key }) =>
 								key === editableUserVersion.status ||
 								isStatusAllowed(key, endingType),
 						)
-						.map(({ key, label }) => (
-							<option
-								key={key}
-								value={key}
-							>
-								{label}
-							</option>
-						))}
-				</select>
+						.map(({ key, label }) => ({
+							value: key,
+							label,
+							content: <StatusBadge status={key} />,
+						}))}
+					ariaLabel="Statut"
+					variant="inline"
+					size="sm"
+					onChange={(status) =>
+						handlers.changeUserVersionStatus(editableUserVersion.id, status)
+					}
+				/>
 			);
 		}
 		case "upNext":
-			return renderCheckbox(values.isUpNext, "À jouer bientôt", (current) => ({
-				...current,
-				isUpNext: !current.isUpNext,
-			}));
+			return renderCheckbox(
+				values.isUpNext,
+				"À jouer bientôt",
+				Bookmark,
+				(current) => ({
+					...current,
+					isUpNext: !current.isUpNext,
+				}),
+			);
 		case "owned":
-			return renderCheckbox(values.isOwned, "Possédé", (current) => ({
-				...current,
-				isOwned: !current.isOwned,
-			}));
+			return renderCheckbox(
+				values.isOwned,
+				"Possédé",
+				PackageCheck,
+				(current) => ({
+					...current,
+					isOwned: !current.isOwned,
+				}),
+			);
 		case "finishDate":
 			if (editableUserVersion === null) {
-				return values.finishDate === null
-					? null
-					: formatIsoDate(values.finishDate);
+				return values.finishDate === null ? null : (
+					<span className={styles.number}>
+						{formatIsoDate(values.finishDate)}
+					</span>
+				);
 			}
 			return (
 				<DateField
 					value={editableUserVersion.finishDate}
 					label="Date de fin"
+					variant="inline"
 					onCommit={(finishDate) =>
 						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
@@ -2502,13 +3141,15 @@ function UserVersionDataCell({
 				);
 			}
 			return (
-				<span className={styles.fieldGroup}>
+				<span className={styles.inlinePair}>
 					<NumberField
 						value={editableUserVersion.sureFinishCount}
 						min={0}
 						max={null}
 						isNullable={false}
 						label="Fois fini, sûr"
+						variant="inline"
+						digits={2}
 						onCommit={(count) =>
 							handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 								...current,
@@ -2516,13 +3157,15 @@ function UserVersionDataCell({
 							}))
 						}
 					/>
-					+
+					<span className={styles.fieldUnit}>+</span>
 					<NumberField
 						value={editableUserVersion.probableFinishCount}
 						min={0}
 						max={null}
 						isNullable={false}
 						label="Fois fini, probable"
+						variant="inline"
+						digits={2}
 						onCommit={(count) =>
 							handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 								...current,
@@ -2530,15 +3173,18 @@ function UserVersionDataCell({
 							}))
 						}
 					/>
-					?
+					<span className={styles.fieldUnit}>?</span>
 				</span>
 			);
 		case "dlc":
 			// La ligne d'un jeu à plusieurs versions jouées affiche « faits / total » en lecture seule
 			if (userVersion === null) {
-				return values.dlcCount === 0
-					? null
-					: formatDlcProgress(values.doneDlcCount, values.dlcCount);
+				return values.dlcCount === 0 ? null : (
+					<DlcProgress
+						doneCount={values.doneDlcCount}
+						totalCount={values.dlcCount}
+					/>
+				);
 			}
 			// Sans DLC, la cellule reste vide, sauf en mode édition pour en rechercher (section 9)
 			if (values.dlcCount === 0 && !isEditMode) {
@@ -2548,11 +3194,8 @@ function UserVersionDataCell({
 				<DlcCell
 					userVersion={userVersion}
 					gameId={gameId}
-					label={
-						values.dlcCount === 0
-							? "➕"
-							: formatDlcProgress(values.doneDlcCount, values.dlcCount)
-					}
+					doneCount={values.doneDlcCount}
+					totalCount={values.dlcCount}
 					database={database}
 					isEditMode={isEditMode}
 					popover={popover}
@@ -2570,6 +3213,7 @@ function UserVersionDataCell({
 				<DurationField
 					minutes={editableUserVersion.trackedPlayTimeMinutes}
 					label="Temps relevé"
+					variant="inline"
 					onCommit={(minutes) =>
 						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
@@ -2589,6 +3233,7 @@ function UserVersionDataCell({
 				<DurationField
 					minutes={editableUserVersion.estimatedPlayTimeMinutes}
 					label="Temps estimé"
+					variant="inline"
 					onCommit={(minutes) =>
 						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
@@ -2604,38 +3249,50 @@ function UserVersionDataCell({
 			);
 		case "rating":
 			if (editableUserVersion === null) {
-				return values.rating === null ? null : `${values.rating}/20`;
+				return values.rating === null ? null : (
+					<RatingBadge rating={values.rating} />
+				);
 			}
 			return (
-				<NumberField
-					value={editableUserVersion.rating}
-					min={0}
-					max={20}
-					isNullable
-					label="Note sur 20"
-					onCommit={(rating) =>
-						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
-							...current,
-							rating,
-						}))
-					}
-				/>
+				<span className={styles.inlinePair}>
+					<NumberField
+						value={editableUserVersion.rating}
+						min={0}
+						max={20}
+						isNullable
+						label="Note sur 20"
+						variant="inline"
+						digits={2}
+						placeholder="–"
+						onCommit={(rating) =>
+							handlers.updateUserVersion(editableUserVersion.id, (current) => ({
+								...current,
+								rating,
+							}))
+						}
+					/>
+					<span className={styles.fieldUnit}>/20</span>
+				</span>
 			);
 		case "comment":
 			if (editableUserVersion === null) {
 				return values.comment === null ? null : (
-					<span
-						className={styles.comment}
-						title={values.comment}
+					<Tooltip
+						content={values.comment}
+						isWide
+						className={styles.commentTooltip}
 					>
-						{values.comment}
-					</span>
+						<span className={styles.comment}>{values.comment}</span>
+					</Tooltip>
 				);
 			}
 			return (
 				<TextField
 					value={editableUserVersion.comment}
 					label="Commentaire"
+					variant="inline"
+					placeholder="Ajouter…"
+					className={styles.commentField}
 					onCommit={(comment) =>
 						handlers.updateUserVersion(editableUserVersion.id, (current) => ({
 							...current,
@@ -2653,6 +3310,7 @@ function UserVersionDataCell({
 function GameRowGroup({
 	row,
 	columns,
+	cellClassNames,
 	isExpanded,
 	database,
 	isEditMode,
@@ -2661,6 +3319,8 @@ function GameRowGroup({
 }: {
 	row: GameRow;
 	columns: ColumnKey[];
+	/** Alignement et colonnes collantes */
+	cellClassNames: Partial<Record<ColumnKey, string>>;
 	isExpanded: boolean;
 	database: Database;
 	isEditMode: boolean;
@@ -2681,29 +3341,34 @@ function GameRowGroup({
 		if (renderInfo !== undefined) {
 			return renderInfo(row);
 		}
-		// Un clic sur la série filtre le tableau sur ses jeux, aussi en lecture seule ; ✏️ : ce n'est pas celle d'IGDB
+		// Un clic sur la série filtre le tableau sur ses jeux, aussi en lecture seule ; un crayon : ce n'est pas celle d'IGDB
 		if (column === "series") {
 			const { series, proposedSeries } = row;
 			return series === null ? null : (
-				<>
-					<button
-						type="button"
-						className={styles.linkButton}
-						title="Filtrer sur cette série"
-						onClick={() => handlers.filterOnSeries(series.name)}
-					>
-						{series.name}
-					</button>
-					{series.id !== proposedSeries?.id && (
-						<span
-							className={styles.help}
-							title={`Série modifiée ; IGDB propose : ${proposedSeries?.name ?? "aucune"}`}
+				<span className={styles.seriesCell}>
+					<Tooltip content="Filtrer sur cette série">
+						<button
+							type="button"
+							className={styles.seriesButton}
+							onClick={() => handlers.filterOnSeries(series.name)}
 						>
-							{" "}
-							✏️
-						</span>
+							{series.name}
+						</button>
+					</Tooltip>
+					{series.id !== proposedSeries?.id && (
+						<Tooltip
+							content={`Série modifiée ; IGDB propose : ${proposedSeries?.name ?? "aucune"}`}
+						>
+							<span
+								className={styles.modifiedMark}
+								role="img"
+								aria-label={`Série modifiée ; IGDB propose : ${proposedSeries?.name ?? "aucune"}`}
+							>
+								<Pencil aria-hidden />
+							</span>
+						</Tooltip>
 					)}
-				</>
+				</span>
 			);
 		}
 		if (column === "actions") {
@@ -2773,47 +3438,159 @@ function GameRowGroup({
 		);
 	}
 
+	const userVersionCount = row.userVersionRows.length;
+
 	return (
 		<>
-			<tr className={row.isUpNext ? styles.upNextRow : styles.gameRow}>
-				{/* Chevron et badge sur une ligne dépliable, espace vide sur une ligne simple */}
+			<tr
+				className={joinClassNames(
+					styles.gameRow,
+					row.isUpNext && styles.upNextRow,
+					isExpandable && isExpanded && styles.expandedRow,
+				)}
+			>
+				{/* Chevron et badge du nombre de versions jouées sur une ligne dépliable, espace vide sur une ligne simple */}
 				<td className={styles.expandCell}>
 					{isExpandable && (
-						<>
+						<Tooltip
+							content={`${userVersionCount} versions jouées`}
+							placement="right"
+						>
 							<button
 								type="button"
-								className={styles.chevron}
+								className={styles.expandButton}
 								aria-expanded={isExpanded}
-								aria-label={isExpanded ? "Replier" : "Déplier"}
+								aria-label={`${isExpanded ? "Replier" : "Déplier"} : ${userVersionCount} versions jouées`}
 								onClick={() => handlers.toggleExpanded(row.gameId)}
+								onKeyDown={(event) => {
+									// → déplie, ← replie, comme dans une arborescence
+									if (
+										(event.key === "ArrowRight" && !isExpanded) ||
+										(event.key === "ArrowLeft" && isExpanded)
+									) {
+										event.preventDefault();
+										handlers.toggleExpanded(row.gameId);
+									}
+								}}
 							>
-								{isExpanded ? "🔽" : "▶️"}
+								<ChevronRight
+									className={styles.chevron}
+									aria-hidden
+								/>
+								<span className={styles.versionCount}>{userVersionCount}</span>
 							</button>
-							<span className={styles.userVersionBadge}>
-								{row.userVersionRows.length} versions jouées
-							</span>
-						</>
+						</Tooltip>
 					)}
 				</td>
 				{columns.map((column) => (
-					<td key={column}>{renderGameCell(column)}</td>
+					<td
+						key={column}
+						className={cellClassNames[column]}
+					>
+						{renderGameCell(column)}
+					</td>
 				))}
 			</tr>
 			{isExpandable &&
 				isExpanded &&
-				row.userVersionRows.map((userVersionRow) => (
+				row.userVersionRows.map((userVersionRow, index) => (
 					<tr
 						key={userVersionRow.userVersionId}
-						className={styles.userVersionRow}
+						className={joinClassNames(
+							styles.userVersionRow,
+							index === userVersionCount - 1 && styles.lastUserVersionRow,
+						)}
 					>
 						<td className={styles.expandCell} />
 						{columns.map((column) => (
-							<td key={column}>
+							<td
+								key={column}
+								className={cellClassNames[column]}
+							>
 								{renderUserVersionCell(column, userVersionRow)}
 							</td>
 						))}
 					</tr>
 				))}
+		</>
+	);
+}
+
+/** Résumé d'un intervalle de filtre : « ≥ 10 », « ≤ 20 », « 10 – 20 » ; `null` sans borne */
+function formatRangeSummary(
+	min: string | null,
+	max: string | null,
+): string | null {
+	if (min !== null && max !== null) {
+		return `${min} – ${max}`;
+	}
+	if (min !== null) {
+		return `≥ ${min}`;
+	}
+	return max === null ? null : `≤ ${max}`;
+}
+
+/**
+ * Filtre d'un intervalle (nombres, temps, dates) : un bouton aussi étroit que la colonne résume les bornes,
+ * les deux champs s'ouvrent dans un popover. Échap ou Entrée le referment.
+ */
+function RangeFilter({
+	label,
+	summary,
+	children,
+}: {
+	label: string;
+	/** `null` sans filtre */
+	summary: string | null;
+	children: ReactNode;
+}) {
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [isOpen, setIsOpen] = useState(false);
+
+	return (
+		<>
+			<Tooltip content={summary === null ? null : `${label} : ${summary}`}>
+				<button
+					ref={triggerRef}
+					type="button"
+					className={joinClassNames(
+						styles.filterTrigger,
+						summary !== null && styles.activeFilter,
+					)}
+					aria-label={summary === null ? label : `${label} : ${summary}`}
+					aria-haspopup="dialog"
+					aria-expanded={isOpen}
+					onClick={() => setIsOpen(!isOpen)}
+				>
+					<span className={styles.filterSummary}>{summary ?? "Tous"}</span>
+					<ChevronDown aria-hidden />
+				</button>
+			</Tooltip>
+			{isOpen && (
+				<FloatingPanel
+					anchorRef={triggerRef}
+					role="dialog"
+					ariaLabel={label}
+					focusOnOpen="first"
+					returnsFocus
+					className={styles.rangePopover}
+					onClickOutside={() => setIsOpen(false)}
+					onKeyDown={(event) => {
+						// Entrée dans un champ de borne valide et referme ; pas sur un jour du calendrier
+						if (
+							event.key === "Escape" ||
+							(event.key === "Enter" &&
+								event.target instanceof HTMLInputElement)
+						) {
+							event.stopPropagation();
+							setIsOpen(false);
+						}
+					}}
+				>
+					<p className={styles.popoverTitle}>{label}</p>
+					<div className={styles.rangeFields}>{children}</div>
+				</FloatingPanel>
+			)}
 		</>
 	);
 }
@@ -2835,6 +3612,7 @@ function NumberRangeFilter({
 	const maxBound = filter?.max ?? null;
 	const minRef = useRef<HTMLInputElement>(null);
 	const maxRef = useRef<HTMLInputElement>(null);
+	const unitLabel = unit === 60 ? " h" : "";
 
 	function readBound(input: HTMLInputElement | null): number | null {
 		if (input === null || input.value === "" || !input.validity.valid) {
@@ -2854,30 +3632,52 @@ function NumberRangeFilter({
 	}
 
 	return (
-		<span className={styles.fieldGroup}>
-			<input
-				ref={minRef}
-				type="number"
-				step="any"
-				className={styles.rangeField}
-				placeholder="min"
-				aria-label={`${label}, minimum`}
-				defaultValue={minBound === null ? "" : minBound / unit}
-				onChange={update}
-			/>
-			–
-			<input
-				ref={maxRef}
-				type="number"
-				step="any"
-				className={styles.rangeField}
-				placeholder="max"
-				aria-label={`${label}, maximum`}
-				defaultValue={maxBound === null ? "" : maxBound / unit}
-				onChange={update}
-			/>
-			{unit === 60 && "h"}
-		</span>
+		<RangeFilter
+			label={label}
+			summary={formatRangeSummary(
+				minBound === null ? null : `${minBound / unit}${unitLabel}`,
+				maxBound === null ? null : `${maxBound / unit}${unitLabel}`,
+			)}
+		>
+			<label className={styles.rangeField}>
+				<span className={styles.formLabel}>Minimum</span>
+				<span className={styles.rangeInputGroup}>
+					<input
+						ref={minRef}
+						type="number"
+						step="any"
+						className={styles.rangeInput}
+						placeholder="min"
+						aria-label={`${label}, minimum`}
+						defaultValue={minBound === null ? "" : minBound / unit}
+						onChange={update}
+					/>
+					{unit === 60 && <span className={styles.fieldUnit}>h</span>}
+				</span>
+			</label>
+			<span
+				className={styles.rangeDash}
+				aria-hidden
+			>
+				–
+			</span>
+			<label className={styles.rangeField}>
+				<span className={styles.formLabel}>Maximum</span>
+				<span className={styles.rangeInputGroup}>
+					<input
+						ref={maxRef}
+						type="number"
+						step="any"
+						className={styles.rangeInput}
+						placeholder="max"
+						aria-label={`${label}, maximum`}
+						defaultValue={maxBound === null ? "" : maxBound / unit}
+						onChange={update}
+					/>
+					{unit === 60 && <span className={styles.fieldUnit}>h</span>}
+				</span>
+			</label>
+		</RangeFilter>
 	);
 }
 
@@ -2893,39 +3693,48 @@ function DateRangeFilter({
 	label: string;
 	onChange: (filter: ColumnFilter | null) => void;
 }) {
-	const fromRef = useRef<HTMLInputElement>(null);
-	const toRef = useRef<HTMLInputElement>(null);
+	const from = filter?.from ?? null;
+	const to = filter?.to ?? null;
 
-	function update() {
-		const from = parseIsoDate(fromRef.current?.value ?? "");
-		const to = parseIsoDate(toRef.current?.value ?? "");
+	function update(nextFrom: IsoDate | null, nextTo: IsoDate | null) {
 		onChange(
-			from === null && to === null
+			nextFrom === null && nextTo === null
 				? null
-				: { column, kind: "dateRange", from, to },
+				: { column, kind: "dateRange", from: nextFrom, to: nextTo },
 		);
 	}
 
 	return (
-		<span className={styles.fieldGroup}>
-			<input
-				ref={fromRef}
-				type="date"
-				className={styles.dateField}
-				aria-label={`${label}, depuis`}
-				defaultValue={filter?.from ?? ""}
-				onChange={update}
-			/>
-			–
-			<input
-				ref={toRef}
-				type="date"
-				className={styles.dateField}
-				aria-label={`${label}, jusqu’à`}
-				defaultValue={filter?.to ?? ""}
-				onChange={update}
-			/>
-		</span>
+		<RangeFilter
+			label={label}
+			summary={formatRangeSummary(
+				from === null ? null : formatIsoDate(from),
+				to === null ? null : formatIsoDate(to),
+			)}
+		>
+			<FormField label="Depuis">
+				<DateField
+					value={from}
+					commitOn="change"
+					label={`${label}, depuis`}
+					onCommit={(nextFrom) => update(nextFrom, to)}
+				/>
+			</FormField>
+			<span
+				className={styles.rangeDash}
+				aria-hidden
+			>
+				–
+			</span>
+			<FormField label="Jusqu’à">
+				<DateField
+					value={to}
+					commitOn="change"
+					label={`${label}, jusqu’à`}
+					onCommit={(nextTo) => update(from, nextTo)}
+				/>
+			</FormField>
+		</RangeFilter>
 	);
 }
 
@@ -2947,19 +3756,23 @@ function ColumnFilterCell({
 		case "text": {
 			const textFilter = filter?.kind === "text" ? filter : null;
 			return (
-				<span className={styles.fieldGroup}>
+				<span
+					className={joinClassNames(
+						styles.textFilter,
+						textFilter !== null && styles.activeFilter,
+					)}
+				>
 					{textFilter?.isExact === true && (
-						<span
-							className={styles.hint}
-							title="Valeur exacte, après un clic sur une série"
-						>
-							=
-						</span>
+						<Tooltip content="Valeur exacte, après un clic sur une série">
+							<span className={styles.exactMark}>=</span>
+						</Tooltip>
 					)}
 					<input
 						type="search"
-						className={styles.filterField}
-						placeholder="contient…"
+						// Sans largeur propre : le champ prend celle de sa colonne, sans l'élargir
+						size={1}
+						className={styles.filterInput}
+						placeholder="Contient…"
 						aria-label={label}
 						value={textFilter?.text ?? ""}
 						onChange={(event) =>
@@ -2980,55 +3793,71 @@ function ColumnFilterCell({
 		}
 		case "value":
 			return (
-				<select
-					className={styles.filterField}
-					aria-label={label}
+				<Select
 					value={filter?.kind === "value" ? filter.value : ""}
-					onChange={(event) =>
-						onChange(
-							event.target.value === ""
-								? null
-								: { column, kind: "value", value: event.target.value },
-						)
+					options={[
+						{ value: "", label: "Tous" },
+						...getFilterOptions(column, database).map((option) => {
+							let content: ReactNode = option.label;
+							if (column === "status") {
+								content = <StatusBadge status={option.value as Status} />;
+							} else if (column === "endingType") {
+								content = (
+									<EndingTypeLabel endingType={option.value as EndingType} />
+								);
+							}
+							return { ...option, content };
+						}),
+					]}
+					ariaLabel={label}
+					size="sm"
+					isHighlighted={filter?.kind === "value"}
+					className={styles.filterSelect}
+					onChange={(value) =>
+						onChange(value === "" ? null : { column, kind: "value", value })
 					}
-				>
-					<option value="">Tous</option>
-					{getFilterOptions(column, database).map((option) => (
-						<option
-							key={option.value}
-							value={option.value}
-						>
-							{option.label}
-						</option>
-					))}
-				</select>
+				/>
 			);
 		case "boolean": {
 			let selectedValue = "";
 			if (filter?.kind === "boolean") {
 				selectedValue = filter.value ? "oui" : "non";
 			}
+			// Colonne étroite : le champ ne montre qu'une icône, la liste les libellés
 			return (
-				<select
-					className={styles.filterField}
-					aria-label={label}
+				<Select
 					value={selectedValue}
-					onChange={(event) =>
+					options={[
+						{
+							value: "",
+							label: "Tous",
+							triggerContent: (
+								<Minus
+									className={styles.filterAllMark}
+									aria-hidden
+								/>
+							),
+						},
+						{
+							value: "oui",
+							label: "Oui",
+							triggerContent: <Check aria-hidden />,
+						},
+						{ value: "non", label: "Non", triggerContent: <X aria-hidden /> },
+					]}
+					ariaLabel={label}
+					size="sm"
+					isCompact
+					isHighlighted={filter?.kind === "boolean"}
+					className={styles.filterSelect}
+					onChange={(value) =>
 						onChange(
-							event.target.value === ""
+							value === ""
 								? null
-								: {
-										column,
-										kind: "boolean",
-										value: event.target.value === "oui",
-									},
+								: { column, kind: "boolean", value: value === "oui" },
 						)
 					}
-				>
-					<option value="">Tous</option>
-					<option value="oui">Oui</option>
-					<option value="non">Non</option>
-				</select>
+				/>
 			);
 		}
 		case "numberRange":
@@ -3069,6 +3898,7 @@ function BacklogTable({
 	onFilterChange,
 	onClearFilters,
 	onLoadNextPage,
+	onFocusSearch,
 }: {
 	rows: GameRow[];
 	columns: ColumnSetting[];
@@ -3084,10 +3914,22 @@ function BacklogTable({
 	onFilterChange: (column: ColumnKey, filter: ColumnFilter | null) => void;
 	onClearFilters: () => void;
 	onLoadNextPage: () => void;
+	/** Le backlog vide propose d'aller à la recherche */
+	onFocusSearch: () => void;
 }) {
 	const visibleColumns = columns
 		.filter(({ isVisible }) => isVisible)
 		.map(({ key }) => key);
+	// Classes de chaque colonne : son alignement, et sa place si elle colle au défilement horizontal
+	const stickyClassNames = getStickyColumnClassNames(visibleColumns);
+	const cellClassNames: Partial<Record<ColumnKey, string>> = {};
+	for (const column of visibleColumns) {
+		cellClassNames[column] = joinClassNames(
+			columnAlignments[column],
+			stickyClassNames[column],
+			column === "thumbnail" && styles.thumbnailCell,
+		);
+	}
 	const shownRows = rows.slice(0, loadedPageCount * backlogPageSize);
 	const hasMoreRows = shownRows.length < rows.length;
 	const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -3117,14 +3959,56 @@ function BacklogTable({
 		return () => observer.disconnect();
 	}, [hasMoreRows, loadedPageCount, onLoadNextPage]);
 
+	const gameCount = database.userGames.length;
+	const userVersionCount = database.userVersions.length;
+
 	return (
-		<div className={styles.tableWrapper}>
+		<div className={styles.tableArea}>
+			{/* Résumé du backlog, calé à gauche même quand la page défile en largeur */}
+			<div className={styles.tableCaption}>
+				<span className={styles.captionCount}>
+					{filters.length > 0 ? (
+						<>
+							<strong>{rows.length}</strong> {rows.length > 1 ? "jeux" : "jeu"}{" "}
+							sur {gameCount}
+						</>
+					) : (
+						<>
+							<strong>{gameCount}</strong> {gameCount > 1 ? "jeux" : "jeu"}
+							<span className={styles.captionSeparator}>·</span>
+							<strong>{userVersionCount}</strong>{" "}
+							{userVersionCount > 1 ? "versions jouées" : "version jouée"}
+						</>
+					)}
+				</span>
+				{filters.length > 0 && (
+					<span className={styles.captionFilters}>
+						<ListFilter aria-hidden />
+						{filters.length > 1
+							? `${filters.length} filtres actifs`
+							: "1 filtre actif"}
+					</span>
+				)}
+				{isEditMode && (
+					<span className={styles.editModeTag}>
+						<PencilLine aria-hidden />
+						Mode édition
+						<span className={styles.editModeHint}>
+							retour en lecture seule après 1 min sans activité
+						</span>
+					</span>
+				)}
+			</div>
 			<table
-				className={isEditMode ? styles.editingTable : styles.table}
+				className={joinClassNames(
+					styles.table,
+					isEditMode && styles.editingTable,
+				)}
+				aria-label="Backlog"
 				data-backlog-table
 			>
 				<thead>
-					<tr>
+					<tr className={styles.headerRow}>
 						<th
 							className={styles.expandCell}
 							aria-label="Versions jouées"
@@ -3134,6 +4018,7 @@ function BacklogTable({
 								key={column}
 								column={column}
 								sort={sort}
+								className={stickyClassNames[column]}
 								onToggleSort={onToggleSort}
 							/>
 						))}
@@ -3148,20 +4033,28 @@ function BacklogTable({
 							aria-label="Filtres"
 						>
 							{filters.length === 0 ? (
-								"🔎"
+								<ListFilter
+									className={styles.filterRowIcon}
+									aria-hidden
+								/>
 							) : (
-								<button
-									type="button"
-									className={styles.iconButton}
-									title="Retirer tous les filtres"
+								<Button
+									icon={FunnelX}
+									variant="ghost"
+									size="sm"
+									ariaLabel="Effacer tous les filtres"
+									tooltip="Effacer tous les filtres"
+									tooltipPlacement="right"
+									className={styles.clearFiltersButton}
 									onClick={clearFilters}
-								>
-									🧹 Effacer
-								</button>
+								/>
 							)}
 						</th>
 						{visibleColumns.map((column) => (
-							<th key={column}>
+							<th
+								key={column}
+								className={cellClassNames[column]}
+							>
 								<ColumnFilterCell
 									column={column}
 									filter={
@@ -3180,6 +4073,7 @@ function BacklogTable({
 							key={row.gameId}
 							row={row}
 							columns={visibleColumns}
+							cellClassNames={cellClassNames}
 							isExpanded={expandedGameIds.includes(row.gameId)}
 							database={database}
 							isEditMode={isEditMode}
@@ -3190,18 +4084,50 @@ function BacklogTable({
 				</tbody>
 			</table>
 			{rows.length === 0 && (
-				<p className={styles.emptyMessage}>
-					{filters.length > 0
-						? "Aucun jeu ne correspond aux filtres."
-						: "Le backlog est vide : ajoute un jeu depuis la recherche, avec une plateforme."}
-				</p>
+				<div className={styles.emptyState}>
+					<span className={styles.emptyIcon}>
+						{filters.length > 0 ? (
+							<SearchX aria-hidden />
+						) : (
+							<Gamepad2 aria-hidden />
+						)}
+					</span>
+					{filters.length > 0 ? (
+						<>
+							<p className={styles.emptyTitle}>
+								Aucun jeu ne correspond aux filtres.
+							</p>
+							<Button
+								icon={FunnelX}
+								onClick={clearFilters}
+							>
+								Effacer les filtres
+							</Button>
+						</>
+					) : (
+						<>
+							<p className={styles.emptyTitle}>Le backlog est vide</p>
+							<p className={styles.emptyText}>
+								Ajoute un jeu depuis la recherche, avec une plateforme.
+							</p>
+							<Button
+								icon={Search}
+								variant="primary"
+								onClick={onFocusSearch}
+							>
+								Rechercher un jeu
+							</Button>
+						</>
+					)}
+				</div>
 			)}
 			{hasMoreRows && (
 				<div
 					ref={loadMoreRef}
-					className={styles.emptyMessage}
+					className={styles.loadMore}
 				>
-					⏳ Chargement…
+					<Spinner />
+					Chargement…
 				</div>
 			)}
 		</div>
@@ -3220,76 +4146,116 @@ function ColumnsModal({
 	onMove: (key: ColumnKey, offset: -1 | 1) => void;
 	onClose: () => void;
 }) {
+	const visibleCount = columns.filter(({ isVisible }) => isVisible).length;
+
+	/** Déplacée en premier ou en dernier, une colonne perd un de ses boutons : le focus passe à l'autre */
+	function move(
+		key: ColumnKey,
+		offset: -1 | 1,
+		button: HTMLButtonElement,
+		isReachingEnd: boolean,
+	) {
+		onMove(key, offset);
+		if (isReachingEnd) {
+			const row = button.closest("li");
+			window.requestAnimationFrame(() =>
+				row
+					?.querySelector<HTMLButtonElement>(
+						`[data-move="${offset === -1 ? "down" : "up"}"]`,
+					)
+					?.focus(),
+			);
+		}
+	}
+
 	return (
-		<ModalFrame
+		<ModalDialog
 			title="Colonnes"
-			isCompact
+			subtitle={`${visibleCount} sur ${columns.length} affichées`}
+			icon={Columns3}
+			size="sm"
 			actions={
-				<button
-					type="button"
-					className={styles.primaryButton}
+				<Button
+					variant="primary"
 					onClick={onClose}
 				>
 					Fermer
-				</button>
+				</Button>
 			}
+			onClose={onClose}
 		>
-			<p className={styles.hint}>
-				Masquer une colonne la retire aussi du tri et des filtres.
+			<p className={styles.modalIntro}>
+				Masquer une colonne la retire aussi du tri et des filtres. L’ordre et la
+				visibilité sont gardés dans ce navigateur.
 			</p>
 			<ol className={styles.columnList}>
 				{columns.map(({ key, isVisible }, index) => {
 					const label = getColumnLabel(key);
 					return (
-						<li key={key}>
-							<label>
-								<input
-									type="checkbox"
-									checked={isVisible}
-									disabled={key === "actions"}
-									title={
-										key === "actions"
-											? "Toujours visible : sans elle, plus de menu"
-											: undefined
-									}
-									onChange={() => onToggleVisibility(key)}
-								/>
-								{label}
-							</label>
-							<span className={styles.fieldGroup}>
+						<li
+							key={key}
+							className={joinClassNames(
+								styles.columnItem,
+								!isVisible && styles.hiddenColumn,
+							)}
+						>
+							<Checkbox
+								variant="switch"
+								checked={isVisible}
+								disabled={key === "actions"}
+								label={label}
+								tooltip={
+									key === "actions"
+										? "Toujours visible : sans elle, plus de menu"
+										: null
+								}
+								onChange={() => onToggleVisibility(key)}
+							/>
+							<span className={styles.columnMoves}>
 								<button
 									type="button"
-									className={styles.iconButton}
+									className={styles.moveButton}
+									data-move="up"
 									aria-label={`Monter ${label}`}
 									disabled={index === 0}
-									onClick={() => onMove(key, -1)}
+									onClick={(event) =>
+										move(key, -1, event.currentTarget, index === 1)
+									}
 								>
-									⬆️
+									<ChevronUp aria-hidden />
 								</button>
 								<button
 									type="button"
-									className={styles.iconButton}
+									className={styles.moveButton}
+									data-move="down"
 									aria-label={`Descendre ${label}`}
 									disabled={index === columns.length - 1}
-									onClick={() => onMove(key, 1)}
+									onClick={(event) =>
+										move(
+											key,
+											1,
+											event.currentTarget,
+											index === columns.length - 2,
+										)
+									}
 								>
-									⬇️
+									<ChevronDown aria-hidden />
 								</button>
 							</span>
 						</li>
 					);
 				})}
 			</ol>
-		</ModalFrame>
+		</ModalDialog>
 	);
 }
 
 // ---------- Footer de debug ----------
 
 const copyLabels = {
-	idle: "📋 Copier l’état",
-	copied: "✅ État copié",
-	failed: "❌ Copie impossible",
+	idle: { label: "Copier l’état", icon: Copy },
+	copied: { label: "État copié", icon: ClipboardCheck },
+	failed: { label: "Copie impossible", icon: ClipboardX },
 };
 
 function DebugFooter({
@@ -3322,33 +4288,58 @@ function DebugFooter({
 
 	return (
 		<footer className={styles.debugFooter}>
-			<span>🐞 Debug</span>
-			<span>
-				Dernier jeu ajouté :{" "}
-				{lastAddedGame
-					? (lastAddedGame.frenchName ?? lastAddedGame.name)
-					: "aucun"}
-			</span>
-			<span>
-				En base — jeux : {database.games.length} · versions :{" "}
-				{database.versions.length} · DLC : {database.dlcs.length}
-			</span>
-			<span>
-				Backlog — jeux : {database.userGames.length} · versions jouées :{" "}
-				{database.userVersions.length}
-			</span>
-			<span>
-				Historique d’annulation : {undoHistoryLength} · à rétablir :{" "}
-				{redoHistoryLength}
-			</span>
-			<span>Tri : {describeSort(state.sort)}</span>
-			<span>Filtres : {describeFilters(state.filters)}</span>
-			<button
-				type="button"
+			<div className={styles.debugItems}>
+				<span className={styles.debugTitle}>
+					<Bug aria-hidden />
+					Debug
+				</span>
+				<span>
+					Dernier jeu ajouté :{" "}
+					<strong>
+						{lastAddedGame
+							? (lastAddedGame.frenchName ?? lastAddedGame.name)
+							: "aucun"}
+					</strong>
+				</span>
+				<span>
+					En base — jeux : <strong>{database.games.length}</strong> · versions :{" "}
+					<strong>{database.versions.length}</strong> · DLC :{" "}
+					<strong>{database.dlcs.length}</strong>
+				</span>
+				<span>
+					Backlog — jeux : <strong>{database.userGames.length}</strong> ·
+					versions jouées : <strong>{database.userVersions.length}</strong>
+				</span>
+				<span>
+					Historique d’annulation : <strong>{undoHistoryLength}</strong> · à
+					rétablir : <strong>{redoHistoryLength}</strong>
+				</span>
+				<span className={styles.debugSort}>
+					Tri :{" "}
+					{state.sort.length === 0
+						? "aucun"
+						: state.sort.map(({ column, direction }, index) => (
+								<span key={column}>
+									{index > 0 && ", "}
+									{getColumnLabel(column)}
+									{direction === "asc" ? (
+										<ArrowUp aria-label="croissant" />
+									) : (
+										<ArrowDown aria-label="décroissant" />
+									)}
+								</span>
+							))}
+				</span>
+				<span>Filtres : {describeFilters(state.filters)}</span>
+			</div>
+			<Button
+				icon={copyLabels[copyStatus].icon}
+				size="sm"
+				className={styles.copyButton}
 				onClick={copyState}
 			>
-				{copyLabels[copyStatus]}
-			</button>
+				{copyLabels[copyStatus].label}
+			</Button>
 		</footer>
 	);
 }
@@ -3436,6 +4427,7 @@ export function Backlog() {
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchError, setSearchError] = useState<string | null>(null);
 	const [modalError, setModalError] = useState<string | null>(null);
+	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	// Seule fonction qui modifie la base : chaque appel est une action, annulable avec Ctrl+Z (section 10)
 	function changeDatabase(change: (current: Database) => Database) {
@@ -3481,7 +4473,7 @@ export function Backlog() {
 	}
 
 	/**
-	 * Un résultat déjà en base, ou un jeu de « 📚 Ma base », mène à l'ajout au backlog, sa version originale pré-sélectionnée
+	 * Un résultat déjà en base, ou un jeu de « Ma base », mène à l'ajout au backlog, sa version originale pré-sélectionnée
 	 * (un résultat est toujours un jeu original, section 8) ; sinon à la modale d'ajout.
 	 */
 	function selectSearchResult(result: SearchResult) {
@@ -3750,6 +4742,13 @@ export function Backlog() {
 		saveColumns(columns);
 	}, [columns]);
 
+	// Le thème du backlog (clair ou sombre selon le système) habille toute la page, panneaux en portail compris
+	useEffect(() => {
+		const root = document.documentElement;
+		root.classList.add(styles.themeRoot);
+		return () => root.classList.remove(styles.themeRoot);
+	}, []);
+
 	// Le tri et les filtres se gardent dans l'URL (section 9), sans toucher à l'état du routeur
 	useEffect(() => {
 		const routerState: unknown = window.history.state;
@@ -3770,7 +4769,7 @@ export function Backlog() {
 		setLoadedPageCount((count) => count + 1);
 	}, []);
 
-	// Jeux en base hors backlog, comptés sur le bouton « 📚 Ma base »
+	// Jeux en base hors backlog, comptés sur le bouton « Ma base »
 	const databaseGameCount = useMemo(
 		() => searchDatabaseGames(database, "").length,
 		[database],
@@ -4000,6 +4999,26 @@ export function Backlog() {
 		return () => window.removeEventListener("keydown", undoOrRedo);
 	});
 
+	// « / » met le curseur dans la recherche IGDB, hors d'un champ texte et sans modale ouverte
+	useEffect(() => {
+		function focusSearch(event: KeyboardEvent) {
+			if (
+				event.key !== "/" ||
+				event.ctrlKey ||
+				event.metaKey ||
+				event.altKey ||
+				isModalOpen ||
+				isTextField(event.target)
+			) {
+				return;
+			}
+			event.preventDefault();
+			searchInputRef.current?.focus();
+		}
+		window.addEventListener("keydown", focusSearch);
+		return () => window.removeEventListener("keydown", focusSearch);
+	}, [isModalOpen]);
+
 	// Même ordre de clés que AppState et initialState : l'export reste comparable au fichier collé
 	const state: AppState = {
 		database,
@@ -4017,187 +5036,245 @@ export function Backlog() {
 	};
 
 	return (
-		<div className={styles.page}>
-			<header className={styles.toolbar}>
-				<h1 className={styles.title}>🎮 Backlog</h1>
-				<SearchBar
-					query={searchQuery}
-					isOpen={isSearchOpen}
-					results={searchResults}
-					isSearching={isSearching}
-					error={searchError}
-					database={database}
-					onQueryChange={changeSearchQuery}
-					onOpenChange={setIsSearchOpen}
-					onSelect={selectSearchResult}
+		<LucideProvider
+			size={16}
+			strokeWidth={1.9}
+		>
+			<div className={styles.page}>
+				{/* Inter, la police de l'interface : React la place dans <head> */}
+				<link
+					rel="preconnect"
+					href="https://fonts.gstatic.com"
+					crossOrigin=""
 				/>
-				<button
-					type="button"
-					className={styles.button}
-					title={
-						databaseGameCount === 0
-							? "Tous les jeux de la base sont dans le backlog"
-							: "Ajouter au backlog un jeu déjà en base, sans IGDB"
-					}
-					disabled={databaseGameCount === 0}
-					onClick={() =>
-						setModal({ kind: "addFromDatabase", query: "", loadedPageCount: 1 })
-					}
-				>
-					📚 Ma base ({databaseGameCount})
-				</button>
-				{/* Ctrl+Z et Ctrl+Y à la souris (section 10) */}
-				<div className={styles.historyButtons}>
-					<button
-						type="button"
-						className={styles.button}
-						title="Annuler la dernière action (Ctrl+Z)"
-						aria-label="Annuler la dernière action"
-						disabled={undoHistory.length === 0}
-						onClick={undo}
+				<link
+					rel="stylesheet"
+					href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap"
+					precedence="default"
+				/>
+				<header className={styles.toolbar}>
+					<div className={styles.brand}>
+						<span className={styles.brandMark}>
+							<Gamepad2 aria-hidden />
+						</span>
+						<h1 className={styles.title}>Backlog</h1>
+					</div>
+					<SearchBar
+						query={searchQuery}
+						isOpen={isSearchOpen}
+						results={searchResults}
+						isSearching={isSearching}
+						error={searchError}
+						database={database}
+						inputRef={searchInputRef}
+						onQueryChange={changeSearchQuery}
+						onOpenChange={setIsSearchOpen}
+						onSelect={selectSearchResult}
+					/>
+					<Button
+						icon={LibraryBig}
+						tooltip={
+							databaseGameCount === 0
+								? "Tous les jeux de la base sont dans le backlog"
+								: "Ajouter au backlog un jeu déjà en base, sans IGDB"
+						}
+						tooltipPlacement="bottom"
+						disabled={databaseGameCount === 0}
+						onClick={() =>
+							setModal({
+								kind: "addFromDatabase",
+								query: "",
+								loadedPageCount: 1,
+							})
+						}
 					>
-						↩️
-					</button>
-					<button
-						type="button"
-						className={styles.button}
-						title="Rétablir l’action annulée (Ctrl+Y)"
-						aria-label="Rétablir l’action annulée"
-						disabled={redoHistory.length === 0}
-						onClick={redo}
-					>
-						↪️
-					</button>
-				</div>
-				<button
-					type="button"
-					className={styles.button}
-					onClick={() => setModal({ kind: "editColumns" })}
-				>
-					🧩 Colonnes
-				</button>
-				{/* Bouton fixe du mode édition : le tableau est en lecture seule par défaut (section 9) */}
-				<button
-					type="button"
-					className={
-						isEditMode ? styles.editModeButtonActive : styles.editModeButton
-					}
-					aria-pressed={isEditMode}
-					onClick={() => setIsEditMode(!isEditMode)}
-				>
-					{isEditMode ? "🔒 Repasser en lecture seule" : "✏️ Passer en édition"}
-				</button>
-			</header>
-			<main>
-				<BacklogTable
-					rows={rows}
-					columns={columns}
-					sort={sort}
-					filters={filters}
-					expandedGameIds={expandedGameIds}
-					loadedPageCount={loadedPageCount}
-					database={database}
-					isEditMode={isEditMode}
-					popover={popover}
-					handlers={tableHandlers}
-					onToggleSort={(column) => setSort(toggleSort(sort, column))}
-					onFilterChange={(column, filter) =>
-						setFilters(setColumnFilter(filters, column, filter))
-					}
-					onClearFilters={() => setFilters([])}
-					onLoadNextPage={loadNextPage}
+						Ma base
+						<span className={styles.countBadge}>{databaseGameCount}</span>
+					</Button>
+					<div className={styles.toolbarEnd}>
+						{/* Ctrl+Z et Ctrl+Y à la souris (section 10) */}
+						<div
+							className={styles.historyButtons}
+							role="group"
+							aria-label="Historique"
+						>
+							<Button
+								icon={Undo2}
+								variant="ghost"
+								ariaLabel="Annuler la dernière action"
+								tooltip="Annuler la dernière action (Ctrl+Z)"
+								tooltipPlacement="bottom"
+								disabled={undoHistory.length === 0}
+								onClick={undo}
+							/>
+							<Button
+								icon={Redo2}
+								variant="ghost"
+								ariaLabel="Rétablir l’action annulée"
+								tooltip="Rétablir l’action annulée (Ctrl+Y)"
+								tooltipPlacement="bottom"
+								disabled={redoHistory.length === 0}
+								onClick={redo}
+							/>
+						</div>
+						<span
+							className={styles.toolbarDivider}
+							aria-hidden
+						/>
+						<Button
+							icon={Columns3}
+							tooltip="Visibilité et ordre des colonnes"
+							tooltipPlacement="bottom"
+							onClick={() => setModal({ kind: "editColumns" })}
+						>
+							Colonnes
+						</Button>
+						{/* Bouton fixe du mode édition : le tableau est en lecture seule par défaut (section 9) */}
+						<Tooltip
+							content={
+								isEditMode
+									? "Repasser en lecture seule (retour automatique après 1 minute sans activité)"
+									: "Passer en édition"
+							}
+							placement="bottom"
+						>
+							<button
+								type="button"
+								role="switch"
+								aria-checked={isEditMode}
+								className={joinClassNames(
+									styles.editToggle,
+									isEditMode && styles.editToggleOn,
+								)}
+								onClick={() => setIsEditMode(!isEditMode)}
+							>
+								{isEditMode ? <PencilLine aria-hidden /> : <Lock aria-hidden />}
+								Édition
+								<span
+									className={styles.editToggleTrack}
+									aria-hidden
+								/>
+							</button>
+						</Tooltip>
+					</div>
+				</header>
+				<main className={styles.main}>
+					<BacklogTable
+						rows={rows}
+						columns={columns}
+						sort={sort}
+						filters={filters}
+						expandedGameIds={expandedGameIds}
+						loadedPageCount={loadedPageCount}
+						database={database}
+						isEditMode={isEditMode}
+						popover={popover}
+						handlers={tableHandlers}
+						onToggleSort={(column) => setSort(toggleSort(sort, column))}
+						onFilterChange={(column, filter) =>
+							setFilters(setColumnFilter(filters, column, filter))
+						}
+						onClearFilters={() => setFilters([])}
+						onLoadNextPage={loadNextPage}
+						onFocusSearch={() => searchInputRef.current?.focus()}
+					/>
+				</main>
+				{modal?.kind === "addGame" && (
+					<AddGameModal
+						// Chaque DLC de la file a sa propre fenêtre : défilement et focus repartent de zéro
+						key={modal.igdbId}
+						modal={modal}
+						database={database}
+						error={modalError}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateAddGame(modal)}
+					/>
+				)}
+				{modal?.kind === "editGame" && (
+					<EditGameModal
+						modal={modal}
+						database={database}
+						error={modalError}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateEditGame(modal)}
+					/>
+				)}
+				{modal?.kind === "addDlcs" && (
+					<AddDlcsModal
+						modal={modal}
+						database={database}
+						error={modalError}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateAddDlcs(modal)}
+					/>
+				)}
+				{modal?.kind === "customizeGame" && (
+					<CustomizeGameModal
+						modal={modal}
+						database={database}
+						error={modalError}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateCustomizeGame(modal)}
+					/>
+				)}
+				{modal?.kind === "reorderSeries" && (
+					<ReorderSeriesModal
+						modal={modal}
+						database={database}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateReorderSeries(modal)}
+					/>
+				)}
+				{modal?.kind === "addFromDatabase" && (
+					<AddFromDatabaseModal
+						modal={modal}
+						database={database}
+						onModalChange={setModal}
+						onSelect={selectSearchResult}
+						onCancel={closeModal}
+					/>
+				)}
+				{modal?.kind === "addUserVersion" && (
+					<AddUserVersionModal
+						key={modal.gameId}
+						modal={modal}
+						database={database}
+						error={modalError}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateAddUserVersion(modal)}
+					/>
+				)}
+				{modal?.kind === "editColumns" && (
+					<ColumnsModal
+						columns={columns}
+						onToggleVisibility={changeColumnVisibility}
+						onMove={(key, offset) =>
+							setColumns(moveColumn(columns, key, offset))
+						}
+						onClose={closeModal}
+					/>
+				)}
+				{modal?.kind === "setFinishDate" && (
+					<FinishDateModal
+						modal={modal}
+						database={database}
+						onModalChange={setModal}
+						onCancel={closeModal}
+						onValidate={() => validateFinishDate(modal)}
+					/>
+				)}
+				<DebugFooter
+					state={state}
+					undoHistoryLength={undoHistory.length}
+					redoHistoryLength={redoHistory.length}
 				/>
-			</main>
-			{modal?.kind === "addGame" && (
-				<AddGameModal
-					modal={modal}
-					database={database}
-					error={modalError}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateAddGame(modal)}
-				/>
-			)}
-			{modal?.kind === "editGame" && (
-				<EditGameModal
-					modal={modal}
-					database={database}
-					error={modalError}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateEditGame(modal)}
-				/>
-			)}
-			{modal?.kind === "addDlcs" && (
-				<AddDlcsModal
-					modal={modal}
-					database={database}
-					error={modalError}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateAddDlcs(modal)}
-				/>
-			)}
-			{modal?.kind === "customizeGame" && (
-				<CustomizeGameModal
-					modal={modal}
-					database={database}
-					error={modalError}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateCustomizeGame(modal)}
-				/>
-			)}
-			{modal?.kind === "reorderSeries" && (
-				<ReorderSeriesModal
-					modal={modal}
-					database={database}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateReorderSeries(modal)}
-				/>
-			)}
-			{modal?.kind === "addFromDatabase" && (
-				<AddFromDatabaseModal
-					modal={modal}
-					database={database}
-					onModalChange={setModal}
-					onSelect={selectSearchResult}
-					onCancel={closeModal}
-				/>
-			)}
-			{modal?.kind === "addUserVersion" && (
-				<AddUserVersionModal
-					modal={modal}
-					database={database}
-					error={modalError}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateAddUserVersion(modal)}
-				/>
-			)}
-			{modal?.kind === "editColumns" && (
-				<ColumnsModal
-					columns={columns}
-					onToggleVisibility={changeColumnVisibility}
-					onMove={(key, offset) => setColumns(moveColumn(columns, key, offset))}
-					onClose={closeModal}
-				/>
-			)}
-			{modal?.kind === "setFinishDate" && (
-				<FinishDateModal
-					modal={modal}
-					database={database}
-					onModalChange={setModal}
-					onCancel={closeModal}
-					onValidate={() => validateFinishDate(modal)}
-				/>
-			)}
-			<DebugFooter
-				state={state}
-				undoHistoryLength={undoHistory.length}
-				redoHistoryLength={redoHistory.length}
-			/>
-		</div>
+			</div>
+		</LucideProvider>
 	);
 }

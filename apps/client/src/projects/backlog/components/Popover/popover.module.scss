@@ -1,0 +1,17 @@
+.panel {
+  @include vars.floating-panel;
+  @include vars.pop-in;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: vars.$z-popover;
+  max-width: calc(100vw - 1.6rem);
+  max-height: calc(100vh - 1.6rem);
+  overflow: auto;
+  font-family: vars.$font-family;
+  font-size: vars.$text-base;
+  line-height: 1.4;
+  outline: none;
+  overscroll-behavior: contain;
+}

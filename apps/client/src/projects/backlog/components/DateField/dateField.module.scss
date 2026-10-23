@@ -1,0 +1,78 @@
+.field {
+  @include vars.field;
+  @include vars.tabular;
+
+  display: inline-flex;
+  // Dans un formulaire en colonne, le champ garde sa largeur au lieu de s'étirer
+  align-self: flex-start;
+  gap: 0.2rem;
+  align-items: center;
+  height: vars.$control-md;
+  padding: 0 0.3rem 0 1rem;
+  cursor: text;
+}
+
+// Toujours avec `.field`, qu'elle complète : le bouton du calendrier n'apparaît qu'au survol et au focus
+.inline {
+  @include vars.inline-field;
+
+  height: vars.$control-sm;
+  margin-left: -0.6rem;
+  padding: 0 0.1rem 0 0.6rem;
+  border-radius: vars.$radius-sm;
+
+  .calendarButton {
+    opacity: 0;
+  }
+
+  &:hover,
+  &:focus-within {
+    .calendarButton {
+      opacity: 1;
+    }
+  }
+}
+
+.input {
+  box-sizing: content-box;
+  width: 10ch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  background: none;
+  border: 0;
+  outline: none;
+
+  &::placeholder {
+    color: vars.$text-faint;
+  }
+}
+
+.calendarButton {
+  @include vars.reset-button;
+
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: vars.$text-subtle;
+  border-radius: vars.$radius-sm;
+  transition:
+    opacity vars.$duration vars.$ease,
+    background-color vars.$duration vars.$ease;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    color: vars.$accent-text;
+    background: vars.$accent-subtle;
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}

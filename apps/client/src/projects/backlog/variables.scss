@@ -1,0 +1,396 @@
+// Identité visuelle du backlog : couleurs, ombres, rayons, typographie et mixins partagés.
+// Injecté dans chaque .scss du projet sous le nom `vars` (vite.config.ts). Les couleurs vivent dans des variables CSS
+// posées sur <html> par la page (mixin `theme`) : clair ou sombre selon le réglage du système, portails compris.
+
+// ---------- Typographie (1rem = 10px) ----------
+
+$font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-mono: ui-monospace, "Cascadia Code", "SF Mono", consolas, monospace;
+$text-xs: 1.1rem;
+$text-sm: 1.2rem;
+$text-base: 1.3rem;
+$text-md: 1.4rem;
+$text-lg: 1.6rem;
+$text-xl: 2rem;
+
+// ---------- Mise en page ----------
+
+$toolbar-height: 5.6rem;
+$footer-height: 3rem;
+$control-sm: 2.8rem;
+$control-md: 3.6rem;
+$radius-xs: 0.4rem;
+$radius-sm: 0.6rem;
+$radius-md: 0.8rem;
+$radius-lg: 1.2rem;
+$radius-xl: 1.6rem;
+$radius-full: 999px;
+$ease: cubic-bezier(0.2, 0, 0, 1);
+$duration: 140ms;
+
+// ---------- Superpositions ----------
+
+$z-sticky-cell: 1;
+$z-sticky-head: 3;
+$z-sticky-corner: 4;
+$z-toolbar: 30;
+$z-modal: 200;
+$z-popover: 300;
+$z-tooltip: 400;
+
+// ---------- Couleurs : alias des variables CSS du thème ----------
+
+$bg: var(--bl-bg);
+$surface: var(--bl-surface);
+$surface-2: var(--bl-surface-2);
+$surface-3: var(--bl-surface-3);
+$surface-raised: var(--bl-surface-raised);
+$field: var(--bl-field);
+$field-hover: var(--bl-field-hover);
+$border: var(--bl-border);
+$border-strong: var(--bl-border-strong);
+$border-field: var(--bl-border-field);
+$text: var(--bl-text);
+$text-muted: var(--bl-text-muted);
+$text-subtle: var(--bl-text-subtle);
+$text-faint: var(--bl-text-faint);
+$accent: var(--bl-accent);
+$accent-hover: var(--bl-accent-hover);
+$accent-text: var(--bl-accent-text);
+$accent-contrast: var(--bl-accent-contrast);
+$accent-subtle: var(--bl-accent-subtle);
+$accent-subtle-hover: var(--bl-accent-subtle-hover);
+$accent-border: var(--bl-accent-border);
+$focus: var(--bl-focus);
+$danger: var(--bl-danger);
+$danger-hover: var(--bl-danger-hover);
+$danger-text: var(--bl-danger-text);
+$danger-subtle: var(--bl-danger-subtle);
+$danger-border: var(--bl-danger-border);
+$warning: var(--bl-warning);
+$warning-text: var(--bl-warning-text);
+$warning-subtle: var(--bl-warning-subtle);
+$warning-border: var(--bl-warning-border);
+$success: var(--bl-success);
+$success-text: var(--bl-success-text);
+$success-subtle: var(--bl-success-subtle);
+$success-border: var(--bl-success-border);
+$up-next: var(--bl-up-next);
+$row: var(--bl-row);
+$row-hover: var(--bl-row-hover);
+$up-next-row: var(--bl-up-next-row);
+$up-next-row-hover: var(--bl-up-next-row-hover);
+$subrow: var(--bl-subrow);
+$subrow-hover: var(--bl-subrow-hover);
+$shadow-xs: var(--bl-shadow-xs);
+$shadow-sm: var(--bl-shadow-sm);
+$shadow-md: var(--bl-shadow-md);
+$shadow-lg: var(--bl-shadow-lg);
+$overlay: var(--bl-overlay);
+$logo-plate: var(--bl-logo-plate);
+$tooltip-bg: var(--bl-tooltip-bg);
+$tooltip-text: var(--bl-tooltip-text);
+$tooltip-muted: var(--bl-tooltip-muted);
+$tooltip-border: var(--bl-tooltip-border);
+
+// ---------- Thème : clair, sombre selon le système ----------
+
+@mixin theme {
+  color-scheme: light;
+
+  // Surfaces : page, tableau et cartes, en-têtes, survol, panneaux flottants, champs
+  --bl-bg: #f3f4f7;
+  --bl-surface: #fff;
+  --bl-surface-2: #f8f9fb;
+  --bl-surface-3: #eef0f4;
+  --bl-surface-raised: #fff;
+  --bl-field: #fff;
+  --bl-field-hover: #fafbfc;
+
+  // Bordures
+  --bl-border: #e4e7ec;
+  --bl-border-strong: #d0d5dd;
+  --bl-border-field: #cfd4dc;
+
+  // Textes : principal, secondaire, discret (≥ 4.5:1 sur blanc), très discret (indications)
+  --bl-text: #111827;
+  --bl-text-muted: #4a5465;
+  --bl-text-subtle: #667085;
+  --bl-text-faint: #98a2b3;
+
+  // Accent : indigo
+  --bl-accent: #5b5bd6;
+  --bl-accent-hover: #4d4cc9;
+  --bl-accent-text: #4743bf;
+  --bl-accent-contrast: #fff;
+  --bl-accent-subtle: #f0f0fe;
+  --bl-accent-subtle-hover: #e5e5fd;
+  --bl-accent-border: #c8c9f6;
+  --bl-focus: #6b6be0;
+
+  // Intentions
+  --bl-danger: #d92d20;
+  --bl-danger-hover: #b42318;
+  --bl-danger-text: #b42318;
+  --bl-danger-subtle: #fef3f2;
+  --bl-danger-border: #fecdca;
+  --bl-warning: #f79009;
+  --bl-warning-text: #b54708;
+  --bl-warning-subtle: #fffaeb;
+  --bl-warning-border: #fedf89;
+  --bl-success: #17b26a;
+  --bl-success-text: #067647;
+  --bl-success-subtle: #ecfdf3;
+  --bl-success-border: #abefc6;
+
+  // Lignes du tableau, opaques : les cellules collantes les reprennent
+  --bl-row: #fff;
+  --bl-row-hover: #f9fafb;
+  --bl-up-next: #f59e0b;
+  --bl-up-next-row: #fffaeb;
+  --bl-up-next-row-hover: #fff5d6;
+  --bl-subrow: #f8f9fb;
+  --bl-subrow-hover: #f2f4f7;
+
+  // Teintes des statuts et des notes
+  --bl-gray-fg: #4a5465;
+  --bl-gray-bg: #f2f4f7;
+  --bl-violet-fg: #6941c6;
+  --bl-violet-bg: #f4f3ff;
+  --bl-blue-fg: #175cd3;
+  --bl-blue-bg: #eff8ff;
+  --bl-cyan-fg: #0e7090;
+  --bl-cyan-bg: #ecfdff;
+  --bl-green-fg: #067647;
+  --bl-green-bg: #ecfdf3;
+  --bl-teal-fg: #107569;
+  --bl-teal-bg: #ebfbf5;
+  --bl-indigo-fg: #3538cd;
+  --bl-indigo-bg: #eef4ff;
+  --bl-amber-fg: #b54708;
+  --bl-amber-bg: #fef6e4;
+  --bl-red-fg: #b42318;
+  --bl-red-bg: #fef3f2;
+
+  // Ombres et voile des modales
+  --bl-shadow-xs: 0 1px 2px rgb(16 24 40 / 5%);
+  --bl-shadow-sm: 0 1px 3px rgb(16 24 40 / 8%), 0 1px 2px rgb(16 24 40 / 4%);
+  --bl-shadow-md:
+    0 12px 24px -6px rgb(16 24 40 / 14%), 0 4px 8px -4px rgb(16 24 40 / 6%);
+  --bl-shadow-lg:
+    0 24px 48px -12px rgb(16 24 40 / 24%), 0 8px 16px -8px rgb(16 24 40 / 8%);
+  --bl-overlay: rgb(16 24 40 / 42%);
+
+  // Plaque des logos des sociétés
+  --bl-logo-plate: #f4f5f7;
+
+  // Info-bulles : sombres sur le thème clair
+  --bl-tooltip-bg: #1b2130;
+  --bl-tooltip-text: #f5f6f8;
+  --bl-tooltip-muted: #b3b9c5;
+  --bl-tooltip-border: transparent;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+
+    --bl-bg: #0b0d11;
+    --bl-surface: #111419;
+    --bl-surface-2: #161a21;
+    --bl-surface-3: #1e232c;
+    --bl-surface-raised: #191d25;
+    --bl-field: #0d1015;
+    --bl-field-hover: #12151b;
+    --bl-border: #242a34;
+    --bl-border-strong: #323946;
+    --bl-border-field: #363d4b;
+    --bl-text: #eceef3;
+    --bl-text-muted: #b4bac6;
+    --bl-text-subtle: #8c94a3;
+    --bl-text-faint: #5f6775;
+    --bl-accent: #6e6ae8;
+    --bl-accent-hover: #7f7cf0;
+    --bl-accent-text: #adaaff;
+    --bl-accent-contrast: #fff;
+    --bl-accent-subtle: #1c1c38;
+    --bl-accent-subtle-hover: #252548;
+    --bl-accent-border: #3d3b7a;
+    --bl-focus: #8f8cff;
+    --bl-danger: #f04438;
+    --bl-danger-hover: #f97066;
+    --bl-danger-text: #fda29b;
+    --bl-danger-subtle: #2a1517;
+    --bl-danger-border: #5c2420;
+    --bl-warning: #f79009;
+    --bl-warning-text: #fec84b;
+    --bl-warning-subtle: #261d0e;
+    --bl-warning-border: #5a4112;
+    --bl-success: #17b26a;
+    --bl-success-text: #75e0a7;
+    --bl-success-subtle: #0f2219;
+    --bl-success-border: #1d4a34;
+    --bl-row: #111419;
+    --bl-row-hover: #151920;
+    --bl-up-next: #fbbf24;
+    --bl-up-next-row: #18160f;
+    --bl-up-next-row-hover: #1f1c12;
+    --bl-subrow: #14171d;
+    --bl-subrow-hover: #191d24;
+    --bl-gray-fg: #b4bac6;
+    --bl-gray-bg: rgb(148 160 180 / 12%);
+    --bl-violet-fg: #bda9ff;
+    --bl-violet-bg: rgb(122 90 248 / 18%);
+    --bl-blue-fg: #84caff;
+    --bl-blue-bg: rgb(46 144 250 / 16%);
+    --bl-cyan-fg: #67e3f9;
+    --bl-cyan-bg: rgb(6 174 212 / 15%);
+    --bl-green-fg: #75e0a7;
+    --bl-green-bg: rgb(23 178 106 / 15%);
+    --bl-teal-fg: #5fe9d0;
+    --bl-teal-bg: rgb(21 183 158 / 15%);
+    --bl-indigo-fg: #a4bcfd;
+    --bl-indigo-bg: rgb(97 114 243 / 18%);
+    --bl-amber-fg: #fec84b;
+    --bl-amber-bg: rgb(247 144 9 / 15%);
+    --bl-red-fg: #fda29b;
+    --bl-red-bg: rgb(240 68 56 / 15%);
+    --bl-shadow-xs: 0 1px 2px rgb(0 0 0 / 40%);
+    --bl-shadow-sm: 0 1px 3px rgb(0 0 0 / 50%), 0 1px 2px rgb(0 0 0 / 30%);
+    --bl-shadow-md:
+      0 16px 32px -8px rgb(0 0 0 / 60%), 0 0 0 1px rgb(255 255 255 / 4%);
+    --bl-shadow-lg:
+      0 32px 64px -16px rgb(0 0 0 / 70%), 0 0 0 1px rgb(255 255 255 / 5%);
+    --bl-overlay: rgb(3 5 9 / 68%);
+
+    // Les logos, souvent sombres sur fond transparent, gardent une plaque claire
+    --bl-logo-plate: #e6e9ee;
+    --bl-tooltip-bg: #2a303b;
+    --bl-tooltip-text: #f3f4f7;
+    --bl-tooltip-muted: #aeb5c2;
+    --bl-tooltip-border: rgb(255 255 255 / 8%);
+  }
+}
+
+// ---------- Mixins ----------
+
+@mixin focus-ring {
+  outline: 2px solid $focus;
+  outline-offset: 2px;
+}
+
+// Anneau au clavier seulement : un clic ne l'affiche pas
+@mixin focus-visible {
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+@mixin reset-button {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  appearance: none;
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
+
+@mixin tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+// Teinte d'un statut, d'une note… : `--tone-fg` pour le texte et l'icône, `--tone-bg` pour le fond
+@mixin tone($name) {
+  --tone-fg: var(--bl-#{$name}-fg);
+  --tone-bg: var(--bl-#{$name}-bg);
+}
+
+// Champ de saisie : bordure, fond, survol, focus
+@mixin field {
+  box-sizing: border-box;
+  min-width: 0;
+  font: inherit;
+  font-size: $text-base;
+  color: $text;
+  background: $field;
+  border: 1px solid $border-field;
+  border-radius: $radius-md;
+  outline: none;
+  transition:
+    border-color $duration $ease,
+    box-shadow $duration $ease,
+    background-color $duration $ease;
+
+  &::placeholder {
+    color: $text-faint;
+  }
+
+  &:hover:not(:disabled) {
+    background: $field-hover;
+    border-color: $border-strong;
+  }
+
+  // Après le survol, à spécificité égale : un champ focalisé et survolé garde son anneau
+  &:focus:not(:disabled),
+  &:focus-within:not(:disabled) {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px color-mix(in srgb, $focus 26%, transparent);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+// Variante d'un champ dans une cellule, à inclure après `field` : se lit comme du texte, le cadre n'apparaît qu'au survol et au focus
+@mixin inline-field {
+  background: transparent;
+  border-color: transparent;
+
+  &:hover:not(:disabled) {
+    background: $field;
+    border-color: $border-field;
+  }
+
+  &:focus:not(:disabled),
+  &:focus-within:not(:disabled) {
+    background: $field;
+    border-color: $accent;
+  }
+}
+
+// Panneau flottant : popover, menu, liste, calendrier
+@mixin floating-panel {
+  box-sizing: border-box;
+  color: $text;
+  background: $surface-raised;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+}
+
+// Apparition des panneaux flottants (coupée par le reset si l'OS réduit les animations)
+@mixin pop-in($from: 4px) {
+  animation: pop-in $duration $ease;
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY($from) scale(0.98);
+    }
+  }
+}
