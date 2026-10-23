@@ -60,10 +60,11 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Date de sortie | Colonne Date de sortie | `first_release_date` ; `release_dates` par plateforme |
 | Statut de sortie | Mention « à venir » ou « annulé » | `game_status` |
 | Plateformes | Plateformes de chaque version (nom et nom technique) ; choix de la plateforme d'une variante | `platforms` |
-| Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; exclure les bundles de la recherche | `game_type` |
+| Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; mener une fiche trouvée par la recherche à son jeu ; exclure mods et forks de la recherche | `game_type` |
 | Versions | Toutes les versions, récupérées à l'ajout | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
 | DLC | Colonne DLC | `dlcs`, `expansions` ; `parent_game` côté DLC |
 | Extensions standalone | Jeux distincts | `standalone_expansions` |
+| Bundles | Recherche : un bundle mène aux jeux qu'il contient | `bundles`, côté jeu contenu |
 | Série | Colonne Série | `collections` |
 | Franchise | Colonne Franchise ; un clic filtre le tableau | `franchise`, `franchises` |
 | Développeur, éditeur | Colonnes Développeur et Éditeur | `involved_companies` (rôles développeur / éditeur) → `companies` |
@@ -165,11 +166,11 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Classement IGDB** : pas de règle maison. Ce qu'IGDB rattache à un jeu comme version, remaster, portage ou version enrichie est une version de ce jeu. Ce qu'il classe comme remake est un jeu distinct.
 - **Une version, une fiche** : en base globale, chaque version est stockée une seule fois avec la liste de ses plateformes. La plateforme n'intervient que côté utilisateur, dans la variante.
 - **Plateformes proposées pour une variante** : d'abord celles où la version est sortie, puis les émulateurs de ces consoles. Exemple : un jeu PS2 propose PS2, puis *PCSX2*.
-- **Pas de doublon** : un jeu, une version ou un DLC n'existe qu'une fois en base. La recherche exclut les bundles et signale ce qui est déjà en base.
+- **Pas de doublon** : un jeu, une version ou un DLC n'existe qu'une fois en base. La recherche signale ce qui est déjà en base.
 - **Pas de duplication de variante** : avoir joué à la même variante sur plusieurs comptes ne crée pas de seconde entrée.
 - **Deux noms** : un jeu a un nom VO et un nom VF éventuel. Les autres noms alternatifs d'IGDB ne sont pas stockés.
 - **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu.
-- **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément. Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
+- **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément : la recherche mène d'un bundle à ses jeux (section 8). Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
 - **Jeu original toujours en base** : ajouter un jeu récupère aussi son original et toutes ses versions, nécessaires pour la ligne dépliable et le choix des variantes.
 
 ### Affichage replié / déplié
@@ -267,8 +268,13 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 
 1. **Recherche** : une barre de recherche connectée à IGDB, y compris dans le POC.
    - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image et ses plateformes (3 au plus, puis le nombre de plateformes restantes) ; un seul nom si VF et VO sont identiques.
-   - Sont exclus des résultats : les bundles, les DLC et extensions (ils arrivent avec leur jeu), les packs, mises à jour, mods, épisodes, saisons et forks. Restent les jeux principaux, remakes, extensions standalone et versions.
-   - Un jeu n'apparaît qu'une fois : ses versions (éditions, remasters, portages, versions enrichies) s'effacent derrière son jeu original, qui prend la place de la mieux classée. Chercher une version (ex. *Skyrim Special Edition*) trouve donc son jeu original. Le choisir ouvre sa modale, qui propose toutes ses versions, l'originale pré-sélectionnée pour la variante. Les remakes et extensions standalone restent des jeux à part.
+   - Chaque fiche trouvée mène à son jeu de base, seul proposé en résultat :
+     - une version (édition, remaster, portage, version enrichie, bundle rattaché par `version_parent`) mène à son jeu original : chercher *Skyrim Special Edition* trouve *Skyrim* ;
+     - un DLC, une extension, un pack, une mise à jour, un épisode ou une saison mène au jeu auquel IGDB le rattache : chercher *Dawnguard* trouve *Skyrim* ;
+     - un autre bundle mène à chacun des jeux qu'il contient, dans l'ordre de sortie : *Mass Effect Trilogy* donne les trois *Mass Effect*, *Episodes from Liberty City* donne *GTA IV* ;
+     - les remakes et extensions standalone restent des jeux à part ; les mods et les forks sont exclus.
+   - Un jeu n'apparaît qu'une fois, à la place de sa fiche la mieux classée. Les jeux trouvés seulement via un bundle passent après tous les autres : chercher *Final Fantasy VII* ne propose pas *Final Fantasy VIII* en deuxième, via un pack des deux. S'il n'a pas été trouvé lui-même, le résultat nomme sous son nom la fiche qui l'a fait trouver (« via *The Elder Scrolls V: Skyrim - Dawnguard* ») ; pas de mention quand elle porte le même nom que lui (portages de *FF7*).
+   - Choisir un résultat ouvre la modale du jeu, qui propose toutes ses versions, l'originale pré-sélectionnée pour la variante.
    - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec la version originale pré-sélectionnée.
    - Choisir un résultat ferme la liste des résultats ; revenir dans le champ la rouvre avec la même saisie. Un clic à côté ou Échap la ferme aussi.
 2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.

@@ -204,6 +204,13 @@ $toolbar-height: 4.5rem;
   color: #666;
 }
 
+// « via … » : la fiche qui a fait trouver le jeu, sous son nom
+.matchedName {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .inDatabaseBadge {
   padding: 0.125rem 0.5rem;
   font-size: 0.8rem;

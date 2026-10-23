@@ -491,6 +491,12 @@ function SearchBar({
 												` +${result.platformNames.length - 3}`}
 										</span>
 									)}
+									{/* Trouvé par une autre fiche que la sienne : édition, bundle, DLC… */}
+									{result.matchedName !== null && (
+										<span className={styles.matchedName}>
+											via « {result.matchedName} »
+										</span>
+									)}
 								</span>
 								{/* Sur IGDB, ce qui est déjà en base ; dans la base, ce qui est déjà dans le backlog */}
 								{source === "igdb" &&
@@ -2637,7 +2643,7 @@ export function Backlog() {
 			setIsSearching(true);
 			setSearchError(null);
 			searchIgdbGames(query, controller.signal)
-				.then((games) => setSearchResults(games.map(mapSearchResult)))
+				.then((hits) => setSearchResults(hits.map(mapSearchResult)))
 				.catch((error: unknown) => {
 					if (!controller.signal.aborted) {
 						setSearchError(
