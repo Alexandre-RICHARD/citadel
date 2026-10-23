@@ -693,6 +693,21 @@ $toolbar-height: 4.5rem;
   }
 }
 
+// Un DLC : sa case DLC, puis « 🧩 comme jeu » poussé à droite
+.dlcChoice {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: baseline;
+
+  label:last-child {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    color: #555;
+  }
+}
+
 .imageChoices {
   display: flex;
   flex-wrap: wrap;

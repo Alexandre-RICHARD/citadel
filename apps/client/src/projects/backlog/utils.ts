@@ -6,6 +6,7 @@ import {
 	type ColumnKey,
 	type ColumnSetting,
 	type Database,
+	type Dlc,
 	type EndingType,
 	endingTypeDefinitions,
 	type Game,
@@ -14,7 +15,6 @@ import {
 	type GameRow,
 	type IgdbDlcGame,
 	type IgdbGameData,
-	type IgdbGameImages,
 	type IgdbGameNode,
 	type IgdbGameStatus,
 	type IgdbGameType,
@@ -25,6 +25,7 @@ import {
 	type IgdbSearchGame,
 	type IgdbSearchHit,
 	type IgdbVersionGame,
+	type ImportSelection,
 	type IsoDate,
 	type Modal,
 	type Platform,
@@ -532,24 +533,6 @@ export async function fetchIgdbGameData(
 	};
 }
 
-/** Cover et artworks du jeu, rechargés à l'ouverture de « Modifier le jeu » (section 8) : la cover d'abord */
-export async function fetchIgdbGameImages(
-	gameId: number,
-	signal: AbortSignal,
-): Promise<IgdbImageId[]> {
-	const game = (
-		await requestIgdb<IgdbGameImages[]>(
-			"games",
-			`fields cover.image_id, artworks.image_id; where id = ${gameId};`,
-			signal,
-		)
-	).at(0);
-	return [
-		...(game?.cover === undefined ? [] : [game.cover.image_id]),
-		...(game?.artworks ?? []).map((artwork) => artwork.image_id),
-	];
-}
-
 /** Seule fonction qui construit l'URL d'une image IGDB ; `t_thumb` (90 × 90) pour une miniature */
 export function getIgdbImageUrl(
 	imageId: IgdbImageId,
@@ -559,9 +542,91 @@ export function getIgdbImageUrl(
 	return `https://images.igdb.com/igdb/image/upload/t_${size}${isHighDensity ? "_2x" : ""}/${imageId}.jpg`;
 }
 
-// ---------- Modales : versions et plateformes ----------
+// ---------- Modales : versions, DLC et plateformes ----------
 
-/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée, seule la version originale cochée */
+/** Valeurs d'une nouvelle variante : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
+export const defaultVariantDraft: VariantDraft = {
+	status: "notStarted",
+	owned: false,
+	playSoon: false,
+	finishDate: null,
+	sureFinishCount: 0,
+	probableFinishCount: 0,
+	trackedPlayTimeMinutes: 0,
+	estimatedPlayTimeMinutes: 0,
+	rating: null,
+	comment: null,
+	doneDlcIds: [],
+};
+
+/** Aucune case cochée, en attendant les données IGDB */
+export const emptyImportSelection: ImportSelection = {
+	versionIds: [],
+	dlcIds: [],
+	dlcGameIds: [],
+};
+
+/**
+ * Modale d'un jeu choisi par son id IGDB (section 8) : déjà en base, l'ajout d'une variante, sa version pré-sélectionnée ;
+ * sinon la modale d'ajout
+ */
+export function getGameModal(
+	database: Database,
+	igdbId: number,
+	queuedGameIds: number[],
+): Modal {
+	const version = database.versions.find(({ id }) => id === igdbId);
+	return version === undefined
+		? {
+				kind: "addGame",
+				igdbId,
+				gameImport: null,
+				choices: { imageId: null, endingType: "story", seriesNumber: null },
+				selection: emptyImportSelection,
+				isAddingToBacklog: true,
+				queuedGameIds,
+			}
+		: {
+				kind: "addVariant",
+				gameId: version.gameId,
+				variantChoice: { versionId: version.id, platformId: null },
+				draft: defaultVariantDraft,
+				queuedGameIds,
+			};
+}
+
+/** File des DLC à ajouter comme jeux, portée par la modale ouverte (section 8) */
+export function getQueuedGameIds(modal: Modal | null): number[] {
+	return modal !== null && "queuedGameIds" in modal ? modal.queuedGameIds : [];
+}
+
+/** Modale qui suit la fin d'une étape : l'ajout du prochain DLC de la file comme jeu, sinon aucune */
+export function getNextQueuedModal(
+	database: Database,
+	queuedGameIds: number[],
+): Modal | null {
+	const [igdbId, ...nextQueuedGameIds] = queuedGameIds;
+	return igdbId === undefined
+		? null
+		: getGameModal(database, igdbId, nextQueuedGameIds);
+}
+
+/** DLC cochés « comme jeu », dans l'ordre de la liste des DLC */
+export function getDlcGameQueue(
+	dlcs: Dlc[],
+	selection: ImportSelection,
+): number[] {
+	return dlcs
+		.filter(({ id }) => selection.dlcGameIds.includes(id))
+		.map(({ id }) => id);
+}
+
+/** Coche ou décoche un id */
+export function toggleId(ids: number[], id: number): number[] {
+	return ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id];
+}
+
+/** Range les données IGDB dans la modale d'ajout si elle attend toujours cette fiche : cover pré-sélectionnée, version originale et tous les DLC cochés */
 export function receiveGameImport(
 	modal: Modal | null,
 	igdbId: number,
@@ -581,32 +646,52 @@ export function receiveGameImport(
 			...modal.choices,
 			imageId: modal.choices.imageId ?? gameImport.imageIds.at(0) ?? null,
 		},
-		versionIds: [gameImport.game.id],
+		selection: {
+			versionIds: [gameImport.game.id],
+			dlcIds: gameImport.dlcs.map(({ id }) => id),
+			dlcGameIds: [],
+		},
 	};
 }
 
-/** Coche ou décoche une version à enregistrer ; l'originale reste cochée */
-export function toggleImportedVersion(
-	modal: Extract<Modal, { kind: "addGame" }>,
-	versionId: number,
-): Extract<Modal, { kind: "addGame" }> {
-	if (versionId === modal.gameImport?.game.id) {
+/** Range les données IGDB dans « Modifier le jeu » si elle attend toujours ce jeu ; rien n'est coché */
+export function receiveEditGameImport(
+	modal: Modal | null,
+	gameId: number,
+	igdbImport: GameImport,
+): Modal | null {
+	if (
+		modal?.kind !== "editGame" ||
+		modal.gameId !== gameId ||
+		modal.igdbImport !== null
+	) {
 		return modal;
 	}
-	return {
-		...modal,
-		versionIds: modal.versionIds.includes(versionId)
-			? modal.versionIds.filter((id) => id !== versionId)
-			: [...modal.versionIds, versionId],
-	};
+	return { ...modal, igdbImport };
 }
 
-/** Les données IGDB réduites aux versions cochées, à leurs plateformes et à leurs dates de sortie */
-export function keepImportedVersions(
+/** Range les DLC IGDB dans « Rechercher d'autres DLC » si elle attend toujours ce jeu ; rien n'est coché */
+export function receiveGameDlcs(
+	modal: Modal | null,
+	gameId: number,
+	dlcs: Dlc[],
+): Modal | null {
+	if (
+		modal?.kind !== "addDlcs" ||
+		modal.gameId !== gameId ||
+		modal.dlcs !== null
+	) {
+		return modal;
+	}
+	return { ...modal, dlcs };
+}
+
+/** Les données IGDB réduites aux cases cochées : la version originale et les versions choisies, leurs plateformes, les DLC choisis */
+export function keepSelection(
 	gameImport: GameImport,
-	versionIds: number[],
+	selection: ImportSelection,
 ): GameImport {
-	const keptIds = [gameImport.game.id, ...versionIds];
+	const keptIds = [gameImport.game.id, ...selection.versionIds];
 	const versionPlatforms = gameImport.versionPlatforms.filter(({ versionId }) =>
 		keptIds.includes(versionId),
 	);
@@ -617,29 +702,7 @@ export function keepImportedVersions(
 		platforms: gameImport.platforms.filter(({ id }) =>
 			versionPlatforms.some(({ platformId }) => platformId === id),
 		),
-	};
-}
-
-/** Range les images rechargées dans la modale « Modifier le jeu » ; l'image choisie reste proposée même si IGDB ne l'a plus */
-export function receiveGameImages(
-	modal: Modal | null,
-	gameId: number,
-	imageIds: IgdbImageId[],
-): Modal | null {
-	if (
-		modal?.kind !== "editGame" ||
-		modal.gameId !== gameId ||
-		modal.imageIds !== null
-	) {
-		return modal;
-	}
-	const { imageId } = modal.choices;
-	return {
-		...modal,
-		imageIds:
-			imageId === null || imageIds.includes(imageId)
-				? imageIds
-				: [imageId, ...imageIds],
+		dlcs: gameImport.dlcs.filter(({ id }) => selection.dlcIds.includes(id)),
 	};
 }
 
@@ -766,21 +829,6 @@ export function mergeById<T extends { id: number }>(
 	return merged;
 }
 
-/** Valeurs d'une nouvelle variante : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
-export const defaultVariantDraft: VariantDraft = {
-	status: "notStarted",
-	owned: false,
-	playSoon: false,
-	finishDate: null,
-	sureFinishCount: 0,
-	probableFinishCount: 0,
-	trackedPlayTimeMinutes: 0,
-	estimatedPlayTimeMinutes: 0,
-	rating: null,
-	comment: null,
-	doneDlcIds: [],
-};
-
 /** id interne de la prochaine variante créée */
 export function getNextVariantId(database: Database): number {
 	return Math.max(0, ...database.variants.map(({ id }) => id)) + 1;
@@ -827,9 +875,9 @@ export function addVariant(
 }
 
 /**
- * « Valider » de la modale d'ajout (section 8) : le jeu, les versions cochées (`keepImportedVersions`), ses DLC, sa série,
+ * « Valider » de la modale d'ajout (section 8) : le jeu, les versions et DLC cochés (`keepSelection`), sa série,
  * sa franchise et ses sociétés, sans doublon. La variante s'ajoute ensuite, à part.
- * Un jeu déjà en base garde ses choix : seules les fiches manquantes s'ajoutent.
+ * Un jeu déjà en base garde ses choix et ses versions : seules les fiches manquantes s'ajoutent (aussi pour « Modifier le jeu »).
  */
 export function addGameImport(
 	database: Database,
@@ -841,10 +889,10 @@ export function addGameImport(
 		...choices,
 		seriesNumber: gameImport.series === null ? null : choices.seriesNumber,
 	};
-	const knownVersionPlatforms = new Set(
-		database.versionPlatforms.map(
-			({ versionId, platformId }) => `${versionId}-${platformId}`,
-		),
+	const newVersionIds = new Set(
+		gameImport.versions
+			.filter(({ id }) => findById(database.versions, id) === null)
+			.map(({ id }) => id),
 	);
 	return {
 		...database,
@@ -852,9 +900,8 @@ export function addGameImport(
 		versions: mergeById(database.versions, gameImport.versions),
 		versionPlatforms: [
 			...database.versionPlatforms,
-			...gameImport.versionPlatforms.filter(
-				({ versionId, platformId }) =>
-					!knownVersionPlatforms.has(`${versionId}-${platformId}`),
+			...gameImport.versionPlatforms.filter(({ versionId }) =>
+				newVersionIds.has(versionId),
 			),
 		],
 		platforms: mergeById(database.platforms, gameImport.platforms),
@@ -874,6 +921,11 @@ export function addGameImport(
 			),
 		),
 	};
+}
+
+/** « Rechercher d'autres DLC » (section 9) : les DLC cochés rejoignent leur jeu, sans doublon */
+export function addDlcs(database: Database, dlcs: Dlc[]): Database {
+	return { ...database, dlcs: mergeById(database.dlcs, dlcs) };
 }
 
 export function updateVariant(

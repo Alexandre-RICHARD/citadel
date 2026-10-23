@@ -349,12 +349,26 @@ export type GameImport = {
 	warnings: ImportWarning[];
 };
 
+/** Cases de la modale du jeu (section 8) ; ce qui est déjà en base y est coché d'office et n'en fait pas partie */
+export type ImportSelection = {
+	/** Versions à enregistrer ; l'originale l'est toujours */
+	versionIds: number[];
+	/** DLC à enregistrer */
+	dlcIds: number[];
+	/** DLC à ajouter ensuite comme jeux à part, qu'ils soient aussi enregistrés comme DLC ou non */
+	dlcGameIds: number[];
+};
+
 /** Donnée IGDB hors modèle : le cas et la réponse brute d'IGDB (JSON) */
 export type ImportWarning = {
 	message: string;
 	igdbData: string;
 };
 
+/**
+ * `queuedGameIds` : DLC cochés « comme jeu », dont la modale d'ajout s'ouvrira l'un après l'autre (section 8).
+ * Chaque modale de l'enchaînement passe la file à la suivante ; la fermer, même par « Annuler », ouvre le DLC suivant.
+ */
 export type Modal =
 	/** Ajout depuis la recherche ; `gameImport` vaut `null` tant que les données IGDB ne sont pas chargées */
 	| {
@@ -362,17 +376,19 @@ export type Modal =
 			igdbId: number;
 			gameImport: GameImport | null;
 			choices: GameChoices;
-			/** Versions cochées, seules enregistrées à « Valider » ; l'originale l'est toujours */
-			versionIds: number[];
+			selection: ImportSelection;
 			/** « Ajouter à mon backlog » : « Valider » ouvre ensuite « Ajouter une variante » */
 			isAddingToBacklog: boolean;
+			queuedGameIds: number[];
 	  }
-	/** « Modifier le jeu » ; `imageIds` rechargés depuis IGDB à l'ouverture */
+	/** « Modifier le jeu » ; `igdbImport` (versions, DLC, images) rechargé depuis IGDB à l'ouverture, `null` en attendant */
 	| {
 			kind: "editGame";
 			gameId: number;
-			imageIds: IgdbImageId[] | null;
+			igdbImport: GameImport | null;
 			choices: GameChoices;
+			/** Versions et DLC à ajouter, absents de la base */
+			selection: ImportSelection;
 	  }
 	/** « Ajouter une variante » : depuis le menu, un résultat de recherche déjà en base, ou après l'ajout d'un jeu */
 	| {
@@ -380,9 +396,23 @@ export type Modal =
 			gameId: number;
 			variantChoice: VariantChoice;
 			draft: VariantDraft;
+			queuedGameIds: number[];
+	  }
+	/** « Rechercher d'autres DLC » (section 9) : tous les DLC IGDB du jeu, `null` tant qu'ils ne sont pas chargés */
+	| {
+			kind: "addDlcs";
+			gameId: number;
+			dlcs: Dlc[] | null;
+			/** DLC cochés, absents de la base */
+			dlcIds: number[];
 	  }
 	/** Date de fin proposée au passage au rang 5 ou plus */
-	| { kind: "finishDate"; variantId: number; finishDate: IsoDate }
+	| {
+			kind: "finishDate";
+			variantId: number;
+			finishDate: IsoDate;
+			queuedGameIds: number[];
+	  }
 	/** Visibilité et ordre des colonnes */
 	| { kind: "columns" };
 
@@ -458,6 +488,8 @@ export type TableHandlers = {
 	toggleVariantDlc: (variantId: number, dlcId: number) => void;
 	openEditGame: (gameId: number) => void;
 	openAddVariant: (gameId: number) => void;
+	/** « Rechercher d'autres DLC », depuis le popover des DLC (section 9) */
+	openAddDlcs: (gameId: number) => void;
 	removeGameFromBacklog: (gameId: number) => void;
 	removeVariant: (variantId: number) => void;
 	logLine: (gameId: number, variantId: number | null) => void;
@@ -657,13 +689,6 @@ export type IgdbOriginalGame = {
 		publisher: boolean;
 		company: IgdbCompany;
 	}[];
-};
-
-/** Cover et artworks d'un jeu, rechargés pour « Modifier le jeu » */
-export type IgdbGameImages = {
-	id: number;
-	cover?: { image_id: IgdbImageId };
-	artworks?: { image_id: IgdbImageId }[];
 };
 
 export type IgdbDlcGame = {

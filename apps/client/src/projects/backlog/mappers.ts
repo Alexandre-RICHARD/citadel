@@ -24,6 +24,7 @@ import {
 	getEarliestDate,
 	getGameStatus,
 	getHighestValue,
+	mergeById,
 	sum,
 	toIsoDate,
 	trimToNull,
@@ -390,7 +391,7 @@ export function mapGameRows(database: Database): GameRow[] {
 // ---------- Base → modale « Modifier le jeu » (section 8) ----------
 
 /** Un jeu de la base sous la forme de la modale d'ajout : la même modale sert à le modifier */
-export function mapStoredGameImport(
+function mapStoredGameImport(
 	database: Database,
 	game: Game,
 	imageIds: IgdbImageId[],
@@ -425,5 +426,53 @@ export function mapStoredGameImport(
 		publisher: findById(database.companies, game.publisherId),
 		imageIds,
 		warnings: [],
+	};
+}
+
+/** Les fiches IGDB dans leur ordre, remplacées par celles de la base quand elles y sont, puis celles de la base qu'IGDB n'a plus */
+function mergeInIgdbOrder<T extends { id: number }>(
+	igdbItems: T[],
+	storedItems: T[],
+): T[] {
+	return mergeById(
+		igdbItems.map((item) => findById(storedItems, item.id) ?? item),
+		storedItems,
+	);
+}
+
+/**
+ * « Modifier le jeu » (section 8) : le jeu tel qu'il est en base, complété par les versions, DLC et images IGDB absents de la base.
+ * Tant qu'IGDB n'a pas répondu, ou s'il échoue, seule l'image choisie est proposée. Elle le reste même si IGDB ne l'a plus.
+ */
+export function mapEditedGameImport(
+	database: Database,
+	game: Game,
+	igdbImport: GameImport | null,
+): GameImport {
+	const stored = mapStoredGameImport(
+		database,
+		game,
+		game.imageId === null ? [] : [game.imageId],
+	);
+	if (igdbImport === null) {
+		return stored;
+	}
+	const storedVersionIds = stored.versions.map(({ id }) => id);
+	return {
+		...stored,
+		versions: mergeInIgdbOrder(igdbImport.versions, stored.versions),
+		versionPlatforms: [
+			...stored.versionPlatforms,
+			...igdbImport.versionPlatforms.filter(
+				({ versionId }) => !storedVersionIds.includes(versionId),
+			),
+		],
+		platforms: mergeById(stored.platforms, igdbImport.platforms),
+		dlcs: mergeInIgdbOrder(igdbImport.dlcs, stored.dlcs),
+		imageIds:
+			game.imageId === null || igdbImport.imageIds.includes(game.imageId)
+				? igdbImport.imageIds
+				: [game.imageId, ...igdbImport.imageIds],
+		warnings: igdbImport.warnings,
 	};
 }
