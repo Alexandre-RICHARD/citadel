@@ -1,0 +1,69 @@
+@use '../styles/variables' as *;
+
+.vehicle-popup {
+  min-width: 200px;
+
+  &__line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  &__line-name {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &__details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    margin: 0;
+    font-size: 13px;
+
+    dt {
+      color: $color-muted;
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__follow {
+    width: 100%;
+    margin-top: 12px;
+    padding: 7px;
+    border: 0;
+    border-radius: $radius-small;
+    background: $color-surface-alt;
+    color: $color-text;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-border;
+    }
+
+    &[aria-pressed='true'] {
+      background: $color-focus;
+      color: #fff;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+      outline-offset: 2px;
+    }
+  }
+
+  // Délai sous le nom de l'arrêt
+  &__eta {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-success;
+  }
+}

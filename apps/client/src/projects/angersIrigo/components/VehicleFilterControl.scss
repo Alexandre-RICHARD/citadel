@@ -1,0 +1,53 @@
+@use '../styles/variables' as *;
+
+.vehicle-filter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: $radius-small;
+  background: $color-surface-alt;
+
+  &__option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    // L'input radio est masqué : l'état sélectionné et le focus se voient sur le label
+    &:has(input:checked) {
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+    }
+
+    &:has(input:focus-visible) {
+      outline: 2px solid $color-focus;
+      outline-offset: 1px;
+    }
+  }
+
+  &__label {
+    font-size: 12px;
+    color: $color-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__option:has(input:checked) &__label {
+    color: $color-text;
+  }
+
+  &__count {
+    font-size: 20px;
+    font-weight: 700;
+  }
+}

@@ -1,0 +1,52 @@
+@use '../styles/variables' as *;
+
+.feed-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  // Chiffres de largeur fixe : le texte ne tremble pas quand les secondes défilent
+  font-variant-numeric: tabular-nums;
+
+  // Voyant d'état
+  &::before {
+    content: '';
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $color-loading;
+  }
+
+  &--success::before {
+    background: $color-success;
+    animation: live-pulse 2s infinite;
+  }
+
+  &--error {
+    color: $color-error;
+
+    &::before {
+      background: $color-error;
+    }
+  }
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba($color-success, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba($color-success, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba($color-success, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-status--success::before {
+    animation: none;
+  }
+}
