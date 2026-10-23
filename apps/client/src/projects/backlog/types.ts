@@ -187,7 +187,7 @@ export type Game = {
 export type Version = {
 	id: number;
 	gameId: number;
-	/** `version_title`, sinon `name` ; `null` pour la version originale, qui affiche le nom du jeu */
+	/** `version_title`, sinon `name` s'il diffère du nom du jeu, sinon type et année (règle dans `getVersionTitle`, mappers.ts) ; `null` pour la version originale, qui affiche le nom du jeu */
 	title: string | null;
 	/** Miniature de la sous-ligne */
 	coverImageId: IgdbImageId | null;
@@ -624,6 +624,8 @@ export type IgdbVersionGame = {
 	id: number;
 	name: string;
 	version_title?: string;
+	/** Nom du type, lu via IGDB : titre d'une version sans titre propre */
+	game_type?: { type: string };
 	cover?: { image_id: IgdbImageId };
 	url: string;
 	platforms?: IgdbPlatform[];

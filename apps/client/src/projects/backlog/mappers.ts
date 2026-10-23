@@ -141,6 +141,33 @@ function getFirstReleaseTime(version: IgdbVersionGame): number {
 	return dates.length === 0 ? Number.MAX_SAFE_INTEGER : Math.min(...dates);
 }
 
+/** Types IGDB des versions, en français ; une édition (« Main Game » ou « Bundle » rattachés par `version_parent`) n'y est pas */
+const versionTypeLabels: Partial<Record<string, string>> = {
+	"Port": "Portage",
+	"Remaster": "Remaster",
+	"Expanded Game": "Version enrichie",
+};
+
+/**
+ * Titre d'une version autre que l'originale (section 5) : `version_title`, sinon son nom s'il diffère de celui du jeu,
+ * sinon son type et l'année de sa première sortie, pour la distinguer de l'originale (« Portage 1998 », « Édition 2015 »)
+ */
+function getVersionTitle(version: IgdbVersionGame, gameName: string): string {
+	const versionTitle = trimToNull(version.version_title);
+	if (versionTitle !== null) {
+		return versionTitle;
+	}
+	if (version.name.trim() !== gameName.trim()) {
+		return version.name;
+	}
+	const typeLabel =
+		versionTypeLabels[version.game_type?.type ?? ""] ?? "Édition";
+	const firstReleaseTime = getFirstReleaseTime(version);
+	return firstReleaseTime === Number.MAX_SAFE_INTEGER
+		? typeLabel
+		: `${typeLabel} ${new Date(firstReleaseTime * 1000).getUTCFullYear()}`;
+}
+
 /** Réponses IGDB → données de la base, montrées dans la modale puis écrites à « Valider » (section 8) */
 export function mapGameImport(data: IgdbGameData): GameImport {
 	const { original } = data;
@@ -196,9 +223,7 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			id: version.id,
 			gameId,
 			title:
-				version.id === gameId
-					? null
-					: (trimToNull(version.version_title) ?? version.name),
+				version.id === gameId ? null : getVersionTitle(version, original.name),
 			coverImageId: version.cover?.image_id ?? null,
 			url: version.url,
 		})),

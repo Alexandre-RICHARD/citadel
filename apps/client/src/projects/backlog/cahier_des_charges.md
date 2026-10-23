@@ -60,8 +60,8 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Date de sortie | Colonne Date de sortie | `first_release_date` ; `release_dates` par plateforme |
 | Statut de sortie | Mention « à venir » ou « annulé » | `game_status` |
 | Plateformes | Plateformes de chaque version (nom et nom technique) ; choix de la plateforme d'une variante | `platforms` |
-| Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; mener une fiche trouvée par la recherche à son jeu ; exclure mods et forks de la recherche | `game_type` |
-| Versions | Toutes les versions, proposées à l'ajout ; seules celles cochées sont stockées | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
+| Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; mener une fiche trouvée par la recherche à son jeu ; exclure mods et forks de la recherche ; titrer une version sans titre propre (section 5) | `game_type` |
+| Versions | Toutes les versions, proposées à l'ajout ; seules celles cochées sont stockées. Titre : `version_title`, sinon `name` (section 5) | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
 | DLC | Colonne DLC | `dlcs`, `expansions` ; `parent_game` côté DLC |
 | Extensions standalone | Jeux distincts | `standalone_expansions` |
 | Bundles | Recherche : un bundle mène aux jeux qu'il contient | `bundles`, côté jeu contenu |
@@ -173,6 +173,7 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément : la recherche mène d'un bundle à ses jeux (section 8). Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
 - **Versions choisies** : la modale d'ajout propose toutes les versions qu'IGDB rattache au jeu, et seules celles cochées sont enregistrées. Le backlog est personnel : inutile de stocker des éditions qu'on ne jouera jamais.
 - **Jeu original toujours en base** : sa version originale est toujours enregistrée, cochée d'office et non décochable, car elle porte l'id et la page IGDB du jeu. Les autres versions sont décochées à l'ouverture.
+- **Titre d'une version** : la version originale affiche le nom du jeu. Une autre version prend son `version_title`, sinon son nom IGDB s'il diffère de celui du jeu (*The Last of Us Remastered*). Sinon, IGDB ne la distingue pas de l'originale : elle prend son type et l'année de sa première sortie, toutes plateformes confondues. Les types sont Portage, Remaster, Version enrichie, et Édition pour le reste ; ex. *Portage 1998* pour *FF7* sur PC, *Édition 2015* pour l'édition PS4 / PS5 de *GTA V*, qui a aussi une date PC de 2015 sur IGDB.
 
 ### Affichage replié / déplié
 
