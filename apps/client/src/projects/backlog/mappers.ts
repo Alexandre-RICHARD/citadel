@@ -26,6 +26,7 @@ import type {
 import {
 	findById,
 	findUserGame,
+	formatSeriesNumber,
 	getEarliestDate,
 	getGameStatus,
 	getHighestValue,
@@ -350,6 +351,16 @@ function buildRowIndexes(database: Database): RowIndexes {
 				],
 			),
 		),
+		seriesEntriesBySeriesId: new Map(
+			[...groupBy(database.userGames, ({ seriesId }) => seriesId)].map(
+				([seriesId, userGames]) => [
+					seriesId,
+					userGames.flatMap(({ gameId, seriesNumber }) =>
+						seriesNumber === null ? [] : [{ gameId, seriesNumber }],
+					),
+				],
+			),
+		),
 	};
 }
 
@@ -433,6 +444,13 @@ function mapGameRow(
 		series: getIndexed(indexes.series, userGame.seriesId),
 		proposedSeries: getIndexed(indexes.series, game.proposedSeriesId),
 		seriesNumber: userGame.seriesNumber,
+		seriesNumberLabel:
+			userGame.seriesNumber === null
+				? null
+				: formatSeriesNumber(
+						userGame.seriesNumber,
+						indexes.seriesEntriesBySeriesId.get(userGame.seriesId) ?? [],
+					),
 		developer: getIndexed(indexes.companies, game.developerId),
 		publisher: getIndexed(indexes.companies, game.publisherId),
 		releaseDate: game.firstReleaseDate,

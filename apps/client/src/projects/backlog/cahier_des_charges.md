@@ -74,7 +74,7 @@ Le POC ne garde qu'une série, un développeur et un éditeur par jeu (section 1
 - **Série proposée** : la collection la plus large, c'est-à-dire la première qui n'a pas de collection parente parmi celles du jeu (*Crisis Core* est dans *Compilation of Final Fantasy VII*, *Final Fantasy* et *Final Fantasy VII* : on garde *Final Fantasy*). Sans collection, la franchise principale (`franchise`), sinon la première de `franchises` (*Aperture Desk Job* → *Portal*). Sinon, pas de série : un jeu seul n'en a pas.
 - **Pas de franchise** : une collection IGDB est une suite de jeux, structurée (sous-séries, spin-offs) ; une franchise n'est qu'une étiquette d'univers, deux fois moins renseignée, qui reprend le plus souvent le nom de la série. Elle ne sert qu'à proposer une série à défaut de collection, et n'est pas stockée en tant que telle.
 - **Un seul nom** : le nom IGDB de la série. IGDB n'a pas de nom alternatif pour les séries, donc pas de nom VF.
-- IGDB ne donne aucun ordre dans une série : le numéro dans la série se choisit à la main (section 8).
+- IGDB ne donne aucun ordre dans une série : le numéro dans la série est pré-rempli, se choisit à la main et se réordonne par « Réorganiser la série » (section 8).
 
 ## 4. Architecture des données
 
@@ -164,7 +164,7 @@ Une ligne du backlog correspond à un **jeu du backlog** : un jeu et sa personna
 | Plateforme | Une plateforme IGDB, ou un émulateur rattaché à la console émulée. Stockée avec un nom et un nom technique | PS4, PC, *PCSX2* (PS2) |
 | DLC | Contenu additionnel rattaché au jeu, pas à une version. Il se coche comme fait sur une version jouée | *Dawnguard*, *Hearthfire*, *Dragonborn* pour *Skyrim* |
 | Extension standalone | Un jeu à part entière, pas un DLC. IGDB en classe certaines en DLC : on les ajoute alors comme jeu (règle « DLC comme jeu ») | *TLAD*, *TBOGT* (extensions de *GTA IV* sur IGDB) |
-| Série | Facultative. Proposée par IGDB (section 3) et choisie pour chaque jeu du backlog : la proposée, une autre série, une série créée à la main ou aucune ; un clic sur son nom filtre le tableau | *Grand Theft Auto* ; *Souls*, créée à la main pour *Dark Souls*, *Sekiro* et *Elden Ring* |
+| Série | Facultative. Proposée par IGDB (section 3) et choisie pour chaque jeu du backlog : la proposée, une autre série, une série créée à la main ou aucune. Chaque jeu y a un numéro, unique ; des décimales en font un sous-jeu d'un autre (section 8). Un clic sur son nom filtre le tableau | *Grand Theft Auto* ; *Souls*, créée à la main pour *Dark Souls*, *Sekiro* et *Elden Ring* |
 
 ### Règles
 
@@ -188,7 +188,7 @@ Une ligne du backlog correspond à un **jeu du backlog** : un jeu et sa personna
 - **Une seule version jouée** : la ligne est simple, non dépliable. Elle affiche cette version jouée (version et plateforme) et ses données se modifient directement sur la ligne. Miniature : l'image choisie à l'ajout au backlog ; nom : celui du jeu, avec le titre de la version en dessous si ce n'est pas l'original ; date de sortie : la date originale du jeu.
 - **Plusieurs versions jouées** : la ligne affiche le jeu original (nom, date de sortie originale), plateforme vide, et les agrégats des versions jouées. Elle se déplie en une sous-ligne par version jouée, où se modifient ses données.
 - **Agrégats** : la ligne du jeu montre le total, le meilleur, le plus ancien… selon la colonne (section 7). Quand il est impossible de choisir une valeur, la case reste vide.
-- **Personnalisation** : le type de fin, la série et le numéro dans la série, choisis à l'ajout au backlog et modifiables par « Personnaliser » (section 8), s'affichent en lecture seule dans le tableau.
+- **Personnalisation** : le type de fin, la série et le numéro dans la série, choisis à l'ajout au backlog et modifiables par « Personnaliser » et « Réorganiser la série » (section 8), s'affichent en lecture seule dans le tableau.
 - Seules les versions jouées présentes dans le backlog de l'utilisateur comptent. Les autres versions en base n'apparaissent pas.
 
 ## 6. Types de fin et statuts
@@ -247,7 +247,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | Miniature | Jeu du backlog | IGDB, choisie à l'ajout au backlog | Image choisie | Image de la version |
 | Nom | Jeu | IGDB | Nom VF, nom VO en dessous s'il diffère | Titre de la version (ex. *Legendary Edition*) |
 | Série | Jeu du backlog | Proposée par IGDB, choisie à l'ajout au backlog | Nom, vide sans série ; ✏️ si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
-| N° dans la série | Jeu du backlog | Choisi à l'ajout au backlog | Numéro, en lecture seule ; vide sans série |  |
+| N° dans la série | Jeu du backlog | Pré-rempli à l'ajout au backlog, réordonné par « Réorganiser la série » | Numéro, en lecture seule, avec les décimales de sa famille (3.10) ; vide sans série |  |
 | Développeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Éditeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Date de sortie | Jeu, version | IGDB | Date originale, ou « à venir » / « annulé » | Date de sortie de la version sur cette plateforme |
@@ -267,7 +267,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | Actions | Jeu, version jouée |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
 
 - **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement. Sur une sous-ligne d'émulateur, c'est la date de sortie de la version sur la console d'origine (ex. PCSX2 : la date de sortie sur PS2).
-- **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série positif ou nul, décimal possible (ex. 0 pour *Resident Evil 0*, 2.5) ; compteurs « fois fini » entiers, à partir de 0.
+- **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série à partir de 1, 3 décimales au plus (sous-jeux, section 8), obligatoire avec une série et unique dans celle-ci ; compteurs « fois fini » entiers, à partir de 0.
 - **Zéros** : un temps ou un compteur « fois fini » à zéro, sa valeur par défaut, s'affiche estompé (« 0 h 00 », « 0 ») pour laisser ressortir les valeurs saisies. Une note de 0, choisie, s'affiche normalement.
 
 ## 8. Ajout d'un jeu et gestion du backlog
@@ -321,9 +321,46 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
 - L'image de la miniature, parmi la cover et les artworks, relus sur IGDB à l'ouverture ; à l'ajout, la cover est pré-sélectionnée. En attendant IGDB, ou s'il échoue, seule l'image déjà choisie est proposée ; elle le reste même si IGDB ne l'a plus.
 - Le type de fin du jeu (section 6) ; Histoire par défaut.
 - La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « ➕ Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « ↩️ Série IGDB » y ramène.
-- Le numéro du jeu dans sa série, si le jeu en a une ; sans série, il est effacé à « Valider ».
+- Le numéro du jeu dans sa série (règles ci-dessous) : obligatoire avec une série ; sans série, il est effacé à « Valider ».
+  - Choisir une série le pré-remplit. Dans sa série actuelle, le jeu garde le sien ; sinon, il passe après les jeux du backlog de la série, à l'entier au-dessus du plus grand (3 après 2 ou 2.5). Le premier jeu d'une série, ou d'une nouvelle série, a le n° 1.
+  - Un numéro déjà pris est signalé (« N° 2 déjà pris par… ») : à « Valider », il est libéré vers le haut.
 - Une série qu'aucun jeu ne propose et qu'aucun jeu du backlog n'a choisie quitte la base : une série créée à la main part avec son dernier jeu.
 - « Personnaliser » : entrée du menu Actions, une seule action à « Valider », inactif tant que rien n'a changé. Changer le type de fin peut rendre incompatible le statut d'une version jouée : Fini devient Estimé fini et inversement, Vu sans jouer devient Pas commencé.
+
+### Numéro dans une série
+
+- **Valeur** : unique dans la série, à partir de 1, stocké avec 3 décimales (`X.XXX`).
+- **Familles** : un numéro entier est un jeu principal ; avec des décimales, c'est un sous-jeu de ce principal (*Crisis Core* = 7.1 sous *FF VII* = 7). Un principal et ses sous-jeux forment une famille.
+- **Rangs** : les sous-jeux vont de 3.1 à 3.9. Au-delà du 9e rang, toute la famille passe à deux chiffres, à rangs égaux (3.01 … 3.09, puis 3.10), puis à trois. Pas de 3.32 sans dépasser le 9e rang, sauf par une saisie (voir Saisie).
+- **Affichage** : avec le moins de décimales possible, le même nombre pour toute la famille (3.10 parmi 3.01 … 3.10).
+- **Trous** : permis, aux deux niveaux. Un jeu qui part laisse sa place vide ; rien n'est renuméroté. Un principal qui quitte la série laisse ses sous-jeux tels quels ; un principal remis à ce numéro les retrouve.
+- **Libérer un numéro vers le haut** : le jeu qui l'a avance d'un cran (un entier pour un principal, avec toute sa famille ; un rang pour un sous-jeu), et les suivants tant qu'ils se heurtent. Un trou arrête le décalage.
+- **Saisie** (« Personnaliser », ajout au backlog, « Réorganiser la série ») :
+  - « 3 » ou « 3.1 », virgule acceptée. Sous 1, ou avec plus de 3 décimales : refusé, le champ reprend le dernier numéro accepté.
+  - Avec moins de décimales que sa famille, c'est un rang : « 3.1 » parmi 3.01 … 3.10 donne 3.01. Avec plus, la famille prend ce nombre de chiffres et ses sous-jeux gardent leur valeur : « 3.15 » parmi 3.1 et 3.2 donne 3.10, 3.15, 3.20.
+  - Un numéro pris est libéré vers le haut. Un principal emmène ses sous-jeux ; tapé en sous-jeu, il les range à sa suite.
+
+### Réorganisation d'une série
+
+« Réorganiser la série », entrée du menu Actions, remet dans l'ordre les jeux du backlog d'une même série. Elle n'est active qu'en mode édition, pour un jeu qui a une série.
+
+- Une ligne par jeu du backlog de la série, triée par numéro : le numéro, modifiable (voir Saisie), le nom (VF, VO en dessous s'il diffère) et la date de sortie originale du jeu. Les sous-jeux sont décalés à droite. Le jeu d'où le menu a été ouvert est en gras.
+- Glisser-déposer par la poignée ↕️, sur le trait entre deux lignes :
+  - le trait décalé à droite, en glissant un peu vers la droite, fait un sous-jeu de la famille au-dessus ; le trait plein, un principal. Tout en haut, c'est toujours un principal ; entre deux jeux d'une même famille, toujours un sous-jeu ;
+  - un principal emmène ses sous-jeux, qui gardent leur rang ; devenu sous-jeu, il les range à sa suite ;
+  - le jeu prend le premier numéro libre juste après le jeu du dessus : l'entier qui suit sa famille (1 tout en haut), ou le rang suivant. Personne d'autre ne bouge, même tout en bas de la liste ;
+  - si ce numéro est pris : en descendant au même niveau, le jeu prend la place du jeu du dessus, et les jeux dépassés reculent d'un cran tant qu'ils se heurtent ; sinon, le numéro est libéré vers le haut.
+- Exemples :
+  - 1 à 5 : le 5 glissé entre 1 et 2 devient 2, et 2, 3, 4 avancent ; le 2 glissé entre 4 et 5 devient 4, et 3, 4 reculent ;
+  - A = 1, B = 5, C = 6, D = 7 : D glissé entre A et B devient 2 ;
+  - A = 1, B = 2, C = 6 : A glissé entre B et C devient 3, le 1 reste vide ; A = 1, B = 2, C = 3 : A glissé tout en bas devient 4 ;
+  - A = 1, B = 2, C = 3, D = 7, E = 8 : E glissé entre A et B donne E = 2, B = 3, C = 4, et D garde 7 ;
+  - 1, 2, 2.1, 2.2, 3 : le 2 glissé tout en haut donne 1, 1.1, 1.2, et l'ancien 1 devient 2 ;
+  - 1, 2, 2.1, 2.2, 3, 4 : le 4 glissé entre 2 et 2.1 devient 2.1, et les anciens 2.1, 2.2 passent à 2.2, 2.3. Le 2.1 glissé à trait plein entre 3 et 4 devient 4, l'ancien 4 passe à 5, et 2.2 reste ;
+  - 3, 3.1 … 3.9 : un jeu glissé entre 3.3 et 3.4 fait passer la famille à 3.01 … 3.03 ; il devient 3.04, et les suivants 3.05 … 3.10.
+- Un numéro changé s'affiche en couleur, l'ancien au survol.
+- Un jeu sorti avant un jeu placé plus haut, sous-jeux compris, est signalé : fond rouge et ⚠️ (au survol, le plus récent de ces jeux). Un jeu sans date de sortie n'est pas comparé. C'est un signal, pas une erreur : un spin-off sort souvent après la suite.
+- Rien n'est enregistré avant « Valider » : une seule action, inactif tant qu'aucun numéro n'a changé.
 
 ### Gestion du backlog
 
@@ -364,7 +401,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 | Ligne | Entrées du menu |
 | --- | --- |
-| Ligne du jeu | Personnaliser · Modifier le jeu · Ajouter une version jouée · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses versions jouées) · Logger cette ligne (POC) |
+| Ligne du jeu | Personnaliser · Réorganiser la série (jeu avec une série) · Modifier le jeu · Ajouter une version jouée · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses versions jouées) · Logger cette ligne (POC) |
 | Sous-ligne de version jouée | Ouvrir la version sur IGDB · Retirer la version jouée · Logger cette ligne (POC) |
 | Ligne à version jouée unique | Le menu de la ligne du jeu ; « Retirer le jeu du backlog » y retire l'unique version jouée |
 
@@ -410,7 +447,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 - `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
 - À la souris, les flèches ↩️ et ↪️ de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
-- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé (jeu ; ajout au backlog avec sa première version jouée), un retrait, « Personnaliser » ou « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
+- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé (jeu ; ajout au backlog avec sa première version jouée), un retrait, « Personnaliser », « Réorganiser la série » ou « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
 - Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
 - Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.
 - L'annulation marche aussi en lecture seule ; pendant qu'une modale est ouverte, les raccourcis sont ignorés. Sur Mac, `⌘` vaut `Ctrl`.

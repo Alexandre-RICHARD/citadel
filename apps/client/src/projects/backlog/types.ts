@@ -246,11 +246,15 @@ export type UserGame = {
 	/** Miniature, parmi la cover et les artworks IGDB */
 	imageId: IgdbImageId | null;
 	endingType: EndingType;
-	/** Celle proposée par IGDB (`Game.proposedSeriesId`), une autre, ou aucune */
-	seriesId: number | null;
-	/** Décimales possibles ; `null` sans série */
-	seriesNumber: number | null;
-};
+} & (
+	| {
+			/** Celle proposée par IGDB (`Game.proposedSeriesId`), ou une autre */
+			seriesId: number;
+			/** Unique dans la série, décimales possibles (section 8) */
+			seriesNumber: number;
+	  }
+	| { seriesId: null; seriesNumber: null }
+);
 
 /**
  * Version jouée : une version sur une plateforme, unique par version + plateforme.
@@ -331,8 +335,29 @@ export type SeriesChoice =
 	| { kind: "none" };
 
 /** Personnalisation d'un jeu du backlog en cours de saisie : à l'ajout au backlog ou par « Personnaliser » (section 8) */
-export type UserGameDraft = Omit<UserGame, "gameId" | "seriesId"> & {
+export type UserGameDraft = Pick<UserGame, "imageId" | "endingType"> & {
 	series: SeriesChoice;
+	/** Pré-rempli au choix de la série ; `null` sans série */
+	seriesNumber: number | null;
+};
+
+/** Un jeu du backlog et son numéro, dans « Réorganiser la série » (section 8) */
+export type SeriesEntry = {
+	gameId: number;
+	seriesNumber: number;
+};
+
+/** Glisser-déposer de « Réorganiser la série » (section 8), vu depuis la liste sans les jeux qui bougent */
+export type SeriesDrop = {
+	/** Le jeu glissé, puis ses sous-jeux s'il est principal */
+	block: SeriesEntry[];
+	/** Les autres jeux */
+	rest: SeriesEntry[];
+	/** Le jeu au-dessus du trait ; `null` tout en haut */
+	above: SeriesEntry | null;
+	/** Sous-jeu de la famille au-dessus, sinon principal */
+	isSub: boolean;
+	isMovingDown: boolean;
 };
 
 /** Nouvelle version jouée en cours de saisie (section 8) : créée seulement quand la version et la plateforme sont choisies */
@@ -439,6 +464,16 @@ export type Modal =
 			finishDate: IsoDate;
 			queuedGameIds: number[];
 	  }
+	/**
+	 * « Réorganiser la série » (section 8) : ses jeux du backlog, triés par numéro, tels que réordonnés avant « Valider ».
+	 * `gameId` : le jeu d'où le menu a été ouvert, mis en valeur.
+	 */
+	| {
+			kind: "reorderSeries";
+			seriesId: number;
+			gameId: number;
+			entries: SeriesEntry[];
+	  }
 	/** Visibilité et ordre des colonnes */
 	| { kind: "editColumns" };
 
@@ -513,6 +548,7 @@ export type TableHandlers = {
 	changeUserVersionStatus: (userVersionId: number, status: Status) => void;
 	toggleDoneDlc: (userVersionId: number, dlcId: number) => void;
 	openCustomizeGame: (gameId: number) => void;
+	openReorderSeries: (gameId: number) => void;
 	openEditGame: (gameId: number) => void;
 	openAddUserVersion: (gameId: number) => void;
 	/** « Rechercher d'autres DLC », depuis le popover des DLC (section 9) */
@@ -565,6 +601,8 @@ export type GameRow = {
 	/** Série proposée par IGDB : ✏️ quand elle diffère de `series` */
 	proposedSeries: Series | null;
 	seriesNumber: number | null;
+	/** Avec les décimales de sa famille : 3.10 parmi 3.01 … 3.10 */
+	seriesNumberLabel: string | null;
 	developer: Company | null;
 	publisher: Company | null;
 	/** Date originale du jeu */
@@ -611,6 +649,8 @@ export type RowIndexes = {
 	userVersionsByGameId: Map<number | null, UserVersion[]>;
 	dlcIdsByGameId: Map<number, Set<number>>;
 	doneDlcIdsByUserVersionId: Map<number, number[]>;
+	/** Numéros des jeux du backlog de chaque série, pour afficher ceux d'une famille avec autant de décimales */
+	seriesEntriesBySeriesId: Map<number | null, SeriesEntry[]>;
 };
 
 // ---------- Réponses IGDB : seulement les champs demandés, absents quand IGDB n'a pas de valeur ----------
