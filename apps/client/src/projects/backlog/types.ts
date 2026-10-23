@@ -306,10 +306,7 @@ export type Database = {
 
 // ---------- Interface ----------
 
-/** Où cherche la barre de recherche : sur IGDB, ou parmi les jeux déjà en base, sans requête IGDB (section 8) */
-export type SearchSource = "igdb" | "database";
-
-/** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu déjà en base */
+/** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu en base hors backlog (« 📚 Ma base ») */
 export type SearchResult = {
 	/** id IGDB de la fiche ; « déjà en base » si une version porte cet id */
 	id: number;
@@ -474,6 +471,12 @@ export type Modal =
 			gameId: number;
 			entries: SeriesEntry[];
 	  }
+	/** « 📚 Ma base » (section 8) : les jeux en base hors backlog, filtrés par `query`, par pages de 50 */
+	| {
+			kind: "addFromDatabase";
+			query: string;
+			loadedPageCount: number;
+	  }
 	/** Visibilité et ordre des colonnes */
 	| { kind: "editColumns" };
 
@@ -521,9 +524,7 @@ export type ColumnFilter =
 export type AppState = {
 	database: Database;
 	searchQuery: string;
-	/** Résultats IGDB seulement : ceux de la base se recalculent à chaque affichage */
 	searchResults: SearchResult[];
-	searchSource: SearchSource;
 	/** Liste des résultats ouverte sous la barre de recherche */
 	isSearchOpen: boolean;
 	modal: Modal | null;

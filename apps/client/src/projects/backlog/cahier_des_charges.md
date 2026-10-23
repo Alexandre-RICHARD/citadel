@@ -295,16 +295,17 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
    - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout au backlog (Gestion du backlog), avec les images déjà lues sur IGDB. La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
    - Ce sont deux actions distinctes (section 10). Annuler l'ajout au backlog laisse le jeu en base, hors du backlog.
-   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 En base ».
+   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 Ma base ».
 6. **DLC comme jeu** : après « Valider », et après l'ajout au backlog s'il a lieu, la modale d'ajout de chaque DLC coché « 🧩 comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
 
 ### Ajout depuis la base
 
 Un jeu déjà en base (retiré du backlog, ou ajouté sans « Ajouter à mon backlog ») revient dans le backlog sans relire ses données IGDB : seules ses images sont relues, pour le choix de la miniature.
 
-- La barre de recherche a deux sources : « 🌐 IGDB », par défaut, et « 📚 En base ». Changer de source relance la saisie en cours sur la nouvelle source.
-- Sur « En base », la recherche porte sur le nom VO, le nom VF et les titres des versions des jeux en base, sans tenir compte des accents ni des majuscules, sans requête IGDB. Les résultats s'affichent tout de suite, triés par nom, au même format que ceux d'IGDB (image choisie à l'ajout au backlog, sinon la cover de l'original ; plateformes de toutes les versions) ; ceux qui sont déjà dans le backlog sont signalés.
-- Choisir un résultat ouvre l'ajout au backlog, avec la version originale pré-sélectionnée.
+- La barre de recherche ne cherche que sur IGDB. À côté, le bouton « 📚 Ma base (N) » compte les jeux en base hors backlog ; il est grisé quand il n'y en a aucun.
+- Il ouvre une modale qui liste ces jeux sans requête IGDB, triés par nom (VF, sinon VO), au même format que les résultats d'IGDB (cover de l'original, plateformes de toutes les versions). Elle en affiche 50, puis les 50 suivants à l'approche du bas de la liste.
+- Un champ filtre la liste à chaque frappe, sur le nom VO, le nom VF et les titres des versions, sans tenir compte des accents ni des majuscules. Vide, il montre tous les jeux.
+- Choisir un jeu ouvre l'ajout au backlog, avec la version originale pré-sélectionnée.
 
 ### Modification d'un jeu
 
@@ -364,7 +365,7 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
 
 ### Gestion du backlog
 
-- Ajouter au backlog : un jeu en base entre dans le backlog avec sa personnalisation et sa première version jouée, en une seule action. On y arrive après l'ajout d'un jeu avec « Ajouter à mon backlog », ou par un résultat de recherche « déjà en base ».
+- Ajouter au backlog : un jeu en base entre dans le backlog avec sa personnalisation et sa première version jouée, en une seule action. On y arrive après l'ajout d'un jeu avec « Ajouter à mon backlog », par un résultat de recherche « déjà en base », ou par « 📚 Ma base ».
 - Ajouter une version jouée : entrée « Ajouter une version jouée » du menu Actions, la même fenêtre sans la personnalisation, sans version pré-sélectionnée. Un résultat de recherche d'un jeu déjà dans le backlog y mène aussi.
   - J'indique la version, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
   - La même fenêtre permet de pré-remplir toutes mes données de la version jouée : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps relevé et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide. Le statut pré-rempli suit un changement du type de fin dans la personnalisation.
@@ -415,7 +416,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Un bouton qui ouvre une petite modale pour gérer la visibilité de chaque colonne.
 - Un bouton fixe (*sticky*) pour basculer en mode édition.
 - De petites bulles explicatives, par exemple sur Type de fin et Statut pour rappeler la signification des valeurs.
-- La barre du haut (titre, recherche, flèches annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
+- La barre du haut (titre, recherche IGDB, bouton « 📚 Ma base », flèches annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
 
 ### Lecture seule et édition
 
