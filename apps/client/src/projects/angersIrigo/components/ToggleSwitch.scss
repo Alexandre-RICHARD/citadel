@@ -1,0 +1,66 @@
+@use '../styles/variables' as *;
+
+$track-width: 36px;
+$track-height: 20px;
+$thumb-margin: 2px;
+$thumb-size: $track-height - 2 * $thumb-margin;
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing;
+  cursor: pointer;
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__label {
+    font-size: 14px;
+  }
+
+  &__description {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__track {
+    position: relative;
+    flex-shrink: 0;
+    width: $track-width;
+    height: $track-height;
+    border-radius: $track-height;
+    background: $color-loading;
+    transition: background-color 0.15s;
+
+    // Le curseur rond
+    &::after {
+      content: '';
+      position: absolute;
+      top: $thumb-margin;
+      left: $thumb-margin;
+      width: $thumb-size;
+      height: $thumb-size;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s;
+    }
+  }
+
+  // L'input est masqué : son état se lit sur la piste qui le suit
+  &__input:checked + &__track {
+    background: $color-success;
+
+    &::after {
+      transform: translateX($track-width - $track-height);
+    }
+  }
+
+  &__input:focus-visible + &__track {
+    outline: 2px solid $color-focus;
+    outline-offset: 2px;
+  }
+}

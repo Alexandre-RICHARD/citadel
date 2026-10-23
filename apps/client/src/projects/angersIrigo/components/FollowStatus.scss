@@ -1,0 +1,57 @@
+@use '../styles/variables' as *;
+
+.follow-status {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  // Au-dessus des calques Leaflet (400) et de ses contrôles (1000)
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  // Laisse la place aux boutons de zoom, en bas à droite
+  max-width: calc(100% - 120px);
+  padding: 6px 6px 6px 8px;
+  border-radius: 999px;
+  background: $color-surface;
+  box-shadow: $shadow;
+  backdrop-filter: blur(8px);
+  transform: translateX(-50%);
+
+  &__text {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__destination {
+    font-weight: 400;
+    color: $color-muted;
+  }
+
+  &__stop {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: $color-surface-alt;
+    color: $color-text;
+    font-size: 18px;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-border;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+}

@@ -1,0 +1,158 @@
+@use '../styles/variables' as *;
+
+.favorites-panel {
+  flex: 0 1 400px;
+  min-width: 0;
+  padding: 12px 8px 8px 14px;
+  border-radius: $radius;
+  background: $color-surface;
+  box-shadow: $shadow;
+  backdrop-filter: blur(8px);
+
+  // Replié : un simple bouton ★ suivi du nombre de favoris
+  &--collapsed {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+    padding: 0 12px;
+    border: 0;
+    color: $color-favorite;
+    font: inherit;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  &__count {
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+
+    svg {
+      color: $color-favorite;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__entry {
+    display: grid;
+    flex: 1;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin-left: -6px;
+    padding: 6px;
+    border: 0;
+    border-radius: $radius-small;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-alt;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    line-height: 1.3;
+    color: $color-muted;
+  }
+
+  &__stop {
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  // Mêmes couleurs que les délais de la popup d'arrêt
+  &__times {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $color-success;
+    white-space: nowrap;
+
+    &--none {
+      max-width: 110px;
+      font-size: 12px;
+      font-weight: 400;
+      color: $color-muted;
+      text-align: right;
+      white-space: normal;
+    }
+  }
+
+  &__icon-button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: $radius-small;
+    background: transparent;
+    color: $color-muted;
+    font-size: 18px;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-alt;
+      color: $color-text;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  // Sous le panneau d'infos : l'encadré déplié prend toute la largeur, le bouton ★ reste à droite
+  @media (max-width: $breakpoint-mobile) {
+    flex-basis: auto;
+
+    &--collapsed {
+      align-self: flex-end;
+    }
+  }
+}

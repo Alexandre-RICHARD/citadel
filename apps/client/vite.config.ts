@@ -32,6 +32,10 @@ export default defineConfig(({ mode }) => {
 						"Authorization": `Bearer ${env.INTERNET_GAME_DATA_BASE_TOKEN}`,
 					},
 				},
+				"/irigo": {
+					target: "https://ara-api.enroute.mobi",
+					changeOrigin: true,
+				},
 			},
 		},
 		resolve: {

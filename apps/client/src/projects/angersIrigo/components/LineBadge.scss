@@ -1,0 +1,24 @@
+@use '../styles/variables' as *;
+
+.line-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: $radius-small;
+  background: var(--line-color, $color-bus);
+  color: var(--line-text-color, #fff);
+  font-size: 13px;
+  font-weight: 700;
+
+  &--small {
+    min-width: 20px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+}

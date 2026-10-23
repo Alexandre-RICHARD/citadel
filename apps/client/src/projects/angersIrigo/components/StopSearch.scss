@@ -1,0 +1,122 @@
+@use '../styles/variables' as *;
+
+.stop-search {
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    color: $color-muted;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 100%;
+    height: 38px;
+    padding: 0 34px;
+    border: 1px solid $color-border;
+    border-radius: $radius-small;
+    background: $color-surface-alt;
+    color: $color-text;
+    font: inherit;
+    // 16 px au moins : en dessous, Safari sur iPhone zoome sur le champ au focus
+    font-size: 16px;
+
+    &::placeholder {
+      color: $color-muted;
+    }
+
+    &:focus {
+      border-color: $color-focus;
+      outline: none;
+      background: #fff;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: $color-muted;
+    font-size: 18px;
+    cursor: pointer;
+    transform: translateY(-50%);
+
+    &:hover {
+      color: $color-text;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  // Par-dessus la suite du panneau ; vide (et donc invisible) quand la liste est fermée
+  &__results,
+  &__empty {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    z-index: 1;
+    margin: 0;
+    border-radius: $radius-small;
+    background: #fff;
+    box-shadow: $shadow;
+  }
+
+  &__results {
+    max-height: min(400px, 60dvh);
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    cursor: pointer;
+
+    &[aria-selected='true'] {
+      background: $color-surface-alt;
+    }
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &__lines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__empty {
+    padding: 10px;
+    font-size: 13px;
+    color: $color-muted;
+  }
+}

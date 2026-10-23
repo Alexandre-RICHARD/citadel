@@ -1,0 +1,74 @@
+@use 'variables' as *;
+
+// Conteneur du projet : remplace les styles de body et #root de l'appli d'origine, qui fuiraient sur les autres projets
+// (box-sizing et marges : déjà dans le reset du design system)
+.angers-irigo {
+  font-family: $font-family;
+  color: $color-text;
+  background: $color-map-background;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  height: 100vh;
+  // Sur mobile, 100vh inclut la barre d'adresse : dvh suit la hauteur réellement visible
+  height: 100dvh;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+// Panneaux par-dessus la carte : panneau d'infos à gauche, favoris à droite ; l'un sous l'autre sur mobile
+.map-overlays {
+  position: absolute;
+  top: $spacing;
+  right: $spacing;
+  left: $spacing;
+  // Au-dessus des calques Leaflet (400) et de ses contrôles (1000)
+  z-index: 1100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $spacing;
+  // Le conteneur couvre le haut de la carte : seuls les panneaux interceptent les clics
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+// Masque un élément à l'écran tout en le laissant accessible (lecteurs d'écran, clavier)
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background: $color-map-background;
+}
+
+// Classe posée par <Popup className="app-popup"> sur le conteneur Leaflet de chaque popup
+.app-popup {
+  .leaflet-popup-content-wrapper {
+    border-radius: $radius;
+    box-shadow: $shadow;
+  }
+
+  .leaflet-popup-content {
+    margin: 12px 14px;
+  }
+}

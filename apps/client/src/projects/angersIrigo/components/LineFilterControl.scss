@@ -1,0 +1,143 @@
+@use '../styles/variables' as *;
+
+.line-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: -4px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__toggle {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: $radius-small;
+    background: transparent;
+    color: $color-text;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-alt;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  &__title {
+    font-weight: 600;
+  }
+
+  &__summary {
+    flex: 1;
+    overflow: hidden;
+    color: $color-muted;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: $color-muted;
+    transition: transform 0.15s;
+  }
+
+  &__toggle[aria-expanded='true'] &__chevron {
+    transform: rotate(180deg);
+  }
+
+  &__reset {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: $radius-small;
+    background: $color-surface-alt;
+    color: $color-text;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-border;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  &__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    // Une quarantaine de lignes en journée : la liste défile plutôt que d'allonger le panneau
+    max-height: 196px;
+    padding: 2px;
+    overflow-y: auto;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px 3px 3px;
+    border: 0;
+    border-radius: $radius-small;
+    background: $color-surface-alt;
+    color: $color-text;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-border;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+
+    &[aria-pressed='true'] {
+      background: #fff;
+      box-shadow:
+        0 0 0 2px $color-focus,
+        0 1px 3px rgba(15, 23, 42, 0.15);
+    }
+  }
+
+  // Des lignes sont choisies : les autres s'estompent
+  &__options:has([aria-pressed='true']) &__option[aria-pressed='false'] {
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &__count {
+    min-width: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: $color-muted;
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: 13px;
+    color: $color-muted;
+  }
+}

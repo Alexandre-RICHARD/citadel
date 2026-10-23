@@ -1,0 +1,18 @@
+@use '../styles/variables' as *;
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: $spacing;
+  border-top: 1px solid $color-border;
+
+  &__title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
