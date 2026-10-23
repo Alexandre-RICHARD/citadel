@@ -29,7 +29,7 @@ import {
 	trimToNull,
 } from "./utils";
 
-// ---------- IGDB → résultats de recherche ----------
+// ---------- IGDB ou base → résultats de recherche ----------
 
 /**
  * Nom VF (section 3) : le titre des noms alternatifs commenté « French ». IGDB n'a pas de région France.
@@ -61,6 +61,34 @@ export function mapSearchResult(game: IgdbSearchGame): SearchResult {
 		coverImageId: game.cover?.image_id ?? null,
 		platformNames: (game.platforms ?? []).map(
 			(platform) => trimToNull(platform.abbreviation) ?? platform.name,
+		),
+	};
+}
+
+/** Jeu déjà en base → résultat de recherche : son id est celui de son original, son image celle choisie à l'ajout, ses plateformes celles de toutes ses versions */
+export function mapStoredSearchResult(
+	database: Database,
+	game: Game,
+): SearchResult {
+	const versionIds = database.versions
+		.filter(({ gameId }) => gameId === game.id)
+		.map(({ id }) => id);
+	const platformIds = new Set(
+		database.versionPlatforms
+			.filter(({ versionId }) => versionIds.includes(versionId))
+			.map(({ platformId }) => platformId),
+	);
+	return {
+		id: game.id,
+		name: game.name,
+		frenchName: game.frenchName,
+		releaseYear:
+			game.firstReleaseDate === null
+				? null
+				: Number(game.firstReleaseDate.slice(0, 4)),
+		coverImageId: game.imageId,
+		platformNames: [...platformIds].flatMap(
+			(platformId) => findById(database.platforms, platformId)?.name ?? [],
 		),
 	};
 }

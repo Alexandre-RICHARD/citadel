@@ -268,8 +268,9 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 1. **Recherche** : une barre de recherche connectée à IGDB, y compris dans le POC.
    - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image et ses plateformes (3 au plus, puis le nombre de plateformes restantes) ; un seul nom si VF et VO sont identiques.
    - Sont exclus des résultats : les bundles, les DLC et extensions (ils arrivent avec leur jeu), les packs, mises à jour, mods, épisodes, saisons et forks. Restent les jeux principaux, remakes, extensions standalone et versions.
-   - Une version (ex. *Skyrim Special Edition*) est un résultat à part entière : la choisir ouvre la modale de son jeu original, avec cette version pré-sélectionnée pour la variante.
-   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec cette version pré-sélectionnée.
+   - Un jeu n'apparaît qu'une fois : ses versions (éditions, remasters, portages, versions enrichies) s'effacent derrière son jeu original, qui prend la place de la mieux classée. Chercher une version (ex. *Skyrim Special Edition*) trouve donc son jeu original. Le choisir ouvre sa modale, qui propose toutes ses versions, l'originale pré-sélectionnée pour la variante. Les remakes et extensions standalone restent des jeux à part.
+   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec la version originale pré-sélectionnée.
+   - Choisir un résultat ferme la liste des résultats ; revenir dans le champ la rouvre avec la même saisie. Un clic à côté ou Échap la ferme aussi.
 2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
 3. **Choix dans la modale** :
    - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
@@ -277,6 +278,14 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
    - Le numéro du jeu dans sa série, si le jeu en a une.
 4. **Ajout au backlog** (option dans la modale) : j'indique la version jouée, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). Cela créera la variante.
 5. **Validation** : « Valider » enregistre le jeu, son original, toutes ses versions et tous ses DLC, ainsi que la variante si l'option est remplie.
+
+### Ajout depuis la base
+
+Un jeu déjà en base (retiré du backlog, ou ajouté sans variante) revient dans le backlog sans aucune requête IGDB.
+
+- La barre de recherche a deux sources : « 🌐 IGDB », par défaut, et « 📚 Ma base ». Changer de source relance la saisie en cours sur la nouvelle source.
+- Sur « Ma base », la recherche porte sur le nom VO, le nom VF et les titres des versions des jeux en base, sans tenir compte des accents ni des majuscules. Les résultats s'affichent tout de suite, triés par nom, au même format que ceux d'IGDB (image choisie à l'ajout, plateformes de toutes les versions) ; ceux qui sont déjà dans le backlog sont signalés.
+- Choisir un résultat ouvre l'ajout d'une variante, avec la version originale pré-sélectionnée.
 
 ### Modification d'un jeu
 
@@ -333,7 +342,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Un bouton qui ouvre une petite modale pour gérer la visibilité de chaque colonne.
 - Un bouton fixe (*sticky*) pour basculer en mode édition.
 - De petites bulles explicatives, par exemple sur Type de fin et Statut pour rappeler la signification des valeurs.
-- La barre du haut (titre, recherche, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
+- La barre du haut (titre, recherche, flèches annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
 
 ### Lecture seule et édition
 
@@ -363,6 +372,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 ## 10. Annuler / rétablir
 
 - `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
+- À la souris, les flèches ↩️ et ↪️ de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
 - Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé, un retrait, « Modifier le jeu » validé. La date de fin validée dans la petite fenêtre est une action distincte.
 - Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
 - Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.

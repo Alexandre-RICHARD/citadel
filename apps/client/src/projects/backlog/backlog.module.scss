@@ -35,6 +35,11 @@ $toolbar-height: 4.5rem;
   &:hover {
     background: #f1f5f9;
   }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 }
 
 .primaryButton,
@@ -89,13 +94,60 @@ $toolbar-height: 4.5rem;
 
 .search {
   position: relative;
+  display: flex;
   flex: 1;
-  max-width: 40rem;
+  gap: 0.5rem;
+  max-width: 48rem;
+}
+
+// Source de la recherche : deux boutons collés, celui actif en bleu
+.searchSources {
+  display: flex;
+  flex: none;
+}
+
+.searchSource,
+.searchSourceActive {
+  padding: 0.4rem 0.75rem;
+  font: inherit;
+  white-space: nowrap;
+  border: 1px solid #bbb;
+  cursor: pointer;
+
+  &:first-child {
+    border-radius: 6px 0 0 6px;
+  }
+
+  &:last-child {
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+  }
+}
+
+.searchSource {
+  color: #1f1f1f;
+  background: #fff;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.searchSourceActive {
+  color: #fff;
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.historyButtons {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .searchInput {
   box-sizing: border-box;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   font: inherit;
   color: #1f1f1f;

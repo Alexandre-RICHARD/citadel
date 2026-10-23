@@ -46,6 +46,14 @@ export function trimToNull(text: string | undefined): string | null {
 	return trimmed === undefined || trimmed === "" ? null : trimmed;
 }
 
+/** Sans accents ni majuscules : « pokemon » trouve « Pokémon » */
+function normalizeText(text: string): string {
+	return text
+		.normalize("NFD")
+		.replace(/\p{Diacritic}/gu, "")
+		.toLowerCase();
+}
+
 /** Timestamp Unix d'IGDB (en secondes) → date ISO */
 export function toIsoDate(seconds: number | undefined): IsoDate | null {
 	return seconds === undefined
@@ -157,6 +165,22 @@ function getGameTypeName(
 	);
 }
 
+/** Types rattachés à leur original par `parent_game` : un remake ou une extension standalone reste un jeu à part */
+const parentGameVersionTypes: string[] = ["Remaster", "Port", "Expanded Game"];
+
+/** Parent qui mène à l'original : `version_parent` d'une édition, `parent_game` d'un remaster, portage ou version enrichie */
+function getOriginalParentId(
+	reference: IgdbReference,
+	node: Pick<IgdbGameNode, "game_type" | "version_parent" | "parent_game">,
+): number | undefined {
+	return (
+		node.version_parent ??
+		(parentGameVersionTypes.includes(getGameTypeName(reference, node.game_type))
+			? node.parent_game
+			: undefined)
+	);
+}
+
 // ---------- IGDB : recherche ----------
 
 /** Types de fiche gardés par la recherche (section 8) */
@@ -169,7 +193,17 @@ const searchableGameTypes: string[] = [
 	"Port",
 ];
 
-/** Recherche IGDB. `search` ne se combine pas avec `sort` : les résultats restent dans l'ordre de pertinence d'IGDB */
+const searchGameFields =
+	"fields name, game_type, version_parent, parent_game, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment, platforms.name, platforms.abbreviation;";
+
+/** Fiches lues à IGDB ; les versions trouvées seront regroupées, d'où plus que les 20 résultats affichés */
+const searchFetchLimit = 50;
+const searchResultLimit = 20;
+
+/**
+ * Recherche IGDB. `search` ne se combine pas avec `sort` : les résultats restent dans l'ordre de pertinence d'IGDB.
+ * Une version trouvée s'efface derrière son jeu original, qui prend la place de la mieux classée (section 8).
+ */
 export async function searchIgdbGames(
 	query: string,
 	signal: AbortSignal,
@@ -179,16 +213,90 @@ export async function searchIgdbGames(
 		.filter(([, type]) => searchableGameTypes.includes(type))
 		.map(([id]) => id);
 	const escapedQuery = query.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
-	return requestIgdb<IgdbSearchGame[]>(
+	const matches = await requestIgdb<IgdbSearchGame[]>(
 		"games",
 		[
 			`search "${escapedQuery}";`,
-			"fields name, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment, platforms.name, platforms.abbreviation;",
+			searchGameFields,
 			`where game_type = (${gameTypeIds.join(",")});`,
-			"limit 20;",
+			`limit ${searchFetchLimit};`,
 		].join(" "),
 		signal,
 	);
+
+	// Lire les parents absents des résultats, niveau par niveau (un portage peut descendre d'un autre portage)
+	const gamesById = new Map(matches.map((game) => [game.id, game]));
+	const requestedIds = new Set<number>();
+	function findMissingParentIds(games: IgdbSearchGame[]): number[] {
+		return [
+			...new Set(
+				games.flatMap((game) => getOriginalParentId(reference, game) ?? []),
+			),
+		].filter((id) => !gamesById.has(id) && !requestedIds.has(id));
+	}
+	let missingIds = findMissingParentIds(matches);
+	while (missingIds.length > 0) {
+		for (const id of missingIds) {
+			requestedIds.add(id);
+		}
+		// eslint-disable-next-line no-await-in-loop -- chaque niveau de parents se lit sur le précédent
+		const parents = await requestIgdb<IgdbSearchGame[]>(
+			"games",
+			`${searchGameFields} where id = (${missingIds.join(",")}); limit 500;`,
+			signal,
+		);
+		for (const parent of parents) {
+			gamesById.set(parent.id, parent);
+		}
+		missingIds = findMissingParentIds(parents);
+	}
+
+	function findOriginal(game: IgdbSearchGame): IgdbSearchGame {
+		let original = game;
+		const visitedIds = new Set([game.id]);
+		let parent = gamesById.get(getOriginalParentId(reference, game) ?? NaN);
+		while (parent !== undefined && !visitedIds.has(parent.id)) {
+			visitedIds.add(parent.id);
+			original = parent;
+			parent = gamesById.get(getOriginalParentId(reference, parent) ?? NaN);
+		}
+		return original;
+	}
+
+	// Un `Map` garde la place de la première clé : l'original prend celle de sa version la mieux classée
+	const originals = new Map(
+		matches.map((game) => {
+			const original = findOriginal(game);
+			return [original.id, original];
+		}),
+	);
+	return [...originals.values()].slice(0, searchResultLimit);
+}
+
+// ---------- Base : recherche sans requête IGDB ----------
+
+/** Jeux déjà en base dont le nom VO, le nom VF ou un titre de version contient la saisie, triés par nom affiché */
+export function searchDatabaseGames(database: Database, query: string): Game[] {
+	const normalizedQuery = normalizeText(query.trim());
+	return database.games
+		.filter((game) =>
+			[
+				game.name,
+				game.frenchName,
+				...database.versions
+					.filter(({ gameId }) => gameId === game.id)
+					.map(({ title }) => title),
+			].some(
+				(text) =>
+					text !== null && normalizeText(text).includes(normalizedQuery),
+			),
+		)
+		.toSorted((first, second) =>
+			(first.frenchName ?? first.name).localeCompare(
+				second.frenchName ?? second.name,
+				"fr",
+			),
+		);
 }
 
 // ---------- IGDB : un jeu complet (modale d'ajout) ----------
@@ -200,9 +308,6 @@ const versionGameTypes: string[] = [
 	"Port",
 	"Expanded Game",
 ];
-
-/** Types rattachés à leur original par `parent_game` : un remake ou une extension standalone reste un jeu à part */
-const parentGameVersionTypes: string[] = ["Remaster", "Port", "Expanded Game"];
 
 /** Seuls les DLC et les extensions comptent, ni packs ni mises à jour (section 5) */
 const dlcGameTypes: string[] = ["DLC", "Expansion"];
@@ -229,25 +334,13 @@ export async function fetchIgdbGameData(
 		);
 	}
 
-	/** Parent qui mène à l'original : `version_parent` d'une édition, `parent_game` d'un remaster, portage ou version enrichie */
-	function getOriginalParentId(node: IgdbGameNode): number | undefined {
-		return (
-			node.version_parent ??
-			(parentGameVersionTypes.includes(
-				getGameTypeName(reference, node.game_type),
-			)
-				? node.parent_game
-				: undefined)
-		);
-	}
-
 	// 1. Remonter de la fiche choisie jusqu'à l'original
 	let original = (await fetchNodes(`id = ${igdbId}`)).at(0);
 	if (original === undefined) {
 		throw new Error(`Fiche IGDB ${igdbId} introuvable.`);
 	}
 	const visitedIds = new Set([original.id]);
-	let parentId = getOriginalParentId(original);
+	let parentId = getOriginalParentId(reference, original);
 	while (parentId !== undefined && !visitedIds.has(parentId)) {
 		// eslint-disable-next-line no-await-in-loop -- chaque parent se lit sur la fiche précédente
 		const parent = (await fetchNodes(`id = ${parentId}`)).at(0);
@@ -256,7 +349,7 @@ export async function fetchIgdbGameData(
 		}
 		visitedIds.add(parent.id);
 		original = parent;
-		parentId = getOriginalParentId(parent);
+		parentId = getOriginalParentId(reference, parent);
 	}
 
 	// 2. Descendre l'arbre : éditions (`version_parent`), remasters, portages et versions enrichies
@@ -920,14 +1013,6 @@ export function isDurationColumn(column: ColumnKey): boolean {
 		column === "estimatedPlayTime" ||
 		column === "totalPlayTime"
 	);
-}
-
-/** Sans accents ni majuscules : « pokemon » trouve « Pokémon » */
-function normalizeText(text: string): string {
-	return text
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
-		.toLowerCase();
 }
 
 /** Ce qu'affiche une ligne dans une colonne, pour le tri et les filtres ; `null` quand la case est vide */
