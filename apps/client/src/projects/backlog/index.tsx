@@ -3,6 +3,7 @@ import {
 	type ReactNode,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -87,6 +88,7 @@ import {
 	getStoredLine,
 	getTodayIsoDate,
 	getVersionLabel,
+	hasGameEditChanges,
 	isDurationColumn,
 	isFinishedStatus,
 	isSortableColumn,
@@ -760,6 +762,7 @@ function GamePreview({
 						N° dans la série
 						<input
 							type="number"
+							min={0}
 							step="any"
 							defaultValue={choices.seriesNumber ?? ""}
 							onChange={(event) => {
@@ -771,6 +774,16 @@ function GamePreview({
 												? null
 												: Number(event.target.value),
 									});
+								}
+							}}
+							onBlur={(event) => {
+								// Une valeur refusée (négative) remet le champ au dernier numéro accepté
+								const input = event.currentTarget;
+								if (!input.validity.valid) {
+									input.value =
+										choices.seriesNumber === null
+											? ""
+											: String(choices.seriesNumber);
 								}
 							}}
 						/>
@@ -1048,8 +1061,12 @@ function EditGameDialog({
 		<Dialog
 			title="Modifier le jeu"
 			actions={
+				// Sans rien de changé, « Valider » reste inactif ; un DLC coché « comme jeu » compte comme un changement
 				<DialogActions
-					canValidate={game !== null}
+					canValidate={
+						hasGameEditChanges(database, modal) ||
+						modal.selection.dlcGameIds.length > 0
+					}
 					onCancel={onCancel}
 					onValidate={onValidate}
 				/>
@@ -1787,6 +1804,11 @@ function ActionsCell({
 	);
 }
 
+/** Temps et compteurs : un zéro, valeur par défaut, s'affiche estompé pour laisser ressortir les valeurs saisies (section 7) */
+function renderAmount(amount: number, text: string): ReactNode {
+	return amount === 0 ? <span className={styles.zeroValue}>{text}</span> : text;
+}
+
 /**
  * Colonnes des données de l'utilisateur (section 7). Ligne du jeu à plusieurs variantes : agrégats en lecture seule.
  * Sous-ligne ou ligne à variante unique : les valeurs de la variante, modifiables en mode édition.
@@ -1901,9 +1923,9 @@ function VariantDataCell({
 			);
 		case "finishCount":
 			if (editableVariant === null) {
-				return formatFinishCount(
-					values.sureFinishCount,
-					values.probableFinishCount,
+				return renderAmount(
+					values.sureFinishCount + values.probableFinishCount,
+					formatFinishCount(values.sureFinishCount, values.probableFinishCount),
 				);
 			}
 			return (
@@ -1966,7 +1988,10 @@ function VariantDataCell({
 			);
 		case "trackedPlayTime":
 			if (editableVariant === null) {
-				return formatDuration(values.trackedPlayTimeMinutes);
+				return renderAmount(
+					values.trackedPlayTimeMinutes,
+					formatDuration(values.trackedPlayTimeMinutes),
+				);
 			}
 			return (
 				<DurationField
@@ -1982,7 +2007,10 @@ function VariantDataCell({
 			);
 		case "estimatedPlayTime":
 			if (editableVariant === null) {
-				return formatDuration(values.estimatedPlayTimeMinutes);
+				return renderAmount(
+					values.estimatedPlayTimeMinutes,
+					formatDuration(values.estimatedPlayTimeMinutes),
+				);
 			}
 			return (
 				<DurationField
@@ -1997,7 +2025,10 @@ function VariantDataCell({
 				/>
 			);
 		case "totalPlayTime":
-			return formatDuration(values.totalPlayTimeMinutes);
+			return renderAmount(
+				values.totalPlayTimeMinutes,
+				formatDuration(values.totalPlayTimeMinutes),
+			);
 		case "rating":
 			if (editableVariant === null) {
 				return values.rating === null ? null : `${values.rating}/20`;
@@ -2442,6 +2473,7 @@ function BacklogTable({
 	handlers,
 	onToggleSort,
 	onFilterChange,
+	onClearFilters,
 	onLoadNextPage,
 }: {
 	rows: GameRow[];
@@ -2456,6 +2488,7 @@ function BacklogTable({
 	handlers: TableHandlers;
 	onToggleSort: (column: ColumnKey) => void;
 	onFilterChange: (column: ColumnKey, filter: ColumnFilter | null) => void;
+	onClearFilters: () => void;
 	onLoadNextPage: () => void;
 }) {
 	const visibleColumns = columns
@@ -2464,6 +2497,13 @@ function BacklogTable({
 	const shownRows = rows.slice(0, loadedPageCount * backlogPageSize);
 	const hasMoreRows = shownRows.length < rows.length;
 	const loadMoreRef = useRef<HTMLDivElement>(null);
+	// Les bornes des nombres et des dates sont des champs libres : effacer les filtres recrée la ligne pour les vider
+	const [filterRowKey, setFilterRowKey] = useState(0);
+
+	function clearFilters() {
+		setFilterRowKey((key) => key + 1);
+		onClearFilters();
+	}
 
 	// Défilement infini : la page suivante se charge à l'approche du bas de page, avant de l'atteindre
 	useEffect(() => {
@@ -2504,12 +2544,27 @@ function BacklogTable({
 							/>
 						))}
 					</tr>
-					<tr className={styles.filterRow}>
+					<tr
+						key={filterRowKey}
+						className={styles.filterRow}
+					>
+						{/* Un filtre actif fait place au bouton qui les retire tous (section 9) */}
 						<th
 							className={styles.expandCell}
 							aria-label="Filtres"
 						>
-							🔎
+							{filters.length === 0 ? (
+								"🔎"
+							) : (
+								<button
+									type="button"
+									className={styles.iconButton}
+									title="Retirer tous les filtres"
+									onClick={clearFilters}
+								>
+									🧹 Effacer
+								</button>
+							)}
 						</th>
 						{visibleColumns.map((column) => (
 							<th key={column}>
@@ -2926,24 +2981,29 @@ export function Backlog() {
 		}
 	}
 
-	/** Les trois choix, puis les versions et DLC cochés en plus, en une seule action ; les DLC cochés « comme jeu » suivent */
+	/**
+	 * Les trois choix, puis les versions et DLC cochés en plus, en une seule action ; les DLC cochés « comme jeu » suivent.
+	 * Avec seulement des DLC « comme jeu » cochés, la base ne change pas : pas d'action vide.
+	 */
 	function validateEditGame(
 		editGameModal: Extract<Modal, { kind: "editGame" }>,
 	) {
 		const { gameId, choices, igdbImport, selection } = editGameModal;
-		changeDatabase((current) =>
-			updateGameChoices(
-				igdbImport === null
-					? current
-					: addGameImport(
-							current,
-							keepSelection(igdbImport, selection),
-							choices,
-						),
-				gameId,
-				choices,
-			),
-		);
+		if (hasGameEditChanges(database, editGameModal)) {
+			changeDatabase((current) =>
+				updateGameChoices(
+					igdbImport === null
+						? current
+						: addGameImport(
+								current,
+								keepSelection(igdbImport, selection),
+								choices,
+							),
+					gameId,
+					choices,
+				),
+			);
+		}
 		openNextQueuedModal(
 			igdbImport === null ? [] : getDlcGameQueue(igdbImport.dlcs, selection),
 		);
@@ -3086,6 +3146,12 @@ export function Backlog() {
 			`${window.location.pathname}?${buildViewSearch(sort, filters)}${window.location.hash}`,
 		);
 	}, [sort, filters]);
+
+	// Lignes recalculées seulement quand la base, les filtres ou le tri changent : pas à chaque frappe, popover ou modale
+	const rows = useMemo(
+		() => sortGameRows(filterGameRows(mapGameRows(database), filters), sort),
+		[database, filters, sort],
+	);
 
 	const loadNextPage = useCallback(() => {
 		setLoadedPageCount((count) => count + 1);
@@ -3374,10 +3440,7 @@ export function Backlog() {
 			</header>
 			<main>
 				<BacklogTable
-					rows={sortGameRows(
-						filterGameRows(mapGameRows(database), filters),
-						sort,
-					)}
+					rows={rows}
 					columns={columns}
 					sort={sort}
 					filters={filters}
@@ -3391,6 +3454,7 @@ export function Backlog() {
 					onFilterChange={(column, filter) =>
 						setFilters(setColumnFilter(filters, column, filter))
 					}
+					onClearFilters={() => setFilters([])}
 					onLoadNextPage={loadNextPage}
 				/>
 			</main>

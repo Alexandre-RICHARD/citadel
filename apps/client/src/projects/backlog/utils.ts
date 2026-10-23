@@ -995,6 +995,25 @@ export function removeVariants(
 	};
 }
 
+/** « Modifier le jeu » change-t-il la base (section 8) : un des trois choix, ou une version ou un DLC absent de la base coché */
+export function hasGameEditChanges(
+	database: Database,
+	modal: Extract<Modal, { kind: "editGame" }>,
+): boolean {
+	const game = findById(database.games, modal.gameId);
+	const { choices, selection } = modal;
+	return (
+		game !== null &&
+		(choices.imageId !== game.imageId ||
+			choices.endingType !== game.endingType ||
+			choices.seriesNumber !== game.seriesNumber ||
+			selection.versionIds.some(
+				(id) => findById(database.versions, id) === null,
+			) ||
+			selection.dlcIds.some((id) => findById(database.dlcs, id) === null))
+	);
+}
+
 /** « Modifier le jeu » (section 8) : les trois choix, puis la conversion des statuts que le nouveau type de fin rend incompatibles */
 export function updateGameChoices(
 	database: Database,

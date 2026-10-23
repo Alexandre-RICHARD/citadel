@@ -13,6 +13,7 @@ import type {
 	IgdbSearchHit,
 	IgdbVersionGame,
 	Platform,
+	RowIndexes,
 	SearchResult,
 	Variant,
 	VariantRow,
@@ -247,15 +248,75 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 	};
 }
 
-// ---------- Base → lignes du tableau (sections 5 et 7), recalculées à chaque affichage ----------
+// ---------- Base → lignes du tableau (sections 5 et 7), recalculées seulement quand la base change ----------
+
+function indexById<T extends { id: number }>(items: T[]): Map<number, T> {
+	return new Map(items.map((item) => [item.id, item]));
+}
+
+/** Range chaque élément sous sa clé, dans l'ordre de la base */
+function groupBy<T, K>(items: T[], getKey: (item: T) => K): Map<K, T[]> {
+	const groups = new Map<K, T[]>();
+	for (const item of items) {
+		const key = getKey(item);
+		const group = groups.get(key);
+		if (group === undefined) {
+			groups.set(key, [item]);
+		} else {
+			group.push(item);
+		}
+	}
+	return groups;
+}
+
+/** Un seul parcours de la base : le calcul des lignes reste proportionnel à sa taille */
+function buildRowIndexes(database: Database): RowIndexes {
+	const versions = indexById(database.versions);
+	return {
+		versions,
+		platforms: indexById(database.platforms),
+		series: indexById(database.series),
+		franchises: indexById(database.franchises),
+		companies: indexById(database.companies),
+		releaseDates: new Map(
+			database.versionPlatforms.map(
+				({ versionId, platformId, releaseDate }) => [
+					`${versionId}-${platformId}`,
+					releaseDate,
+				],
+			),
+		),
+		variantsByGameId: groupBy(
+			database.variants,
+			({ versionId }) => versions.get(versionId)?.gameId ?? null,
+		),
+		dlcIdsByGameId: new Map(
+			[...groupBy(database.dlcs, ({ gameId }) => gameId)].map(
+				([gameId, dlcs]) => [gameId, new Set(dlcs.map(({ id }) => id))],
+			),
+		),
+		doneDlcIdsByVariantId: new Map(
+			[...groupBy(database.variantDlcs, ({ variantId }) => variantId)].map(
+				([variantId, variantDlcs]) => [
+					variantId,
+					variantDlcs.map(({ dlcId }) => dlcId),
+				],
+			),
+		),
+	};
+}
+
+function getIndexed<T>(index: Map<number, T>, id: number | null): T | null {
+	return id === null ? null : (index.get(id) ?? null);
+}
 
 function mapVariantRow(
-	database: Database,
+	indexes: RowIndexes,
 	variant: Variant,
-	dlcIds: number[],
+	dlcIds: Set<number>,
 ): VariantRow {
-	const version = findById(database.versions, variant.versionId);
-	const platform = findById(database.platforms, variant.platformId) ?? {
+	const version = getIndexed(indexes.versions, variant.versionId);
+	const platform = getIndexed(indexes.platforms, variant.platformId) ?? {
 		id: variant.platformId,
 		name: `#${variant.platformId}`,
 		technicalName: "",
@@ -269,11 +330,8 @@ function mapVariantRow(
 		imageId: version?.coverImageId ?? null,
 		versionTitle: version?.title ?? null,
 		releaseDate:
-			database.versionPlatforms.find(
-				(versionPlatform) =>
-					versionPlatform.versionId === variant.versionId &&
-					versionPlatform.platformId === releasePlatformId,
-			)?.releaseDate ?? null,
+			indexes.releaseDates.get(`${variant.versionId}-${releasePlatformId}`) ??
+			null,
 		platform,
 		status: variant.status,
 		owned: variant.owned,
@@ -281,12 +339,10 @@ function mapVariantRow(
 		finishDate: variant.finishDate,
 		sureFinishCount: variant.sureFinishCount,
 		probableFinishCount: variant.probableFinishCount,
-		doneDlcCount: database.variantDlcs.filter(
-			(variantDlc) =>
-				variantDlc.variantId === variant.id &&
-				dlcIds.includes(variantDlc.dlcId),
+		doneDlcCount: (indexes.doneDlcIdsByVariantId.get(variant.id) ?? []).filter(
+			(dlcId) => dlcIds.has(dlcId),
 		).length,
-		dlcCount: dlcIds.length,
+		dlcCount: dlcIds.size,
 		trackedPlayTimeMinutes: variant.trackedPlayTimeMinutes,
 		estimatedPlayTimeMinutes: variant.estimatedPlayTimeMinutes,
 		totalPlayTimeMinutes:
@@ -299,23 +355,20 @@ function mapVariantRow(
 
 /** Ligne du jeu : ses données et les agrégats de ses variantes (section 7), vides quand il est impossible de choisir */
 function mapGameRow(
-	database: Database,
+	indexes: RowIndexes,
 	game: Game,
 	variantRows: VariantRow[],
-	dlcIds: number[],
+	dlcIds: Set<number>,
 ): GameRow {
 	const singleVariantRow =
 		variantRows.length === 1 ? (variantRows.at(0) ?? null) : null;
-	const variantIds = variantRows.map(({ variantId }) => variantId);
 	// Un DLC compte comme fait s'il l'est sur au moins une variante
 	const doneDlcIds = new Set(
-		database.variantDlcs
-			.filter(
-				(variantDlc) =>
-					variantIds.includes(variantDlc.variantId) &&
-					dlcIds.includes(variantDlc.dlcId),
-			)
-			.map(({ dlcId }) => dlcId),
+		variantRows.flatMap(({ variantId }) =>
+			(indexes.doneDlcIdsByVariantId.get(variantId) ?? []).filter((dlcId) =>
+				dlcIds.has(dlcId),
+			),
+		),
 	);
 	const comments = variantRows.flatMap(({ comment }) =>
 		comment === null ? [] : [comment],
@@ -328,11 +381,11 @@ function mapGameRow(
 		frenchName: game.frenchName,
 		// Ligne à variante unique : le titre de sa version sous le nom, sauf pour l'originale
 		versionTitle: singleVariantRow?.versionTitle ?? null,
-		series: findById(database.series, game.seriesId),
+		series: getIndexed(indexes.series, game.seriesId),
 		seriesNumber: game.seriesNumber,
-		franchise: findById(database.franchises, game.franchiseId),
-		developer: findById(database.companies, game.developerId),
-		publisher: findById(database.companies, game.publisherId),
+		franchise: getIndexed(indexes.franchises, game.franchiseId),
+		developer: getIndexed(indexes.companies, game.developerId),
+		publisher: getIndexed(indexes.companies, game.publisherId),
 		releaseDate: game.firstReleaseDate,
 		isCancelled: game.isCancelled,
 		endingType: game.endingType,
@@ -350,7 +403,7 @@ function mapGameRow(
 			variantRows.map(({ probableFinishCount }) => probableFinishCount),
 		),
 		doneDlcCount: doneDlcIds.size,
-		dlcCount: dlcIds.length,
+		dlcCount: dlcIds.size,
 		trackedPlayTimeMinutes: sum(
 			variantRows.map(({ trackedPlayTimeMinutes }) => trackedPlayTimeMinutes),
 		),
@@ -365,26 +418,22 @@ function mapGameRow(
 		rating: getHighestValue(variantRows.map(({ rating }) => rating)),
 		comment: comments.length === 1 ? (comments.at(0) ?? null) : null,
 		// La fiche originale du jeu porte le même id que lui
-		igdbUrl: findById(database.versions, game.id)?.url ?? "",
+		igdbUrl: getIndexed(indexes.versions, game.id)?.url ?? "",
 		variantRows,
 	};
 }
 
 /** Base → lignes du tableau : une ligne par jeu qui a au moins une variante, dans l'ordre d'ajout (section 5) */
 export function mapGameRows(database: Database): GameRow[] {
+	const indexes = buildRowIndexes(database);
 	return database.games.flatMap((game) => {
-		const versionIds = database.versions
-			.filter(({ gameId }) => gameId === game.id)
-			.map(({ id }) => id);
-		const dlcIds = database.dlcs
-			.filter(({ gameId }) => gameId === game.id)
-			.map(({ id }) => id);
-		const variantRows = database.variants
-			.filter(({ versionId }) => versionIds.includes(versionId))
-			.map((variant) => mapVariantRow(database, variant, dlcIds));
+		const dlcIds = indexes.dlcIdsByGameId.get(game.id) ?? new Set<number>();
+		const variantRows = (indexes.variantsByGameId.get(game.id) ?? []).map(
+			(variant) => mapVariantRow(indexes, variant, dlcIds),
+		);
 		return variantRows.length === 0
 			? []
-			: [mapGameRow(database, game, variantRows, dlcIds)];
+			: [mapGameRow(indexes, game, variantRows, dlcIds)];
 	});
 }
 

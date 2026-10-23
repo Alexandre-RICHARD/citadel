@@ -262,7 +262,8 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | Actions | Jeu, variante |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
 
 - **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement. Sur une sous-ligne d'émulateur, c'est la date de sortie de la version sur la console d'origine (ex. PCSX2 : la date de sortie sur PS2).
-- **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série décimal possible (ex. 2.5) ; compteurs « fois fini » entiers, à partir de 0.
+- **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série positif ou nul, décimal possible (ex. 0 pour *Resident Evil 0*, 2.5) ; compteurs « fois fini » entiers, à partir de 0.
+- **Zéros** : un temps ou un compteur « fois fini » à zéro, sa valeur par défaut, s'affiche estompé (« 0 h 00 », « 0 ») pour laisser ressortir les valeurs saisies. Une note de 0, choisie, s'affiche normalement.
 
 ## 8. Ajout d'un jeu et gestion du backlog
 
@@ -308,6 +309,7 @@ Un jeu déjà en base (retiré du backlog, ou ajouté sans variante) revient dan
 - Un jeu déjà en base se modifie avec exactement les mêmes choix qu'à l'ajout : l'image de la miniature, le type de fin, le numéro dans la série, les versions et les DLC.
 - La modification rouvre la même modale : données IGDB en lecture seule, ces choix modifiables, puis « Valider », en une seule action. Le jeu est relu sur IGDB à l'ouverture : la cover et les artworks, et les versions et DLC absents de la base. Les autres données viennent de la base.
 - Les versions et DLC déjà en base sont cochés et grisés ; les autres sont décochés, à cocher pour les ajouter. On ne peut pas en retirer. Les DLC y ont aussi leur case « 🧩 comme jeu », avec le même enchaînement qu'à l'ajout.
+- Un formulaire d'édition ne se valide jamais sans modification : « Valider » reste inactif tant qu'aucun choix n'a changé, qu'aucune version ni aucun DLC n'est coché en plus et qu'aucun DLC n'est coché « comme jeu ». Avec seulement des DLC « comme jeu », la base ne change pas : pas d'action, l'enchaînement s'ouvre directement.
 - On y accède par l'entrée « Modifier le jeu » du menu Actions (section 9).
 - Changer le type de fin peut rendre incompatible le statut d'une variante : Fini devient Estimé fini et inversement, Vu sans jouer devient Pas commencé.
 
@@ -386,6 +388,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, franchise, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
 - Un jeu reste affiché si sa ligne ou au moins une de ses variantes correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une variante PS4) ; déplié, il montre toutes ses variantes.
 - Un clic sur un nom de franchise filtre le tableau sur les jeux de cette franchise.
+- Dès qu'un filtre est actif, « 🧹 Effacer », au début de la ligne des filtres, les retire tous d'un coup.
 - Paramètres de tri et de filtre persistés dans l'URL.
 - Une colonne masquée est retirée du tri dans l'URL et de la recherche.
 - Une URL qui trie sur une colonne masquée voit ce tri ignoré.
@@ -407,6 +410,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 - Synchronisation des données globales avec IGDB (logo d'un studio modifié, date de sortie fixée pour un jeu à venir).
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
+- Affichage du tableau : dans le POC, les lignes ne se recalculent que quand la base, le tri ou les filtres changent, mais toutes les lignes chargées se redessinent à chaque rendu (frappe dans la recherche, popover, modale). Ensuite, si besoin : ne redessiner que les lignes concernées (lignes mémorisées, actions stables, popover transmis à sa seule ligne), puis réutiliser les lignes inchangées pour qu'une modification ne redessine que la sienne. Tri et filtres côté serveur, page par page, réduiront déjà ce travail.
 - DLC choisis par utilisateur : dans le POC, les DLC choisis vont en base, rattachés au jeu, comme les versions. À plusieurs utilisateurs, un DLC ajouté par l'un compterait dans le « total » de l'autre ; il faudra une sélection des DLC suivis par utilisateur.
 - Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des variantes et un DLC des cases « fait ». Le POC ne permet que d'en ajouter.
 - Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).

@@ -375,6 +375,11 @@ $toolbar-height: 4.5rem;
   cursor: help;
 }
 
+// Temps et compteurs à zéro : estompés, ils laissent ressortir les valeurs saisies
+.zeroValue {
+  opacity: 0.2;
+}
+
 // ---------- Tri, filtres et colonnes ----------
 
 .sortButton {
