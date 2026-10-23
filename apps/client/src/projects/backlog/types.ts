@@ -297,13 +297,15 @@ export type Database = {
 /** Où cherche la barre de recherche : sur IGDB, ou parmi les jeux déjà en base, sans requête IGDB (section 8) */
 export type SearchSource = "igdb" | "local";
 
-/** Résultat de recherche : une fiche IGDB, jeu ou version, ou un jeu déjà en base */
+/** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu déjà en base */
 export type SearchResult = {
 	/** id IGDB de la fiche ; « déjà en base » si une version porte cet id */
 	id: number;
 	name: string;
 	/** `null` si introuvable ou identique au nom VO : un seul nom s'affiche */
 	frenchName: string | null;
+	/** Fiche qui a fait trouver le jeu (édition, bundle, DLC…), affichée « via … » ; `null` s'il a été trouvé par son propre nom */
+	matchedName: string | null;
 	releaseYear: number | null;
 	coverImageId: IgdbImageId | null;
 	/** Abréviations IGDB (sinon noms) ; la liste n'en affiche que 3 */
@@ -562,18 +564,26 @@ export type IgdbAlternativeName = {
 	comment?: string;
 };
 
-/** Fiche renvoyée par la recherche, avec de quoi remonter à son original */
+/** Fiche renvoyée par la recherche, avec de quoi remonter à son jeu de base */
 export type IgdbSearchGame = {
 	id: number;
 	name: string;
 	game_type?: number;
 	version_parent?: number;
 	parent_game?: number;
+	/** Bundles qui contiennent cette fiche */
+	bundles?: number[];
 	/** Timestamp Unix, en secondes */
 	first_release_date?: number;
 	cover?: { image_id: IgdbImageId };
 	alternative_names?: IgdbAlternativeName[];
 	platforms?: { name: string; abbreviation?: string }[];
+};
+
+/** Jeu de base trouvé par la recherche, et le nom de la fiche qui l'a fait trouver quand ce n'est pas la sienne */
+export type IgdbSearchHit = {
+	game: IgdbSearchGame;
+	matchedName: string | null;
 };
 
 /** Nœud de l'arbre des versions : de quoi remonter à l'original et descendre vers ses versions */

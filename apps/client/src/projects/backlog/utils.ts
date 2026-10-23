@@ -23,6 +23,7 @@ import {
 	type IgdbOriginalGame,
 	type IgdbReference,
 	type IgdbSearchGame,
+	type IgdbSearchHit,
 	type IgdbVersionGame,
 	type IsoDate,
 	type Modal,
@@ -183,8 +184,11 @@ function getOriginalParentId(
 
 // ---------- IGDB : recherche ----------
 
-/** Types de fiche gardés par la recherche (section 8) */
-const searchableGameTypes: string[] = [
+/** Types jamais proposés par la recherche (section 8) */
+const excludedSearchGameTypes: string[] = ["Mod", "Fork"];
+
+/** Types qu'un résultat peut avoir : un jeu de base, ou une version dont l'original est introuvable */
+const resultGameTypes: string[] = [
 	"Main Game",
 	"Standalone Expansion",
 	"Remake",
@@ -193,24 +197,63 @@ const searchableGameTypes: string[] = [
 	"Port",
 ];
 
-const searchGameFields =
-	"fields name, game_type, version_parent, parent_game, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment, platforms.name, platforms.abbreviation;";
+/** Contenus additionnels rattachés à leur jeu par `parent_game` : la recherche mène à ce jeu */
+const addOnGameTypes: string[] = [
+	"DLC",
+	"Expansion",
+	"Pack / Addon",
+	"Update",
+	"Episode",
+	"Season",
+];
 
-/** Fiches lues à IGDB ; les versions trouvées seront regroupées, d'où plus que les 20 résultats affichés */
+const searchGameFields =
+	"fields name, game_type, version_parent, parent_game, bundles, first_release_date, cover.image_id, alternative_names.name, alternative_names.comment, platforms.name, platforms.abbreviation;";
+
+/** Fiches lues à IGDB ; elles seront regroupées par jeu, d'où plus que les 20 résultats affichés */
 const searchFetchLimit = 50;
 const searchResultLimit = 20;
 
+/** Fiche qui rapproche une fiche trouvée de son jeu : l'original d'une version, le jeu d'un contenu additionnel */
+function getSearchParentId(
+	reference: IgdbReference,
+	game: IgdbSearchGame,
+): number | undefined {
+	return (
+		getOriginalParentId(reference, game) ??
+		(addOnGameTypes.includes(getGameTypeName(reference, game.game_type))
+			? game.parent_game
+			: undefined)
+	);
+}
+
+/** Bundle qui n'est pas une édition rattachée par `version_parent` : la recherche mène aux jeux qu'il contient */
+function isUnattachedBundle(
+	reference: IgdbReference,
+	game: IgdbSearchGame,
+): boolean {
+	return (
+		getGameTypeName(reference, game.game_type) === "Bundle" &&
+		game.version_parent === undefined
+	);
+}
+
+/** Date de sortie pour ranger les jeux d'un bundle, les dates inconnues en dernier */
+function getReleaseTime(game: IgdbSearchGame): number {
+	return game.first_release_date ?? Number.MAX_SAFE_INTEGER;
+}
+
 /**
  * Recherche IGDB. `search` ne se combine pas avec `sort` : les résultats restent dans l'ordre de pertinence d'IGDB.
- * Une version trouvée s'efface derrière son jeu original, qui prend la place de la mieux classée (section 8).
+ * Chaque fiche trouvée mène à son jeu de base, qui prend la place de la mieux classée (section 8).
  */
 export async function searchIgdbGames(
 	query: string,
 	signal: AbortSignal,
-): Promise<IgdbSearchGame[]> {
+): Promise<IgdbSearchHit[]> {
 	const reference = await getIgdbReference();
 	const gameTypeIds = [...reference.gameTypes]
-		.filter(([, type]) => searchableGameTypes.includes(type))
+		.filter(([, type]) => !excludedSearchGameTypes.includes(type))
 		.map(([id]) => id);
 	const escapedQuery = query.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 	const matches = await requestIgdb<IgdbSearchGame[]>(
@@ -224,53 +267,99 @@ export async function searchIgdbGames(
 		signal,
 	);
 
-	// Lire les parents absents des résultats, niveau par niveau (un portage peut descendre d'un autre portage)
+	// Lire, niveau par niveau, les fiches absentes des résultats : les parents (un portage peut descendre
+	// d'un autre portage, un DLC d'une édition) et le contenu des bundles
 	const gamesById = new Map(matches.map((game) => [game.id, game]));
 	const requestedIds = new Set<number>();
-	function findMissingParentIds(games: IgdbSearchGame[]): number[] {
-		return [
+	const expandedBundleIds = new Set<number>();
+	let level = matches;
+	while (level.length > 0) {
+		const parentIds = [
 			...new Set(
-				games.flatMap((game) => getOriginalParentId(reference, game) ?? []),
+				level.flatMap((game) => getSearchParentId(reference, game) ?? []),
 			),
 		].filter((id) => !gamesById.has(id) && !requestedIds.has(id));
-	}
-	let missingIds = findMissingParentIds(matches);
-	while (missingIds.length > 0) {
-		for (const id of missingIds) {
+		const bundleIds = level
+			.filter(
+				(game) =>
+					isUnattachedBundle(reference, game) &&
+					!expandedBundleIds.has(game.id),
+			)
+			.map(({ id }) => id);
+		const conditions = [
+			...(parentIds.length === 0 ? [] : [`id = (${parentIds.join(",")})`]),
+			...(bundleIds.length === 0 ? [] : [`bundles = (${bundleIds.join(",")})`]),
+		];
+		if (conditions.length === 0) {
+			break;
+		}
+		for (const id of parentIds) {
 			requestedIds.add(id);
 		}
-		// eslint-disable-next-line no-await-in-loop -- chaque niveau de parents se lit sur le précédent
-		const parents = await requestIgdb<IgdbSearchGame[]>(
+		for (const id of bundleIds) {
+			expandedBundleIds.add(id);
+		}
+		// eslint-disable-next-line no-await-in-loop -- chaque niveau se lit sur le précédent
+		level = await requestIgdb<IgdbSearchGame[]>(
 			"games",
-			`${searchGameFields} where id = (${missingIds.join(",")}); limit 500;`,
+			`${searchGameFields} where ${conditions.join(" | ")}; limit 500;`,
 			signal,
 		);
-		for (const parent of parents) {
-			gamesById.set(parent.id, parent);
+		for (const game of level) {
+			gamesById.set(game.id, game);
 		}
-		missingIds = findMissingParentIds(parents);
 	}
 
-	function findOriginal(game: IgdbSearchGame): IgdbSearchGame {
-		let original = game;
-		const visitedIds = new Set([game.id]);
-		let parent = gamesById.get(getOriginalParentId(reference, game) ?? NaN);
-		while (parent !== undefined && !visitedIds.has(parent.id)) {
-			visitedIds.add(parent.id);
-			original = parent;
-			parent = gamesById.get(getOriginalParentId(reference, parent) ?? NaN);
+	/** Jeux de base d'une fiche : elle-même, l'original d'une version, le jeu d'un contenu additionnel, ou les jeux d'un bundle */
+	function findBaseGames(
+		game: IgdbSearchGame,
+		visitedIds: Set<number>,
+	): IgdbSearchGame[] {
+		if (visitedIds.has(game.id)) {
+			return [];
 		}
-		return original;
+		visitedIds.add(game.id);
+		if (isUnattachedBundle(reference, game)) {
+			return [...gamesById.values()]
+				.filter((content) => content.bundles?.includes(game.id) === true)
+				.toSorted(
+					(first, second) => getReleaseTime(first) - getReleaseTime(second),
+				)
+				.flatMap((content) => findBaseGames(content, visitedIds));
+		}
+		const parent = gamesById.get(getSearchParentId(reference, game) ?? NaN);
+		if (parent !== undefined) {
+			return findBaseGames(parent, visitedIds);
+		}
+		// Un DLC sans jeu, un bundle vide… ne mènent à rien
+		return resultGameTypes.includes(getGameTypeName(reference, game.game_type))
+			? [game]
+			: [];
 	}
 
-	// Un `Map` garde la place de la première clé : l'original prend celle de sa version la mieux classée
-	const originals = new Map(
-		matches.map((game) => {
-			const original = findOriginal(game);
-			return [original.id, original];
-		}),
-	);
-	return [...originals.values()].slice(0, searchResultLimit);
+	// Un jeu n'apparaît qu'une fois, à la place de sa fiche la mieux classée. Les jeux trouvés seulement via un bundle
+	// passent après les autres : « Final Fantasy VII » ne doit pas proposer FF8 en deuxième, via un pack FF7 + FF8.
+	// « via » nomme la fiche quand le jeu n'a pas été trouvé lui-même et qu'elle porte un autre nom (les portages de FF7 s'appellent comme lui)
+	const matchedIds = new Set(matches.map(({ id }) => id));
+	const hits = new Map<number, IgdbSearchHit>();
+	for (const match of [
+		...matches.filter((game) => !isUnattachedBundle(reference, game)),
+		...matches.filter((game) => isUnattachedBundle(reference, game)),
+	]) {
+		for (const game of findBaseGames(match, new Set())) {
+			if (!hits.has(game.id)) {
+				hits.set(game.id, {
+					game,
+					matchedName:
+						matchedIds.has(game.id) ||
+						match.name.toLowerCase() === game.name.toLowerCase()
+							? null
+							: match.name,
+				});
+			}
+		}
+	}
+	return [...hits.values()].slice(0, searchResultLimit);
 }
 
 // ---------- Base : recherche sans requête IGDB ----------

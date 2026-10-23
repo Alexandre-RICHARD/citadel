@@ -10,7 +10,7 @@ import type {
 	IgdbGameData,
 	IgdbImageId,
 	IgdbPlatform,
-	IgdbSearchGame,
+	IgdbSearchHit,
 	IgdbVersionGame,
 	Platform,
 	SearchResult,
@@ -49,11 +49,15 @@ export function findFrenchName(
 		: frenchName;
 }
 
-export function mapSearchResult(game: IgdbSearchGame): SearchResult {
+export function mapSearchResult({
+	game,
+	matchedName,
+}: IgdbSearchHit): SearchResult {
 	return {
 		id: game.id,
 		name: game.name,
 		frenchName: findFrenchName(game.name, game.alternative_names),
+		matchedName,
 		releaseYear:
 			game.first_release_date === undefined
 				? null
@@ -82,6 +86,7 @@ export function mapStoredSearchResult(
 		id: game.id,
 		name: game.name,
 		frenchName: game.frenchName,
+		matchedName: null,
 		releaseYear:
 			game.firstReleaseDate === null
 				? null
