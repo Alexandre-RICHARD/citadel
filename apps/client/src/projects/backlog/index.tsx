@@ -10,10 +10,10 @@ import {
 import styles from "./backlog.module.scss";
 import { initialState } from "./initialState";
 import {
+	mapEditedGameImport,
 	mapGameImport,
 	mapGameRows,
 	mapSearchResult,
-	mapStoredGameImport,
 	mapStoredSearchResult,
 } from "./mappers";
 import {
@@ -30,6 +30,7 @@ import {
 	type GameImport,
 	type GameRow,
 	type IgdbImageId,
+	type ImportSelection,
 	type IsoDate,
 	type Modal,
 	type Platform,
@@ -48,6 +49,7 @@ import {
 	type VersionPlatform,
 } from "./types";
 import {
+	addDlcs,
 	addGameImport,
 	addVariant,
 	backlogPageSize,
@@ -60,8 +62,8 @@ import {
 	describeSort,
 	describeVersionPlatforms,
 	editModeIdleMs,
+	emptyImportSelection,
 	fetchIgdbGameData,
-	fetchIgdbGameImages,
 	filterGameRows,
 	findById,
 	formatDlcProgress,
@@ -70,13 +72,17 @@ import {
 	formatIsoDate,
 	formatReleaseDate,
 	getColumnLabel,
+	getDlcGameQueue,
 	getEndingTypeLabel,
 	getFilterOptions,
+	getGameModal,
 	getGameVariantIds,
 	getIgdbImageUrl,
 	getLastAddedGame,
+	getNextQueuedModal,
 	getNextVariantId,
 	getPlatformOptions,
+	getQueuedGameIds,
 	getStatusLabel,
 	getStoredLine,
 	getTodayIsoDate,
@@ -85,14 +91,15 @@ import {
 	isFinishedStatus,
 	isSortableColumn,
 	isStatusAllowed,
-	keepImportedVersions,
+	keepSelection,
 	keepVisibleColumns,
 	loadSavedColumns,
 	moveColumn,
 	parseIsoDate,
 	pushToHistory,
 	readViewFromUrl,
-	receiveGameImages,
+	receiveEditGameImport,
+	receiveGameDlcs,
 	receiveGameImport,
 	removeVariants,
 	saveColumns,
@@ -103,7 +110,7 @@ import {
 	setVariantStatus,
 	sortGameRows,
 	toggleColumnVisibility,
-	toggleImportedVersion,
+	toggleId,
 	toggleSort,
 	toggleVariantDlc,
 	trimToNull,
@@ -614,22 +621,25 @@ function VariantChoiceFields({
 
 /**
  * Tout ce qui est stocké, en lecture seule, et les trois choix : miniature, type de fin, n° dans la série.
- * À l'ajout, les versions se cochent (`versionIds`) ; à la modification, elles se listent seulement.
+ * Les versions et les DLC se cochent (`selection`) ; ce qui est déjà en base l'est d'office (section 8).
+ * Un DLC peut aussi être coché « comme jeu », pour l'ajouter ensuite comme jeu à part (section 5).
  */
 function GamePreview({
 	gameImport,
+	database,
 	choices,
+	selection,
 	isLoadingImages,
-	versionIds = null,
 	onChoicesChange,
-	onToggleVersion = () => undefined,
+	onSelectionChange,
 }: {
 	gameImport: GameImport;
+	database: Database;
 	choices: GameChoices;
+	selection: ImportSelection;
 	isLoadingImages: boolean;
-	versionIds?: number[] | null;
 	onChoicesChange: (choices: GameChoices) => void;
-	onToggleVersion?: (versionId: number) => void;
+	onSelectionChange: (selection: ImportSelection) => void;
 }) {
 	const {
 		game,
@@ -648,6 +658,23 @@ function GamePreview({
 	const endingType = endingTypeDefinitions.find(
 		({ key }) => key === choices.endingType,
 	);
+	// L'originale est toujours enregistrée ; une version ou un DLC déjà en base reste coché
+	function isVersionLocked(versionId: number): boolean {
+		return (
+			versionId === game.id || findById(database.versions, versionId) !== null
+		);
+	}
+	function isVersionChecked(versionId: number): boolean {
+		return (
+			isVersionLocked(versionId) || selection.versionIds.includes(versionId)
+		);
+	}
+	function isDlcStored(dlcId: number): boolean {
+		return findById(database.dlcs, dlcId) !== null;
+	}
+	function isDlcChecked(dlcId: number): boolean {
+		return isDlcStored(dlcId) || selection.dlcIds.includes(dlcId);
+	}
 
 	return (
 		<div className={styles.preview}>
@@ -768,47 +795,45 @@ function GamePreview({
 
 			<section>
 				<h3>
-					{versionIds === null
-						? `Versions (${versions.length})`
-						: `Versions à enregistrer (${versionIds.length} / ${versions.length})`}
+					Versions à enregistrer (
+					{versions.filter(({ id }) => isVersionChecked(id)).length} /{" "}
+					{versions.length})
 				</h3>
-				<ul className={versionIds === null ? undefined : styles.checkList}>
+				<ul className={styles.checkList}>
 					{versions.map((version) => {
-						const label = (
-							<>
-								<strong>{version.title ?? `${game.name} (originale)`}</strong>
-								<span className={styles.hint}>
-									{" "}
-									{describeVersionPlatforms(
-										version.id,
-										versionPlatforms,
-										platforms,
-									)}
-								</span>
-							</>
-						);
 						const isOriginal = version.id === game.id;
 						return (
 							<li key={version.id}>
-								{versionIds === null ? (
-									label
-								) : (
-									<label
-										title={
-											isOriginal
-												? "Toujours enregistrée : c’est la fiche du jeu"
+								<label
+									title={
+										isOriginal
+											? "Toujours enregistrée : c’est la fiche du jeu"
+											: isVersionLocked(version.id)
+												? "Déjà en base"
 												: undefined
+									}
+								>
+									<input
+										type="checkbox"
+										checked={isVersionChecked(version.id)}
+										disabled={isVersionLocked(version.id)}
+										onChange={() =>
+											onSelectionChange({
+												...selection,
+												versionIds: toggleId(selection.versionIds, version.id),
+											})
 										}
-									>
-										<input
-											type="checkbox"
-											checked={isOriginal || versionIds.includes(version.id)}
-											disabled={isOriginal}
-											onChange={() => onToggleVersion(version.id)}
-										/>
-										{label}
-									</label>
-								)}
+									/>
+									<strong>{version.title ?? `${game.name} (originale)`}</strong>
+									<span className={styles.hint}>
+										{" "}
+										{describeVersionPlatforms(
+											version.id,
+											versionPlatforms,
+											platforms,
+										)}
+									</span>
+								</label>
 							</li>
 						);
 					})}
@@ -816,14 +841,59 @@ function GamePreview({
 			</section>
 
 			<section>
-				<h3>DLC ({dlcs.length})</h3>
+				<h3>
+					DLC à enregistrer ({dlcs.filter(({ id }) => isDlcChecked(id)).length}{" "}
+					/ {dlcs.length})
+				</h3>
 				{dlcs.length === 0 ? (
 					<p>Aucun DLC</p>
 				) : (
-					<ul>
-						{dlcs.map(({ id, name }) => (
-							<li key={id}>{name}</li>
-						))}
+					<ul className={styles.checkList}>
+						{dlcs.map(({ id, name }) => {
+							const isGameStored = findById(database.games, id) !== null;
+							return (
+								<li
+									key={id}
+									className={styles.dlcChoice}
+								>
+									<label title={isDlcStored(id) ? "Déjà en base" : undefined}>
+										<input
+											type="checkbox"
+											checked={isDlcChecked(id)}
+											disabled={isDlcStored(id)}
+											onChange={() =>
+												onSelectionChange({
+													...selection,
+													dlcIds: toggleId(selection.dlcIds, id),
+												})
+											}
+										/>
+										{name}
+									</label>
+									{/* Indépendante de la case DLC : un DLC peut être les deux (section 5) */}
+									<label
+										title={
+											isGameStored
+												? "Déjà en base comme jeu"
+												: "Après « Valider », ouvre l’ajout de ce DLC comme jeu à part ; il peut rester DLC en même temps"
+										}
+									>
+										<input
+											type="checkbox"
+											checked={selection.dlcGameIds.includes(id)}
+											disabled={isGameStored}
+											onChange={() =>
+												onSelectionChange({
+													...selection,
+													dlcGameIds: toggleId(selection.dlcGameIds, id),
+												})
+											}
+										/>
+										🧩 comme jeu
+									</label>
+								</li>
+							);
+						})}
 					</ul>
 				)}
 			</section>
@@ -937,12 +1007,13 @@ function AddGameDialog({
 					)}
 					<GamePreview
 						gameImport={gameImport}
+						database={database}
 						choices={modal.choices}
+						selection={modal.selection}
 						isLoadingImages={false}
-						versionIds={modal.versionIds}
 						onChoicesChange={(choices) => onModalChange({ ...modal, choices })}
-						onToggleVersion={(versionId) =>
-							onModalChange(toggleImportedVersion(modal, versionId))
+						onSelectionChange={(selection) =>
+							onModalChange({ ...modal, selection })
 						}
 					/>
 				</>
@@ -951,7 +1022,10 @@ function AddGameDialog({
 	);
 }
 
-/** « Modifier le jeu » (section 8) : la même modale, données de la base en lecture seule, images rechargées depuis IGDB */
+/**
+ * « Modifier le jeu » (section 8) : la même modale, données de la base en lecture seule.
+ * IGDB est relu à l'ouverture : ses images, et ses versions et DLC absents de la base, à cocher pour les ajouter.
+ */
 function EditGameDialog({
 	modal,
 	database,
@@ -968,9 +1042,7 @@ function EditGameDialog({
 	onValidate: () => void;
 }) {
 	const game = findById(database.games, modal.gameId);
-	// Tant que les images ne sont pas rechargées (ou si IGDB échoue), l'image actuelle reste proposée
-	const currentImageIds =
-		game?.imageId === undefined || game.imageId === null ? [] : [game.imageId];
+	const isLoadingIgdb = modal.igdbImport === null && error === null;
 
 	return (
 		<Dialog
@@ -994,16 +1066,90 @@ function EditGameDialog({
 						</p>
 					)}
 					{error !== null && <p className={styles.notice}>⚠️ {error}</p>}
+					{isLoadingIgdb && (
+						<p className={styles.notice}>
+							⏳ Chargement des versions, DLC et images IGDB absents de la base…
+						</p>
+					)}
 					<GamePreview
-						gameImport={mapStoredGameImport(
-							database,
-							game,
-							modal.imageIds ?? currentImageIds,
-						)}
+						gameImport={mapEditedGameImport(database, game, modal.igdbImport)}
+						database={database}
 						choices={modal.choices}
-						isLoadingImages={modal.imageIds === null && error === null}
+						selection={modal.selection}
+						isLoadingImages={isLoadingIgdb}
 						onChoicesChange={(choices) => onModalChange({ ...modal, choices })}
+						onSelectionChange={(selection) =>
+							onModalChange({ ...modal, selection })
+						}
 					/>
+				</>
+			)}
+		</Dialog>
+	);
+}
+
+/** « Rechercher d'autres DLC » (section 9) : tous les DLC IGDB du jeu ; ceux déjà en base sont cochés d'office, les autres s'ajoutent au jeu */
+function AddDlcsDialog({
+	modal,
+	database,
+	error,
+	onModalChange,
+	onCancel,
+	onValidate,
+}: {
+	modal: Extract<Modal, { kind: "addDlcs" }>;
+	database: Database;
+	error: string | null;
+	onModalChange: (modal: Extract<Modal, { kind: "addDlcs" }>) => void;
+	onCancel: () => void;
+	onValidate: () => void;
+}) {
+	const game = findById(database.games, modal.gameId);
+
+	return (
+		<Dialog
+			title={`Autres DLC : ${game === null ? "jeu introuvable" : (game.frenchName ?? game.name)}`}
+			actions={
+				<DialogActions
+					canValidate={modal.dlcIds.length > 0}
+					onCancel={onCancel}
+					onValidate={onValidate}
+				/>
+			}
+		>
+			{modal.dlcs === null && (
+				<p>{error === null ? "⏳ Chargement des DLC IGDB…" : `⚠️ ${error}`}</p>
+			)}
+			{modal.dlcs?.length === 0 && <p>Aucun DLC sur IGDB</p>}
+			{modal.dlcs !== null && modal.dlcs.length > 0 && (
+				<>
+					<p className={styles.notice}>
+						ℹ️ Les DLC cochés rejoignent le jeu : ils s’ajoutent à la liste des
+						DLC de toutes ses variantes.
+					</p>
+					<ul className={styles.checkList}>
+						{modal.dlcs.map(({ id, name }) => {
+							const isStored = findById(database.dlcs, id) !== null;
+							return (
+								<li key={id}>
+									<label title={isStored ? "Déjà en base" : undefined}>
+										<input
+											type="checkbox"
+											checked={isStored || modal.dlcIds.includes(id)}
+											disabled={isStored}
+											onChange={() =>
+												onModalChange({
+													...modal,
+													dlcIds: toggleId(modal.dlcIds, id),
+												})
+											}
+										/>
+										{name}
+									</label>
+								</li>
+							);
+						})}
+					</ul>
 				</>
 			)}
 		</Dialog>
@@ -1413,7 +1559,10 @@ function ColumnHeader({
 	);
 }
 
-/** « faits / total » ; un clic ouvre la liste des DLC du jeu, à cocher en mode édition (section 9) */
+/**
+ * « faits / total » ; un clic ouvre la liste des DLC du jeu, à cocher en mode édition (section 9).
+ * En mode édition, elle mène aussi à « Rechercher d'autres DLC », même pour un jeu sans DLC (« ➕ »).
+ */
 function DlcCell({
 	variant,
 	gameId,
@@ -1477,6 +1626,15 @@ function DlcCell({
 							</li>
 						))}
 					</ul>
+					{isEditMode && (
+						<button
+							type="button"
+							className={styles.linkButton}
+							onClick={() => handlers.openAddDlcs(gameId)}
+						>
+							🔍 Rechercher d’autres DLC
+						</button>
+					)}
 				</div>
 			)}
 		</span>
@@ -1781,18 +1939,25 @@ function VariantDataCell({
 				</span>
 			);
 		case "dlc":
-			if (values.dlcCount === 0) {
-				return null;
-			}
 			// La ligne d'un jeu à plusieurs variantes affiche « faits / total » en lecture seule
 			if (variant === null) {
-				return formatDlcProgress(values.doneDlcCount, values.dlcCount);
+				return values.dlcCount === 0
+					? null
+					: formatDlcProgress(values.doneDlcCount, values.dlcCount);
+			}
+			// Sans DLC, la cellule reste vide, sauf en mode édition pour en rechercher (section 9)
+			if (values.dlcCount === 0 && !isEditMode) {
+				return null;
 			}
 			return (
 				<DlcCell
 					variant={variant}
 					gameId={gameId}
-					label={formatDlcProgress(values.doneDlcCount, values.dlcCount)}
+					label={
+						values.dlcCount === 0
+							? "➕"
+							: formatDlcProgress(values.doneDlcCount, values.dlcCount)
+					}
 					database={database}
 					isEditMode={isEditMode}
 					popover={popover}
@@ -2687,60 +2852,52 @@ export function Backlog() {
 	 * (un résultat est toujours un jeu original, section 8) ; sinon à la modale d'ajout.
 	 */
 	function selectSearchResult(result: SearchResult) {
-		const version = database.versions.find(({ id }) => id === result.id);
 		setIsSearchOpen(false);
 		setModalError(null);
-		setModal(
-			version === undefined
-				? {
-						kind: "addGame",
-						igdbId: result.id,
-						gameImport: null,
-						choices: { imageId: null, endingType: "story", seriesNumber: null },
-						versionIds: [],
-						isAddingToBacklog: true,
-					}
-				: {
-						kind: "addVariant",
-						gameId: version.gameId,
-						variantChoice: { versionId: version.id, platformId: null },
-						draft: defaultVariantDraft,
-					},
-		);
+		setModal(getGameModal(database, result.id, []));
 	}
 
+	/** Passe à la modale suivante : le prochain DLC de la file à ajouter comme jeu (section 8), sinon ferme */
+	function openNextQueuedModal(queuedGameIds: number[]) {
+		setModalError(null);
+		setModal(getNextQueuedModal(database, queuedGameIds));
+	}
+
+	/** « Annuler » aussi passe au DLC suivant de la file */
 	function closeModal() {
-		setModal(null);
+		openNextQueuedModal(getQueuedGameIds(modal));
 	}
 
 	/**
 	 * Enregistre le jeu ; avec « Ajouter à mon backlog », ouvre ensuite l'ajout d'une variante, action distincte (section 8).
-	 * La version originale y est pré-sélectionnée si c'est la seule cochée.
+	 * La version originale y est pré-sélectionnée si c'est la seule cochée. Les DLC cochés « comme jeu » suivent, dans l'ordre.
 	 */
 	function validateAddGame(addGameModal: Extract<Modal, { kind: "addGame" }>) {
-		const { gameImport, choices, versionIds, isAddingToBacklog } = addGameModal;
+		const { gameImport, choices, selection, isAddingToBacklog } = addGameModal;
 		if (gameImport === null) {
 			return;
 		}
+		const queuedGameIds = [
+			...getDlcGameQueue(gameImport.dlcs, selection),
+			...addGameModal.queuedGameIds,
+		];
 		changeDatabase((current) =>
-			addGameImport(
-				current,
-				keepImportedVersions(gameImport, versionIds),
-				choices,
-			),
+			addGameImport(current, keepSelection(gameImport, selection), choices),
 		);
 		if (!isAddingToBacklog) {
-			closeModal();
+			openNextQueuedModal(queuedGameIds);
 			return;
 		}
 		setModal({
 			kind: "addVariant",
 			gameId: gameImport.game.id,
 			variantChoice: {
-				versionId: versionIds.length === 1 ? gameImport.game.id : null,
+				versionId:
+					selection.versionIds.length === 1 ? gameImport.game.id : null,
 				platformId: null,
 			},
 			draft: defaultVariantDraft,
+			queuedGameIds,
 		});
 	}
 
@@ -2748,7 +2905,7 @@ export function Backlog() {
 	function validateAddVariant(
 		addVariantModal: Extract<Modal, { kind: "addVariant" }>,
 	) {
-		const { variantChoice, draft } = addVariantModal;
+		const { variantChoice, draft, queuedGameIds } = addVariantModal;
 		const { versionId, platformId } = variantChoice;
 		if (versionId === null || platformId === null) {
 			return;
@@ -2762,17 +2919,44 @@ export function Backlog() {
 				kind: "finishDate",
 				variantId,
 				finishDate: getTodayIsoDate(),
+				queuedGameIds,
 			});
 		} else {
-			closeModal();
+			openNextQueuedModal(queuedGameIds);
 		}
 	}
 
+	/** Les trois choix, puis les versions et DLC cochés en plus, en une seule action ; les DLC cochés « comme jeu » suivent */
 	function validateEditGame(
 		editGameModal: Extract<Modal, { kind: "editGame" }>,
 	) {
-		const { gameId, choices } = editGameModal;
-		changeDatabase((current) => updateGameChoices(current, gameId, choices));
+		const { gameId, choices, igdbImport, selection } = editGameModal;
+		changeDatabase((current) =>
+			updateGameChoices(
+				igdbImport === null
+					? current
+					: addGameImport(
+							current,
+							keepSelection(igdbImport, selection),
+							choices,
+						),
+				gameId,
+				choices,
+			),
+		);
+		openNextQueuedModal(
+			igdbImport === null ? [] : getDlcGameQueue(igdbImport.dlcs, selection),
+		);
+	}
+
+	function validateAddDlcs(addDlcsModal: Extract<Modal, { kind: "addDlcs" }>) {
+		const { dlcs, dlcIds } = addDlcsModal;
+		changeDatabase((current) =>
+			addDlcs(
+				current,
+				(dlcs ?? []).filter(({ id }) => dlcIds.includes(id)),
+			),
+		);
 		closeModal();
 	}
 
@@ -2810,6 +2994,7 @@ export function Backlog() {
 				kind: "finishDate",
 				variantId,
 				finishDate: getTodayIsoDate(),
+				queuedGameIds: [],
 			});
 		}
 	}
@@ -2823,7 +3008,8 @@ export function Backlog() {
 		setModal({
 			kind: "editGame",
 			gameId,
-			imageIds: null,
+			igdbImport: null,
+			selection: emptyImportSelection,
 			choices: {
 				imageId: game.imageId,
 				endingType: game.endingType,
@@ -2853,7 +3039,13 @@ export function Backlog() {
 				gameId,
 				variantChoice: { versionId: null, platformId: null },
 				draft: defaultVariantDraft,
+				queuedGameIds: [],
 			}),
+		openAddDlcs: (gameId) => {
+			setPopover(null);
+			setModalError(null);
+			setModal({ kind: "addDlcs", gameId, dlcs: null, dlcIds: [] });
+		},
 		removeGameFromBacklog: (gameId) =>
 			changeDatabase((current) =>
 				removeVariants(current, getGameVariantIds(current, gameId)),
@@ -2955,18 +3147,26 @@ export function Backlog() {
 		return () => controller.abort();
 	}, [igdbIdToLoad]);
 
-	// « Modifier le jeu » : la cover et les artworks sont rechargés depuis IGDB à l'ouverture (section 8)
-	const gameIdToLoadImages =
-		modal?.kind === "editGame" && modal.imageIds === null ? modal.gameId : null;
+	// « Modifier le jeu » et « Rechercher d'autres DLC » : le jeu est relu sur IGDB à l'ouverture (sections 8 et 9)
+	const gameIdToReload =
+		(modal?.kind === "editGame" && modal.igdbImport === null) ||
+		(modal?.kind === "addDlcs" && modal.dlcs === null)
+			? modal.gameId
+			: null;
 	useEffect(() => {
-		if (gameIdToLoadImages === null) {
+		if (gameIdToReload === null) {
 			return undefined;
 		}
 		const controller = new AbortController();
-		fetchIgdbGameImages(gameIdToLoadImages, controller.signal)
-			.then((imageIds) =>
+		fetchIgdbGameData(gameIdToReload, controller.signal)
+			.then((data) => mapGameImport(data))
+			.then((igdbImport) =>
 				setModal((current) =>
-					receiveGameImages(current, gameIdToLoadImages, imageIds),
+					receiveGameDlcs(
+						receiveEditGameImport(current, gameIdToReload, igdbImport),
+						gameIdToReload,
+						igdbImport.dlcs,
+					),
 				),
 			)
 			.catch((error: unknown) => {
@@ -2975,9 +3175,9 @@ export function Backlog() {
 				}
 			});
 		return () => controller.abort();
-	}, [gameIdToLoadImages]);
+	}, [gameIdToReload]);
 
-	// Échap ferme le popover ouvert, sinon la modale ; rien n'est enregistré avant « Valider »
+	// Échap ferme le popover ouvert, sinon la modale comme « Annuler » (DLC suivant de la file) ; rien n'est enregistré avant « Valider »
 	const isModalOpen = modal !== null;
 	const isPopoverOpen = popover !== null;
 	useEffect(() => {
@@ -2991,12 +3191,15 @@ export function Backlog() {
 			if (isPopoverOpen) {
 				setPopover(null);
 			} else {
-				setModal(null);
+				setModalError(null);
+				setModal((current) =>
+					getNextQueuedModal(database, getQueuedGameIds(current)),
+				);
 			}
 		}
 		window.addEventListener("keydown", closeOnEscape);
 		return () => window.removeEventListener("keydown", closeOnEscape);
-	}, [isModalOpen, isPopoverOpen]);
+	}, [isModalOpen, isPopoverOpen, database]);
 
 	// Un clic hors du popover ou du menu le ferme
 	useEffect(() => {
@@ -3209,6 +3412,16 @@ export function Backlog() {
 					onModalChange={setModal}
 					onCancel={closeModal}
 					onValidate={() => validateEditGame(modal)}
+				/>
+			)}
+			{modal?.kind === "addDlcs" && (
+				<AddDlcsDialog
+					modal={modal}
+					database={database}
+					error={modalError}
+					onModalChange={setModal}
+					onCancel={closeModal}
+					onValidate={() => validateAddDlcs(modal)}
 				/>
 			)}
 			{modal?.kind === "addVariant" && (
