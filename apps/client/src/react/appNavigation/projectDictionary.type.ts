@@ -5,4 +5,5 @@ export type ProjectDictionary = {
 	description: string;
 	documentTitle: string;
 	favicon: string;
+	illustration: string;
 };
