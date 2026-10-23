@@ -1,0 +1,26 @@
+.field {
+  @include vars.field;
+  @include vars.tabular;
+
+  box-sizing: border-box;
+  height: vars.$control-md;
+  padding: 0 0.7rem;
+  text-align: right;
+  appearance: textfield;
+
+  // Pas de flèches : la molette et les touches ↑ ↓ du navigateur suffisent
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+}
+
+// Toujours avec `.field`, qu'elle complète
+.inline {
+  @include vars.inline-field;
+
+  height: vars.$control-sm;
+  padding: 0 0.5rem;
+  border-radius: vars.$radius-sm;
+}

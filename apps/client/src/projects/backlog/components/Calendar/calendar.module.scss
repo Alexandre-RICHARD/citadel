@@ -1,0 +1,131 @@
+.calendar {
+  width: 27.6rem;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  gap: 0.2rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.monthLabel {
+  flex: 1;
+  font-size: vars.$text-md;
+  font-weight: 600;
+  text-align: center;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.navButton {
+  @include vars.reset-button;
+
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  color: vars.$text-subtle;
+  border-radius: vars.$radius-sm;
+
+  &:hover {
+    color: vars.$text;
+    background: vars.$surface-3;
+  }
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th {
+    padding: 0.4rem 0;
+    font-size: vars.$text-xs;
+    font-weight: 600;
+    color: vars.$text-subtle;
+    text-align: center;
+  }
+
+  td {
+    padding: 0.1rem;
+    text-align: center;
+  }
+}
+
+.day {
+  @include vars.reset-button;
+  @include vars.tabular;
+
+  width: 3.4rem;
+  height: 3.4rem;
+  font-size: vars.$text-base;
+  color: vars.$text;
+  border-radius: vars.$radius-sm;
+  outline: none;
+
+  &:hover {
+    background: vars.$surface-3;
+  }
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px vars.$focus;
+  }
+}
+
+.outsideMonth {
+  color: vars.$text-faint;
+}
+
+.today {
+  font-weight: 700;
+  color: vars.$accent-text;
+  box-shadow: inset 0 0 0 1px vars.$accent-border;
+}
+
+.selected {
+  font-weight: 600;
+  color: vars.$accent-contrast;
+  background: vars.$accent;
+  box-shadow: none;
+
+  &:hover {
+    background: vars.$accent-hover;
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 2px vars.$surface-raised,
+      0 0 0 4px vars.$focus;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid vars.$border;
+}
+
+.todayButton {
+  @include vars.reset-button;
+
+  padding: 0.4rem 1rem;
+  font-size: vars.$text-sm;
+  font-weight: 500;
+  color: vars.$accent-text;
+  border-radius: vars.$radius-sm;
+
+  &:hover {
+    background: vars.$accent-subtle;
+  }
+}

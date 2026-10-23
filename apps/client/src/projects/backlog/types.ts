@@ -170,7 +170,7 @@ export type Game = {
 	firstReleaseDate: IsoDate | null;
 	/** `game_status` = Cancelled : « annulé » */
 	isCancelled: boolean;
-	/** Série proposée par IGDB à l'ajout du jeu, `null` s'il n'en propose pas : ✏️ dans le tableau quand la série choisie en diffère */
+	/** Série proposée par IGDB à l'ajout du jeu, `null` s'il n'en propose pas : un crayon dans le tableau quand la série choisie en diffère */
 	proposedSeriesId: number | null;
 	developerId: number | null;
 	publisherId: number | null;
@@ -306,7 +306,7 @@ export type Database = {
 
 // ---------- Interface ----------
 
-/** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu en base hors backlog (« 📚 Ma base ») */
+/** Résultat de recherche : un jeu de base trouvé sur IGDB, ou un jeu en base hors backlog (« Ma base ») */
 export type SearchResult = {
 	/** id IGDB de la fiche ; « déjà en base » si une version porte cet id */
 	id: number;
@@ -471,7 +471,7 @@ export type Modal =
 			gameId: number;
 			entries: SeriesEntry[];
 	  }
-	/** « 📚 Ma base » (section 8) : les jeux en base hors backlog, filtrés par `query`, par pages de 50 */
+	/** « Ma base » (section 8) : les jeux en base hors backlog, filtrés par `query`, par pages de 50 */
 	| {
 			kind: "addFromDatabase";
 			query: string;
@@ -599,7 +599,7 @@ export type GameRow = {
 	/** Ligne à version jouée unique : titre de sa version, s'il ne s'agit pas de l'originale */
 	versionTitle: string | null;
 	series: Series | null;
-	/** Série proposée par IGDB : ✏️ quand elle diffère de `series` */
+	/** Série proposée par IGDB : un crayon quand elle diffère de `series` */
 	proposedSeries: Series | null;
 	seriesNumber: number | null;
 	/** Avec les décimales de sa famille : 3.10 parmi 3.01 … 3.10 */

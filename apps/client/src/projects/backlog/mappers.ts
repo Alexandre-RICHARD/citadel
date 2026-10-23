@@ -76,7 +76,7 @@ export function mapSearchResult({
 }
 
 /**
- * Jeu en base hors backlog → ligne de « 📚 Ma base » : son id est celui de son original, ses plateformes celles de toutes
+ * Jeu en base hors backlog → ligne de « Ma base » : son id est celui de son original, ses plateformes celles de toutes
  * ses versions, son image la cover de l'original (la miniature choisie est partie avec le jeu du backlog).
  */
 export function mapDatabaseSearchResult(

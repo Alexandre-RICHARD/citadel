@@ -1,0 +1,48 @@
+.group {
+  @include vars.field;
+  @include vars.tabular;
+
+  display: inline-flex;
+  // Dans un formulaire en colonne, le champ garde sa largeur au lieu de s'étirer
+  align-self: flex-start;
+  gap: 0.3rem;
+  align-items: center;
+  height: vars.$control-md;
+  padding: 0 0.8rem;
+  cursor: text;
+}
+
+// Toujours avec `.group`, qu'elle complète
+.inline {
+  @include vars.inline-field;
+
+  height: vars.$control-sm;
+  padding: 0 0.5rem;
+  border-radius: vars.$radius-sm;
+}
+
+.part {
+  box-sizing: content-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-align: right;
+  background: none;
+  border: 0;
+  outline: none;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+}
+
+.unit {
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}

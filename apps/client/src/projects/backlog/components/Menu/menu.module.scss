@@ -1,0 +1,85 @@
+.panel {
+  min-width: 24rem;
+  padding: 0.4rem;
+}
+
+.menu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.groupStart {
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid vars.$border;
+}
+
+.entryTooltip {
+  display: flex;
+  width: 100%;
+}
+
+.entry {
+  @include vars.reset-button;
+
+  box-sizing: border-box;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  min-height: 3.4rem;
+  padding: 0 1.2rem 0 1rem;
+  font-size: vars.$text-base;
+  color: vars.$text;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: vars.$radius-sm;
+  outline: none;
+
+  &:hover,
+  &:focus-visible {
+    background: vars.$surface-3;
+  }
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px vars.$focus;
+  }
+
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+
+    &:hover {
+      background: none;
+    }
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: vars.$text-subtle;
+}
+
+.externalIcon {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-left: auto;
+  padding-left: 1.2rem;
+  color: vars.$text-faint;
+}
+
+.danger {
+  color: vars.$danger-text;
+
+  .icon {
+    color: vars.$danger-text;
+  }
+
+  &:hover:not([aria-disabled="true"]),
+  &:focus-visible {
+    background: vars.$danger-subtle;
+  }
+}

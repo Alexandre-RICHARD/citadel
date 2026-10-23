@@ -99,7 +99,10 @@ Le POC simule la base dans l'état React mais interroge les vraies données IGDB
 | `mappers.ts` | Tous les mappers : réponses IGDB → types de la base ; base → lignes du tableau |
 | `utils.ts` | Toutes les autres fonctions : appels IGDB, calculs, agrégats, tri, filtres, URL d'images |
 
-Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes de plateformes ne comptent pas dans les 6.
+Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes de plateformes ne comptent pas dans les 6. Deux exceptions voulues, pour l'identité visuelle :
+
+- **`components/`** : un sous-dossier par composant d'interface générique (bouton, info-bulle, popover, menu, liste déroulante, case à cocher, choix segmenté, modale, champ date et calendrier, champs nombre, durée et texte, encart, roue de chargement), avec son `index.tsx`, son `<nomDuComposant>.module.scss` et, si sa logique est longue, un `use<NomDuComposant>.tsx`. Les composants propres au backlog (tableau, cellules, modales métier) restent dans `index.tsx`.
+- **`variables.scss`** : les jetons de l'identité visuelle (couleurs des deux thèmes, ombres, rayons, typographie) et les mixins partagés. La config Vite l'injecte dans chaque `.scss` du dossier sous le nom `vars`.
 
 ### Consignes pour le code du POC
 
@@ -108,7 +111,7 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 - **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
 - **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de versions jouées).
 - **Langue** : tout le code est en anglais (types, champs, variables, valeurs des listes fermées). Les libellés d'interface sont en français, écrits en dur dans le code, sans système de traduction.
-- **Pictos d'interface** (chevron, menu, flèches de tri) : des emojis, sans bibliothèque d'icônes.
+- **Pictos d'interface** : des icônes lucide-react (SVG), comme le projet Game Death Counter ; aucun emoji dans l'interface.
 
 ### Export et réimport de l'état
 
@@ -177,7 +180,7 @@ Une ligne du backlog correspond à un **jeu du backlog** : un jeu et sa personna
 - **Deux noms** : un jeu a un nom VO et un nom VF éventuel. Les autres noms alternatifs d'IGDB ne sont pas stockés.
 - **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu ; dans les faits, IGDB ne les range que sur l'original.
 - **DLC choisis** : comme les versions, la modale d'ajout propose tous les DLC, et seuls ceux cochés sont enregistrés ; ils sont tous cochés à l'ouverture. Le backlog est personnel : une petite quête gratuite (*The Witcher 3* en compte 5 sur IGDB) peut être un vrai DLC pour l'un et du bruit pour l'autre. Le type IGDB ne permet pas de trier : *Dawnguard* y est un DLC, comme ces quêtes. Les DLC en base fixent le « total » de « faits / total ». D'autres s'ajoutent plus tard, par « Modifier le jeu » (section 8) ou « Rechercher d'autres DLC » (section 9).
-- **DLC comme jeu** : IGDB ne distingue pas une extension vendue seule d'une autre (*TLAD* et *TBOGT* y sont des extensions de *GTA IV*, comme les season pass). Dans la modale du jeu, chaque DLC peut donc aussi être coché « 🧩 comme jeu » : il est ensuite ajouté comme jeu à part, sa fiche devenant sa version originale. Les deux cases sont indépendantes : *TLAD* peut être jeu à part et DLC de *GTA IV* en même temps, sans conflit. On peut donc changer d'avis : retirer *TLAD* du backlog, l'ajouter aux DLC de *GTA IV* et le cocher fait.
+- **DLC comme jeu** : IGDB ne distingue pas une extension vendue seule d'une autre (*TLAD* et *TBOGT* y sont des extensions de *GTA IV*, comme les season pass). Dans la modale du jeu, chaque DLC peut donc aussi être coché « Comme jeu » : il est ensuite ajouté comme jeu à part, sa fiche devenant sa version originale. Les deux cases sont indépendantes : *TLAD* peut être jeu à part et DLC de *GTA IV* en même temps, sans conflit. On peut donc changer d'avis : retirer *TLAD* du backlog, l'ajouter aux DLC de *GTA IV* et le cocher fait.
 - **Pas de bundle** : un produit qui regroupe plusieurs jeux n'est pas modélisé. Chaque jeu qu'il contient s'ajoute séparément : la recherche mène d'un bundle à ses jeux (section 8). Exception : un bundle qu'IGDB rattache à un jeu par `version_parent` est une édition de ce jeu vendue avec ses DLC (ex. *Skyrim Legendary Edition*) ; il compte comme une version.
 - **Versions choisies** : la modale d'ajout propose toutes les versions qu'IGDB rattache au jeu, et seules celles cochées sont enregistrées. Le backlog est personnel : inutile de stocker des éditions qu'on ne jouera jamais.
 - **Jeu original toujours en base** : sa version originale est toujours enregistrée, cochée d'office et non décochable, car elle porte l'id et la page IGDB du jeu. Les autres versions sont décochées à l'ouverture.
@@ -246,7 +249,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | --- | --- | --- | --- | --- |
 | Miniature | Jeu du backlog | IGDB, choisie à l'ajout au backlog | Image choisie | Image de la version |
 | Nom | Jeu | IGDB | Nom VF, nom VO en dessous s'il diffère | Titre de la version (ex. *Legendary Edition*) |
-| Série | Jeu du backlog | Proposée par IGDB, choisie à l'ajout au backlog | Nom, vide sans série ; ✏️ si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
+| Série | Jeu du backlog | Proposée par IGDB, choisie à l'ajout au backlog | Nom, vide sans série ; un crayon si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
 | N° dans la série | Jeu du backlog | Pré-rempli à l'ajout au backlog, réordonné par « Réorganiser la série » | Numéro, en lecture seule, avec les décimales de sa famille (3.10) ; vide sans série |  |
 | Développeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Éditeur | Jeu | IGDB | Logo au-dessus du nom |  |
@@ -290,19 +293,19 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké en base globale : noms (VO, VF), série proposée, versions et leurs plateformes, DLC, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables. Les choix personnels (miniature, type de fin, série, numéro) se font à l'ajout au backlog.
 3. **Choix dans la modale** :
    - Les versions à enregistrer (section 5) : l'originale cochée d'office, les autres à cocher.
-   - Les DLC à enregistrer (section 5) : tous cochés à l'ouverture. Chacun a aussi une case « 🧩 comme jeu », indépendante.
-4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, qui reste attachée au jeu pour le ✏️ et « ↩️ Série IGDB ».
+   - Les DLC à enregistrer (section 5) : tous cochés à l'ouverture. Chacun a aussi une case « Comme jeu », indépendante.
+4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, qui reste attachée au jeu pour le crayon et « Série IGDB ».
 5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
    - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout au backlog (Gestion du backlog), avec les images déjà lues sur IGDB. La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
    - Ce sont deux actions distinctes (section 10). Annuler l'ajout au backlog laisse le jeu en base, hors du backlog.
-   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 Ma base ».
-6. **DLC comme jeu** : après « Valider », et après l'ajout au backlog s'il a lieu, la modale d'ajout de chaque DLC coché « 🧩 comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
+   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « Ma base ».
+6. **DLC comme jeu** : après « Valider », et après l'ajout au backlog s'il a lieu, la modale d'ajout de chaque DLC coché « Comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
 
 ### Ajout depuis la base
 
 Un jeu déjà en base (retiré du backlog, ou ajouté sans « Ajouter à mon backlog ») revient dans le backlog sans relire ses données IGDB : seules ses images sont relues, pour le choix de la miniature.
 
-- La barre de recherche ne cherche que sur IGDB. À côté, le bouton « 📚 Ma base (N) » compte les jeux en base hors backlog ; il est grisé quand il n'y en a aucun.
+- La barre de recherche ne cherche que sur IGDB. À côté, le bouton « Ma base » compte les jeux en base hors backlog (N, en pastille) ; il est grisé quand il n'y en a aucun.
 - Il ouvre une modale qui liste ces jeux sans requête IGDB, triés par nom (VF, sinon VO), au même format que les résultats d'IGDB (cover de l'original, plateformes de toutes les versions). Elle en affiche 50, puis les 50 suivants à l'approche du bas de la liste.
 - Un champ filtre la liste à chaque frappe, sur le nom VO, le nom VF et les titres des versions, sans tenir compte des accents ni des majuscules. Vide, il montre tous les jeux.
 - Choisir un jeu ouvre l'ajout au backlog, avec la version originale pré-sélectionnée.
@@ -311,7 +314,7 @@ Un jeu déjà en base (retiré du backlog, ou ajouté sans « Ajouter à mon bac
 
 - « Modifier le jeu » complète le jeu en base : ses versions et ses DLC. Les choix personnels se font par « Personnaliser ».
 - La modification rouvre la modale du jeu : données IGDB en lecture seule, puis « Valider », en une seule action. Le jeu est relu sur IGDB à l'ouverture : les versions et DLC absents de la base. Les autres données viennent de la base ; la série proposée reste celle de l'ajout.
-- Les versions et DLC déjà en base sont cochés et grisés ; les autres sont décochés, à cocher pour les ajouter. On ne peut pas en retirer. Les DLC y ont aussi leur case « 🧩 comme jeu », avec le même enchaînement qu'à l'ajout.
+- Les versions et DLC déjà en base sont cochés et grisés ; les autres sont décochés, à cocher pour les ajouter. On ne peut pas en retirer. Les DLC y ont aussi leur case « Comme jeu », avec le même enchaînement qu'à l'ajout.
 - Un formulaire d'édition ne se valide jamais sans modification : « Valider » reste inactif tant qu'aucune version ni aucun DLC n'est coché en plus et qu'aucun DLC n'est coché « comme jeu ». Avec seulement des DLC « comme jeu », la base ne change pas : pas d'action, l'enchaînement s'ouvre directement.
 - On y accède par l'entrée « Modifier le jeu » du menu Actions (section 9).
 
@@ -321,7 +324,7 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
 
 - L'image de la miniature, parmi la cover et les artworks, relus sur IGDB à l'ouverture ; à l'ajout, la cover est pré-sélectionnée. En attendant IGDB, ou s'il échoue, seule l'image déjà choisie est proposée ; elle le reste même si IGDB ne l'a plus.
 - Le type de fin du jeu (section 6) ; Histoire par défaut.
-- La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « ➕ Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « ↩️ Série IGDB » y ramène.
+- La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « Série IGDB » y ramène.
 - Le numéro du jeu dans sa série (règles ci-dessous) : obligatoire avec une série ; sans série, il est effacé à « Valider ».
   - Choisir une série le pré-remplit. Dans sa série actuelle, le jeu garde le sien ; sinon, il passe après les jeux du backlog de la série, à l'entier au-dessus du plus grand (3 après 2 ou 2.5). Le premier jeu d'une série, ou d'une nouvelle série, a le n° 1.
   - Un numéro déjà pris est signalé (« N° 2 déjà pris par… ») : à « Valider », il est libéré vers le haut.
@@ -346,7 +349,7 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
 « Réorganiser la série », entrée du menu Actions, remet dans l'ordre les jeux du backlog d'une même série. Elle n'est active qu'en mode édition, pour un jeu qui a une série.
 
 - Une ligne par jeu du backlog de la série, triée par numéro : le numéro, modifiable (voir Saisie), le nom (VF, VO en dessous s'il diffère) et la date de sortie originale du jeu. Les sous-jeux sont décalés à droite. Le jeu d'où le menu a été ouvert est en gras.
-- Glisser-déposer par la poignée ↕️, sur le trait entre deux lignes :
+- Glisser-déposer par la poignée, sur le trait entre deux lignes :
   - le trait décalé à droite, en glissant un peu vers la droite, fait un sous-jeu de la famille au-dessus ; le trait plein, un principal. Tout en haut, c'est toujours un principal ; entre deux jeux d'une même famille, toujours un sous-jeu ;
   - un principal emmène ses sous-jeux, qui gardent leur rang ; devenu sous-jeu, il les range à sa suite ;
   - le jeu prend le premier numéro libre juste après le jeu du dessus : l'entier qui suit sa famille (1 tout en haut), ou le rang suivant. Personne d'autre ne bouge, même tout en bas de la liste ;
@@ -360,12 +363,12 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
   - 1, 2, 2.1, 2.2, 3, 4 : le 4 glissé entre 2 et 2.1 devient 2.1, et les anciens 2.1, 2.2 passent à 2.2, 2.3. Le 2.1 glissé à trait plein entre 3 et 4 devient 4, l'ancien 4 passe à 5, et 2.2 reste ;
   - 3, 3.1 … 3.9 : un jeu glissé entre 3.3 et 3.4 fait passer la famille à 3.01 … 3.03 ; il devient 3.04, et les suivants 3.05 … 3.10.
 - Un numéro changé s'affiche en couleur, l'ancien au survol.
-- Un jeu sorti avant un jeu placé plus haut, sous-jeux compris, est signalé : fond rouge et ⚠️ (au survol, le plus récent de ces jeux). Un jeu sans date de sortie n'est pas comparé. C'est un signal, pas une erreur : un spin-off sort souvent après la suite.
+- Un jeu sorti avant un jeu placé plus haut, sous-jeux compris, est signalé : fond rouge et icône d'alerte (au survol, le plus récent de ces jeux). Un jeu sans date de sortie n'est pas comparé. C'est un signal, pas une erreur : un spin-off sort souvent après la suite.
 - Rien n'est enregistré avant « Valider » : une seule action, inactif tant qu'aucun numéro n'a changé.
 
 ### Gestion du backlog
 
-- Ajouter au backlog : un jeu en base entre dans le backlog avec sa personnalisation et sa première version jouée, en une seule action. On y arrive après l'ajout d'un jeu avec « Ajouter à mon backlog », par un résultat de recherche « déjà en base », ou par « 📚 Ma base ».
+- Ajouter au backlog : un jeu en base entre dans le backlog avec sa personnalisation et sa première version jouée, en une seule action. On y arrive après l'ajout d'un jeu avec « Ajouter à mon backlog », par un résultat de recherche « déjà en base », ou par « Ma base ».
 - Ajouter une version jouée : entrée « Ajouter une version jouée » du menu Actions, la même fenêtre sans la personnalisation, sans version pré-sélectionnée. Un résultat de recherche d'un jeu déjà dans le backlog y mène aussi.
   - J'indique la version, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
   - La même fenêtre permet de pré-remplir toutes mes données de la version jouée : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps relevé et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide. Le statut pré-rempli suit un changement du type de fin dans la personnalisation.
@@ -378,7 +381,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 
 ### Lignes simples et lignes dépliables
 
-- Une ligne dépliable porte un chevron en début de ligne et un badge du nombre de versions jouées (ex. « 3 versions jouées »).
+- Une ligne dépliable porte un chevron en début de ligne et un badge du nombre de versions jouées (« 3 », « 3 versions jouées » au survol). → la déplie, ← la replie.
 - Une ligne simple n'a pas de chevron ; un espace vide garde l'alignement des colonnes.
 - Les sous-lignes sont légèrement indentées, sur un fond plus discret que la ligne du jeu.
 
@@ -393,7 +396,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 - La ligne du jeu affiche « faits / total » en lecture seule, un DLC comptant comme fait s'il l'est sur au moins une version jouée.
 - Sur une ligne à version jouée unique, la liste se coche directement depuis la ligne.
 - En lecture seule, la liste se consulte ; en mode édition, les cases se cochent.
-- En mode édition, le popover se termine par « 🔍 Rechercher d'autres DLC ». Il ouvre une modale listant tous les DLC IGDB du jeu (IGDB les range sur le jeu, pas sur ses versions) : ceux en base sont cochés et grisés, les autres se cochent. « Valider », inactif tant que rien n'est coché, les ajoute au jeu, donc à toutes ses versions jouées, en une action ; on les coche ensuite « fait » dans le popover. Une version jouée d'un jeu sans DLC affiche alors « ➕ » pour y accéder.
+- En mode édition, le popover se termine par « Rechercher d'autres DLC ». Il ouvre une modale listant tous les DLC IGDB du jeu (IGDB les range sur le jeu, pas sur ses versions) : ceux en base sont cochés et grisés, les autres se cochent. « Valider », inactif tant que rien n'est coché, les ajoute au jeu, donc à toutes ses versions jouées, en une action ; on les coche ensuite « fait » dans le popover. Une version jouée d'un jeu sans DLC affiche alors un bouton « + » pour y accéder.
 - Ce choix évite un troisième niveau de dépliage dans le tableau.
 
 ### Menu Actions
@@ -416,7 +419,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Un bouton qui ouvre une petite modale pour gérer la visibilité de chaque colonne.
 - Un bouton fixe (*sticky*) pour basculer en mode édition.
 - De petites bulles explicatives, par exemple sur Type de fin et Statut pour rappeler la signification des valeurs.
-- La barre du haut (titre, recherche IGDB, bouton « 📚 Ma base », flèches annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
+- La barre du haut (titre, recherche IGDB, bouton « Ma base », boutons annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
 
 ### Lecture seule et édition
 
@@ -429,25 +432,34 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 ### Personnalisation de la vue
 
 - Masquer / afficher les colonnes via des boutons. La colonne Actions ne peut pas être masquée : le menu disparaîtrait.
-- Réorganiser l'ordre des colonnes, avec ⬆️ et ⬇️ dans la modale de visibilité (sans glisser-déposer).
+- Réorganiser l'ordre des colonnes, avec les boutons monter et descendre de la modale de visibilité (sans glisser-déposer).
 - Sauvegarder la disposition et la visibilité des colonnes dans le `localStorage`.
 
 ### Tri et filtres
 
-- Tri multi-colonnes : flèche de direction et indicateur numérique de priorité. Un clic sur un en-tête fait défiler ⬆️, ⬇️, puis plus de tri sur cette colonne ; chaque nouvelle colonne passe après les autres.
+- Tri multi-colonnes : flèche de direction et indicateur numérique de priorité. Un clic sur un en-tête fait défiler croissant, décroissant, puis plus de tri sur cette colonne ; chaque nouvelle colonne passe après les autres.
 - Les lignes des jeux se trient sur ce qu'elles affichent, leurs sous-lignes restent rattachées à leur jeu, et les cases vides passent en dernier.
-- Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
+- Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps, dans un popover ouvert depuis la ligne des filtres (le bouton résume les bornes). La miniature et les actions n'en ont pas.
 - Un jeu reste affiché si sa ligne ou au moins une de ses versions jouées correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une version jouée PS4) ; déplié, il montre toutes ses versions jouées.
 - Un clic sur un nom de série filtre le tableau sur les jeux de cette série (valeur exacte).
-- Dès qu'un filtre est actif, « 🧹 Effacer », au début de la ligne des filtres, les retire tous d'un coup.
+- Dès qu'un filtre est actif, le bouton « Effacer tous les filtres », au début de la ligne des filtres, les retire tous d'un coup ; le résumé au-dessus du tableau compte les jeux affichés et les filtres actifs.
 - Paramètres de tri et de filtre persistés dans l'URL.
 - Une colonne masquée est retirée du tri dans l'URL et de la recherche.
 - Une URL qui trie sur une colonne masquée voit ce tri ignoré.
 
+### Apparence et clavier
+
+- **Thème** : clair ou sombre selon le réglage du système (`prefers-color-scheme`), sans bouton ni état en plus. Police Inter (Google Fonts), chiffres tabulaires dans le tableau.
+- **Composants maison** (section 4) à la place des contrôles du navigateur : listes déroulantes, cases et interrupteurs, popovers, menus, info-bulles (à la place de `title`), modales, champ date avec calendrier.
+- **Tableau resserré** : un en-tête bien plus large que ses valeurs devient un mot court ou une icône (N°, Sortie, Relevé / Estimé / Total, À jouer bientôt, Possédé, Miniature), le libellé complet restant en info-bulle et pour les lecteurs d'écran. En mode édition, les champs se lisent comme la valeur (cadre au survol et au focus) et restent presque aussi étroits qu'elle : basculer de mode élargit à peine le tableau (une centaine de pixels en tout, surtout la date de fin, les fois fini et la note).
+- **Lecture** : statuts en pastilles colorées avec icône, notes teintées selon la valeur, DLC avec une jauge, logos des sociétés sur une plaque claire. En lecture seule, une case vraie s'affiche en icône, une case fausse reste vide.
+- **Défilement horizontal** : la colonne du chevron, la miniature (quand elle précède le nom) et le nom restent collés à gauche.
+- **Clavier** : « / » met le curseur dans la recherche ; ↓, ↑ et Entrée parcourent et choisissent les résultats (recherche IGDB, « Ma base ») ; une liste déroulante s'ouvre avec ↓, Entrée ou Espace, se parcourt aux flèches et à la frappe ; le menu Actions s'ouvre aussi avec ↓ et se parcourt aux flèches ; Alt+↓ ouvre le calendrier d'un champ date. Les modales gardent le focus (Tab boucle) et le rendent à l'élément d'origine à la fermeture.
+
 ## 10. Annuler / rétablir
 
 - `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
-- À la souris, les flèches ↩️ et ↪️ de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
+- À la souris, les boutons annuler et rétablir de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
 - Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé (jeu ; ajout au backlog avec sa première version jouée), un retrait, « Personnaliser », « Réorganiser la série » ou « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
 - Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
 - Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.

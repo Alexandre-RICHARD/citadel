@@ -1,0 +1,177 @@
+.trigger {
+  @include vars.field;
+
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  text-align: left;
+  cursor: pointer;
+
+  // Un clic garde le champ sobre ; l'anneau ne vient qu'au clavier
+  &:focus:not(:disabled) {
+    border-color: vars.$border-field;
+    box-shadow: none;
+  }
+
+  &:focus-visible:not(:disabled) {
+    border-color: vars.$accent;
+    box-shadow: 0 0 0 3px color-mix(in srgb, vars.$focus 26%, transparent);
+  }
+
+  &[aria-expanded="true"]:not(:disabled) {
+    border-color: vars.$accent;
+
+    .chevron {
+      rotate: 180deg;
+    }
+  }
+}
+
+.md {
+  height: vars.$control-md;
+  padding: 0 0.8rem 0 1.1rem;
+}
+
+.sm {
+  height: vars.$control-sm;
+  padding: 0 0.6rem 0 0.8rem;
+  font-size: vars.$text-sm;
+  border-radius: vars.$radius-sm;
+}
+
+.field {
+  min-width: 12rem;
+}
+
+// Cellule du tableau : la valeur seule, le cadre au survol
+.inline {
+  @include vars.inline-field;
+
+  margin-left: -0.6rem;
+
+  .chevron {
+    opacity: 0;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &[aria-expanded="true"] {
+    .chevron {
+      opacity: 1;
+    }
+  }
+}
+
+.compact {
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.4rem;
+}
+
+.highlighted {
+  color: vars.$accent-text;
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
+
+  &:hover:not(:disabled) {
+    background: vars.$accent-subtle-hover;
+    border-color: vars.$accent;
+  }
+
+  .chevron {
+    color: vars.$accent-text;
+  }
+}
+
+.value {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: vars.$text-faint;
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: vars.$text-subtle;
+  transition:
+    rotate vars.$duration vars.$ease,
+    opacity vars.$duration vars.$ease;
+}
+
+// ---------- Liste ----------
+
+.panel {
+  width: max-content;
+  max-width: min(40rem, calc(100vw - 1.6rem));
+  max-height: min(32rem, 60vh);
+  padding: 0.4rem;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  min-height: 3.2rem;
+  padding: 0.4rem 1rem 0.4rem 0.8rem;
+  color: vars.$text;
+  cursor: pointer;
+  border-radius: vars.$radius-sm;
+  outline: none;
+
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  &[aria-selected="true"] {
+    font-weight: 500;
+
+    .optionCheck {
+      visibility: visible;
+    }
+  }
+}
+
+.active {
+  background: vars.$surface-3;
+}
+
+.optionCheck {
+  flex-shrink: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: vars.$accent;
+  visibility: hidden;
+}
+
+.optionLabel {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.optionHint {
+  flex-shrink: 0;
+  margin-left: 1.2rem;
+  font-size: vars.$text-sm;
+  color: vars.$text-subtle;
+}

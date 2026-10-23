@@ -1,0 +1,45 @@
+.anchor {
+  display: inline-flex;
+  max-width: 100%;
+  vertical-align: middle;
+
+  // Un élément désactivé ne reçoit pas le survol : l'enveloppe le reçoit à sa place
+  > :disabled {
+    pointer-events: none;
+  }
+}
+
+.bubble {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: vars.$z-tooltip;
+  box-sizing: border-box;
+  max-width: 28rem;
+  padding: 0.5rem 0.9rem;
+  font-family: vars.$font-family;
+  font-size: vars.$text-sm;
+  font-weight: 500;
+  line-height: 1.45;
+  color: vars.$tooltip-text;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  background: vars.$tooltip-bg;
+  border: 1px solid vars.$tooltip-border;
+  border-radius: vars.$radius-md;
+  box-shadow: vars.$shadow-md;
+  animation: fade-in 120ms vars.$ease;
+}
+
+.wideBubble {
+  max-width: 40rem;
+  padding: 1rem 1.2rem;
+  font-weight: 400;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

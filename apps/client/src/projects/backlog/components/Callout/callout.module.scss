@@ -1,0 +1,64 @@
+.callout {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 1.2rem;
+  font-size: vars.$text-base;
+  line-height: 1.5;
+  color: vars.$text;
+  border: 1px solid;
+  border-radius: vars.$radius-lg;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-top: 0.1rem;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+
+  p {
+    margin: 0;
+  }
+}
+
+.info,
+.loading {
+  background: vars.$accent-subtle;
+  border-color: vars.$accent-border;
+
+  .icon {
+    color: vars.$accent-text;
+  }
+}
+
+.warning {
+  background: vars.$warning-subtle;
+  border-color: vars.$warning-border;
+
+  .icon {
+    color: vars.$warning-text;
+  }
+}
+
+.danger {
+  background: vars.$danger-subtle;
+  border-color: vars.$danger-border;
+
+  .icon {
+    color: vars.$danger-text;
+  }
+}
+
+.success {
+  background: vars.$success-subtle;
+  border-color: vars.$success-border;
+
+  .icon {
+    color: vars.$success-text;
+  }
+}
