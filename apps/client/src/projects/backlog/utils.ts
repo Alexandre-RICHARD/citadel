@@ -32,6 +32,8 @@ import {
 	type Platform,
 	type Series,
 	type SeriesChoice,
+	type SeriesDrop,
+	type SeriesEntry,
 	type SortCriterion,
 	type Status,
 	statusDefinitions,
@@ -564,6 +566,622 @@ export function getIgdbImageUrl(
 	return `https://images.igdb.com/igdb/image/upload/t_${size}${isHighDensity ? "_2x" : ""}/${imageId}.jpg`;
 }
 
+// ---------- Séries : choix, numéros et ordre (section 8) ----------
+
+/** La série de la base qui porte ce nom, sans tenir compte des accents ni des majuscules */
+function findSeriesByName(database: Database, name: string): Series | null {
+	const searched = normalizeText(name.trim());
+	return (
+		database.series.find(
+			(series) => normalizeText(series.name.trim()) === searched,
+		) ?? null
+	);
+}
+
+/** Valeur du choix de la série dans sa liste ; sans série proposée par IGDB, « aucune » est la proposition d'IGDB */
+export function formatSeriesValue(
+	choice: SeriesChoice,
+	hasProposedSeries: boolean,
+): string {
+	switch (choice.kind) {
+		case "other":
+			return `other-${choice.seriesId}`;
+		case "none":
+			return hasProposedSeries ? "none" : "proposed";
+		default:
+			return choice.kind;
+	}
+}
+
+/** Choix de la série lu dans sa liste ; « Nouvelle série » part d'un nom vide */
+export function parseSeriesValue(value: string): SeriesChoice {
+	if (value.startsWith("other-")) {
+		return { kind: "other", seriesId: Number(value.slice("other-".length)) };
+	}
+	switch (value) {
+		case "none":
+			return { kind: "none" };
+		case "new":
+			return { kind: "new", name: "" };
+		default:
+			return { kind: "proposed" };
+	}
+}
+
+/** Une nouvelle série doit avoir un nom */
+export function isSeriesChoiceValid(choice: SeriesChoice): boolean {
+	return choice.kind !== "new" || choice.name.trim() !== "";
+}
+
+/**
+ * id de la série choisie (section 8) ; `undefined` pour une nouvelle série, qui n'existe qu'à « Valider ».
+ * Un nom déjà pris désigne la série existante.
+ */
+function getChosenSeriesId(
+	database: Database,
+	proposedSeriesId: number | null,
+	choice: SeriesChoice,
+): number | null | undefined {
+	switch (choice.kind) {
+		case "proposed":
+			return proposedSeriesId;
+		case "other":
+			return choice.seriesId;
+		case "new":
+			return findSeriesByName(database, choice.name)?.id;
+		// none
+		default:
+			return null;
+	}
+}
+
+/** id de la série choisie pour un jeu ; `undefined` pour une nouvelle série */
+function getDraftSeriesId(
+	database: Database,
+	gameId: number,
+	choice: SeriesChoice,
+): number | null | undefined {
+	const game = database.games.find(({ id }) => id === gameId);
+	return getChosenSeriesId(database, game?.proposedSeriesId ?? null, choice);
+}
+
+function sortSeriesEntries(entries: SeriesEntry[]): SeriesEntry[] {
+	return entries.toSorted(
+		(first, second) => first.seriesNumber - second.seriesNumber,
+	);
+}
+
+/** Jeux du backlog d'une série, triés par numéro ; sans `excludedGameId` */
+function getSeriesEntries(
+	database: Database,
+	seriesId: number,
+	excludedGameId: number | null,
+): SeriesEntry[] {
+	return sortSeriesEntries(
+		database.userGames.flatMap((userGame) =>
+			userGame.seriesId === seriesId && userGame.gameId !== excludedGameId
+				? [{ gameId: userGame.gameId, seriesNumber: userGame.seriesNumber }]
+				: [],
+		),
+	);
+}
+
+/** Numéro après tous les autres (section 8) : l'entier au-dessus du plus grand, 1 pour le premier jeu de la série */
+function getNextSeriesNumber(entries: SeriesEntry[]): number {
+	return (
+		Math.floor(
+			Math.max(0, ...entries.map(({ seriesNumber }) => seriesNumber)),
+		) + 1
+	);
+}
+
+/** Les autres jeux du backlog de la série choisie pour un jeu : ils servent à lire et à afficher son numéro */
+export function getDraftSeriesEntries(
+	database: Database,
+	gameId: number,
+	choice: SeriesChoice,
+): SeriesEntry[] {
+	const seriesId = getDraftSeriesId(database, gameId, choice);
+	return seriesId === null || seriesId === undefined
+		? []
+		: getSeriesEntries(database, seriesId, gameId);
+}
+
+/**
+ * Numéro pré-rempli au choix d'une série (section 8) : aucun sans série ; dans sa série actuelle, le jeu garde le sien ;
+ * sinon, il passe après les jeux du backlog de la série. Une nouvelle série commence à 1.
+ */
+export function getDefaultSeriesNumber(
+	database: Database,
+	gameId: number,
+	choice: SeriesChoice,
+): number | null {
+	const seriesId = getDraftSeriesId(database, gameId, choice);
+	if (seriesId === undefined) {
+		return 1;
+	}
+	if (seriesId === null) {
+		return null;
+	}
+	const userGame = database.userGames.find((other) => other.gameId === gameId);
+	return userGame?.seriesId === seriesId
+		? userGame.seriesNumber
+		: getNextSeriesNumber(getSeriesEntries(database, seriesId, gameId));
+}
+
+/** Jeu du backlog qui a déjà le numéro saisi dans la série choisie : « Valider » le décalera (section 8) */
+export function findSeriesNumberOwner(
+	database: Database,
+	gameId: number,
+	draft: UserGameDraft,
+): Game | null {
+	const seriesId = getDraftSeriesId(database, gameId, draft.series);
+	const owner =
+		seriesId === null || seriesId === undefined
+			? undefined
+			: getSeriesEntries(database, seriesId, gameId).find(
+					({ seriesNumber }) => seriesNumber === draft.seriesNumber,
+				);
+	return owner === undefined
+		? null
+		: (database.games.find(({ id }) => id === owner.gameId) ?? null);
+}
+
+// Un numéro dans la série est stocké avec 3 décimales : les calculs se font en millièmes, sans erreur d'arrondi
+const seriesNumberScale = 1000;
+
+/** Famille d'un numéro (section 8) : sa partie entière, le numéro de son jeu principal */
+function getFamily(seriesNumber: number): number {
+	return Math.floor(
+		Math.round(seriesNumber * seriesNumberScale) / seriesNumberScale,
+	);
+}
+
+/** Rang de sous-jeu, en millièmes : 0 pour un principal, 100 pour 3.1, 10 pour 3.01 */
+function getSubPart(seriesNumber: number): number {
+	return Math.round(seriesNumber * seriesNumberScale) % seriesNumberScale;
+}
+
+function toSeriesNumber(family: number, subPart: number): number {
+	return (family * seriesNumberScale + subPart) / seriesNumberScale;
+}
+
+/** Chiffres que demande un rang de sous-jeu : 1 pour 3.1, 2 pour 3.01 ou 3.15, 3 pour 3.001 */
+function countSubPartDigits(subPart: number): number {
+	if (subPart % 100 === 0) {
+		return 1;
+	}
+	return subPart % 10 === 0 ? 2 : 3;
+}
+
+/** Chiffres des sous-jeux d'une famille (section 8) : ceux du plus précis, au moins 1 */
+function getFamilyDigits(entries: SeriesEntry[], family: number): number {
+	return Math.max(
+		1,
+		...entries.flatMap(({ seriesNumber }) =>
+			getFamily(seriesNumber) === family && getSubPart(seriesNumber) > 0
+				? [countSubPartDigits(getSubPart(seriesNumber))]
+				: [],
+		),
+	);
+}
+
+/** Un cran de sous-jeu, en millièmes : 100 pour une famille à 1 chiffre (3.1 → 3.2), 10 pour 2 chiffres */
+function getSubPartStep(digits: number): number {
+	return 10 ** (3 - digits);
+}
+
+/** Numéro affiché (section 8) : les sous-jeux d'une famille avec le moins de décimales possible, autant pour tous (3.01 … 3.10) */
+export function formatSeriesNumber(
+	seriesNumber: number,
+	entries: SeriesEntry[],
+): string {
+	const family = getFamily(seriesNumber);
+	const subPart = getSubPart(seriesNumber);
+	if (subPart === 0) {
+		return String(family);
+	}
+	const digits = Math.max(
+		countSubPartDigits(subPart),
+		getFamilyDigits(entries, family),
+	);
+	return `${family}.${String(subPart / getSubPartStep(digits)).padStart(digits, "0")}`;
+}
+
+/**
+ * Numéro tapé (section 8) : un entier à partir de 1, ou un sous-jeu jusqu'à 3 décimales ; `null` s'il est refusé.
+ * Avec moins de décimales que sa famille, c'est un rang : « 3.1 » parmi 3.01 … 3.10 donne 3.01. Avec plus, la famille en prend
+ * autant et ses sous-jeux gardent leur valeur : « 3.15 » parmi 3.1 et 3.2 se place entre les deux.
+ */
+export function parseSeriesNumber(
+	text: string,
+	entries: SeriesEntry[],
+): number | null {
+	const match = /^(\d+)(?:[.,](\d{1,3}))?$/u.exec(text.trim());
+	if (match === null) {
+		return null;
+	}
+	const [, familyText = "", decimals = ""] = match;
+	const family = Number(familyText);
+	if (family < 1) {
+		return null;
+	}
+	if (Number(decimals) === 0) {
+		return family;
+	}
+	const digits = Math.max(decimals.length, getFamilyDigits(entries, family));
+	return toSeriesNumber(family, Number(decimals) * getSubPartStep(digits));
+}
+
+/** Un numéro à décimales est un sous-jeu (section 8) */
+export function isSeriesSubNumber(seriesNumber: number): boolean {
+	return getSubPart(seriesNumber) > 0;
+}
+
+/** Ce qui bouge avec un jeu (section 8) : un principal emmène les sous-jeux de sa famille ; un sous-jeu bouge seul */
+function getSeriesBlock(entries: SeriesEntry[], gameId: number): SeriesEntry[] {
+	const moved = entries.find((entry) => entry.gameId === gameId);
+	if (moved === undefined) {
+		return [];
+	}
+	const family = getFamily(moved.seriesNumber);
+	return getSubPart(moved.seriesNumber) === 0
+		? [
+				moved,
+				...entries.filter(
+					({ seriesNumber }) =>
+						getFamily(seriesNumber) === family && getSubPart(seriesNumber) > 0,
+				),
+			]
+		: [moved];
+}
+
+function hasMain(entries: SeriesEntry[], family: number): boolean {
+	return entries.some(
+		({ seriesNumber }) =>
+			getFamily(seriesNumber) === family && getSubPart(seriesNumber) === 0,
+	);
+}
+
+function isSubPartUsed(
+	entries: SeriesEntry[],
+	family: number,
+	subPart: number,
+): boolean {
+	return entries.some(
+		({ seriesNumber }) =>
+			getFamily(seriesNumber) === family &&
+			getSubPart(seriesNumber) === subPart,
+	);
+}
+
+/**
+ * Libère la famille `family` (section 8) : elle avance (`direction` 1) ou recule (-1) d'un numéro avec ses sous-jeux,
+ * et les familles suivantes, ou précédentes, tant qu'elles se heurtent ; un numéro libre arrête le décalage
+ */
+function shiftFamilies(
+	entries: SeriesEntry[],
+	family: number,
+	direction: 1 | -1,
+): SeriesEntry[] {
+	const shifted = new Set<number>();
+	for (
+		let current = family;
+		entries.some(({ seriesNumber }) => getFamily(seriesNumber) === current);
+		current += direction
+	) {
+		shifted.add(current);
+	}
+	return entries.map((entry) => {
+		const entryFamily = getFamily(entry.seriesNumber);
+		return shifted.has(entryFamily)
+			? {
+					...entry,
+					seriesNumber: toSeriesNumber(
+						entryFamily + direction,
+						getSubPart(entry.seriesNumber),
+					),
+				}
+			: entry;
+	});
+}
+
+/** Un chiffre de plus pour les sous-jeux d'une famille, à rangs égaux (section 8) : 3.1 … 3.9 deviennent 3.01 … 3.09 ; `null` à 3 chiffres */
+function widenFamily(
+	entries: SeriesEntry[],
+	family: number,
+): SeriesEntry[] | null {
+	if (getFamilyDigits(entries, family) === 3) {
+		return null;
+	}
+	return entries.map((entry) =>
+		getFamily(entry.seriesNumber) === family &&
+		getSubPart(entry.seriesNumber) > 0
+			? {
+					...entry,
+					seriesNumber: toSeriesNumber(
+						family,
+						getSubPart(entry.seriesNumber) / 10,
+					),
+				}
+			: entry,
+	);
+}
+
+/**
+ * Range un sous-jeu au rang `subPart` de sa famille (section 8). Un rang pris est libéré : son sous-jeu avance (`direction` 1)
+ * ou recule (-1) d'un cran, avec les suivants, ou précédents, tant qu'ils se heurtent. Avancer au-delà du dernier rang
+ * (3.9, 3.99) fait d'abord passer la famille à un chiffre de plus. `null` au-delà de 3.999.
+ */
+function insertSub(
+	entries: SeriesEntry[],
+	gameId: number,
+	family: number,
+	subPart: number,
+	direction: 1 | -1,
+): SeriesEntry[] | null {
+	const step =
+		direction *
+		getSubPartStep(
+			Math.max(getFamilyDigits(entries, family), countSubPartDigits(subPart)),
+		);
+	const shifted = new Set<number>();
+	let current = subPart;
+	for (; isSubPartUsed(entries, family, current); current += step) {
+		shifted.add(current);
+	}
+	if (current >= seriesNumberScale) {
+		const widened = widenFamily(entries, family);
+		return widened === null
+			? null
+			: insertSub(widened, gameId, family, subPart / 10, direction);
+	}
+	return [
+		...entries.map((entry) =>
+			getFamily(entry.seriesNumber) === family &&
+			shifted.has(getSubPart(entry.seriesNumber))
+				? {
+						...entry,
+						seriesNumber: toSeriesNumber(
+							family,
+							getSubPart(entry.seriesNumber) + step,
+						),
+					}
+				: entry,
+		),
+		{ gameId, seriesNumber: toSeriesNumber(family, subPart) },
+	];
+}
+
+/** Range un sous-jeu au rang qui suit celui de `afterGameId` (0 : son principal), en libérant ce rang vers le haut s'il est pris */
+function insertSubAfter(
+	entries: SeriesEntry[],
+	gameId: number,
+	family: number,
+	afterGameId: number,
+): SeriesEntry[] | null {
+	const after = entries.find((entry) => entry.gameId === afterGameId);
+	const afterSubPart = after === undefined ? 0 : getSubPart(after.seriesNumber);
+	const subPart =
+		afterSubPart + getSubPartStep(getFamilyDigits(entries, family));
+	if (subPart >= seriesNumberScale) {
+		const widened = widenFamily(entries, family);
+		return widened === null
+			? null
+			: insertSubAfter(widened, gameId, family, afterGameId);
+	}
+	return insertSub(entries, gameId, family, subPart, 1);
+}
+
+/** Range des jeux à la suite comme sous-jeux, après `afterGameId` */
+function insertSubsAfter(
+	entries: SeriesEntry[],
+	items: SeriesEntry[],
+	family: number,
+	afterGameId: number,
+): SeriesEntry[] | null {
+	let placed: SeriesEntry[] | null = entries;
+	let previousGameId = afterGameId;
+	for (const { gameId } of items) {
+		placed =
+			placed === null
+				? null
+				: insertSubAfter(placed, gameId, family, previousGameId);
+		previousGameId = gameId;
+	}
+	return placed;
+}
+
+/**
+ * Range un jeu principal et ses sous-jeux à la famille `family` (section 8). Un principal déjà là est décalé avec sa famille,
+ * vers le haut (`direction` 1) ou le bas (-1). Ses sous-jeux gardent leur rang ; des sous-jeux orphelins déjà là restent et l'accueillent.
+ */
+function insertFamily(
+	entries: SeriesEntry[],
+	block: SeriesEntry[],
+	family: number,
+	direction: 1 | -1,
+): SeriesEntry[] | null {
+	const [head, ...subs] = block;
+	if (head === undefined) {
+		return entries;
+	}
+	let placed: SeriesEntry[] | null = [
+		...(hasMain(entries, family)
+			? shiftFamilies(entries, family, direction)
+			: entries),
+		{ gameId: head.gameId, seriesNumber: family },
+	];
+	for (const { gameId, seriesNumber } of subs) {
+		placed =
+			placed === null
+				? null
+				: insertSub(placed, gameId, family, getSubPart(seriesNumber), 1);
+	}
+	return placed;
+}
+
+/**
+ * Numéro tapé dans « Réorganiser la série », « Personnaliser » ou l'ajout au backlog (section 8) : un numéro pris est libéré
+ * vers le haut. Un principal emmène ses sous-jeux ; devenu sous-jeu, il les range à sa suite. Un jeu absent de `entries` y entre.
+ */
+export function placeSeriesEntry(
+	entries: SeriesEntry[],
+	gameId: number,
+	seriesNumber: number,
+): SeriesEntry[] {
+	const found = getSeriesBlock(entries, gameId);
+	const block = found.length === 0 ? [{ gameId, seriesNumber }] : found;
+	const blockIds = new Set(block.map((entry) => entry.gameId));
+	const rest = entries.filter((entry) => !blockIds.has(entry.gameId));
+	const family = getFamily(seriesNumber);
+	const subPart = getSubPart(seriesNumber);
+	const [head, ...subs] = block;
+	if (head === undefined) {
+		return entries;
+	}
+	let placed: SeriesEntry[] | null;
+	if (subPart === 0) {
+		placed = insertFamily(rest, block, family, 1);
+	} else {
+		const headPlaced = insertSub(rest, head.gameId, family, subPart, 1);
+		placed =
+			headPlaced === null
+				? null
+				: insertSubsAfter(headPlaced, subs, family, head.gameId);
+	}
+	return placed === null ? entries : sortSeriesEntries(placed);
+}
+
+/**
+ * Le trait de dépôt (section 8) : `gapIndex`, sa place entre deux lignes (0 : tout en haut), et `wantsSub`, le glisser décalé
+ * à droite. Tout en haut, le jeu est principal ; entre deux jeux d'une même famille, sous-jeu ; ailleurs, selon `wantsSub`.
+ */
+export function getSeriesDrop(
+	entries: SeriesEntry[],
+	gameId: number,
+	gapIndex: number,
+	wantsSub: boolean,
+): SeriesDrop {
+	const block = getSeriesBlock(entries, gameId);
+	const blockIds = new Set(block.map((entry) => entry.gameId));
+	const rest = entries.filter((entry) => !blockIds.has(entry.gameId));
+	const restGapIndex = entries
+		.slice(0, gapIndex)
+		.filter((entry) => !blockIds.has(entry.gameId)).length;
+	const above = restGapIndex === 0 ? null : (rest.at(restGapIndex - 1) ?? null);
+	const below = rest.at(restGapIndex) ?? null;
+	const isInsideFamily =
+		above !== null &&
+		below !== null &&
+		getFamily(above.seriesNumber) === getFamily(below.seriesNumber) &&
+		getSubPart(below.seriesNumber) > 0;
+	return {
+		block,
+		rest,
+		above,
+		isSub: above !== null && (isInsideFamily || wantsSub),
+		isMovingDown:
+			entries.findIndex((entry) => entry.gameId === gameId) < gapIndex,
+	};
+}
+
+/**
+ * Glisser-déposer de « Réorganiser la série » (section 8). Le jeu prend le premier numéro libre juste après le jeu du dessus
+ * (principal : l'entier suivant sa famille, 1 tout en haut ; sous-jeu : le rang suivant), et personne d'autre ne bouge.
+ * Ce numéro pris : en descendant au même niveau, le jeu prend la place du jeu du dessus et les jeux dépassés reculent d'un cran ;
+ * sinon, il prend ce numéro et celui qui l'avait avance d'un cran. Dans les deux cas, en cascade, jusqu'à un trou.
+ */
+export function dropSeriesEntry(
+	entries: SeriesEntry[],
+	gameId: number,
+	gapIndex: number,
+	wantsSub: boolean,
+): SeriesEntry[] {
+	const { block, rest, above, isSub, isMovingDown } = getSeriesDrop(
+		entries,
+		gameId,
+		gapIndex,
+		wantsSub,
+	);
+	const [head, ...subs] = block;
+	if (head === undefined) {
+		return entries;
+	}
+	const isMain = getSubPart(head.seriesNumber) === 0;
+	let placed: SeriesEntry[] | null;
+	if (above === null || !isSub) {
+		const aboveFamily = above === null ? 0 : getFamily(above.seriesNumber);
+		// Sans place libre, un principal qui descend prend celle de la famille du dessus, qui recule
+		const isPulling =
+			isMain &&
+			isMovingDown &&
+			hasMain(rest, aboveFamily + 1) &&
+			hasMain(rest, aboveFamily);
+		placed = isPulling
+			? insertFamily(rest, block, aboveFamily, -1)
+			: insertFamily(rest, block, aboveFamily + 1, 1);
+	} else {
+		const family = getFamily(above.seriesNumber);
+		const nextSubPart =
+			getSubPart(above.seriesNumber) +
+			getSubPartStep(getFamilyDigits(rest, family));
+		// Sans rang libre, un sous-jeu qui descend dans sa famille prend le rang du dessus, qui recule
+		const isPulling =
+			!isMain &&
+			isMovingDown &&
+			getFamily(head.seriesNumber) === family &&
+			(nextSubPart >= seriesNumberScale ||
+				isSubPartUsed(rest, family, nextSubPart));
+		placed = isPulling
+			? insertSub(rest, head.gameId, family, getSubPart(above.seriesNumber), -1)
+			: insertSubsAfter(rest, [head, ...subs], family, above.gameId);
+	}
+	return placed === null ? entries : sortSeriesEntries(placed);
+}
+
+/**
+ * Incohérences de « Réorganiser la série » (section 8) : pour chaque jeu sorti avant un jeu placé plus haut, le plus récent de ceux-là.
+ * Un jeu sans date de sortie n'est pas comparé.
+ */
+export function getSeriesOrderConflicts(
+	database: Database,
+	entries: SeriesEntry[],
+): Map<number, Game> {
+	const conflicts = new Map<number, Game>();
+	let latest: { game: Game; date: IsoDate } | null = null;
+	for (const { gameId } of entries) {
+		const game = database.games.find(({ id }) => id === gameId);
+		const date = game?.firstReleaseDate ?? null;
+		if (game !== undefined && date !== null) {
+			if (latest !== null && date < latest.date) {
+				conflicts.set(gameId, latest.game);
+			} else {
+				latest = { game, date };
+			}
+		}
+	}
+	return conflicts;
+}
+
+/** « Réorganiser la série » sur la série d'un jeu du backlog ; aucune modale sans série */
+export function getReorderSeriesModal(
+	database: Database,
+	gameId: number,
+): Extract<Modal, { kind: "reorderSeries" }> | null {
+	const seriesId =
+		database.userGames.find((userGame) => userGame.gameId === gameId)
+			?.seriesId ?? null;
+	return seriesId === null
+		? null
+		: {
+				kind: "reorderSeries",
+				seriesId,
+				gameId,
+				entries: getSeriesEntries(database, seriesId, null),
+			};
+}
+
 // ---------- Modales : versions, DLC et plateformes ----------
 
 /** Valeurs d'une nouvelle version jouée : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide */
@@ -599,13 +1217,18 @@ export function findUserGame(
 	);
 }
 
-/** Personnalisation par défaut à l'ajout au backlog (section 8) : l'image donnée, Histoire, la série proposée par IGDB */
-function getDefaultUserGameDraft(imageId: IgdbImageId | null): UserGameDraft {
+/** Personnalisation par défaut à l'ajout au backlog (section 8) : l'image donnée, Histoire, la série proposée par IGDB et son numéro par défaut */
+function getDefaultUserGameDraft(
+	database: Database,
+	gameId: number,
+	imageId: IgdbImageId | null,
+): UserGameDraft {
+	const series: SeriesChoice = { kind: "proposed" };
 	return {
 		imageId,
 		endingType: "story",
-		series: { kind: "proposed" },
-		seriesNumber: null,
+		series,
+		seriesNumber: getDefaultSeriesNumber(database, gameId, series),
 	};
 }
 
@@ -653,7 +1276,9 @@ export function getAddUserVersionModal(
 		kind: "addUserVersion",
 		gameId,
 		draft: { ...defaultUserVersionDraft, versionId },
-		userGameDraft: isInBacklog ? null : getDefaultUserGameDraft(defaultImageId),
+		userGameDraft: isInBacklog
+			? null
+			: getDefaultUserGameDraft(database, gameId, defaultImageId),
 		imageIds: isInBacklog ? [] : imageIds,
 		queuedGameIds,
 	};
@@ -1014,73 +1639,6 @@ export function findStoredSeries(
 	);
 }
 
-/** La série de la base qui porte ce nom, sans tenir compte des accents ni des majuscules */
-function findSeriesByName(database: Database, name: string): Series | null {
-	const searched = normalizeText(name.trim());
-	return (
-		database.series.find(
-			(series) => normalizeText(series.name.trim()) === searched,
-		) ?? null
-	);
-}
-
-/** Valeur du choix de la série dans sa liste ; sans série proposée par IGDB, « aucune » est la proposition d'IGDB */
-export function formatSeriesValue(
-	choice: SeriesChoice,
-	hasProposedSeries: boolean,
-): string {
-	switch (choice.kind) {
-		case "other":
-			return `other-${choice.seriesId}`;
-		case "none":
-			return hasProposedSeries ? "none" : "proposed";
-		default:
-			return choice.kind;
-	}
-}
-
-/** Choix de la série lu dans sa liste ; « Nouvelle série » part d'un nom vide */
-export function parseSeriesValue(value: string): SeriesChoice {
-	if (value.startsWith("other-")) {
-		return { kind: "other", seriesId: Number(value.slice("other-".length)) };
-	}
-	switch (value) {
-		case "none":
-			return { kind: "none" };
-		case "new":
-			return { kind: "new", name: "" };
-		default:
-			return { kind: "proposed" };
-	}
-}
-
-/** Une nouvelle série doit avoir un nom */
-export function isSeriesChoiceValid(choice: SeriesChoice): boolean {
-	return choice.kind !== "new" || choice.name.trim() !== "";
-}
-
-/**
- * id de la série choisie (section 8) ; `undefined` pour une nouvelle série, qui n'existe qu'à « Valider ».
- * Un nom déjà pris désigne la série existante.
- */
-function getChosenSeriesId(
-	database: Database,
-	proposedSeriesId: number | null,
-	choice: SeriesChoice,
-): number | null | undefined {
-	switch (choice.kind) {
-		case "proposed":
-			return proposedSeriesId;
-		case "other":
-			return choice.seriesId;
-		case "new":
-			return findSeriesByName(database, choice.name)?.id;
-		// none
-		default:
-			return null;
-	}
-}
-
 function getNextSeriesId(database: Database): number {
 	return Math.max(0, ...database.series.map(({ id }) => id)) + 1;
 }
@@ -1183,9 +1741,23 @@ export function getGameUserVersionIds(
 		.map(({ id }) => id);
 }
 
+/** Reporte les numéros donnés sur les jeux du backlog d'une série */
+function setSeriesNumbers(
+	userGames: UserGame[],
+	entries: SeriesEntry[],
+): UserGame[] {
+	return userGames.map((userGame) => {
+		const entry = entries.find(({ gameId }) => gameId === userGame.gameId);
+		return entry === undefined || userGame.seriesId === null
+			? userGame
+			: { ...userGame, seriesNumber: entry.seriesNumber };
+	});
+}
+
 /**
  * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser » (section 8) : la série choisie,
- * créée si besoin, et sans série, pas de numéro. Les statuts que le type de fin rend incompatibles sont convertis.
+ * créée si besoin, et sans série, pas de numéro. Un numéro déjà pris dans la série décale celui qui l'avait vers le haut,
+ * et les suivants si besoin. Les statuts que le type de fin rend incompatibles sont convertis.
  */
 export function saveUserGame(
 	database: Database,
@@ -1196,7 +1768,7 @@ export function saveUserGame(
 	if (game === null) {
 		return database;
 	}
-	const { series, ...choices } = draft;
+	const { series, seriesNumber, ...choices } = draft;
 	const chosen =
 		series.kind === "new"
 			? storeSeries(
@@ -1213,13 +1785,31 @@ export function saveUserGame(
 					seriesId:
 						getChosenSeriesId(database, game.proposedSeriesId, series) ?? null,
 				};
-	const userGame: UserGame = {
-		...choices,
-		gameId,
-		seriesId: chosen.seriesId,
-		seriesNumber: chosen.seriesId === null ? null : choices.seriesNumber,
-	};
-	const { userGames } = chosen.database;
+	// Rangé dans sa série comme un numéro tapé : les jeux déplacés suivent, et une famille élargie change aussi le sien
+	const seriesEntries =
+		chosen.seriesId === null
+			? []
+			: placeSeriesEntry(
+					getSeriesEntries(chosen.database, chosen.seriesId, null),
+					gameId,
+					seriesNumber ??
+						getNextSeriesNumber(
+							getSeriesEntries(chosen.database, chosen.seriesId, gameId),
+						),
+				);
+	const placedNumber = seriesEntries.find(
+		(entry) => entry.gameId === gameId,
+	)?.seriesNumber;
+	const userGame: UserGame =
+		chosen.seriesId === null || placedNumber === undefined
+			? { ...choices, gameId, seriesId: null, seriesNumber: null }
+			: {
+					...choices,
+					gameId,
+					seriesId: chosen.seriesId,
+					seriesNumber: placedNumber,
+				};
+	const userGames = setSeriesNumbers(chosen.database.userGames, seriesEntries);
 	const userVersionIds = getGameUserVersionIds(chosen.database, gameId);
 	return removeUnusedSeries({
 		...chosen.database,
@@ -1238,6 +1828,17 @@ export function saveUserGame(
 				: userVersion,
 		),
 	});
+}
+
+/** « Réorganiser la série » (section 8) : les nouveaux numéros de ses jeux, en une seule action */
+export function saveSeriesNumbers(
+	database: Database,
+	entries: SeriesEntry[],
+): Database {
+	return {
+		...database,
+		userGames: setSeriesNumbers(database.userGames, entries),
+	};
 }
 
 /** « Rechercher d'autres DLC » (section 9) : les DLC cochés rejoignent leur jeu, sans doublon */
@@ -1349,6 +1950,17 @@ export function hasUserGameChanges(
 		draft.endingType !== userGame.endingType ||
 		seriesId !== userGame.seriesId ||
 		(seriesId === null ? null : draft.seriesNumber) !== userGame.seriesNumber
+	);
+}
+
+/** « Réorganiser la série » change-t-il la base (section 8) : un numéro déplacé */
+export function hasSeriesOrderChanges(
+	database: Database,
+	entries: SeriesEntry[],
+): boolean {
+	return entries.some(
+		({ gameId, seriesNumber }) =>
+			findUserGame(database, gameId)?.seriesNumber !== seriesNumber,
 	);
 }
 

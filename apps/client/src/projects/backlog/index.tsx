@@ -39,6 +39,8 @@ import {
 	type SearchResult,
 	type SearchSource,
 	type Series,
+	type SeriesChoice,
+	type SeriesEntry,
 	type SortCriterion,
 	type Status,
 	statusDefinitions,
@@ -62,22 +64,27 @@ import {
 	describeFilters,
 	describeSort,
 	describeVersionPlatforms,
+	dropSeriesEntry,
 	editModeIdleMs,
 	emptyImportSelection,
 	fetchIgdbGameData,
 	fetchIgdbGameImages,
 	filterGameRows,
 	findById,
+	findSeriesNumberOwner,
 	findUserGame,
 	formatDlcProgress,
 	formatDuration,
 	formatFinishCount,
 	formatIsoDate,
 	formatReleaseDate,
+	formatSeriesNumber,
 	formatSeriesValue,
 	getAddUserVersionModal,
 	getColumnLabel,
+	getDefaultSeriesNumber,
 	getDlcAsGameQueue,
+	getDraftSeriesEntries,
 	getEndingTypeLabel,
 	getFilterOptions,
 	getGameModal,
@@ -88,16 +95,21 @@ import {
 	getNextUserVersionId,
 	getPlatformOptions,
 	getQueuedGameIds,
+	getReorderSeriesModal,
 	getRowData,
+	getSeriesDrop,
+	getSeriesOrderConflicts,
 	getStatusLabel,
 	getTodayIsoDate,
 	getUserGameDraft,
 	getVersionLabel,
 	hasGameEditChanges,
+	hasSeriesOrderChanges,
 	hasUserGameChanges,
 	isDurationColumn,
 	isFinishedStatus,
 	isSeriesChoiceValid,
+	isSeriesSubNumber,
 	isSortableColumn,
 	isStatusAllowed,
 	keepSelection,
@@ -105,7 +117,9 @@ import {
 	loadSavedColumns,
 	moveColumn,
 	parseIsoDate,
+	parseSeriesNumber,
 	parseSeriesValue,
+	placeSeriesEntry,
 	pushToHistory,
 	readViewFromUrl,
 	receiveEditGameImport,
@@ -114,6 +128,7 @@ import {
 	receiveGameImport,
 	removeUserVersions,
 	saveColumns,
+	saveSeriesNumbers,
 	saveUserGame,
 	searchDatabaseGames,
 	searchDelayMs,
@@ -407,6 +422,59 @@ function DateField({
 
 // ---------- Recherche ----------
 
+/**
+ * Numéro dans la série, tapé « 3 » ou « 3.1 » (section 8) ; `entries`, les autres jeux de la série, servent à le lire et à l'afficher.
+ * `isLive` : chaque frappe valable est prise ; sinon, le numéro l'est en quittant le champ, ou avec Entrée.
+ * Un numéro refusé (sous 1, plus de 3 décimales) remet le champ au dernier numéro accepté.
+ */
+function SeriesNumberField({
+	value,
+	entries,
+	isLive,
+	className,
+	title,
+	ariaLabel,
+	onCommit,
+}: {
+	value: number | null;
+	entries: SeriesEntry[];
+	isLive: boolean;
+	className?: string;
+	title?: string | undefined;
+	ariaLabel?: string;
+	onCommit: (seriesNumber: number) => void;
+}) {
+	const text = value === null ? "" : formatSeriesNumber(value, entries);
+	return (
+		<input
+			// Pris à la sortie du champ : le champ repart du numéro rangé
+			key={isLive ? undefined : text}
+			type="text"
+			inputMode="decimal"
+			className={className ?? styles.seriesNumberField}
+			title={title}
+			aria-label={ariaLabel}
+			defaultValue={text}
+			onKeyDown={blurOnEnter}
+			onChange={(event) => {
+				const seriesNumber = parseSeriesNumber(event.target.value, entries);
+				if (isLive && seriesNumber !== null) {
+					onCommit(seriesNumber);
+				}
+			}}
+			onBlur={(event) => {
+				const input = event.currentTarget;
+				const seriesNumber = parseSeriesNumber(input.value, entries);
+				if (seriesNumber === null) {
+					input.value = text;
+				} else if (!isLive && seriesNumber !== value) {
+					onCommit(seriesNumber);
+				}
+			}}
+		/>
+	);
+}
+
 const searchSourceLabels: Record<
 	SearchSource,
 	{ button: string; placeholder: string }
@@ -634,8 +702,10 @@ function VersionPlatformFields({
 /**
  * Personnalisation d'un jeu du backlog (section 8), à l'ajout au backlog ou par « Personnaliser » :
  * miniature, type de fin, série et numéro dans la série. `imageIds` à `null` : images IGDB en cours de chargement.
+ * Choisir une série pré-remplit le numéro (section 8).
  */
 function UserGameFields({
+	gameId,
 	draft,
 	proposedSeries,
 	database,
@@ -643,6 +713,7 @@ function UserGameFields({
 	imageError,
 	onChange,
 }: {
+	gameId: number;
 	draft: UserGameDraft;
 	proposedSeries: Series | null;
 	database: Database;
@@ -664,6 +735,18 @@ function UserGameFields({
 	const hasSeries =
 		seriesValue !== "none" &&
 		!(seriesValue === "proposed" && proposedSeries === null);
+	const seriesNumberOwner = hasSeries
+		? findSeriesNumberOwner(database, gameId, draft)
+		: null;
+	const seriesEntries = getDraftSeriesEntries(database, gameId, draft.series);
+
+	function changeSeries(series: SeriesChoice) {
+		onChange({
+			...draft,
+			series,
+			seriesNumber: getDefaultSeriesNumber(database, gameId, series),
+		});
+	}
 
 	return (
 		<>
@@ -731,10 +814,7 @@ function UserGameFields({
 					<select
 						value={seriesValue}
 						onChange={(event) =>
-							onChange({
-								...draft,
-								series: parseSeriesValue(event.target.value),
-							})
+							changeSeries(parseSeriesValue(event.target.value))
 						}
 					>
 						<option value="proposed">
@@ -776,44 +856,33 @@ function UserGameFields({
 						type="button"
 						className={styles.iconButton}
 						title={`Revenir à la série proposée par IGDB : ${proposedSeries?.name ?? "aucune"}`}
-						onClick={() => onChange({ ...draft, series: { kind: "proposed" } })}
+						onClick={() => changeSeries({ kind: "proposed" })}
 					>
 						↩️ Série IGDB
 					</button>
 				)}
 				{hasSeries && (
+					// eslint-disable-next-line jsx-a11y/label-has-associated-control -- le champ est l'input de SeriesNumberField
 					<label>
 						N° dans la série
-						<input
-							type="number"
-							min={0}
-							step="any"
-							defaultValue={draft.seriesNumber ?? ""}
-							onChange={(event) => {
-								if (event.target.validity.valid) {
-									onChange({
-										...draft,
-										seriesNumber:
-											event.target.value === ""
-												? null
-												: Number(event.target.value),
-									});
-								}
-							}}
-							onBlur={(event) => {
-								// Une valeur refusée (négative) remet le champ au dernier numéro accepté
-								const input = event.currentTarget;
-								if (!input.validity.valid) {
-									input.value =
-										draft.seriesNumber === null
-											? ""
-											: String(draft.seriesNumber);
-								}
-							}}
+						<SeriesNumberField
+							// Un autre choix de série pré-remplit un autre numéro
+							key={seriesValue}
+							value={draft.seriesNumber}
+							entries={seriesEntries}
+							isLive
+							onCommit={(seriesNumber) => onChange({ ...draft, seriesNumber })}
 						/>
 					</label>
 				)}
 			</section>
+			{draft.seriesNumber !== null && seriesNumberOwner !== null && (
+				<p className={styles.hint}>
+					ℹ️ N° {formatSeriesNumber(draft.seriesNumber, seriesEntries)} déjà
+					pris par {seriesNumberOwner.frenchName ?? seriesNumberOwner.name} : il
+					sera décalé d’un cran, avec les suivants si besoin.
+				</p>
+			)}
 		</>
 	);
 }
@@ -1234,6 +1303,7 @@ function CustomizeGameModal({
 						</p>
 					)}
 					<UserGameFields
+						gameId={modal.gameId}
 						draft={modal.draft}
 						proposedSeries={findById(database.series, game.proposedSeriesId)}
 						database={database}
@@ -1243,6 +1313,202 @@ function CustomizeGameModal({
 					/>
 				</>
 			)}
+		</ModalFrame>
+	);
+}
+
+/** Décalage d'un sous-jeu dans « Réorganiser la série », en pixels (2rem) : glisser de sa moitié vers la droite en fait un sous-jeu */
+const subEntryIndentPx = 32;
+
+/**
+ * « Réorganiser la série » (section 8) : glisser un jeu par sa poignée sur le trait entre deux lignes, décalé à droite pour en faire
+ * un sous-jeu, ou taper son numéro. Un jeu sorti avant un jeu placé plus haut est signalé. Rien n'est enregistré avant « Valider ».
+ */
+function ReorderSeriesModal({
+	modal,
+	database,
+	onModalChange,
+	onCancel,
+	onValidate,
+}: {
+	modal: Extract<Modal, { kind: "reorderSeries" }>;
+	database: Database;
+	onModalChange: (modal: Extract<Modal, { kind: "reorderSeries" }>) => void;
+	onCancel: () => void;
+	onValidate: () => void;
+}) {
+	// Glisser-déposer en cours : le jeu saisi, d'où il part à l'horizontale, et le trait visé
+	const [draggedGameId, setDraggedGameId] = useState<number | null>(null);
+	const dragStartX = useRef(0);
+	const [gapIndex, setGapIndex] = useState<number | null>(null);
+	const [wantsSub, setWantsSub] = useState(false);
+	const { entries } = modal;
+	const series = findById(database.series, modal.seriesId);
+	const conflicts = getSeriesOrderConflicts(database, entries);
+	const draggedEntry =
+		entries.find((entry) => entry.gameId === draggedGameId) ?? null;
+	const dropLevel =
+		draggedGameId === null || gapIndex === null
+			? null
+			: getSeriesDrop(entries, draggedGameId, gapIndex, wantsSub).isSub
+				? "sub"
+				: "main";
+
+	function endDrag() {
+		setDraggedGameId(null);
+		setGapIndex(null);
+	}
+
+	/** Le trait s'affiche au-dessus de la ligne qui suit, ou sous la dernière */
+	function getDropSide(index: number): "above" | "below" | undefined {
+		if (gapIndex === index) {
+			return "above";
+		}
+		return gapIndex === entries.length && index === entries.length - 1
+			? "below"
+			: undefined;
+	}
+
+	return (
+		<ModalFrame
+			title={`Réorganiser la série : ${series?.name ?? "série introuvable"}`}
+			actions={
+				// Sans numéro changé, « Valider » reste inactif
+				<ModalActions
+					canValidate={hasSeriesOrderChanges(database, entries)}
+					onCancel={onCancel}
+					onValidate={onValidate}
+				/>
+			}
+		>
+			<p className={styles.notice}>
+				ℹ️ Glisse un jeu par ↕️ entre deux lignes, un peu à droite pour en faire
+				un sous-jeu, ou tape son numéro (3, 3.1).
+			</p>
+			<ol className={styles.seriesList}>
+				{entries.map(({ gameId, seriesNumber }, index) => {
+					const game = findById(database.games, gameId);
+					const storedNumber = findUserGame(database, gameId)?.seriesNumber;
+					const isChanged = seriesNumber !== storedNumber;
+					const conflict = conflicts.get(gameId);
+					const otherEntries = entries.filter(
+						(entry) => entry.gameId !== gameId,
+					);
+					return (
+						<li
+							key={gameId}
+							className={styles.seriesEntry}
+							data-sub={isSeriesSubNumber(seriesNumber) || undefined}
+							data-current={gameId === modal.gameId || undefined}
+							data-conflict={conflict !== undefined || undefined}
+							data-dragged={gameId === draggedGameId || undefined}
+							data-drop-side={getDropSide(index)}
+							data-drop-level={
+								getDropSide(index) === undefined ? undefined : dropLevel
+							}
+							onDragOver={(event) => {
+								if (draggedEntry === null) {
+									return;
+								}
+								// Autorise le dépôt : la moitié haute de la ligne vise le trait au-dessus, la moitié basse celui en dessous
+								event.preventDefault();
+								const row = event.currentTarget.getBoundingClientRect();
+								setGapIndex(
+									event.clientY > row.top + row.height / 2 ? index + 1 : index,
+								);
+								const indent =
+									(isSeriesSubNumber(draggedEntry.seriesNumber)
+										? subEntryIndentPx
+										: 0) +
+									event.clientX -
+									dragStartX.current;
+								setWantsSub(indent >= subEntryIndentPx / 2);
+							}}
+							onDrop={(event) => {
+								event.preventDefault();
+								if (draggedGameId !== null && gapIndex !== null) {
+									onModalChange({
+										...modal,
+										entries: dropSeriesEntry(
+											entries,
+											draggedGameId,
+											gapIndex,
+											wantsSub,
+										),
+									});
+								}
+								endDrag();
+							}}
+						>
+							<span
+								className={styles.dragHandle}
+								draggable
+								title="Glisser pour déplacer"
+								onDragStart={(event) => {
+									// Firefox ne lance le glisser qu'avec une donnée ; l'image glissée est toute la ligne
+									event.dataTransfer.setData("text/plain", String(gameId));
+									const row = event.currentTarget.closest("li");
+									if (row !== null) {
+										event.dataTransfer.setDragImage(row, 0, 0);
+									}
+									dragStartX.current = event.clientX;
+									setDraggedGameId(gameId);
+								}}
+								onDragEnd={endDrag}
+							>
+								↕️
+							</span>
+							<SeriesNumberField
+								value={seriesNumber}
+								entries={otherEntries}
+								isLive={false}
+								className={
+									isChanged
+										? styles.changedSeriesNumberField
+										: styles.seriesNumberField
+								}
+								title={
+									isChanged
+										? `Avant : ${storedNumber === undefined || storedNumber === null ? "aucun" : formatSeriesNumber(storedNumber, otherEntries)}`
+										: undefined
+								}
+								ariaLabel={`N° de ${game === null ? `jeu ${gameId}` : (game.frenchName ?? game.name)}`}
+								onCommit={(nextNumber) =>
+									onModalChange({
+										...modal,
+										entries: placeSeriesEntry(entries, gameId, nextNumber),
+									})
+								}
+							/>
+							{game === null ? (
+								<span>Jeu introuvable</span>
+							) : (
+								<>
+									<span className={styles.nameCell}>
+										<strong>{game.frenchName ?? game.name}</strong>
+										{game.frenchName !== null && (
+											<span className={styles.originalName}>{game.name}</span>
+										)}
+									</span>
+									<span>
+										{formatReleaseDate(game.firstReleaseDate, game.isCancelled)}
+									</span>
+								</>
+							)}
+							<span>
+								{conflict !== undefined && (
+									<span
+										className={styles.help}
+										title={`Sorti avant ${conflict.frenchName ?? conflict.name}, placé plus haut`}
+									>
+										⚠️
+									</span>
+								)}
+							</span>
+						</li>
+					);
+				})}
+			</ol>
 		</ModalFrame>
 	);
 }
@@ -1543,6 +1809,7 @@ function AddUserVersionModal({
 				<section className={styles.backlogOption}>
 					<h3>Personnalisation</h3>
 					<UserGameFields
+						gameId={modal.gameId}
 						draft={userGameDraft}
 						proposedSeries={findById(database.series, game.proposedSeriesId)}
 						database={database}
@@ -1690,7 +1957,7 @@ const gameInfoRenderers: Partial<
 			)}
 		</span>
 	),
-	seriesNumber: (row) => row.seriesNumber,
+	seriesNumber: (row) => row.seriesNumberLabel,
 	developer: (row) =>
 		row.developer === null ? null : <CompanyLabel company={row.developer} />,
 	publisher: (row) =>
@@ -1854,6 +2121,7 @@ function ActionsCell({
 	gameId,
 	userVersionId,
 	igdbUrl,
+	hasSeries,
 	isEditMode,
 	popover,
 	handlers,
@@ -1861,6 +2129,7 @@ function ActionsCell({
 	gameId: number;
 	userVersionId: number | null;
 	igdbUrl: string;
+	hasSeries: boolean;
 	isEditMode: boolean;
 	popover: Popover | null;
 	handlers: TableHandlers;
@@ -1874,6 +2143,8 @@ function ActionsCell({
 		label: string;
 		href: string | null;
 		isEditOnly: boolean;
+		/** Entrée inactive, avec sa raison au survol */
+		unavailableReason: string | null;
 		onSelect: () => void;
 	}[] =
 		userVersionId === null
@@ -1882,36 +2153,49 @@ function ActionsCell({
 						label: "🎨 Personnaliser",
 						href: null,
 						isEditOnly: true,
+						unavailableReason: null,
 						onSelect: () => handlers.openCustomizeGame(gameId),
+					},
+					{
+						label: "🔢 Réorganiser la série",
+						href: null,
+						isEditOnly: true,
+						unavailableReason: hasSeries ? null : "Ce jeu n’a pas de série",
+						onSelect: () => handlers.openReorderSeries(gameId),
 					},
 					{
 						label: "✏️ Modifier le jeu",
 						href: null,
 						isEditOnly: true,
+						unavailableReason: null,
 						onSelect: () => handlers.openEditGame(gameId),
 					},
 					{
 						label: "➕ Ajouter une version jouée",
 						href: null,
 						isEditOnly: true,
+						unavailableReason: null,
 						onSelect: () => handlers.openAddUserVersion(gameId),
 					},
 					{
 						label: "🔗 Ouvrir sur IGDB",
 						href: igdbUrl,
 						isEditOnly: false,
+						unavailableReason: null,
 						onSelect: () => undefined,
 					},
 					{
 						label: "🗑️ Retirer le jeu du backlog",
 						href: null,
 						isEditOnly: true,
+						unavailableReason: null,
 						onSelect: () => handlers.removeGameFromBacklog(gameId),
 					},
 					{
 						label: "🪵 Logger cette ligne",
 						href: null,
 						isEditOnly: false,
+						unavailableReason: null,
 						onSelect: () => handlers.logRow(gameId, null),
 					},
 				]
@@ -1920,18 +2204,21 @@ function ActionsCell({
 						label: "🔗 Ouvrir la version sur IGDB",
 						href: igdbUrl,
 						isEditOnly: false,
+						unavailableReason: null,
 						onSelect: () => undefined,
 					},
 					{
 						label: "🗑️ Retirer la version jouée",
 						href: null,
 						isEditOnly: true,
+						unavailableReason: null,
 						onSelect: () => handlers.removeUserVersion(userVersionId),
 					},
 					{
 						label: "🪵 Logger cette ligne",
 						href: null,
 						isEditOnly: false,
+						unavailableReason: null,
 						onSelect: () => handlers.logRow(gameId, userVersionId),
 					},
 				];
@@ -1960,41 +2247,45 @@ function ActionsCell({
 					className={styles.menu}
 					role="menu"
 				>
-					{entries.map(({ label, href, isEditOnly, onSelect }) => (
-						<li
-							key={label}
-							role="none"
-						>
-							{href === null ? (
-								<button
-									type="button"
-									role="menuitem"
-									disabled={isEditOnly && !isEditMode}
-									title={
-										isEditOnly && !isEditMode
-											? "Disponible en mode édition"
-											: undefined
-									}
-									onClick={() => {
-										handlers.setPopover(null);
-										onSelect();
-									}}
+					{entries.map(
+						({ label, href, isEditOnly, unavailableReason, onSelect }) => {
+							const disabledTitle =
+								isEditOnly && !isEditMode
+									? "Disponible en mode édition"
+									: unavailableReason;
+							return (
+								<li
+									key={label}
+									role="none"
 								>
-									{label}
-								</button>
-							) : (
-								<a
-									role="menuitem"
-									href={href}
-									target="_blank"
-									rel="noreferrer"
-									onClick={() => handlers.setPopover(null)}
-								>
-									{label}
-								</a>
-							)}
-						</li>
-					))}
+									{href === null ? (
+										<button
+											type="button"
+											role="menuitem"
+											disabled={disabledTitle !== null}
+											title={disabledTitle ?? undefined}
+											onClick={() => {
+												handlers.setPopover(null);
+												onSelect();
+											}}
+										>
+											{label}
+										</button>
+									) : (
+										<a
+											role="menuitem"
+											href={href}
+											target="_blank"
+											rel="noreferrer"
+											onClick={() => handlers.setPopover(null)}
+										>
+											{label}
+										</a>
+									)}
+								</li>
+							);
+						},
+					)}
 				</ul>
 			)}
 		</span>
@@ -2336,6 +2627,7 @@ function GameRowGroup({
 					gameId={row.gameId}
 					userVersionId={null}
 					igdbUrl={row.igdbUrl}
+					hasSeries={row.series !== null}
 					isEditMode={isEditMode}
 					popover={popover}
 					handlers={handlers}
@@ -2371,6 +2663,7 @@ function GameRowGroup({
 					gameId={row.gameId}
 					userVersionId={userVersionRow.userVersionId}
 					igdbUrl={userVersionRow.igdbUrl}
+					hasSeries={row.series !== null}
 					isEditMode={isEditMode}
 					popover={popover}
 					handlers={handlers}
@@ -3237,6 +3530,15 @@ export function Backlog() {
 		closeModal();
 	}
 
+	/** Les nouveaux numéros de la série, en une seule action */
+	function validateReorderSeries(
+		reorderSeriesModal: Extract<Modal, { kind: "reorderSeries" }>,
+	) {
+		const { entries } = reorderSeriesModal;
+		changeDatabase((current) => saveSeriesNumbers(current, entries));
+		closeModal();
+	}
+
 	function validateAddDlcs(addDlcsModal: Extract<Modal, { kind: "addDlcs" }>) {
 		const { dlcs, dlcIds } = addDlcsModal;
 		changeDatabase((current) =>
@@ -3304,6 +3606,14 @@ export function Backlog() {
 		});
 	}
 
+	function openReorderSeries(gameId: number) {
+		const reorderSeriesModal = getReorderSeriesModal(database, gameId);
+		if (reorderSeriesModal !== null) {
+			setModalError(null);
+			setModal(reorderSeriesModal);
+		}
+	}
+
 	function logRow(gameId: number, userVersionId: number | null) {
 		const rowData = getRowData(database, gameId, userVersionId);
 		// eslint-disable-next-line no-console -- « Logger cette ligne » (section 9)
@@ -3321,6 +3631,7 @@ export function Backlog() {
 		toggleDoneDlc: (userVersionId, dlcId) =>
 			changeDatabase((current) => toggleDoneDlc(current, userVersionId, dlcId)),
 		openCustomizeGame,
+		openReorderSeries,
 		openEditGame: (gameId) => {
 			setModalError(null);
 			setModal({
@@ -3755,6 +4066,15 @@ export function Backlog() {
 					onModalChange={setModal}
 					onCancel={closeModal}
 					onValidate={() => validateCustomizeGame(modal)}
+				/>
+			)}
+			{modal?.kind === "reorderSeries" && (
+				<ReorderSeriesModal
+					modal={modal}
+					database={database}
+					onModalChange={setModal}
+					onCancel={closeModal}
+					onValidate={() => validateReorderSeries(modal)}
 				/>
 			)}
 			{modal?.kind === "addUserVersion" && (

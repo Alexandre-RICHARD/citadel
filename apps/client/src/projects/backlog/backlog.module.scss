@@ -449,6 +449,82 @@ $toolbar-height: 4.5rem;
   }
 }
 
+// « Réorganiser la série » : une ligne par jeu, à glisser-déposer ; les sous-jeux décalés à droite
+.seriesList {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none;
+}
+
+.seriesEntry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.5rem 4rem 1fr 7rem 1.5rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #f1f1f1;
+
+  // Sous-jeu : décalé de 2rem, comme le glisser qui en fait un
+  &[data-sub] {
+    padding-left: 2.5rem;
+  }
+
+  // Le jeu d'où le menu a été ouvert
+  &[data-current] {
+    font-weight: 600;
+  }
+
+  // Sorti avant un jeu placé plus haut
+  &[data-conflict] {
+    background: #fee2e2;
+  }
+
+  &[data-dragged] {
+    opacity: 0.4;
+  }
+
+  // Le trait de dépôt : plein pour un principal, décalé à droite pour un sous-jeu
+  &[data-drop-side]::before {
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: 3px;
+    content: "";
+    background: #2563eb;
+  }
+
+  &[data-drop-side="above"]::before {
+    top: -2px;
+  }
+
+  &[data-drop-side="below"]::before {
+    bottom: -2px;
+  }
+
+  &[data-drop-level="sub"]::before {
+    left: 2rem;
+  }
+}
+
+.dragHandle {
+  cursor: grab;
+}
+
+.seriesNumberField {
+  width: 3.5rem;
+  font: inherit;
+  text-align: right;
+}
+
+// Numéro changé depuis l'ouverture ; l'ancien au survol
+.changedSeriesNumberField {
+  @extend .seriesNumberField;
+
+  font-weight: 700;
+  color: #2563eb;
+}
+
 .iconButton {
   padding: 0.1rem 0.3rem;
   font: inherit;
