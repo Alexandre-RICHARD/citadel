@@ -81,6 +81,7 @@ import {
 	isFinishedStatus,
 	isSortableColumn,
 	isStatusAllowed,
+	keepImportedVersions,
 	keepVisibleColumns,
 	loadSavedColumns,
 	mergeById,
@@ -99,6 +100,7 @@ import {
 	setVariantStatus,
 	sortGameRows,
 	toggleColumnVisibility,
+	toggleImportedVersion,
 	toggleSort,
 	toggleVariantDlc,
 	trimToNull,
@@ -607,17 +609,24 @@ function VariantChoiceFields({
 	);
 }
 
-/** Tout ce qui est stocké, en lecture seule, et les trois choix : miniature, type de fin, n° dans la série */
+/**
+ * Tout ce qui est stocké, en lecture seule, et les trois choix : miniature, type de fin, n° dans la série.
+ * À l'ajout, les versions se cochent (`versionIds`) ; à la modification, elles se listent seulement.
+ */
 function GamePreview({
 	gameImport,
 	choices,
 	isLoadingImages,
+	versionIds = null,
 	onChoicesChange,
+	onToggleVersion = () => undefined,
 }: {
 	gameImport: GameImport;
 	choices: GameChoices;
 	isLoadingImages: boolean;
+	versionIds?: number[] | null;
 	onChoicesChange: (choices: GameChoices) => void;
+	onToggleVersion?: (versionId: number) => void;
 }) {
 	const {
 		game,
@@ -755,21 +764,51 @@ function GamePreview({
 			</dl>
 
 			<section>
-				<h3>Versions ({versions.length})</h3>
-				<ul>
-					{versions.map((version) => (
-						<li key={version.id}>
-							<strong>{version.title ?? `${game.name} (originale)`}</strong>
-							<span className={styles.hint}>
-								{" "}
-								{describeVersionPlatforms(
-									version.id,
-									versionPlatforms,
-									platforms,
+				<h3>
+					{versionIds === null
+						? `Versions (${versions.length})`
+						: `Versions à enregistrer (${versionIds.length} / ${versions.length})`}
+				</h3>
+				<ul className={versionIds === null ? undefined : styles.checkList}>
+					{versions.map((version) => {
+						const label = (
+							<>
+								<strong>{version.title ?? `${game.name} (originale)`}</strong>
+								<span className={styles.hint}>
+									{" "}
+									{describeVersionPlatforms(
+										version.id,
+										versionPlatforms,
+										platforms,
+									)}
+								</span>
+							</>
+						);
+						const isOriginal = version.id === game.id;
+						return (
+							<li key={version.id}>
+								{versionIds === null ? (
+									label
+								) : (
+									<label
+										title={
+											isOriginal
+												? "Toujours enregistrée : c’est la fiche du jeu"
+												: undefined
+										}
+									>
+										<input
+											type="checkbox"
+											checked={isOriginal || versionIds.includes(version.id)}
+											disabled={isOriginal}
+											onChange={() => onToggleVersion(version.id)}
+										/>
+										{label}
+									</label>
 								)}
-							</span>
-						</li>
-					))}
+							</li>
+						);
+					})}
 				</ul>
 			</section>
 
@@ -879,13 +918,21 @@ function AddGameDialog({
 						gameImport={gameImport}
 						choices={modal.choices}
 						isLoadingImages={false}
+						versionIds={modal.versionIds}
 						onChoicesChange={(choices) => onModalChange({ ...modal, choices })}
+						onToggleVersion={(versionId) =>
+							onModalChange(toggleImportedVersion(modal, versionId))
+						}
 					/>
 					<section className={styles.backlogOption}>
 						<h3>Ajouter au backlog (optionnel)</h3>
+						{/* La variante se joue sur une version enregistrée */}
 						<VariantChoiceFields
 							gameName={gameImport.game.name}
-							versions={gameImport.versions}
+							versions={gameImport.versions.filter(
+								({ id }) =>
+									id === gameImport.game.id || modal.versionIds.includes(id),
+							)}
 							versionPlatforms={gameImport.versionPlatforms}
 							platforms={mergeById(gameImport.platforms, database.platforms)}
 							variants={database.variants}
@@ -2465,6 +2512,7 @@ export function Backlog() {
 						igdbId: result.id,
 						gameImport: null,
 						choices: { imageId: null, endingType: "story", seriesNumber: null },
+						versionIds: [],
 						variantChoice: { versionId: result.id, platformId: null },
 					}
 				: {
@@ -2480,12 +2528,17 @@ export function Backlog() {
 	}
 
 	function validateAddGame(addGameModal: Extract<Modal, { kind: "addGame" }>) {
-		const { gameImport, choices, variantChoice } = addGameModal;
+		const { gameImport, choices, versionIds, variantChoice } = addGameModal;
 		if (gameImport === null) {
 			return;
 		}
 		changeDatabase((current) =>
-			addGameImport(current, gameImport, choices, variantChoice),
+			addGameImport(
+				current,
+				keepImportedVersions(gameImport, versionIds),
+				choices,
+				variantChoice,
+			),
 		);
 		closeModal();
 	}
