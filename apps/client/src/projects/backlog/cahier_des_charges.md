@@ -65,12 +65,16 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | DLC | Tous les DLC, proposés à l'ajout ; seuls ceux cochés sont stockés. Colonne DLC | `dlcs`, `expansions` ; `parent_game` côté DLC |
 | Extensions standalone | Jeux distincts | `standalone_expansions` |
 | Bundles | Recherche : un bundle mène aux jeux qu'il contient | `bundles`, côté jeu contenu |
-| Série | Colonne Série | `collections` |
-| Franchise | Colonne Franchise ; un clic filtre le tableau | `franchise`, `franchises` |
+| Série | Série proposée à l'ajout (colonne Série) | `collections` et leurs relations (`as_child_relations`) ; à défaut, `franchise`, `franchises` |
 | Développeur, éditeur | Colonnes Développeur et Éditeur | `involved_companies` (rôles développeur / éditeur) → `companies` |
 | Logos des sociétés | Affichés au-dessus du nom de la société | `company_logos` |
 
-Le POC ne garde qu'une série, une franchise, un développeur et un éditeur par jeu (section 11) : la première collection ; la franchise principale (`franchise`), sinon la première de `franchises` ; pour chaque rôle, la première société.
+Le POC ne garde qu'une série, un développeur et un éditeur par jeu (section 11) ; pour chaque rôle, la première société.
+
+- **Série proposée** : la collection la plus large, c'est-à-dire la première qui n'a pas de collection parente parmi celles du jeu (*Crisis Core* est dans *Compilation of Final Fantasy VII*, *Final Fantasy* et *Final Fantasy VII* : on garde *Final Fantasy*). Sans collection, la franchise principale (`franchise`), sinon la première de `franchises` (*Aperture Desk Job* → *Portal*). Sinon, pas de série : un jeu seul n'en a pas.
+- **Pas de franchise** : une collection IGDB est une suite de jeux, structurée (sous-séries, spin-offs) ; une franchise n'est qu'une étiquette d'univers, deux fois moins renseignée, qui reprend le plus souvent le nom de la série. Elle ne sert qu'à proposer une série à défaut de collection, et n'est pas stockée en tant que telle.
+- **Un seul nom** : le nom IGDB de la série. IGDB n'a pas de nom alternatif pour les séries, donc pas de nom VF.
+- IGDB ne donne aucun ordre dans une série : le numéro dans la série se choisit à la main (section 8).
 
 ## 4. Architecture des données
 
@@ -99,7 +103,7 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 
 ### Consignes pour le code du POC
 
-- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, variante, DLC, DLC fait, série, franchise, société…), avec les mêmes noms de champs.
+- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, variante, DLC, DLC fait, série, société…), avec les mêmes noms de champs.
 - **Données normalisées** : les relations passent par des identifiants (`gameId`, `platformId`…), sans objets imbriqués ni données copiées d'une entité à l'autre.
 - **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
 - **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de variantes).
@@ -136,7 +140,7 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 ### Après le POC
 
 - **Une seule base**, découpée en deux groupes de tables :
-  - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), plus le type de fin et le numéro dans la série choisis à l'ajout. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
+  - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), plus le type de fin, la série et le numéro dans la série choisis à l'ajout. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
   - **Base utilisateur** : les variantes, qui portent toutes les données de l'utilisateur. C'est là seulement que la plateforme distingue les variantes.
 - **Serveur obligatoire** entre le front et IGDB : IGDB refuse les appels depuis un navigateur, son token doit rester côté serveur et l'API est limitée à 4 requêtes par seconde.
 ### Images
@@ -153,13 +157,13 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 
 | Notion | Définition | Exemples |
 | --- | --- | --- |
-| Jeu | L'œuvre. Une ligne du backlog. Un remake est un jeu distinct. Son type de fin et son numéro dans la série sont choisis à l'ajout | *Skyrim* ; *FF7* et *FF7 Remake* sont deux jeux |
+| Jeu | L'œuvre. Une ligne du backlog. Un remake est un jeu distinct. Son type de fin, sa série et son numéro dans la série sont choisis à l'ajout | *Skyrim* ; *FF7* et *FF7 Remake* sont deux jeux |
 | Version | Une déclinaison qu'IGDB rattache au jeu : portage, remaster, réédition, *Deluxe* / *Ultra Deluxe*, *GOTY*, *Director's Cut* | *Skyrim* et *Skyrim Legendary Edition* ; *The Last of Us* et *The Last of Us Remastered* |
 | Variante | Une version jouée sur une plateforme. Elle porte toutes les données de l'utilisateur : statut, temps, possession, dates, note, DLC faits… | *Skyrim* sur PS3 ; *Skyrim Legendary* sur PS4 ; *Skyrim Legendary* sur PC = 3 variantes |
 | Plateforme | Une plateforme IGDB, ou un émulateur rattaché à la console émulée. Stockée avec un nom et un nom technique | PS4, PC, *PCSX2* (PS2) |
 | DLC | Contenu additionnel rattaché au jeu, pas à une version. Il se coche comme fait sur une variante | *Dawnguard*, *Hearthfire*, *Dragonborn* pour *Skyrim* |
 | Extension standalone | Un jeu à part entière, pas un DLC. IGDB en classe certaines en DLC : on les ajoute alors comme jeu (règle « DLC comme jeu ») | *TLAD*, *TBOGT* (extensions de *GTA IV* sur IGDB) |
-| Franchise | Les jeux du même univers ; un clic sur son nom filtre le tableau | *Grand Theft Auto* |
+| Série | Facultative. Proposée par IGDB (section 3), elle peut être remplacée par une autre série, ou par une série créée à la main ; un clic sur son nom filtre le tableau | *Grand Theft Auto* ; *Souls*, créée à la main pour *Dark Souls*, *Sekiro* et *Elden Ring* |
 
 ### Règles
 
@@ -182,7 +186,7 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 - **Une seule variante** : la ligne est simple, non dépliable. Elle affiche cette variante (version et plateforme) et ses données se modifient directement sur la ligne. Miniature : l'image choisie à l'ajout ; nom : celui du jeu, avec le titre de la version en dessous si ce n'est pas l'original ; date de sortie : la date originale du jeu.
 - **Plusieurs variantes** : la ligne affiche le jeu original (nom, date de sortie originale), plateforme vide, et les agrégats des variantes. Elle se déplie en une sous-ligne par variante, où se modifient ses données.
 - **Agrégats** : la ligne du jeu montre le total, le meilleur, le plus ancien… selon la colonne (section 7). Quand il est impossible de choisir une valeur, la case reste vide.
-- **Données du jeu** : le type de fin et le numéro dans la série, choisis à l'ajout et modifiables avec le jeu (section 8), s'affichent en lecture seule dans le tableau.
+- **Données du jeu** : le type de fin, la série et le numéro dans la série, choisis à l'ajout et modifiables avec le jeu (section 8), s'affichent en lecture seule dans le tableau.
 - Seules les variantes présentes dans le backlog de l'utilisateur comptent. Les autres versions en base n'apparaissent pas.
 
 ## 6. Types de fin et statuts
@@ -240,9 +244,8 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 | --- | --- | --- | --- | --- |
 | Miniature | Jeu | IGDB | Image choisie à l'ajout | Image de la version |
 | Nom | Jeu | IGDB | Nom VF, nom VO en dessous s'il diffère | Titre de la version (ex. *Legendary Edition*) |
-| Série | Jeu | IGDB | Nom de la série |  |
-| N° dans la série | Jeu | Choisi à l'ajout | Numéro, en lecture seule |  |
-| Franchise | Jeu | IGDB | Nom ; un clic filtre le tableau sur cette franchise |  |
+| Série | Jeu | Proposée par IGDB, choisie à l'ajout | Nom, vide sans série ; ✏️ si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
+| N° dans la série | Jeu | Choisi à l'ajout | Numéro, en lecture seule ; vide sans série |  |
 | Développeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Éditeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Date de sortie | Jeu, version | IGDB | Date originale, ou « à venir » / « annulé » | Date de sortie de la version sur cette plateforme |
@@ -282,14 +285,15 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
    - Choisir un résultat ouvre la modale du jeu, qui propose toutes ses versions.
    - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec la version originale pré-sélectionnée.
    - Choisir un résultat ferme la liste des résultats ; revenir dans le champ la rouvre avec la même saisie. Un clic à côté ou Échap la ferme aussi.
-2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
+2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables, sauf la série, qui est un choix.
 3. **Choix dans la modale** :
    - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
    - Le type de fin du jeu (section 6) ; Histoire par défaut.
-   - Le numéro du jeu dans sa série, si le jeu en a une.
+   - La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « ➕ Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « ↩️ Série IGDB » y ramène.
+   - Le numéro du jeu dans sa série, si le jeu en a une ; sans série, il est effacé à « Valider ».
    - Les versions à enregistrer (section 5) : l'originale cochée d'office, les autres à cocher.
    - Les DLC à enregistrer (section 5) : tous cochés à l'ouverture. Chacun a aussi une case « 🧩 comme jeu », indépendante.
-4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées et les DLC cochés.
+4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, même si une autre est choisie : le jeu garde la trace de celle d'IGDB, pour le ✏️ et « ↩️ Série IGDB ».
 5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
    - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout d'une variante (Gestion du backlog). La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
    - Ce sont deux actions distinctes (section 10). Annuler l'ajout de la variante laisse le jeu en base, hors du backlog.
@@ -306,7 +310,8 @@ Un jeu déjà en base (retiré du backlog, ou ajouté sans variante) revient dan
 
 ### Modification d'un jeu
 
-- Un jeu déjà en base se modifie avec exactement les mêmes choix qu'à l'ajout : l'image de la miniature, le type de fin, le numéro dans la série, les versions et les DLC.
+- Un jeu déjà en base se modifie avec exactement les mêmes choix qu'à l'ajout : l'image de la miniature, le type de fin, la série, le numéro dans la série, les versions et les DLC.
+- La série proposée par IGDB reste celle de l'ajout : la relecture d'IGDB à l'ouverture ne la change pas. Une série qui n'a plus aucun jeu, après un changement de série, quitte la base.
 - La modification rouvre la même modale : données IGDB en lecture seule, ces choix modifiables, puis « Valider », en une seule action. Le jeu est relu sur IGDB à l'ouverture : la cover et les artworks, et les versions et DLC absents de la base. Les autres données viennent de la base.
 - Les versions et DLC déjà en base sont cochés et grisés ; les autres sont décochés, à cocher pour les ajouter. On ne peut pas en retirer. Les DLC y ont aussi leur case « 🧩 comme jeu », avec le même enchaînement qu'à l'ajout.
 - Un formulaire d'édition ne se valide jamais sans modification : « Valider » reste inactif tant qu'aucun choix n'a changé, qu'aucune version ni aucun DLC n'est coché en plus et qu'aucun DLC n'est coché « comme jeu ». Avec seulement des DLC « comme jeu », la base ne change pas : pas d'action, l'enchaînement s'ouvre directement.
@@ -347,7 +352,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 
 ### Menu Actions
 
-Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionnelles, pour alléger le tableau. Les interactions dans les cellules restent hors du menu : popover des DLC, clic sur la franchise, chevron, édition des statuts et des temps.
+Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionnelles, pour alléger le tableau. Les interactions dans les cellules restent hors du menu : popover des DLC, clic sur la série, chevron, édition des statuts et des temps.
 
 | Ligne | Entrées du menu |
 | --- | --- |
@@ -385,9 +390,9 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 - Tri multi-colonnes : flèche de direction et indicateur numérique de priorité. Un clic sur un en-tête fait défiler ⬆️, ⬇️, puis plus de tri sur cette colonne ; chaque nouvelle colonne passe après les autres.
 - Les lignes des jeux se trient sur ce qu'elles affichent, leurs sous-lignes restent rattachées à leur jeu, et les cases vides passent en dernier.
-- Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, franchise, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
+- Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
 - Un jeu reste affiché si sa ligne ou au moins une de ses variantes correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une variante PS4) ; déplié, il montre toutes ses variantes.
-- Un clic sur un nom de franchise filtre le tableau sur les jeux de cette franchise.
+- Un clic sur un nom de série filtre le tableau sur les jeux de cette série (valeur exacte).
 - Dès qu'un filtre est actif, « 🧹 Effacer », au début de la ligne des filtres, les retire tous d'un coup.
 - Paramètres de tri et de filtre persistés dans l'URL.
 - Une colonne masquée est retirée du tri dans l'URL et de la recherche.
@@ -414,7 +419,8 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - DLC choisis par utilisateur : dans le POC, les DLC choisis vont en base, rattachés au jeu, comme les versions. À plusieurs utilisateurs, un DLC ajouté par l'un compterait dans le « total » de l'autre ; il faudra une sélection des DLC suivis par utilisateur.
 - Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des variantes et un DLC des cases « fait ». Le POC ne permet que d'en ajouter.
 - Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
-- Plusieurs séries, franchises, développeurs et éditeurs par jeu : IGDB renvoie des listes (`collections`, `franchises`, `involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (chaque franchise cliquable, un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
+- Plusieurs développeurs et éditeurs par jeu : IGDB renvoie des listes (`involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
+- Séries choisies par utilisateur : dans le POC, la série choisie (et les séries créées à la main, comme *Souls*) est rangée sur le jeu, en base globale, comme le type de fin et le numéro. À plusieurs utilisateurs, ce choix devra être personnel.
 - À surveiller : les éditions qu'IGDB classe en « Bundle ». Le POC prend comme version tout bundle rattaché à un jeu par `version_parent` (*Skyrim Legendary Edition*, éditions de *GTA V*) et ignore les autres, même quand ils ne contiennent qu'un jeu et ses DLC (*FF7 Remake Intergrade*, seulement listé dans `bundles` du jeu). Vérifier la règle sur plus de jeux et traiter ces cas.
 
 ### Écartées
@@ -429,8 +435,11 @@ Trace des idées qui ne seront pas faites.
 - Bundles : regrouper plusieurs jeux sous une même fiche.
 - Champ « Origine » distinct (vu mais pas fait, abonnement, émulation, officiel, gratuit).
 - Ajout manuel d'un jeu.
-- Modifier ou nettoyer les données IGDB avant de les enregistrer.
-- Choisir à l'ajout les jeux de la franchise à importer.
+- Modifier ou nettoyer les données IGDB avant de les enregistrer (seule la série se choisit, section 8).
+- Choisir à l'ajout les jeux de la série à importer.
+- Colonne Franchise : doublon de la série dans la plupart des cas (section 3).
+- Nom VF des séries : IGDB n'en a pas, et une saisie à la main n'est pas voulue.
+- Donner une série à un jeu seul, avec son propre nom (habitude du Google Sheet) : la série est facultative.
 - Colonne « Jeux liés ».
 - Stocker les images elles-mêmes (base64 ou fichiers).
 - Stocker les noms alternatifs : seuls les noms VO et VF sont gardés.

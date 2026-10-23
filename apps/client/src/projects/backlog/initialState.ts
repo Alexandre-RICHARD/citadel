@@ -34,7 +34,6 @@ export const initialState = {
 		],
 		"dlcs": [],
 		"series": [],
-		"franchises": [],
 		"companies": [],
 		"variants": [],
 		"variantDlcs": []
@@ -62,10 +61,6 @@ export const initialState = {
 		},
 		{
 			"key": "seriesNumber",
-			"isVisible": true
-		},
-		{
-			"key": "franchise",
 			"isVisible": true
 		},
 		{

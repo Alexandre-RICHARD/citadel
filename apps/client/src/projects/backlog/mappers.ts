@@ -9,12 +9,14 @@ import type {
 	IgdbCompany,
 	IgdbGameData,
 	IgdbImageId,
+	IgdbOriginalGame,
 	IgdbPlatform,
 	IgdbSearchHit,
 	IgdbVersionGame,
 	Platform,
 	RowIndexes,
 	SearchResult,
+	Series,
 	Variant,
 	VariantRow,
 	Version,
@@ -170,14 +172,43 @@ function getVersionTitle(version: IgdbVersionGame, gameName: string): string {
 		: `${typeLabel} ${new Date(firstReleaseTime * 1000).getUTCFullYear()}`;
 }
 
+/**
+ * Série proposée par IGDB (section 3) : la collection la plus large, sans parente parmi celles du jeu ;
+ * sinon la franchise principale, sinon la première ; sinon aucune
+ */
+function getIgdbSeries(original: IgdbOriginalGame): Omit<Series, "id"> | null {
+	const collections = original.collections ?? [];
+	const collectionIds = collections.map(({ id }) => id);
+	const collection =
+		collections.find(
+			({ as_child_relations: parentRelations = [] }) =>
+				!parentRelations.some(
+					({ parent_collection: parentId }) =>
+						parentId !== undefined && collectionIds.includes(parentId),
+				),
+		) ?? collections.at(0);
+	if (collection !== undefined) {
+		return {
+			name: collection.name,
+			igdbCollectionId: collection.id,
+			igdbFranchiseId: null,
+		};
+	}
+	const franchise = original.franchise ?? original.franchises?.at(0);
+	return franchise === undefined
+		? null
+		: {
+				name: franchise.name,
+				igdbCollectionId: null,
+				igdbFranchiseId: franchise.id,
+			};
+}
+
 /** Réponses IGDB → données de la base, montrées dans la modale puis écrites à « Valider » (section 8) */
 export function mapGameImport(data: IgdbGameData): GameImport {
 	const { original } = data;
 	const gameId = original.id;
-	// Une seule valeur par colonne (section 3) : la première série, la franchise principale sinon la première,
-	// la première société de chaque rôle
-	const series = original.collections?.at(0) ?? null;
-	const franchise = original.franchise ?? original.franchises?.at(0) ?? null;
+	// Une seule société par rôle (section 3) : la première
 	const developer =
 		original.involved_companies?.find((involved) => involved.developer)
 			?.company ?? null;
@@ -216,8 +247,6 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 			frenchName: findFrenchName(original.name, original.alternative_names),
 			firstReleaseDate: toIsoDate(original.first_release_date),
 			isCancelled: data.gameStatus === "Cancelled",
-			seriesId: series?.id ?? null,
-			franchiseId: franchise?.id ?? null,
 			developerId: developer?.id ?? null,
 			publisherId: publisher?.id ?? null,
 		},
@@ -232,9 +261,7 @@ export function mapGameImport(data: IgdbGameData): GameImport {
 		versionPlatforms: versions.flatMap(mapVersionPlatforms),
 		platforms: [...platforms.values()],
 		dlcs: data.dlcs.map(({ id, name }) => ({ id, gameId, name })),
-		series: series === null ? null : { id: series.id, name: series.name },
-		franchise:
-			franchise === null ? null : { id: franchise.id, name: franchise.name },
+		series: getIgdbSeries(original),
 		developer: developer === null ? null : mapCompany(developer),
 		publisher: publisher === null ? null : mapCompany(publisher),
 		imageIds: [
@@ -276,7 +303,6 @@ function buildRowIndexes(database: Database): RowIndexes {
 		versions,
 		platforms: indexById(database.platforms),
 		series: indexById(database.series),
-		franchises: indexById(database.franchises),
 		companies: indexById(database.companies),
 		releaseDates: new Map(
 			database.versionPlatforms.map(
@@ -382,8 +408,8 @@ function mapGameRow(
 		// Ligne à variante unique : le titre de sa version sous le nom, sauf pour l'originale
 		versionTitle: singleVariantRow?.versionTitle ?? null,
 		series: getIndexed(indexes.series, game.seriesId),
+		originalSeries: getIndexed(indexes.series, game.originalSeriesId),
 		seriesNumber: game.seriesNumber,
-		franchise: getIndexed(indexes.franchises, game.franchiseId),
 		developer: getIndexed(indexes.companies, game.developerId),
 		publisher: getIndexed(indexes.companies, game.publisherId),
 		releaseDate: game.firstReleaseDate,
@@ -453,6 +479,7 @@ function mapStoredGameImport(
 		versionIds.includes(versionId),
 	);
 	const platformIds = versionPlatforms.map(({ platformId }) => platformId);
+	const originalSeries = findById(database.series, game.originalSeriesId);
 	return {
 		game: {
 			id: game.id,
@@ -460,8 +487,6 @@ function mapStoredGameImport(
 			frenchName: game.frenchName,
 			firstReleaseDate: game.firstReleaseDate,
 			isCancelled: game.isCancelled,
-			seriesId: game.seriesId,
-			franchiseId: game.franchiseId,
 			developerId: game.developerId,
 			publisherId: game.publisherId,
 		},
@@ -469,8 +494,15 @@ function mapStoredGameImport(
 		versionPlatforms,
 		platforms: database.platforms.filter(({ id }) => platformIds.includes(id)),
 		dlcs: database.dlcs.filter((dlc) => dlc.gameId === game.id),
-		series: findById(database.series, game.seriesId),
-		franchise: findById(database.franchises, game.franchiseId),
+		// La série proposée à l'ajout, pas celle d'IGDB aujourd'hui : « ↩️ » y ramène
+		series:
+			originalSeries === null
+				? null
+				: {
+						name: originalSeries.name,
+						igdbCollectionId: originalSeries.igdbCollectionId,
+						igdbFranchiseId: originalSeries.igdbFranchiseId,
+					},
 		developer: findById(database.companies, game.developerId),
 		publisher: findById(database.companies, game.publisherId),
 		imageIds,

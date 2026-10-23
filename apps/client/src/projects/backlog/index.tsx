@@ -67,11 +67,13 @@ import {
 	fetchIgdbGameData,
 	filterGameRows,
 	findById,
+	findStoredSeries,
 	formatDlcProgress,
 	formatDuration,
 	formatFinishCount,
 	formatIsoDate,
 	formatReleaseDate,
+	formatSeriesValue,
 	getColumnLabel,
 	getDlcGameQueue,
 	getEndingTypeLabel,
@@ -91,6 +93,7 @@ import {
 	hasGameEditChanges,
 	isDurationColumn,
 	isFinishedStatus,
+	isSeriesChoiceValid,
 	isSortableColumn,
 	isStatusAllowed,
 	keepSelection,
@@ -98,6 +101,7 @@ import {
 	loadSavedColumns,
 	moveColumn,
 	parseIsoDate,
+	parseSeriesValue,
 	pushToHistory,
 	readViewFromUrl,
 	receiveEditGameImport,
@@ -650,7 +654,6 @@ function GamePreview({
 		platforms,
 		dlcs,
 		series,
-		franchise,
 		developer,
 		publisher,
 		imageIds,
@@ -660,6 +663,15 @@ function GamePreview({
 	const endingType = endingTypeDefinitions.find(
 		({ key }) => key === choices.endingType,
 	);
+	// La série proposée par IGDB est en tête de liste ; les autres séries de la base suivent, par nom
+	const storedSeries =
+		series === null ? null : findStoredSeries(database, series);
+	const otherSeries = database.series
+		.filter(({ id }) => id !== storedSeries?.id)
+		.toSorted((first, second) => first.name.localeCompare(second.name));
+	const seriesValue = formatSeriesValue(choices.series, series !== null);
+	const hasSeries =
+		seriesValue !== "none" && !(seriesValue === "original" && series === null);
 	// L'originale est toujours enregistrée ; une version ou un DLC déjà en base reste coché
 	function isVersionLocked(versionId: number): boolean {
 		return (
@@ -757,7 +769,67 @@ function GamePreview({
 					</select>
 				</label>
 				<span className={styles.hint}>{endingType?.meaning}</span>
-				{series !== null && (
+			</section>
+
+			<section className={styles.choiceRow}>
+				<label>
+					Série
+					<select
+						value={seriesValue}
+						onChange={(event) =>
+							onChoicesChange({
+								...choices,
+								series: parseSeriesValue(event.target.value),
+							})
+						}
+					>
+						<option value="original">
+							{series === null
+								? "Aucune (IGDB n’en propose pas)"
+								: `${series.name} (IGDB)`}
+						</option>
+						{series !== null && <option value="none">Aucune</option>}
+						{otherSeries.map(({ id, name }) => (
+							<option
+								key={id}
+								value={`stored-${id}`}
+							>
+								{name}
+							</option>
+						))}
+						<option value="new">➕ Nouvelle série…</option>
+					</select>
+				</label>
+				{choices.series.kind === "new" && (
+					<label>
+						Nom de la nouvelle série
+						<input
+							type="text"
+							value={choices.series.name}
+							// eslint-disable-next-line jsx-a11y/no-autofocus -- le champ apparaît au choix de « Nouvelle série »
+							autoFocus
+							onChange={(event) =>
+								onChoicesChange({
+									...choices,
+									series: { kind: "new", name: event.target.value },
+								})
+							}
+						/>
+					</label>
+				)}
+				{seriesValue !== "original" && (
+					<button
+						type="button"
+						className={styles.iconButton}
+						title={`Revenir à la série proposée par IGDB : ${series?.name ?? "aucune"}`}
+						onClick={() =>
+							onChoicesChange({ ...choices, series: { kind: "original" } })
+						}
+					>
+						↩️ Série IGDB
+					</button>
+				)}
+				{hasSeries && (
 					<label>
 						N° dans la série
 						<input
@@ -792,10 +864,6 @@ function GamePreview({
 			</section>
 
 			<dl className={styles.facts}>
-				<dt>Série</dt>
-				<dd>{series?.name ?? "—"}</dd>
-				<dt>Franchise</dt>
-				<dd>{franchise?.name ?? "—"}</dd>
 				<dt>Développeur</dt>
 				<dd>
 					<CompanyLabel company={developer} />
@@ -999,7 +1067,9 @@ function AddGameDialog({
 						Ajouter à mon backlog
 					</label>
 					<DialogActions
-						canValidate={gameImport !== null}
+						canValidate={
+							gameImport !== null && isSeriesChoiceValid(modal.choices.series)
+						}
 						onCancel={onCancel}
 						onValidate={onValidate}
 					/>
@@ -1061,11 +1131,13 @@ function EditGameDialog({
 		<Dialog
 			title="Modifier le jeu"
 			actions={
-				// Sans rien de changé, « Valider » reste inactif ; un DLC coché « comme jeu » compte comme un changement
+				// Sans rien de changé, ou sans nom pour une nouvelle série, « Valider » reste inactif ;
+				// un DLC coché « comme jeu » compte comme un changement
 				<DialogActions
 					canValidate={
-						hasGameEditChanges(database, modal) ||
-						modal.selection.dlcGameIds.length > 0
+						isSeriesChoiceValid(modal.choices.series) &&
+						(hasGameEditChanges(database, modal) ||
+							modal.selection.dlcGameIds.length > 0)
 					}
 					onCancel={onCancel}
 					onValidate={onValidate}
@@ -1498,7 +1570,6 @@ const gameInfoRenderers: Partial<
 			)}
 		</span>
 	),
-	series: (row) => row.series?.name,
 	seriesNumber: (row) => row.seriesNumber,
 	developer: (row) =>
 		row.developer === null ? null : <CompanyLabel company={row.developer} />,
@@ -1522,7 +1593,6 @@ const variantInfoRenderers: Partial<
 	),
 	series: () => null,
 	seriesNumber: () => null,
-	franchise: () => null,
 	developer: () => null,
 	publisher: () => null,
 	releaseDate: (row) => formatReleaseDate(row.releaseDate, false),
@@ -2105,18 +2175,29 @@ function GameRowGroup({
 		if (renderInfo !== undefined) {
 			return renderInfo(row);
 		}
-		// Un clic sur la franchise filtre le tableau sur ses jeux, aussi en lecture seule
-		if (column === "franchise") {
-			const { franchise } = row;
-			return franchise === null ? null : (
-				<button
-					type="button"
-					className={styles.linkButton}
-					title="Filtrer sur cette franchise"
-					onClick={() => handlers.filterOnFranchise(franchise.name)}
-				>
-					{franchise.name}
-				</button>
+		// Un clic sur la série filtre le tableau sur ses jeux, aussi en lecture seule ; ✏️ : ce n'est pas celle d'IGDB
+		if (column === "series") {
+			const { series, originalSeries } = row;
+			return series === null ? null : (
+				<>
+					<button
+						type="button"
+						className={styles.linkButton}
+						title="Filtrer sur cette série"
+						onClick={() => handlers.filterOnSeries(series.name)}
+					>
+						{series.name}
+					</button>
+					{series.id !== originalSeries?.id && (
+						<span
+							className={styles.help}
+							title={`Série modifiée ; IGDB propose : ${originalSeries?.name ?? "aucune"}`}
+						>
+							{" "}
+							✏️
+						</span>
+					)}
+				</>
 			);
 		}
 		if (column === "actions") {
@@ -2357,7 +2438,7 @@ function ColumnFilterCell({
 					{textFilter?.isExact === true && (
 						<span
 							className={styles.hint}
-							title="Valeur exacte, après un clic sur une franchise"
+							title="Valeur exacte, après un clic sur une série"
 						>
 							=
 						</span>
@@ -3073,6 +3154,12 @@ export function Backlog() {
 			choices: {
 				imageId: game.imageId,
 				endingType: game.endingType,
+				series:
+					game.seriesId === game.originalSeriesId
+						? { kind: "original" }
+						: game.seriesId === null
+							? { kind: "none" }
+							: { kind: "stored", seriesId: game.seriesId },
 				seriesNumber: game.seriesNumber,
 			},
 		});
@@ -3113,12 +3200,12 @@ export function Backlog() {
 		removeVariant: (variantId) =>
 			changeDatabase((current) => removeVariants(current, [variantId])),
 		logLine,
-		filterOnFranchise: (franchiseName) =>
+		filterOnSeries: (seriesName) =>
 			setFilters(
-				setColumnFilter(filters, "franchise", {
-					column: "franchise",
+				setColumnFilter(filters, "series", {
+					column: "series",
 					kind: "text",
-					text: franchiseName,
+					text: seriesName,
 					isExact: true,
 				}),
 			),

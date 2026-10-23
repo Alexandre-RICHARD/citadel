@@ -29,6 +29,8 @@ import {
 	type IsoDate,
 	type Modal,
 	type Platform,
+	type Series,
+	type SeriesChoice,
 	type SortCriterion,
 	type Variant,
 	type VariantDlc,
@@ -491,7 +493,7 @@ export async function fetchIgdbGameData(
 	const originalGame = (
 		await requestIgdb<IgdbOriginalGame[]>(
 			"games",
-			`fields name, alternative_names.name, alternative_names.comment, first_release_date, game_status, artworks.image_id, collections.name, franchise.name, franchises.name, involved_companies.developer, involved_companies.publisher, involved_companies.company.name, involved_companies.company.logo.image_id; where id = ${original.id};`,
+			`fields name, alternative_names.name, alternative_names.comment, first_release_date, game_status, artworks.image_id, collections.name, collections.as_child_relations.parent_collection, franchise.name, franchises.name, involved_companies.developer, involved_companies.publisher, involved_companies.company.name, involved_companies.company.logo.image_id; where id = ${original.id};`,
 			signal,
 		)
 	).at(0);
@@ -581,7 +583,12 @@ export function getGameModal(
 				kind: "addGame",
 				igdbId,
 				gameImport: null,
-				choices: { imageId: null, endingType: "story", seriesNumber: null },
+				choices: {
+					imageId: null,
+					endingType: "story",
+					series: { kind: "original" },
+					seriesNumber: null,
+				},
 				selection: emptyImportSelection,
 				isAddingToBacklog: true,
 				queuedGameIds,
@@ -874,9 +881,162 @@ export function addVariant(
 	};
 }
 
+/** La série de la base qui correspond à celle proposée par IGDB : même collection, ou même franchise */
+export function findStoredSeries(
+	database: Database,
+	igdbSeries: Omit<Series, "id">,
+): Series | null {
+	return (
+		database.series.find(
+			({ igdbCollectionId, igdbFranchiseId }) =>
+				(igdbCollectionId !== null &&
+					igdbCollectionId === igdbSeries.igdbCollectionId) ||
+				(igdbFranchiseId !== null &&
+					igdbFranchiseId === igdbSeries.igdbFranchiseId),
+		) ?? null
+	);
+}
+
+/** La série de la base qui porte ce nom, sans tenir compte des accents ni des majuscules */
+function findSeriesByName(database: Database, name: string): Series | null {
+	const searched = normalizeText(name.trim());
+	return (
+		database.series.find(
+			(series) => normalizeText(series.name.trim()) === searched,
+		) ?? null
+	);
+}
+
+/** Valeur du choix de la série dans sa liste ; sans série IGDB, « aucune » est la série d'origine */
+export function formatSeriesValue(
+	choice: SeriesChoice,
+	hasOriginalSeries: boolean,
+): string {
+	switch (choice.kind) {
+		case "stored":
+			return `stored-${choice.seriesId}`;
+		case "none":
+			return hasOriginalSeries ? "none" : "original";
+		default:
+			return choice.kind;
+	}
+}
+
+/** Choix de la série lu dans sa liste ; « Nouvelle série » part d'un nom vide */
+export function parseSeriesValue(value: string): SeriesChoice {
+	if (value.startsWith("stored-")) {
+		return { kind: "stored", seriesId: Number(value.slice("stored-".length)) };
+	}
+	switch (value) {
+		case "none":
+			return { kind: "none" };
+		case "new":
+			return { kind: "new", name: "" };
+		default:
+			return { kind: "original" };
+	}
+}
+
+/** Une nouvelle série doit avoir un nom */
+export function isSeriesChoiceValid(choice: SeriesChoice): boolean {
+	return choice.kind !== "new" || choice.name.trim() !== "";
+}
+
 /**
- * « Valider » de la modale d'ajout (section 8) : le jeu, les versions et DLC cochés (`keepSelection`), sa série,
- * sa franchise et ses sociétés, sans doublon. La variante s'ajoute ensuite, à part.
+ * id de la série choisie (section 8) ; `undefined` pour une nouvelle série, qui n'existe qu'à « Valider ».
+ * Un nom déjà pris désigne la série existante.
+ */
+export function getChosenSeriesId(
+	database: Database,
+	originalSeriesId: number | null,
+	choice: SeriesChoice,
+): number | null | undefined {
+	switch (choice.kind) {
+		case "original":
+			return originalSeriesId;
+		case "stored":
+			return choice.seriesId;
+		case "new":
+			return findSeriesByName(database, choice.name)?.id;
+		// none
+		default:
+			return null;
+	}
+}
+
+function getNextSeriesId(database: Database): number {
+	return Math.max(0, ...database.series.map(({ id }) => id)) + 1;
+}
+
+/** Ajoute la série si elle manque : la proposée par IGDB, ou une nouvelle série nommée à la main */
+function storeSeries(
+	database: Database,
+	series: Omit<Series, "id">,
+	storedSeries: Series | null,
+): { database: Database; seriesId: number } {
+	if (storedSeries !== null) {
+		return { database, seriesId: storedSeries.id };
+	}
+	const seriesId = getNextSeriesId(database);
+	return {
+		database: {
+			...database,
+			series: [...database.series, { id: seriesId, ...series }],
+		},
+		seriesId,
+	};
+}
+
+/** Range le jeu dans la série choisie, créée si besoin ; sans série, il perd son numéro. Une série qui n'a plus de jeu quitte la base */
+function setGameSeries(
+	database: Database,
+	gameId: number,
+	choice: SeriesChoice,
+	seriesNumber: number | null,
+): Database {
+	const game = findById(database.games, gameId);
+	if (game === null) {
+		return database;
+	}
+	const chosen =
+		choice.kind === "new"
+			? storeSeries(
+					database,
+					{
+						name: choice.name.trim(),
+						igdbCollectionId: null,
+						igdbFranchiseId: null,
+					},
+					findSeriesByName(database, choice.name),
+				)
+			: {
+					database,
+					seriesId:
+						getChosenSeriesId(database, game.originalSeriesId, choice) ?? null,
+				};
+	const games = chosen.database.games.map((other) =>
+		other.id === gameId
+			? {
+					...other,
+					seriesId: chosen.seriesId,
+					seriesNumber: chosen.seriesId === null ? null : seriesNumber,
+				}
+			: other,
+	);
+	return {
+		...chosen.database,
+		games,
+		series: chosen.database.series.filter(({ id }) =>
+			games.some(
+				(other) => other.seriesId === id || other.originalSeriesId === id,
+			),
+		),
+	};
+}
+
+/**
+ * « Valider » de la modale d'ajout (section 8) : le jeu, les versions et DLC cochés (`keepSelection`), sa série
+ * et ses sociétés, sans doublon. La variante s'ajoute ensuite, à part.
  * Un jeu déjà en base garde ses choix et ses versions : seules les fiches manquantes s'ajoutent (aussi pour « Modifier le jeu »).
  */
 export function addGameImport(
@@ -884,19 +1044,13 @@ export function addGameImport(
 	gameImport: GameImport,
 	choices: GameChoices,
 ): Database {
-	const game: Game = {
-		...gameImport.game,
-		...choices,
-		seriesNumber: gameImport.series === null ? null : choices.seriesNumber,
-	};
 	const newVersionIds = new Set(
 		gameImport.versions
 			.filter(({ id }) => findById(database.versions, id) === null)
 			.map(({ id }) => id),
 	);
-	return {
+	const merged: Database = {
 		...database,
-		games: mergeById(database.games, [game]),
 		versions: mergeById(database.versions, gameImport.versions),
 		versionPlatforms: [
 			...database.versionPlatforms,
@@ -906,14 +1060,6 @@ export function addGameImport(
 		],
 		platforms: mergeById(database.platforms, gameImport.platforms),
 		dlcs: mergeById(database.dlcs, gameImport.dlcs),
-		series: mergeById(
-			database.series,
-			gameImport.series === null ? [] : [gameImport.series],
-		),
-		franchises: mergeById(
-			database.franchises,
-			gameImport.franchise === null ? [] : [gameImport.franchise],
-		),
 		companies: mergeById(
 			database.companies,
 			[gameImport.developer, gameImport.publisher].flatMap(
@@ -921,6 +1067,32 @@ export function addGameImport(
 			),
 		),
 	};
+	if (findById(database.games, gameImport.game.id) !== null) {
+		return merged;
+	}
+	// Nouveau jeu : la série proposée par IGDB entre en base, puis le jeu rejoint la série choisie
+	const original =
+		gameImport.series === null
+			? { database: merged, seriesId: null }
+			: storeSeries(
+					merged,
+					gameImport.series,
+					findStoredSeries(merged, gameImport.series),
+				);
+	const game: Game = {
+		...gameImport.game,
+		imageId: choices.imageId,
+		endingType: choices.endingType,
+		seriesId: original.seriesId,
+		originalSeriesId: original.seriesId,
+		seriesNumber: null,
+	};
+	return setGameSeries(
+		{ ...original.database, games: [...original.database.games, game] },
+		game.id,
+		choices.series,
+		choices.seriesNumber,
+	);
 }
 
 /** « Rechercher d'autres DLC » (section 9) : les DLC cochés rejoignent leur jeu, sans doublon */
@@ -995,44 +1167,59 @@ export function removeVariants(
 	};
 }
 
-/** « Modifier le jeu » change-t-il la base (section 8) : un des trois choix, ou une version ou un DLC absent de la base coché */
+/** « Modifier le jeu » change-t-il la base (section 8) : un des choix, ou une version ou un DLC absent de la base coché */
 export function hasGameEditChanges(
 	database: Database,
 	modal: Extract<Modal, { kind: "editGame" }>,
 ): boolean {
 	const game = findById(database.games, modal.gameId);
+	if (game === null) {
+		return false;
+	}
 	const { choices, selection } = modal;
+	// Une nouvelle série (`undefined`) est toujours un changement ; sans série, le numéro ne compte pas
+	const seriesId = getChosenSeriesId(
+		database,
+		game.originalSeriesId,
+		choices.series,
+	);
 	return (
-		game !== null &&
-		(choices.imageId !== game.imageId ||
-			choices.endingType !== game.endingType ||
-			choices.seriesNumber !== game.seriesNumber ||
-			selection.versionIds.some(
-				(id) => findById(database.versions, id) === null,
-			) ||
-			selection.dlcIds.some((id) => findById(database.dlcs, id) === null))
+		choices.imageId !== game.imageId ||
+		choices.endingType !== game.endingType ||
+		seriesId !== game.seriesId ||
+		(seriesId === null ? null : choices.seriesNumber) !== game.seriesNumber ||
+		selection.versionIds.some(
+			(id) => findById(database.versions, id) === null,
+		) ||
+		selection.dlcIds.some((id) => findById(database.dlcs, id) === null)
 	);
 }
 
-/** « Modifier le jeu » (section 8) : les trois choix, puis la conversion des statuts que le nouveau type de fin rend incompatibles */
+/** « Modifier le jeu » (section 8) : les choix, puis la conversion des statuts que le nouveau type de fin rend incompatibles */
 export function updateGameChoices(
 	database: Database,
 	gameId: number,
 	choices: GameChoices,
 ): Database {
 	const variantIds = getGameVariantIds(database, gameId);
+	const updated = setGameSeries(
+		database,
+		gameId,
+		choices.series,
+		choices.seriesNumber,
+	);
 	return {
-		...database,
-		games: database.games.map((game) =>
+		...updated,
+		games: updated.games.map((game) =>
 			game.id === gameId
 				? {
 						...game,
-						...choices,
-						seriesNumber: game.seriesId === null ? null : choices.seriesNumber,
+						imageId: choices.imageId,
+						endingType: choices.endingType,
 					}
 				: game,
 		),
-		variants: database.variants.map((variant) =>
+		variants: updated.variants.map((variant) =>
 			variantIds.includes(variant.id)
 				? {
 						...variant,
@@ -1176,7 +1363,6 @@ export const columnFilterKinds: Record<ColumnKey, ColumnFilter["kind"] | null> =
 		name: "text",
 		series: "text",
 		seriesNumber: "numberRange",
-		franchise: "text",
 		developer: "text",
 		publisher: "text",
 		releaseDate: "dateRange",
@@ -1221,8 +1407,6 @@ function getColumnValue(
 			return row.series?.name ?? null;
 		case "seriesNumber":
 			return row.seriesNumber;
-		case "franchise":
-			return row.franchise?.name ?? null;
 		case "developer":
 			return row.developer?.name ?? null;
 		case "publisher":
@@ -1616,7 +1800,7 @@ function parseFilterParam(
 	}
 }
 
-/** Tri et filtres dans l'URL, ex. `?sort=releaseDate:desc,name:asc&franchise==The+Witcher&rating=10..18` ; `sort` y est toujours, même vide */
+/** Tri et filtres dans l'URL, ex. `?sort=releaseDate:desc,name:asc&series==The+Witcher&rating=10..18` ; `sort` y est toujours, même vide */
 export function buildViewSearch(
 	sort: SortCriterion[],
 	filters: ColumnFilter[],
