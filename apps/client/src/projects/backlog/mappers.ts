@@ -25,7 +25,6 @@ import type {
 } from "./types";
 import {
 	findById,
-	findUserGame,
 	formatSeriesNumber,
 	getEarliestDate,
 	getGameStatus,
@@ -77,8 +76,8 @@ export function mapSearchResult({
 }
 
 /**
- * Jeu déjà en base → résultat de recherche : son id est celui de son original, ses plateformes celles de toutes ses versions.
- * Son image : celle choisie à l'ajout au backlog, sinon la cover de l'original.
+ * Jeu en base hors backlog → ligne de « 📚 Ma base » : son id est celui de son original, ses plateformes celles de toutes
+ * ses versions, son image la cover de l'original (la miniature choisie est partie avec le jeu du backlog).
  */
 export function mapDatabaseSearchResult(
 	database: Database,
@@ -101,10 +100,7 @@ export function mapDatabaseSearchResult(
 			game.firstReleaseDate === null
 				? null
 				: Number(game.firstReleaseDate.slice(0, 4)),
-		coverImageId:
-			findUserGame(database, game.id)?.imageId ??
-			findById(database.versions, game.id)?.coverImageId ??
-			null,
+		coverImageId: findById(database.versions, game.id)?.coverImageId ?? null,
 		platformNames: [...platformIds].flatMap(
 			(platformId) => findById(database.platforms, platformId)?.shortName ?? [],
 		),

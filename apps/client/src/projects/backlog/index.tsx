@@ -37,7 +37,6 @@ import {
 	type Platform,
 	type Popover,
 	type SearchResult,
-	type SearchSource,
 	type Series,
 	type SeriesChoice,
 	type SeriesEntry,
@@ -61,6 +60,7 @@ import {
 	buildViewSearch,
 	columnFilterKinds,
 	convertStatus,
+	databasePageSize,
 	describeFilters,
 	describeSort,
 	describeVersionPlatforms,
@@ -475,39 +475,68 @@ function SeriesNumberField({
 	);
 }
 
-const searchSourceLabels: Record<
-	SearchSource,
-	{ button: string; placeholder: string }
-> = {
-	igdb: { button: "🌐 IGDB", placeholder: "Rechercher un jeu sur IGDB" },
-	database: {
-		button: "📚 En base",
-		placeholder: "Rechercher un jeu déjà en base (sans IGDB)",
-	},
-};
+/** Une ligne de résultat : miniature, noms, année, plateformes, « via … » ; `badge` à droite */
+function SearchResultButton({
+	result,
+	badge,
+	onSelect,
+}: {
+	result: SearchResult;
+	badge: ReactNode;
+	onSelect: (result: SearchResult) => void;
+}) {
+	return (
+		<button
+			type="button"
+			className={styles.searchResult}
+			onClick={() => onSelect(result)}
+		>
+			<Thumbnail imageId={result.coverImageId} />
+			<span className={styles.searchResultName}>
+				<strong>{result.frenchName ?? result.name}</strong>
+				{result.frenchName !== null && (
+					<span className={styles.originalName}> {result.name}</span>
+				)}
+				{result.releaseYear !== null && ` (${result.releaseYear})`}
+				{/* 3 plateformes au plus, puis le nombre restant */}
+				{result.platformNames.length > 0 && (
+					<span className={styles.originalName}>
+						{` · ${result.platformNames.slice(0, 3).join(", ")}`}
+						{result.platformNames.length > 3 &&
+							` +${result.platformNames.length - 3}`}
+					</span>
+				)}
+				{/* Trouvé par une autre fiche que la sienne : édition, bundle, DLC… */}
+				{result.matchedName !== null && (
+					<span className={styles.matchedName}>
+						via « {result.matchedName} »
+					</span>
+				)}
+			</span>
+			{badge}
+		</button>
+	);
+}
 
+/** Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « 📚 Ma base » (section 8) */
 function SearchBar({
 	query,
-	source,
 	isOpen,
 	results,
 	isSearching,
 	error,
 	database,
 	onQueryChange,
-	onSourceChange,
 	onOpenChange,
 	onSelect,
 }: {
 	query: string;
-	source: SearchSource;
 	isOpen: boolean;
 	results: SearchResult[];
 	isSearching: boolean;
 	error: string | null;
 	database: Database;
 	onQueryChange: (query: string) => void;
-	onSourceChange: (source: SearchSource) => void;
 	onOpenChange: (isOpen: boolean) => void;
 	onSelect: (result: SearchResult) => void;
 }) {
@@ -516,30 +545,11 @@ function SearchBar({
 			className={styles.search}
 			data-search
 		>
-			<div
-				className={styles.searchSources}
-				role="group"
-				aria-label="Source de la recherche"
-			>
-				{(["igdb", "database"] as const).map((key) => (
-					<button
-						key={key}
-						type="button"
-						className={
-							key === source ? styles.searchSourceActive : styles.searchSource
-						}
-						aria-pressed={key === source}
-						onClick={() => onSourceChange(key)}
-					>
-						{searchSourceLabels[key].button}
-					</button>
-				))}
-			</div>
 			<input
 				type="search"
 				className={styles.searchInput}
-				placeholder={`🔍 ${searchSourceLabels[source].placeholder}`}
-				aria-label={searchSourceLabels[source].placeholder}
+				placeholder="🔍 Rechercher un jeu sur IGDB"
+				aria-label="Rechercher un jeu sur IGDB"
 				value={query}
 				onChange={(event) => onQueryChange(event.target.value)}
 				onFocus={() => onOpenChange(true)}
@@ -562,52 +572,127 @@ function SearchBar({
 					)}
 					{results.map((result) => (
 						<li key={result.id}>
-							<button
-								type="button"
-								className={styles.searchResult}
-								onClick={() => onSelect(result)}
-							>
-								<Thumbnail imageId={result.coverImageId} />
-								<span className={styles.searchResultName}>
-									<strong>{result.frenchName ?? result.name}</strong>
-									{result.frenchName !== null && (
-										<span className={styles.originalName}> {result.name}</span>
-									)}
-									{result.releaseYear !== null && ` (${result.releaseYear})`}
-									{/* 3 plateformes au plus, puis le nombre restant */}
-									{result.platformNames.length > 0 && (
-										<span className={styles.originalName}>
-											{` · ${result.platformNames.slice(0, 3).join(", ")}`}
-											{result.platformNames.length > 3 &&
-												` +${result.platformNames.length - 3}`}
-										</span>
-									)}
-									{/* Trouvé par une autre fiche que la sienne : édition, bundle, DLC… */}
-									{result.matchedName !== null && (
-										<span className={styles.matchedName}>
-											via « {result.matchedName} »
-										</span>
-									)}
-								</span>
-								{/* Sur IGDB, ce qui est déjà en base ; dans la base, ce qui est déjà dans le backlog */}
-								{source === "igdb" &&
+							<SearchResultButton
+								result={result}
+								badge={
 									database.versions.some(({ id }) => id === result.id) && (
 										<span className={styles.inDatabaseBadge}>
 											✅ déjà en base
 										</span>
-									)}
-								{source === "database" &&
-									findUserGame(database, result.id) !== null && (
-										<span className={styles.inDatabaseBadge}>
-											📋 dans le backlog
-										</span>
-									)}
-							</button>
+									)
+								}
+								onSelect={onSelect}
+							/>
 						</li>
 					))}
 				</ul>
 			)}
 		</div>
+	);
+}
+
+/**
+ * « 📚 Ma base » (section 8) : les jeux en base hors backlog, triés par nom, filtrés sans requête IGDB.
+ * 50 jeux, puis la page suivante à l'approche du bas de la liste. Un jeu choisi ouvre l'ajout au backlog.
+ */
+function AddFromDatabaseModal({
+	modal,
+	database,
+	onModalChange,
+	onSelect,
+	onCancel,
+}: {
+	modal: Extract<Modal, { kind: "addFromDatabase" }>;
+	database: Database;
+	onModalChange: (modal: Extract<Modal, { kind: "addFromDatabase" }>) => void;
+	onSelect: (result: SearchResult) => void;
+	onCancel: () => void;
+}) {
+	const games = searchDatabaseGames(database, modal.query);
+	const shownGames = games.slice(0, modal.loadedPageCount * databasePageSize);
+	const hasMoreGames = shownGames.length < games.length;
+	const listRef = useRef<HTMLUListElement>(null);
+	const loadMoreRef = useRef<HTMLLIElement>(null);
+
+	// Défilement infini dans la liste, qui défile seule sous le filtre
+	useEffect(() => {
+		const list = listRef.current;
+		const loadMore = loadMoreRef.current;
+		if (!hasMoreGames || list === null || loadMore === null) {
+			return undefined;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some(({ isIntersecting }) => isIntersecting)) {
+					onModalChange({
+						...modal,
+						loadedPageCount: modal.loadedPageCount + 1,
+					});
+				}
+			},
+			{ root: list, rootMargin: "0px 0px 400px 0px" },
+		);
+		observer.observe(loadMore);
+		return () => observer.disconnect();
+	}, [hasMoreGames, modal, onModalChange]);
+
+	return (
+		<ModalFrame
+			title="📚 Ajouter depuis ma base"
+			actions={
+				<button
+					type="button"
+					className={styles.button}
+					onClick={onCancel}
+				>
+					Annuler
+				</button>
+			}
+		>
+			<input
+				type="search"
+				className={styles.databaseGameFilter}
+				placeholder="🔍 Filtrer par nom ou titre de version"
+				aria-label="Filtrer les jeux de ma base"
+				value={modal.query}
+				onChange={(event) =>
+					onModalChange({
+						...modal,
+						query: event.target.value,
+						loadedPageCount: 1,
+					})
+				}
+			/>
+			<ul
+				ref={listRef}
+				className={styles.databaseGameList}
+			>
+				{games.length === 0 && (
+					<li className={styles.searchMessage}>
+						{modal.query.trim() === ""
+							? "Tous les jeux de la base sont dans le backlog"
+							: "Aucun résultat"}
+					</li>
+				)}
+				{shownGames.map((game) => (
+					<li key={game.id}>
+						<SearchResultButton
+							result={mapDatabaseSearchResult(database, game)}
+							badge={null}
+							onSelect={onSelect}
+						/>
+					</li>
+				))}
+				{hasMoreGames && (
+					<li
+						ref={loadMoreRef}
+						className={styles.searchMessage}
+					>
+						⏳ {games.length - shownGames.length} jeux de plus…
+					</li>
+				)}
+			</ul>
+		</ModalFrame>
 	);
 }
 
@@ -3311,9 +3396,6 @@ export function Backlog() {
 	const [searchResults, setSearchResults] = useState<AppState["searchResults"]>(
 		initialState.searchResults,
 	);
-	const [searchSource, setSearchSource] = useState<AppState["searchSource"]>(
-		initialState.searchSource,
-	);
 	const [isSearchOpen, setIsSearchOpen] = useState<AppState["isSearchOpen"]>(
 		initialState.isSearchOpen,
 	);
@@ -3398,21 +3480,8 @@ export function Backlog() {
 		}
 	}
 
-	/** Changer de source relance la saisie en cours sur la nouvelle source */
-	function changeSearchSource(source: SearchSource) {
-		setIsSearchOpen(true);
-		if (source === searchSource) {
-			return;
-		}
-		setSearchSource(source);
-		setSearchResults([]);
-		setSearchError(null);
-		// La requête IGDB part après la temporisation : la liste affiche déjà « Recherche… »
-		setIsSearching(source === "igdb" && searchQuery.trim() !== "");
-	}
-
 	/**
-	 * Un résultat déjà en base mène à l'ajout au backlog, sa version originale pré-sélectionnée
+	 * Un résultat déjà en base, ou un jeu de « 📚 Ma base », mène à l'ajout au backlog, sa version originale pré-sélectionnée
 	 * (un résultat est toujours un jeu original, section 8) ; sinon à la modale d'ajout.
 	 */
 	function selectSearchResult(result: SearchResult) {
@@ -3701,11 +3770,16 @@ export function Backlog() {
 		setLoadedPageCount((count) => count + 1);
 	}, []);
 
-	// Recherche IGDB temporisée : une requête 300 ms après la dernière frappe, la précédente est annulée.
-	// La recherche dans la base ne fait aucune requête : ses résultats se calculent à l'affichage.
+	// Jeux en base hors backlog, comptés sur le bouton « 📚 Ma base »
+	const databaseGameCount = useMemo(
+		() => searchDatabaseGames(database, "").length,
+		[database],
+	);
+
+	// Recherche IGDB temporisée : une requête 300 ms après la dernière frappe, la précédente est annulée
 	useEffect(() => {
 		const query = searchQuery.trim();
-		if (query === "" || searchSource !== "igdb") {
+		if (query === "") {
 			return undefined;
 		}
 		const controller = new AbortController();
@@ -3731,7 +3805,7 @@ export function Backlog() {
 			window.clearTimeout(timer);
 			controller.abort();
 		};
-	}, [searchQuery, searchSource]);
+	}, [searchQuery]);
 
 	// Modale d'ajout ouverte sans ses données : on les charge depuis IGDB (aussi après un réimport d'état)
 	const igdbIdToLoad =
@@ -3931,7 +4005,6 @@ export function Backlog() {
 		database,
 		searchQuery,
 		searchResults,
-		searchSource,
 		isSearchOpen,
 		modal,
 		popover,
@@ -3949,23 +4022,30 @@ export function Backlog() {
 				<h1 className={styles.title}>🎮 Backlog</h1>
 				<SearchBar
 					query={searchQuery}
-					source={searchSource}
 					isOpen={isSearchOpen}
-					results={
-						searchSource === "igdb"
-							? searchResults
-							: searchDatabaseGames(database, searchQuery).map((game) =>
-									mapDatabaseSearchResult(database, game),
-								)
-					}
+					results={searchResults}
 					isSearching={isSearching}
 					error={searchError}
 					database={database}
 					onQueryChange={changeSearchQuery}
-					onSourceChange={changeSearchSource}
 					onOpenChange={setIsSearchOpen}
 					onSelect={selectSearchResult}
 				/>
+				<button
+					type="button"
+					className={styles.button}
+					title={
+						databaseGameCount === 0
+							? "Tous les jeux de la base sont dans le backlog"
+							: "Ajouter au backlog un jeu déjà en base, sans IGDB"
+					}
+					disabled={databaseGameCount === 0}
+					onClick={() =>
+						setModal({ kind: "addFromDatabase", query: "", loadedPageCount: 1 })
+					}
+				>
+					📚 Ma base ({databaseGameCount})
+				</button>
 				{/* Ctrl+Z et Ctrl+Y à la souris (section 10) */}
 				<div className={styles.historyButtons}>
 					<button
@@ -4075,6 +4155,15 @@ export function Backlog() {
 					onModalChange={setModal}
 					onCancel={closeModal}
 					onValidate={() => validateReorderSeries(modal)}
+				/>
+			)}
+			{modal?.kind === "addFromDatabase" && (
+				<AddFromDatabaseModal
+					modal={modal}
+					database={database}
+					onModalChange={setModal}
+					onSelect={selectSearchResult}
+					onCancel={closeModal}
 				/>
 			)}
 			{modal?.kind === "addUserVersion" && (

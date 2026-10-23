@@ -41,7 +41,6 @@ export const initialState = {
 	},
 	"searchQuery": "",
 	"searchResults": [],
-	"searchSource": "igdb",
 	"isSearchOpen": false,
 	"modal": null,
 	"popover": null,

@@ -369,23 +369,31 @@ export async function searchIgdbGames(
 	return [...hits.values()].slice(0, searchResultLimit);
 }
 
-// ---------- Base : recherche sans requête IGDB ----------
+// ---------- Base : « 📚 Ma base », sans requête IGDB ----------
 
-/** Jeux déjà en base dont le nom VO, le nom VF ou un titre de version contient la saisie, triés par nom affiché */
+/** Jeux affichés par page dans « 📚 Ma base » (section 8) */
+export const databasePageSize = 50;
+
+/**
+ * Jeux en base hors backlog dont le nom VO, le nom VF ou un titre de version contient la saisie, triés par nom affiché.
+ * Saisie vide : tous.
+ */
 export function searchDatabaseGames(database: Database, query: string): Game[] {
 	const normalizedQuery = normalizeText(query.trim());
 	return database.games
-		.filter((game) =>
-			[
-				game.name,
-				game.frenchName,
-				...database.versions
-					.filter(({ gameId }) => gameId === game.id)
-					.map(({ title }) => title),
-			].some(
-				(text) =>
-					text !== null && normalizeText(text).includes(normalizedQuery),
-			),
+		.filter(
+			(game) =>
+				!database.userGames.some(({ gameId }) => gameId === game.id) &&
+				[
+					game.name,
+					game.frenchName,
+					...database.versions
+						.filter(({ gameId }) => gameId === game.id)
+						.map(({ title }) => title),
+				].some(
+					(text) =>
+						text !== null && normalizeText(text).includes(normalizedQuery),
+				),
 		)
 		.toSorted((first, second) =>
 			(first.frenchName ?? first.name).localeCompare(
