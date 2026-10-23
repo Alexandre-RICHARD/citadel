@@ -312,12 +312,12 @@ $toolbar-height: 4.5rem;
 }
 
 // Jeux « À jouer bientôt » mis en valeur
-.playSoonRow {
+.upNextRow {
   background: #fef9c3;
 }
 
 // Sous-lignes : fond plus discret, légèrement indentées
-.variantRow {
+.userVersionRow {
   font-size: 0.85rem;
   background: #f8fafc;
 
@@ -339,7 +339,7 @@ $toolbar-height: 4.5rem;
   cursor: pointer;
 }
 
-.variantBadge {
+.userVersionBadge {
   margin-left: 0.25rem;
   padding: 0.05rem 0.4rem;
   font-size: 0.75rem;
@@ -603,8 +603,8 @@ $toolbar-height: 4.5rem;
   background: rgb(0 0 0 / 45%);
 }
 
-.dialog,
-.compactDialog {
+.modal,
+.compactModal {
   display: flex;
   flex-direction: column;
   max-height: calc(100svh - 2rem);
@@ -614,22 +614,22 @@ $toolbar-height: 4.5rem;
   box-shadow: 0 20px 50px rgb(0 0 0 / 30%);
 }
 
-.dialog {
+.modal {
   width: min(56rem, 100%);
 }
 
-.compactDialog {
+.compactModal {
   width: min(28rem, 100%);
 }
 
-.dialogTitle {
+.modalTitle {
   margin: 0;
   padding: 1rem 1.25rem;
   font-size: 1.2rem;
   border-bottom: 1px solid #e5e5e5;
 }
 
-.dialogBody {
+.modalBody {
   flex: 1;
   padding: 1rem 1.25rem;
   overflow-y: auto;
@@ -653,7 +653,7 @@ $toolbar-height: 4.5rem;
   }
 }
 
-.dialogActions {
+.modalActions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
@@ -687,7 +687,7 @@ $toolbar-height: 4.5rem;
   list-style: none;
 
   &,
-  .dialogBody & {
+  .modalBody & {
     padding-left: 0;
   }
 

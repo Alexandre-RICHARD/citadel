@@ -55,11 +55,11 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Nom VO | Colonne Nom, recherche | `name` |
 | Nom VF | Colonne Nom, recherche | `alternative_names` dont le commentaire indique un titre français (« French title ») : IGDB n'a pas de région France. Sans titre français, ou s'il est identique au nom VO, seul le nom VO s'affiche |
 | Noms alternatifs | Seulement pour trouver le nom VF : aucun n'est stocké | `alternative_names` (nom + commentaire) |
-| Image | Miniature, choisie à l'ajout | `cover`, `artworks` → `image_id` |
+| Image | Miniature, choisie à l'ajout au backlog | `cover`, `artworks` → `image_id` |
 | Page IGDB | Entrée « Ouvrir sur IGDB » du menu Actions | `url` |
 | Date de sortie | Colonne Date de sortie | `first_release_date` ; `release_dates` par plateforme |
 | Statut de sortie | Mention « à venir » ou « annulé » | `game_status` |
-| Plateformes | Plateformes de chaque version (nom et nom technique) ; choix de la plateforme d'une variante | `platforms` |
+| Plateformes | Plateformes de chaque version (nom et nom technique) ; choix de la plateforme d'une version jouée | `platforms` |
 | Type de fiche | Distinguer jeu, version, remake, DLC, standalone ; mener une fiche trouvée par la recherche à son jeu ; exclure mods et forks de la recherche ; titrer une version sans titre propre (section 5) | `game_type` |
 | Versions | Toutes les versions, proposées à l'ajout ; seules celles cochées sont stockées. Titre : `version_title`, sinon `name` (section 5) | `version_parent`, `version_title`, `remasters`, `ports`, `expanded_games` |
 | DLC | Tous les DLC, proposés à l'ajout ; seuls ceux cochés sont stockés. Colonne DLC | `dlcs`, `expansions` ; `parent_game` côté DLC |
@@ -92,8 +92,8 @@ Le POC simule la base dans l'état React mais interroge les vraies données IGDB
 
 | Fichier | Contenu |
 | --- | --- |
-| `App.tsx` | Composant principal : états, tableau, modale d'ajout, footer de debug |
-| `App.module.scss` | Styles (module SCSS) |
+| `index.tsx` | Composant principal : états, tableau, modales, footer de debug |
+| `backlog.module.scss` | Styles (module SCSS) |
 | `types.ts` | Tous les types, exportés, calqués sur les futures tables, dont le type `AppState` de l'état complet |
 | `initialState.ts` | L'objet `initialState`, très fortement typé, qui regroupe les valeurs initiales de tous les `useState` |
 | `mappers.ts` | Tous les mappers : réponses IGDB → types de la base ; base → lignes du tableau |
@@ -103,10 +103,10 @@ Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes
 
 ### Consignes pour le code du POC
 
-- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, variante, DLC, DLC fait, série, société…), avec les mêmes noms de champs.
+- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, DLC, série, société… ; jeu du backlog `user_games`, version jouée `user_versions`, DLC fait `done_dlcs`), avec les mêmes noms de champs.
 - **Données normalisées** : les relations passent par des identifiants (`gameId`, `platformId`…), sans objets imbriqués ni données copiées d'une entité à l'autre.
 - **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
-- **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de variantes).
+- **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de versions jouées).
 - **Langue** : tout le code est en anglais (types, champs, variables, valeurs des listes fermées). Les libellés d'interface sont en français, écrits en dur dans le code, sans système de traduction.
 - **Pictos d'interface** (chevron, menu, flèches de tri) : des emojis, sans bibliothèque d'icônes.
 
@@ -125,7 +125,7 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 
 - Dernier jeu ajouté.
 - Nombre de jeux, de versions et de DLC en base.
-- Nombre de jeux et de variantes dans le backlog.
+- Nombre de jeux et de versions jouées dans le backlog.
 - Nombre d'actions dans l'historique d'annulation, et à rétablir.
 - Tri et filtres actifs.
 - Le bouton d'export de l'état.
@@ -140,8 +140,8 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 ### Après le POC
 
 - **Une seule base**, découpée en deux groupes de tables :
-  - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), plus le type de fin, la série et le numéro dans la série choisis à l'ajout. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
-  - **Base utilisateur** : les variantes, qui portent toutes les données de l'utilisateur. C'est là seulement que la plateforme distingue les variantes.
+  - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), dont la série proposée par IGDB, plus les séries créées à la main. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
+  - **Base utilisateur** : toutes les données de l'utilisateur. Les jeux du backlog (`user_games`) portent sa personnalisation : miniature, type de fin, série et numéro dans la série. Les versions jouées (`user_versions`) portent ses données de jeu ; c'est là seulement que la plateforme les distingue. Les DLC faits (`done_dlcs`) les complètent.
 - **Serveur obligatoire** entre le front et IGDB : IGDB refuse les appels depuis un navigateur, son token doit rester côté serveur et l'API est limitée à 4 requêtes par seconde.
 ### Images
 
@@ -149,29 +149,31 @@ Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargemen
 - Une seule fonction construit l'URL à l'affichage : `https://images.igdb.com/igdb/image/upload/t_<taille>/<image_id>.jpg`. `t_thumb` (90 × 90) pour la miniature d'une ligne, suffixe `_2x` pour les écrans haute densité.
 - Le navigateur charge les images directement chez IGDB : ces requêtes ne passent pas par l'API et ne consomment pas son quota.
 
-## 5. Règles métier : jeu, version, variante, DLC
+## 5. Règles métier : jeu, version, version jouée, DLC
 
-Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisateur sont portées par ses **variantes**, une variante étant unique par Jeu + Version + Plateforme ; la ligne du jeu n'affiche que des agrégats.
+Une ligne du backlog correspond à un **jeu du backlog** : un jeu et sa personnalisation. Les données de jeu de l'utilisateur sont portées par ses **versions jouées**, une version jouée étant unique par Jeu + Version + Plateforme ; la ligne du jeu n'en affiche que des agrégats.
 
 ### Les notions
 
 | Notion | Définition | Exemples |
 | --- | --- | --- |
-| Jeu | L'œuvre. Une ligne du backlog. Un remake est un jeu distinct. Son type de fin, sa série et son numéro dans la série sont choisis à l'ajout | *Skyrim* ; *FF7* et *FF7 Remake* sont deux jeux |
+| Jeu | L'œuvre, en base globale, partagée. Un remake est un jeu distinct | *Skyrim* ; *FF7* et *FF7 Remake* sont deux jeux |
+| Jeu du backlog | Un jeu dans mon backlog, une ligne du tableau. Il porte ma personnalisation, choisie à l'ajout au backlog : miniature, type de fin, série et numéro dans la série. Il n'existe qu'avec au moins une version jouée | *Skyrim* dans mon backlog, en Histoire, série *The Elder Scrolls* n° 5 |
 | Version | Une déclinaison qu'IGDB rattache au jeu : portage, remaster, réédition, *Deluxe* / *Ultra Deluxe*, *GOTY*, *Director's Cut* | *Skyrim* et *Skyrim Legendary Edition* ; *The Last of Us* et *The Last of Us Remastered* |
-| Variante | Une version jouée sur une plateforme. Elle porte toutes les données de l'utilisateur : statut, temps, possession, dates, note, DLC faits… | *Skyrim* sur PS3 ; *Skyrim Legendary* sur PS4 ; *Skyrim Legendary* sur PC = 3 variantes |
+| Version jouée | Une version sur une plateforme, dans mon backlog. Elle porte mes données de jeu : statut, temps, possession, dates, note, DLC faits… | *Skyrim* sur PS3 ; *Skyrim Legendary* sur PS4 ; *Skyrim Legendary* sur PC = 3 versions jouées |
 | Plateforme | Une plateforme IGDB, ou un émulateur rattaché à la console émulée. Stockée avec un nom et un nom technique | PS4, PC, *PCSX2* (PS2) |
-| DLC | Contenu additionnel rattaché au jeu, pas à une version. Il se coche comme fait sur une variante | *Dawnguard*, *Hearthfire*, *Dragonborn* pour *Skyrim* |
+| DLC | Contenu additionnel rattaché au jeu, pas à une version. Il se coche comme fait sur une version jouée | *Dawnguard*, *Hearthfire*, *Dragonborn* pour *Skyrim* |
 | Extension standalone | Un jeu à part entière, pas un DLC. IGDB en classe certaines en DLC : on les ajoute alors comme jeu (règle « DLC comme jeu ») | *TLAD*, *TBOGT* (extensions de *GTA IV* sur IGDB) |
-| Série | Facultative. Proposée par IGDB (section 3), elle peut être remplacée par une autre série, ou par une série créée à la main ; un clic sur son nom filtre le tableau | *Grand Theft Auto* ; *Souls*, créée à la main pour *Dark Souls*, *Sekiro* et *Elden Ring* |
+| Série | Facultative. Proposée par IGDB (section 3) et choisie pour chaque jeu du backlog : la proposée, une autre série, une série créée à la main ou aucune ; un clic sur son nom filtre le tableau | *Grand Theft Auto* ; *Souls*, créée à la main pour *Dark Souls*, *Sekiro* et *Elden Ring* |
 
 ### Règles
 
 - **Classement IGDB** : pas de règle maison. Ce qu'IGDB rattache à un jeu comme version, remaster, portage ou version enrichie est une version de ce jeu. Ce qu'il classe comme remake est un jeu distinct.
-- **Une version, une fiche** : en base globale, chaque version est stockée une seule fois avec la liste de ses plateformes. La plateforme n'intervient que côté utilisateur, dans la variante.
-- **Plateformes proposées pour une variante** : d'abord celles où la version est sortie, puis les émulateurs de ces consoles. Exemple : un jeu PS2 propose PS2, puis *PCSX2*.
+- **Une version, une fiche** : en base globale, chaque version est stockée une seule fois avec la liste de ses plateformes. La plateforme n'intervient que côté utilisateur, dans la version jouée.
+- **Plateformes proposées pour une version jouée** : d'abord celles où la version est sortie, puis les émulateurs de ces consoles. Exemple : un jeu PS2 propose PS2, puis *PCSX2*.
 - **Pas de doublon** : un jeu, une version ou un DLC n'existe qu'une fois en base. La recherche signale ce qui est déjà en base. Exception voulue : une même fiche IGDB peut être à la fois DLC d'un jeu et jeu à part (règle « DLC comme jeu »).
-- **Pas de duplication de variante** : avoir joué à la même variante sur plusieurs comptes ne crée pas de seconde entrée.
+- **Pas de duplication de version jouée** : avoir joué à la même version sur la même plateforme avec plusieurs comptes ne crée pas de seconde entrée.
+- **Jeu du backlog et versions jouées** : retirer la dernière version jouée d'un jeu le retire du backlog, avec sa personnalisation. Le jeu reste en base ; y revenir repart de la personnalisation par défaut.
 - **Deux noms** : un jeu a un nom VO et un nom VF éventuel. Les autres noms alternatifs d'IGDB ne sont pas stockés.
 - **DLC** : récupérés pour chaque jeu ajouté. Seuls les DLC et les extensions (`dlcs`, `expansions`) comptent ; les packs et les mises à jour ne sont pas récupérés. Ils sont réunis depuis l'original et toutes ses versions, sans doublon, et rattachés au jeu ; dans les faits, IGDB ne les range que sur l'original.
 - **DLC choisis** : comme les versions, la modale d'ajout propose tous les DLC, et seuls ceux cochés sont enregistrés ; ils sont tous cochés à l'ouverture. Le backlog est personnel : une petite quête gratuite (*The Witcher 3* en compte 5 sur IGDB) peut être un vrai DLC pour l'un et du bruit pour l'autre. Le type IGDB ne permet pas de trier : *Dawnguard* y est un DLC, comme ces quêtes. Les DLC en base fixent le « total » de « faits / total ». D'autres s'ajoutent plus tard, par « Modifier le jeu » (section 8) ou « Rechercher d'autres DLC » (section 9).
@@ -183,15 +185,15 @@ Une ligne du backlog correspond à un **jeu**. Toutes les données de l'utilisat
 
 ### Affichage replié / déplié
 
-- **Une seule variante** : la ligne est simple, non dépliable. Elle affiche cette variante (version et plateforme) et ses données se modifient directement sur la ligne. Miniature : l'image choisie à l'ajout ; nom : celui du jeu, avec le titre de la version en dessous si ce n'est pas l'original ; date de sortie : la date originale du jeu.
-- **Plusieurs variantes** : la ligne affiche le jeu original (nom, date de sortie originale), plateforme vide, et les agrégats des variantes. Elle se déplie en une sous-ligne par variante, où se modifient ses données.
+- **Une seule version jouée** : la ligne est simple, non dépliable. Elle affiche cette version jouée (version et plateforme) et ses données se modifient directement sur la ligne. Miniature : l'image choisie à l'ajout au backlog ; nom : celui du jeu, avec le titre de la version en dessous si ce n'est pas l'original ; date de sortie : la date originale du jeu.
+- **Plusieurs versions jouées** : la ligne affiche le jeu original (nom, date de sortie originale), plateforme vide, et les agrégats des versions jouées. Elle se déplie en une sous-ligne par version jouée, où se modifient ses données.
 - **Agrégats** : la ligne du jeu montre le total, le meilleur, le plus ancien… selon la colonne (section 7). Quand il est impossible de choisir une valeur, la case reste vide.
-- **Données du jeu** : le type de fin, la série et le numéro dans la série, choisis à l'ajout et modifiables avec le jeu (section 8), s'affichent en lecture seule dans le tableau.
-- Seules les variantes présentes dans le backlog de l'utilisateur comptent. Les autres versions en base n'apparaissent pas.
+- **Personnalisation** : le type de fin, la série et le numéro dans la série, choisis à l'ajout au backlog et modifiables par « Personnaliser » (section 8), s'affichent en lecture seule dans le tableau.
+- Seules les versions jouées présentes dans le backlog de l'utilisateur comptent. Les autres versions en base n'apparaissent pas.
 
 ## 6. Types de fin et statuts
 
-Le type de fin, choisi à l'ajout du jeu, dit ce que « finir » veut dire. Le statut, renseigné sur chaque variante, dit jusqu'où je suis allé ; la ligne du jeu affiche le meilleur.
+Le type de fin, choisi à l'ajout du jeu au backlog, dit ce que « finir » veut dire. Le statut, renseigné sur chaque version jouée, dit jusqu'où je suis allé ; la ligne du jeu affiche le meilleur.
 
 ### Types de fin
 
@@ -202,7 +204,7 @@ Le type de fin, choisi à l'ajout du jeu, dit ce que « finir » veut dire. Le s
 | Bac à sable | Pas de fin imposée ; fini quand j'estime en avoir fait le tour | *Minecraft*, *Satisfactory*, *Shapez*, *Cities: Skylines*, *Les Sims* |
 | Multijoueur | Jeu en ligne ou compétitif sans fin ; jamais vraiment fini | *Rocket League*, *League of Legends*, *Call of Duty* / *Battlefield* sans solo, *Fortnite* |
 
-### Statuts d'une variante
+### Statuts d'une version jouée
 
 Les statuts sont gradés du rang 1 au rang 8 ; « Abandonné » est hors échelle. « Pas commencé » est la valeur par défaut, et les statuts proposés dépendent du type de fin du jeu.
 
@@ -221,9 +223,9 @@ Les statuts sont gradés du rang 1 au rang 8 ; « Abandonné » est hors échell
 
 ### Statut de la ligne du jeu (calculé)
 
-Les variantes « Pas commencé » sont ignorées tant qu'une autre variante a un statut. On applique ensuite la première situation qui correspond :
+Les versions jouées « Pas commencé » sont ignorées tant qu'une autre version jouée a un statut. On applique ensuite la première situation qui correspond :
 
-| Situation des variantes | Statut affiché sur la ligne du jeu |
+| Situation des versions jouées | Statut affiché sur la ligne du jeu |
 | --- | --- |
 | Toutes « Pas commencé » | Pas commencé |
 | Au moins une au rang 5 ou plus | Le plus haut de ces statuts |
@@ -233,36 +235,36 @@ Les variantes « Pas commencé » sont ignorées tant qu'une autre variante a un
 
 ### Règles
 
-- Passer une variante au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0. Si la date de fin est vide, une petite fenêtre la propose, pré-remplie avec la date du jour (« Valider » ou « Plus tard »). Il en va de même pour une variante créée avec un statut pré-rempli de rang 5 ou plus (section 8).
+- Passer une version jouée au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0. Si la date de fin est vide, une petite fenêtre la propose, pré-remplie avec la date du jour (« Valider » ou « Plus tard »). Il en va de même pour une version jouée créée avec un statut pré-rempli de rang 5 ou plus (section 8).
 - Repasser sous le rang 5 n'efface pas la date de fin.
 
 ## 7. Données suivies et colonnes du backlog
 
-Chaque colonne du tableau correspond à une donnée stockée ou calculée : cette liste fait office des deux. Les données de l'utilisateur se saisissent sur la variante ; la ligne du jeu en affiche l'agrégat, vide quand il est impossible de choisir. Sur une ligne à variante unique, les deux dernières colonnes se confondent.
+Chaque colonne du tableau correspond à une donnée stockée ou calculée : cette liste fait office des deux. Les données de l'utilisateur se saisissent sur la version jouée ; la ligne du jeu en affiche l'agrégat, vide quand il est impossible de choisir. Sur une ligne à version jouée unique, les deux dernières colonnes se confondent.
 
-| Colonne | Niveau | Source | Ligne du jeu | Sous-ligne de variante |
+| Colonne | Niveau | Source | Ligne du jeu | Sous-ligne de version jouée |
 | --- | --- | --- | --- | --- |
-| Miniature | Jeu | IGDB | Image choisie à l'ajout | Image de la version |
+| Miniature | Jeu du backlog | IGDB, choisie à l'ajout au backlog | Image choisie | Image de la version |
 | Nom | Jeu | IGDB | Nom VF, nom VO en dessous s'il diffère | Titre de la version (ex. *Legendary Edition*) |
-| Série | Jeu | Proposée par IGDB, choisie à l'ajout | Nom, vide sans série ; ✏️ si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
-| N° dans la série | Jeu | Choisi à l'ajout | Numéro, en lecture seule ; vide sans série |  |
+| Série | Jeu du backlog | Proposée par IGDB, choisie à l'ajout au backlog | Nom, vide sans série ; ✏️ si ce n'est pas celle proposée par IGDB (au survol : celle d'IGDB) ; un clic filtre le tableau sur cette série |  |
+| N° dans la série | Jeu du backlog | Choisi à l'ajout au backlog | Numéro, en lecture seule ; vide sans série |  |
 | Développeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Éditeur | Jeu | IGDB | Logo au-dessus du nom |  |
 | Date de sortie | Jeu, version | IGDB | Date originale, ou « à venir » / « annulé » | Date de sortie de la version sur cette plateforme |
-| Type de fin | Jeu | Choisi à l'ajout | Type, en lecture seule |  |
-| Plateforme | Variante | Saisie (plateformes de la version + émulateurs) | Vide si plusieurs variantes | Icône et nom |
-| Statut | Variante | Saisie | Meilleur statut (section 6), vide si impossible de choisir | Liste filtrée par type de fin |
-| À jouer bientôt | Variante | Saisie | Coché si au moins une variante est cochée ; la ligne est mise en valeur | Case |
-| Possédé | Variante | Saisie | Coché si au moins une variante est possédée | Case |
-| Date de fin | Variante | Saisie | La plus ancienne (première fin) | Date, vide si pas fini |
-| Fois fini | Variante | Saisie | Somme de chaque compteur | Deux compteurs : sûr et probable |
-| DLC | Variante | IGDB (liste) + saisie (faits) | « faits / total », un DLC comptant comme fait s'il l'est sur au moins une variante | « faits / total » ; clic = liste à cocher (section 9) |
-| Temps réel | Variante | Saisie | Somme des variantes | Temps relevé sur la plateforme |
-| Temps estimé | Variante | Saisie | Somme des variantes | Estimation manuelle du temps non relevé |
-| Temps total | Variante | Calculé | Somme des variantes | Réel + estimé |
-| Note | Variante | Saisie | La plus haute | De 0 à 20 |
-| Commentaire | Variante | Saisie | Le commentaire s'il n'y en a qu'un, sinon vide | Texte libre, tronqué, complet au survol |
-| Actions | Jeu, variante |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
+| Type de fin | Jeu du backlog | Choisi à l'ajout au backlog | Type, en lecture seule |  |
+| Plateforme | Version jouée | Saisie (plateformes de la version + émulateurs) | Vide si plusieurs versions jouées | Icône et nom |
+| Statut | Version jouée | Saisie | Meilleur statut (section 6), vide si impossible de choisir | Liste filtrée par type de fin |
+| À jouer bientôt | Version jouée | Saisie | Coché si au moins une version jouée est cochée ; la ligne est mise en valeur | Case |
+| Possédé | Version jouée | Saisie | Coché si au moins une version jouée est possédée | Case |
+| Date de fin | Version jouée | Saisie | La plus ancienne (première fin) | Date, vide si pas fini |
+| Fois fini | Version jouée | Saisie | Somme de chaque compteur | Deux compteurs : sûr et probable |
+| DLC | Version jouée | IGDB (liste) + saisie (faits) | « faits / total », un DLC comptant comme fait s'il l'est sur au moins une version jouée | « faits / total » ; clic = liste à cocher (section 9) |
+| Temps relevé | Version jouée | Saisie | Somme des versions jouées | Temps relevé sur la plateforme |
+| Temps estimé | Version jouée | Saisie | Somme des versions jouées | Estimation manuelle du temps non relevé |
+| Temps total | Version jouée | Calculé | Somme des versions jouées | Relevé + estimé |
+| Note | Version jouée | Saisie | La plus haute | De 0 à 20 |
+| Commentaire | Version jouée | Saisie | Le commentaire s'il n'y en a qu'un, sinon vide | Texte libre, tronqué, complet au survol |
+| Actions | Jeu, version jouée |  | Menu « 3 points verticaux » en fin de ligne (section 9) | Menu « 3 points verticaux » en fin de sous-ligne (section 9) |
 
 - **Date de sortie** : « annulé » si IGDB indique le statut *Cancelled* ; « à venir » remplace la date quand il n'y en a pas ou qu'elle est future. Avec les autres statuts IGDB (accès anticipé, retiré de la vente…), la date s'affiche normalement. Sur une sous-ligne d'émulateur, c'est la date de sortie de la version sur la console d'origine (ex. PCSX2 : la date de sortie sur PS2).
 - **Formats** : temps stockés en minutes entières, saisis en heures et minutes, affichés « 12 h 30 » ; note entière de 0 à 20 ; numéro dans la série positif ou nul, décimal possible (ex. 0 pour *Resident Evil 0*, 2.5) ; compteurs « fois fini » entiers, à partir de 0.
@@ -270,7 +272,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 
 ## 8. Ajout d'un jeu et gestion du backlog
 
-Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un résultat, vérification du type de fin (Histoire par défaut), « Valider » avec la cover pré-sélectionnée, puis choix de la plateforme dans l'ajout de la variante qui s'ouvre, et « Valider ».
+Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un résultat, « Valider » ; dans l'ajout au backlog qui s'ouvre, vérification du type de fin (Histoire par défaut), cover pré-sélectionnée, choix de la plateforme, et « Valider ».
 
 ### Ajout depuis IGDB
 
@@ -283,48 +285,54 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
      - les remakes et extensions standalone restent des jeux à part ; les mods et les forks sont exclus.
    - Un jeu n'apparaît qu'une fois, à la place de sa fiche la mieux classée. Les jeux trouvés seulement via un bundle passent après tous les autres : chercher *Final Fantasy VII* ne propose pas *Final Fantasy VIII* en deuxième, via un pack des deux. S'il n'a pas été trouvé lui-même, le résultat nomme sous son nom la fiche qui l'a fait trouver (« via *The Elder Scrolls V: Skyrim - Dawnguard* ») ; pas de mention quand elle porte le même nom que lui (portages de *FF7*).
    - Choisir un résultat ouvre la modale du jeu, qui propose toutes ses versions.
-   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec la version originale pré-sélectionnée.
+   - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout au backlog, avec la version originale pré-sélectionnée.
    - Choisir un résultat ferme la liste des résultats ; revenir dans le champ la rouvre avec la même saisie. Un clic à côté ou Échap la ferme aussi.
-2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables, sauf la série, qui est un choix.
+2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké en base globale : noms (VO, VF), série proposée, versions et leurs plateformes, DLC, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables. Les choix personnels (miniature, type de fin, série, numéro) se font à l'ajout au backlog.
 3. **Choix dans la modale** :
-   - L'image de la miniature, parmi la cover et les artworks ; la cover est pré-sélectionnée.
-   - Le type de fin du jeu (section 6) ; Histoire par défaut.
-   - La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « ➕ Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « ↩️ Série IGDB » y ramène.
-   - Le numéro du jeu dans sa série, si le jeu en a une ; sans série, il est effacé à « Valider ».
    - Les versions à enregistrer (section 5) : l'originale cochée d'office, les autres à cocher.
    - Les DLC à enregistrer (section 5) : tous cochés à l'ouverture. Chacun a aussi une case « 🧩 comme jeu », indépendante.
-4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, même si une autre est choisie : le jeu garde la trace de celle d'IGDB, pour le ✏️ et « ↩️ Série IGDB ».
+4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, qui reste attachée au jeu pour le ✏️ et « ↩️ Série IGDB ».
 5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
-   - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout d'une variante (Gestion du backlog). La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
-   - Ce sont deux actions distinctes (section 10). Annuler l'ajout de la variante laisse le jeu en base, hors du backlog.
-   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 Ma base ».
-6. **DLC comme jeu** : après « Valider », et après l'ajout de la variante s'il a lieu, la modale d'ajout de chaque DLC coché « 🧩 comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
+   - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout au backlog (Gestion du backlog), avec les images déjà lues sur IGDB. La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
+   - Ce sont deux actions distinctes (section 10). Annuler l'ajout au backlog laisse le jeu en base, hors du backlog.
+   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 En base ».
+6. **DLC comme jeu** : après « Valider », et après l'ajout au backlog s'il a lieu, la modale d'ajout de chaque DLC coché « 🧩 comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
 
 ### Ajout depuis la base
 
-Un jeu déjà en base (retiré du backlog, ou ajouté sans variante) revient dans le backlog sans aucune requête IGDB.
+Un jeu déjà en base (retiré du backlog, ou ajouté sans « Ajouter à mon backlog ») revient dans le backlog sans relire ses données IGDB : seules ses images sont relues, pour le choix de la miniature.
 
-- La barre de recherche a deux sources : « 🌐 IGDB », par défaut, et « 📚 Ma base ». Changer de source relance la saisie en cours sur la nouvelle source.
-- Sur « Ma base », la recherche porte sur le nom VO, le nom VF et les titres des versions des jeux en base, sans tenir compte des accents ni des majuscules. Les résultats s'affichent tout de suite, triés par nom, au même format que ceux d'IGDB (image choisie à l'ajout, plateformes de toutes les versions) ; ceux qui sont déjà dans le backlog sont signalés.
-- Choisir un résultat ouvre l'ajout d'une variante, avec la version originale pré-sélectionnée.
+- La barre de recherche a deux sources : « 🌐 IGDB », par défaut, et « 📚 En base ». Changer de source relance la saisie en cours sur la nouvelle source.
+- Sur « En base », la recherche porte sur le nom VO, le nom VF et les titres des versions des jeux en base, sans tenir compte des accents ni des majuscules, sans requête IGDB. Les résultats s'affichent tout de suite, triés par nom, au même format que ceux d'IGDB (image choisie à l'ajout au backlog, sinon la cover de l'original ; plateformes de toutes les versions) ; ceux qui sont déjà dans le backlog sont signalés.
+- Choisir un résultat ouvre l'ajout au backlog, avec la version originale pré-sélectionnée.
 
 ### Modification d'un jeu
 
-- Un jeu déjà en base se modifie avec exactement les mêmes choix qu'à l'ajout : l'image de la miniature, le type de fin, la série, le numéro dans la série, les versions et les DLC.
-- La série proposée par IGDB reste celle de l'ajout : la relecture d'IGDB à l'ouverture ne la change pas. Une série qui n'a plus aucun jeu, après un changement de série, quitte la base.
-- La modification rouvre la même modale : données IGDB en lecture seule, ces choix modifiables, puis « Valider », en une seule action. Le jeu est relu sur IGDB à l'ouverture : la cover et les artworks, et les versions et DLC absents de la base. Les autres données viennent de la base.
+- « Modifier le jeu » complète le jeu en base : ses versions et ses DLC. Les choix personnels se font par « Personnaliser ».
+- La modification rouvre la modale du jeu : données IGDB en lecture seule, puis « Valider », en une seule action. Le jeu est relu sur IGDB à l'ouverture : les versions et DLC absents de la base. Les autres données viennent de la base ; la série proposée reste celle de l'ajout.
 - Les versions et DLC déjà en base sont cochés et grisés ; les autres sont décochés, à cocher pour les ajouter. On ne peut pas en retirer. Les DLC y ont aussi leur case « 🧩 comme jeu », avec le même enchaînement qu'à l'ajout.
-- Un formulaire d'édition ne se valide jamais sans modification : « Valider » reste inactif tant qu'aucun choix n'a changé, qu'aucune version ni aucun DLC n'est coché en plus et qu'aucun DLC n'est coché « comme jeu ». Avec seulement des DLC « comme jeu », la base ne change pas : pas d'action, l'enchaînement s'ouvre directement.
+- Un formulaire d'édition ne se valide jamais sans modification : « Valider » reste inactif tant qu'aucune version ni aucun DLC n'est coché en plus et qu'aucun DLC n'est coché « comme jeu ». Avec seulement des DLC « comme jeu », la base ne change pas : pas d'action, l'enchaînement s'ouvre directement.
 - On y accède par l'entrée « Modifier le jeu » du menu Actions (section 9).
-- Changer le type de fin peut rendre incompatible le statut d'une variante : Fini devient Estimé fini et inversement, Vu sans jouer devient Pas commencé.
+
+### Personnalisation d'un jeu du backlog
+
+Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modifiables par « Personnaliser » :
+
+- L'image de la miniature, parmi la cover et les artworks, relus sur IGDB à l'ouverture ; à l'ajout, la cover est pré-sélectionnée. En attendant IGDB, ou s'il échoue, seule l'image déjà choisie est proposée ; elle le reste même si IGDB ne l'a plus.
+- Le type de fin du jeu (section 6) ; Histoire par défaut.
+- La série : celle proposée par IGDB, en tête de liste et pré-sélectionnée ; « Aucune » ; une autre série de la base ; ou « ➕ Nouvelle série… », qui demande un nom (« Valider » reste inactif tant qu'il est vide). Un nom déjà pris, sans tenir compte des accents ni des majuscules, désigne la série existante. Hors de la série d'IGDB, « ↩️ Série IGDB » y ramène.
+- Le numéro du jeu dans sa série, si le jeu en a une ; sans série, il est effacé à « Valider ».
+- Une série qu'aucun jeu ne propose et qu'aucun jeu du backlog n'a choisie quitte la base : une série créée à la main part avec son dernier jeu.
+- « Personnaliser » : entrée du menu Actions, une seule action à « Valider », inactif tant que rien n'a changé. Changer le type de fin peut rendre incompatible le statut d'une version jouée : Fini devient Estimé fini et inversement, Vu sans jouer devient Pas commencé.
 
 ### Gestion du backlog
 
-- Ajouter une variante : entrée « Ajouter une variante » du menu Actions, qui ouvre directement le choix de la version et de la plateforme, sans version pré-sélectionnée. La recherche y mène aussi : un résultat signalé « déjà en base » ouvre le même choix, comme l'ajout d'un jeu avec « Ajouter à mon backlog ».
-  - J'indique la version jouée, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
-  - La même fenêtre permet de pré-remplir toutes mes données de la variante : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps réel et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide.
+- Ajouter au backlog : un jeu en base entre dans le backlog avec sa personnalisation et sa première version jouée, en une seule action. On y arrive après l'ajout d'un jeu avec « Ajouter à mon backlog », ou par un résultat de recherche « déjà en base ».
+- Ajouter une version jouée : entrée « Ajouter une version jouée » du menu Actions, la même fenêtre sans la personnalisation, sans version pré-sélectionnée. Un résultat de recherche d'un jeu déjà dans le backlog y mène aussi.
+  - J'indique la version, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
+  - La même fenêtre permet de pré-remplir toutes mes données de la version jouée : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps relevé et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide. Le statut pré-rempli suit un changement du type de fin dans la personnalisation.
   - « Valider » applique les règles d'un changement de statut (section 6) : un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0, et la petite fenêtre propose la date de fin si elle est vide.
-- Retirer : entrées « Retirer la variante » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière variante retire le jeu du backlog. Les retraits se font sans confirmation : `Ctrl+Z` les annule (section 10).
+- Retirer : entrées « Retirer la version jouée » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière version jouée retire le jeu du backlog, avec sa personnalisation (section 5). Les retraits se font sans confirmation : `Ctrl+Z` les annule (section 10).
 
 ## 9. Vue Backlog (tableau principal)
 
@@ -332,7 +340,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 
 ### Lignes simples et lignes dépliables
 
-- Une ligne dépliable porte un chevron en début de ligne et un badge du nombre de variantes (ex. « 3 variantes »).
+- Une ligne dépliable porte un chevron en début de ligne et un badge du nombre de versions jouées (ex. « 3 versions jouées »).
 - Une ligne simple n'a pas de chevron ; un espace vide garde l'alignement des colonnes.
 - Les sous-lignes sont légèrement indentées, sur un fond plus discret que la ligne du jeu.
 
@@ -343,11 +351,11 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 
 ### DLC
 
-- Chaque variante affiche « faits / total » ; un clic ouvre une petite fenêtre (popover) listant les DLC du jeu avec une case « fait » chacun.
-- La ligne du jeu affiche « faits / total » en lecture seule, un DLC comptant comme fait s'il l'est sur au moins une variante.
-- Sur une ligne à variante unique, la liste se coche directement depuis la ligne.
+- Chaque version jouée affiche « faits / total » ; un clic ouvre une petite fenêtre (popover) listant les DLC du jeu avec une case « fait » chacun.
+- La ligne du jeu affiche « faits / total » en lecture seule, un DLC comptant comme fait s'il l'est sur au moins une version jouée.
+- Sur une ligne à version jouée unique, la liste se coche directement depuis la ligne.
 - En lecture seule, la liste se consulte ; en mode édition, les cases se cochent.
-- En mode édition, le popover se termine par « 🔍 Rechercher d'autres DLC ». Il ouvre une modale listant tous les DLC IGDB du jeu (IGDB les range sur le jeu, pas sur ses versions) : ceux en base sont cochés et grisés, les autres se cochent. « Valider », inactif tant que rien n'est coché, les ajoute au jeu, donc à toutes ses variantes, en une action ; on les coche ensuite « fait » dans le popover. Une variante d'un jeu sans DLC affiche alors « ➕ » pour y accéder.
+- En mode édition, le popover se termine par « 🔍 Rechercher d'autres DLC ». Il ouvre une modale listant tous les DLC IGDB du jeu (IGDB les range sur le jeu, pas sur ses versions) : ceux en base sont cochés et grisés, les autres se cochent. « Valider », inactif tant que rien n'est coché, les ajoute au jeu, donc à toutes ses versions jouées, en une action ; on les coche ensuite « fait » dans le popover. Une version jouée d'un jeu sans DLC affiche alors « ➕ » pour y accéder.
 - Ce choix évite un troisième niveau de dépliage dans le tableau.
 
 ### Menu Actions
@@ -356,12 +364,12 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 | Ligne | Entrées du menu |
 | --- | --- |
-| Ligne du jeu | Modifier le jeu · Ajouter une variante · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses variantes) · Logger cette ligne (POC) |
-| Sous-ligne de variante | Ouvrir la version sur IGDB · Retirer la variante · Logger cette ligne (POC) |
-| Ligne à variante unique | Le menu de la ligne du jeu ; « Retirer le jeu du backlog » y retire l'unique variante |
+| Ligne du jeu | Personnaliser · Modifier le jeu · Ajouter une version jouée · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses versions jouées) · Logger cette ligne (POC) |
+| Sous-ligne de version jouée | Ouvrir la version sur IGDB · Retirer la version jouée · Logger cette ligne (POC) |
+| Ligne à version jouée unique | Le menu de la ligne du jeu ; « Retirer le jeu du backlog » y retire l'unique version jouée |
 
 - « Ouvrir sur IGDB » et « Logger cette ligne » restent disponibles en lecture seule ; les autres entrées ne sont actives qu'en mode édition.
-- « Logger cette ligne » affiche dans la console le jeu, ses versions et ses variantes tels qu'ils sont stockés ; sur une sous-ligne, seulement cette variante et sa version.
+- « Logger cette ligne » affiche dans la console le jeu, sa personnalisation, ses versions et ses versions jouées tels qu'ils sont stockés ; sur une sous-ligne, seulement cette version jouée et sa version.
 - Le menu, comme le popover des DLC, se ferme au clic à côté ou avec Échap.
 
 ### Header du tableau
@@ -391,7 +399,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Tri multi-colonnes : flèche de direction et indicateur numérique de priorité. Un clic sur un en-tête fait défiler ⬆️, ⬇️, puis plus de tri sur cette colonne ; chaque nouvelle colonne passe après les autres.
 - Les lignes des jeux se trient sur ce qu'elles affichent, leurs sous-lignes restent rattachées à leur jeu, et les cases vides passent en dernier.
 - Filtre disponible sur chaque colonne, dans une ligne sous les en-têtes : « contient » pour les textes (nom VF ou VO, série, sociétés, commentaire) ; une liste de valeurs pour le type de fin, le statut et la plateforme ; oui ou non pour les cases à cocher ; un minimum et un maximum pour les nombres, les dates et les temps. La miniature et les actions n'en ont pas.
-- Un jeu reste affiché si sa ligne ou au moins une de ses variantes correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une variante PS4) ; déplié, il montre toutes ses variantes.
+- Un jeu reste affiché si sa ligne ou au moins une de ses versions jouées correspond aux filtres (ex. Plateforme = PS4 garde les jeux qui ont une version jouée PS4) ; déplié, il montre toutes ses versions jouées.
 - Un clic sur un nom de série filtre le tableau sur les jeux de cette série (valeur exacte).
 - Dès qu'un filtre est actif, « 🧹 Effacer », au début de la ligne des filtres, les retire tous d'un coup.
 - Paramètres de tri et de filtre persistés dans l'URL.
@@ -402,7 +410,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 - `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
 - À la souris, les flèches ↩️ et ↪️ de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
-- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé, un retrait, « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
+- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé (jeu ; ajout au backlog avec sa première version jouée), un retrait, « Personnaliser » ou « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
 - Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
 - Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.
 - L'annulation marche aussi en lecture seule ; pendant qu'une modale est ouverte, les raccourcis sont ignorés. Sur Mac, `⌘` vaut `Ctrl`.
@@ -417,10 +425,10 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
 - Affichage du tableau : dans le POC, les lignes ne se recalculent que quand la base, le tri ou les filtres changent, mais toutes les lignes chargées se redessinent à chaque rendu (frappe dans la recherche, popover, modale). Ensuite, si besoin : ne redessiner que les lignes concernées (lignes mémorisées, actions stables, popover transmis à sa seule ligne), puis réutiliser les lignes inchangées pour qu'une modification ne redessine que la sienne. Tri et filtres côté serveur, page par page, réduiront déjà ce travail.
 - DLC choisis par utilisateur : dans le POC, les DLC choisis vont en base, rattachés au jeu, comme les versions. À plusieurs utilisateurs, un DLC ajouté par l'un compterait dans le « total » de l'autre ; il faudra une sélection des DLC suivis par utilisateur.
-- Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des variantes et un DLC des cases « fait ». Le POC ne permet que d'en ajouter.
+- Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des versions jouées et un DLC des cases « fait ». Le POC ne permet que d'en ajouter.
 - Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
 - Plusieurs développeurs et éditeurs par jeu : IGDB renvoie des listes (`involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
-- Séries choisies par utilisateur : dans le POC, la série choisie (et les séries créées à la main, comme *Souls*) est rangée sur le jeu, en base globale, comme le type de fin et le numéro. À plusieurs utilisateurs, ce choix devra être personnel.
+- Séries créées par utilisateur : la série choisie est personnelle (jeu du backlog), mais une série créée à la main, comme *Souls*, est rangée en base globale avec les séries IGDB. À plusieurs utilisateurs, chacun devra avoir ses propres séries.
 - À surveiller : les éditions qu'IGDB classe en « Bundle ». Le POC prend comme version tout bundle rattaché à un jeu par `version_parent` (*Skyrim Legendary Edition*, éditions de *GTA V*) et ignore les autres, même quand ils ne contiennent qu'un jeu et ses DLC (*FF7 Remake Intergrade*, seulement listé dans `bundles` du jeu). Vérifier la règle sur plus de jeux et traiter ces cas.
 
 ### Écartées
@@ -435,7 +443,7 @@ Trace des idées qui ne seront pas faites.
 - Bundles : regrouper plusieurs jeux sous une même fiche.
 - Champ « Origine » distinct (vu mais pas fait, abonnement, émulation, officiel, gratuit).
 - Ajout manuel d'un jeu.
-- Modifier ou nettoyer les données IGDB avant de les enregistrer (seule la série se choisit, section 8).
+- Modifier ou nettoyer les données IGDB avant de les enregistrer (la série se choisit sur le jeu du backlog, section 8).
 - Choisir à l'ajout les jeux de la série à importer.
 - Colonne Franchise : doublon de la série dans la plupart des cas (section 3).
 - Nom VF des séries : IGDB n'en a pas, et une saisie à la main n'est pas voulue.
@@ -443,7 +451,7 @@ Trace des idées qui ne seront pas faites.
 - Colonne « Jeux liés ».
 - Stocker les images elles-mêmes (base64 ou fichiers).
 - Stocker les noms alternatifs : seuls les noms VO et VF sont gardés.
-- Dupliquer une variante pour cumuler les stats de plusieurs comptes.
+- Dupliquer une version jouée pour cumuler les stats de plusieurs comptes.
 - External games / external game sources d'IGDB.
 
 ## Sources
