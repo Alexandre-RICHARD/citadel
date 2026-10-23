@@ -656,6 +656,14 @@ $toolbar-height: 4.5rem;
   border-top: 1px solid #e5e5e5;
 }
 
+// Case à côté des boutons (« Ajouter à mon backlog »)
+.actionsOption {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+
 .preview {
   display: flex;
   flex-direction: column;
@@ -732,6 +740,37 @@ $toolbar-height: 4.5rem;
     &:disabled {
       opacity: 0.5;
     }
+  }
+
+  .textField {
+    width: 24rem;
+  }
+}
+
+// Cases du joueur côte à côte (« À jouer bientôt », « Possédé »)
+.checkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+
+  label {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    font-weight: 600;
+  }
+}
+
+.checkGroup {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: none;
+
+  legend {
+    margin-bottom: 0.25rem;
+    padding: 0;
+    font-weight: 600;
   }
 }
 

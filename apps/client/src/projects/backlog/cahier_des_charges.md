@@ -226,7 +226,7 @@ Les variantes « Pas commencé » sont ignorées tant qu'une autre variante a un
 
 ### Règles
 
-- Passer une variante au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0. Si la date de fin est vide, une petite fenêtre la propose, pré-remplie avec la date du jour (« Valider » ou « Plus tard »).
+- Passer une variante au rang 5 ou plus propose de renseigner sa date de fin, et passe son nombre de fois fini (sûr) à 1 s'il était à 0. Si la date de fin est vide, une petite fenêtre la propose, pré-remplie avec la date du jour (« Valider » ou « Plus tard »). Il en va de même pour une variante créée avec un statut pré-rempli de rang 5 ou plus (section 8).
 - Repasser sous le rang 5 n'efface pas la date de fin.
 
 ## 7. Données suivies et colonnes du backlog
@@ -263,7 +263,7 @@ Chaque colonne du tableau correspond à une donnée stockée ou calculée : cett
 
 ## 8. Ajout d'un jeu et gestion du backlog
 
-Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un résultat, vérification du type de fin (Histoire par défaut), puis « Valider » avec la cover pré-sélectionnée.
+Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un résultat, vérification du type de fin (Histoire par défaut), « Valider » avec la cover pré-sélectionnée, puis choix de la plateforme dans l'ajout de la variante qui s'ouvre, et « Valider ».
 
 ### Ajout depuis IGDB
 
@@ -275,7 +275,7 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
      - un autre bundle mène à chacun des jeux qu'il contient, dans l'ordre de sortie : *Mass Effect Trilogy* donne les trois *Mass Effect*, *Episodes from Liberty City* donne *GTA IV* ;
      - les remakes et extensions standalone restent des jeux à part ; les mods et les forks sont exclus.
    - Un jeu n'apparaît qu'une fois, à la place de sa fiche la mieux classée. Les jeux trouvés seulement via un bundle passent après tous les autres : chercher *Final Fantasy VII* ne propose pas *Final Fantasy VIII* en deuxième, via un pack des deux. S'il n'a pas été trouvé lui-même, le résultat nomme sous son nom la fiche qui l'a fait trouver (« via *The Elder Scrolls V: Skyrim - Dawnguard* ») ; pas de mention quand elle porte le même nom que lui (portages de *FF7*).
-   - Choisir un résultat ouvre la modale du jeu, qui propose toutes ses versions, l'originale pré-sélectionnée pour la variante.
+   - Choisir un résultat ouvre la modale du jeu, qui propose toutes ses versions.
    - Un résultat déjà en base est signalé ; le choisir mène directement à l'ajout d'une variante, avec la version originale pré-sélectionnée.
    - Choisir un résultat ferme la liste des résultats ; revenir dans le champ la rouvre avec la même saisie. Un clic à côté ou Échap la ferme aussi.
 2. **Prévisualisation** : une fenêtre modale montre, en lecture seule, tout ce qui sera stocké : noms (VO, VF), versions et leurs plateformes, DLC, série, franchise, développeur, éditeur, dates de sortie. Les données IGDB n'y sont pas modifiables.
@@ -284,8 +284,11 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
    - Le type de fin du jeu (section 6) ; Histoire par défaut.
    - Le numéro du jeu dans sa série, si le jeu en a une.
    - Les versions à enregistrer (section 5) : l'originale cochée d'office, les autres à cocher.
-4. **Ajout au backlog** (option dans la modale) : j'indique la version jouée, parmi les versions cochées, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). Cela créera la variante.
-5. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées et tous ses DLC, ainsi que la variante si l'option est remplie.
+4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées et tous ses DLC.
+5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
+   - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout d'une variante (Gestion du backlog). La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
+   - Ce sont deux actions distinctes (section 10). Annuler l'ajout de la variante laisse le jeu en base, hors du backlog.
+   - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « 📚 Ma base ».
 
 ### Ajout depuis la base
 
@@ -304,7 +307,10 @@ Un jeu déjà en base (retiré du backlog, ou ajouté sans variante) revient dan
 
 ### Gestion du backlog
 
-- Ajouter une variante : entrée « Ajouter une variante » du menu Actions, qui ouvre directement le choix de la version et de la plateforme, sans version pré-sélectionnée. La recherche y mène aussi : un résultat signalé « déjà en base » ouvre le même choix.
+- Ajouter une variante : entrée « Ajouter une variante » du menu Actions, qui ouvre directement le choix de la version et de la plateforme, sans version pré-sélectionnée. La recherche y mène aussi : un résultat signalé « déjà en base » ouvre le même choix, comme l'ajout d'un jeu avec « Ajouter à mon backlog ».
+  - J'indique la version jouée, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
+  - La même fenêtre permet de pré-remplir toutes mes données de la variante : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps réel et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide.
+  - « Valider » applique les règles d'un changement de statut (section 6) : un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0, et la petite fenêtre propose la date de fin si elle est vide.
 - Retirer : entrées « Retirer la variante » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière variante retire le jeu du backlog. Les retraits se font sans confirmation : `Ctrl+Z` les annule (section 10).
 
 ## 9. Vue Backlog (tableau principal)

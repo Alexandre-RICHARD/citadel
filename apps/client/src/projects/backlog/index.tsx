@@ -23,6 +23,7 @@ import {
 	type ColumnSetting,
 	type Company,
 	type Database,
+	type Dlc,
 	type EndingType,
 	endingTypeDefinitions,
 	type GameChoices,
@@ -39,6 +40,7 @@ import {
 	type TableHandlers,
 	type Variant,
 	type VariantChoice,
+	type VariantDraft,
 	type VariantRow,
 	type VariantStatus,
 	variantStatusDefinitions,
@@ -53,6 +55,7 @@ import {
 	buildViewSearch,
 	columnFilterKinds,
 	countBacklogGames,
+	defaultVariantDraft,
 	describeFilters,
 	describeSort,
 	describeVersionPlatforms,
@@ -72,6 +75,7 @@ import {
 	getGameVariantIds,
 	getIgdbImageUrl,
 	getLastAddedGame,
+	getNextVariantId,
 	getPlatformOptions,
 	getStatusLabel,
 	getStoredLine,
@@ -84,7 +88,6 @@ import {
 	keepImportedVersions,
 	keepVisibleColumns,
 	loadSavedColumns,
-	mergeById,
 	moveColumn,
 	parseIsoDate,
 	pushToHistory,
@@ -895,11 +898,29 @@ function AddGameDialog({
 		<Dialog
 			title="Ajouter un jeu"
 			actions={
-				<DialogActions
-					canValidate={gameImport !== null}
-					onCancel={onCancel}
-					onValidate={onValidate}
-				/>
+				<>
+					<label
+						className={styles.actionsOption}
+						title="Après « Valider », ouvre l’ajout d’une variante : version, plateforme et tes données"
+					>
+						<input
+							type="checkbox"
+							checked={modal.isAddingToBacklog}
+							onChange={() =>
+								onModalChange({
+									...modal,
+									isAddingToBacklog: !modal.isAddingToBacklog,
+								})
+							}
+						/>
+						Ajouter à mon backlog
+					</label>
+					<DialogActions
+						canValidate={gameImport !== null}
+						onCancel={onCancel}
+						onValidate={onValidate}
+					/>
+				</>
 			}
 		>
 			{gameImport === null ? (
@@ -924,27 +945,6 @@ function AddGameDialog({
 							onModalChange(toggleImportedVersion(modal, versionId))
 						}
 					/>
-					<section className={styles.backlogOption}>
-						<h3>Ajouter au backlog (optionnel)</h3>
-						{/* La variante se joue sur une version enregistrée */}
-						<VariantChoiceFields
-							gameName={gameImport.game.name}
-							versions={gameImport.versions.filter(
-								({ id }) =>
-									id === gameImport.game.id || modal.versionIds.includes(id),
-							)}
-							versionPlatforms={gameImport.versionPlatforms}
-							platforms={mergeById(gameImport.platforms, database.platforms)}
-							variants={database.variants}
-							variantChoice={modal.variantChoice}
-							onChange={(variantChoice) =>
-								onModalChange({ ...modal, variantChoice })
-							}
-						/>
-						<p className={styles.hint}>
-							Sans plateforme, le jeu entre en base sans entrer dans le backlog.
-						</p>
-					</section>
 				</>
 			)}
 		</Dialog>
@@ -1010,6 +1010,178 @@ function EditGameDialog({
 	);
 }
 
+/* eslint-disable jsx-a11y/label-has-associated-control -- les champs maison (DateField, NumberField…) rendent leur <input> dans le <label> */
+/** Données du joueur de la nouvelle variante, saisies comme dans le tableau ; les règles du statut s'appliquent à « Valider » (section 6) */
+function VariantDraftFields({
+	draft,
+	endingType,
+	dlcs,
+	onChange,
+}: {
+	draft: VariantDraft;
+	endingType: EndingType;
+	dlcs: Dlc[];
+	onChange: (draft: VariantDraft) => void;
+}) {
+	return (
+		<>
+			<div className={styles.choiceRow}>
+				<label>
+					Statut
+					<select
+						value={draft.status}
+						onChange={(event) => {
+							const status = variantStatusDefinitions.find(
+								({ key }) => key === event.target.value,
+							)?.key;
+							if (status !== undefined) {
+								onChange({ ...draft, status });
+							}
+						}}
+					>
+						{/* Liste filtrée par type de fin (section 6) */}
+						{variantStatusDefinitions
+							.filter(({ key }) => isStatusAllowed(key, endingType))
+							.map(({ key, label }) => (
+								<option
+									key={key}
+									value={key}
+								>
+									{label}
+								</option>
+							))}
+					</select>
+				</label>
+				<label>
+					Date de fin
+					<DateField
+						value={draft.finishDate}
+						label="Date de fin"
+						onCommit={(finishDate) => onChange({ ...draft, finishDate })}
+					/>
+				</label>
+				<label>
+					Fois fini
+					<span className={styles.fieldGroup}>
+						<NumberField
+							value={draft.sureFinishCount}
+							min={0}
+							max={null}
+							isNullable={false}
+							label="Fois fini, sûr"
+							onCommit={(count) =>
+								onChange({ ...draft, sureFinishCount: count ?? 0 })
+							}
+						/>
+						+
+						<NumberField
+							value={draft.probableFinishCount}
+							min={0}
+							max={null}
+							isNullable={false}
+							label="Fois fini, probable"
+							onCommit={(count) =>
+								onChange({ ...draft, probableFinishCount: count ?? 0 })
+							}
+						/>
+						?
+					</span>
+				</label>
+			</div>
+			<div className={styles.checkRow}>
+				<label>
+					<input
+						type="checkbox"
+						checked={draft.playSoon}
+						onChange={() => onChange({ ...draft, playSoon: !draft.playSoon })}
+					/>
+					À jouer bientôt
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						checked={draft.owned}
+						onChange={() => onChange({ ...draft, owned: !draft.owned })}
+					/>
+					Possédé
+				</label>
+			</div>
+			<div className={styles.choiceRow}>
+				<label>
+					Temps réel
+					<DurationField
+						minutes={draft.trackedPlayTimeMinutes}
+						label="Temps réel"
+						onCommit={(minutes) =>
+							onChange({ ...draft, trackedPlayTimeMinutes: minutes })
+						}
+					/>
+				</label>
+				<label>
+					Temps estimé
+					<DurationField
+						minutes={draft.estimatedPlayTimeMinutes}
+						label="Temps estimé"
+						onCommit={(minutes) =>
+							onChange({ ...draft, estimatedPlayTimeMinutes: minutes })
+						}
+					/>
+				</label>
+				<label>
+					Note sur 20
+					<NumberField
+						value={draft.rating}
+						min={0}
+						max={20}
+						isNullable
+						label="Note sur 20"
+						onCommit={(rating) => onChange({ ...draft, rating })}
+					/>
+				</label>
+			</div>
+			<div className={styles.choiceRow}>
+				<label>
+					Commentaire
+					<TextField
+						value={draft.comment}
+						label="Commentaire"
+						onCommit={(comment) => onChange({ ...draft, comment })}
+					/>
+				</label>
+			</div>
+			{dlcs.length > 0 && (
+				<fieldset className={styles.checkGroup}>
+					<legend>DLC faits</legend>
+					<ul className={styles.checkList}>
+						{dlcs.map((dlc) => (
+							<li key={dlc.id}>
+								<label>
+									<input
+										type="checkbox"
+										checked={draft.doneDlcIds.includes(dlc.id)}
+										onChange={() =>
+											onChange({
+												...draft,
+												doneDlcIds: draft.doneDlcIds.includes(dlc.id)
+													? draft.doneDlcIds.filter((id) => id !== dlc.id)
+													: [...draft.doneDlcIds, dlc.id],
+											})
+										}
+									/>
+									{dlc.name}
+								</label>
+							</li>
+						))}
+					</ul>
+				</fieldset>
+			)}
+		</>
+	);
+}
+
+/* eslint-enable jsx-a11y/label-has-associated-control */
+
+/** « Ajouter une variante » (section 8) : version, plateforme, puis les données du joueur, toutes optionnelles */
 function AddVariantDialog({
 	modal,
 	database,
@@ -1025,6 +1197,7 @@ function AddVariantDialog({
 }) {
 	const game = findById(database.games, modal.gameId);
 	const { versionId, platformId } = modal.variantChoice;
+	const isInBacklog = getGameVariantIds(database, modal.gameId).length > 0;
 	const canValidate =
 		versionId !== null &&
 		platformId !== null &&
@@ -1046,6 +1219,7 @@ function AddVariantDialog({
 		>
 			<p className={styles.notice}>
 				ℹ️ Choisis la version jouée, puis la plateforme.
+				{!isInBacklog && " Annuler laisse le jeu en base, hors du backlog."}
 			</p>
 			<VariantChoiceFields
 				gameName={game?.name ?? ""}
@@ -1058,6 +1232,17 @@ function AddVariantDialog({
 				variantChoice={modal.variantChoice}
 				onChange={(variantChoice) => onModalChange({ ...modal, variantChoice })}
 			/>
+			{game !== null && (
+				<section className={styles.backlogOption}>
+					<h3>Mes données (optionnel)</h3>
+					<VariantDraftFields
+						draft={modal.draft}
+						endingType={game.endingType}
+						dlcs={database.dlcs.filter(({ gameId }) => gameId === game.id)}
+						onChange={(draft) => onModalChange({ ...modal, draft })}
+					/>
+				</section>
+			)}
 		</Dialog>
 	);
 }
@@ -2498,8 +2683,8 @@ export function Backlog() {
 	}
 
 	/**
-	 * Un résultat déjà en base mène à l'ajout d'une variante, sans requête IGDB ; sinon à la modale d'ajout.
-	 * Un résultat est toujours un jeu original (section 8) : sa version originale est pré-sélectionnée.
+	 * Un résultat déjà en base mène à l'ajout d'une variante, sans requête IGDB, sa version originale pré-sélectionnée
+	 * (un résultat est toujours un jeu original, section 8) ; sinon à la modale d'ajout.
 	 */
 	function selectSearchResult(result: SearchResult) {
 		const version = database.versions.find(({ id }) => id === result.id);
@@ -2513,12 +2698,13 @@ export function Backlog() {
 						gameImport: null,
 						choices: { imageId: null, endingType: "story", seriesNumber: null },
 						versionIds: [],
-						variantChoice: { versionId: result.id, platformId: null },
+						isAddingToBacklog: true,
 					}
 				: {
 						kind: "addVariant",
 						gameId: version.gameId,
 						variantChoice: { versionId: version.id, platformId: null },
+						draft: defaultVariantDraft,
 					},
 		);
 	}
@@ -2527,8 +2713,12 @@ export function Backlog() {
 		setModal(null);
 	}
 
+	/**
+	 * Enregistre le jeu ; avec « Ajouter à mon backlog », ouvre ensuite l'ajout d'une variante, action distincte (section 8).
+	 * La version originale y est pré-sélectionnée si c'est la seule cochée.
+	 */
 	function validateAddGame(addGameModal: Extract<Modal, { kind: "addGame" }>) {
-		const { gameImport, choices, versionIds, variantChoice } = addGameModal;
+		const { gameImport, choices, versionIds, isAddingToBacklog } = addGameModal;
 		if (gameImport === null) {
 			return;
 		}
@@ -2537,21 +2727,45 @@ export function Backlog() {
 				current,
 				keepImportedVersions(gameImport, versionIds),
 				choices,
-				variantChoice,
 			),
 		);
-		closeModal();
+		if (!isAddingToBacklog) {
+			closeModal();
+			return;
+		}
+		setModal({
+			kind: "addVariant",
+			gameId: gameImport.game.id,
+			variantChoice: {
+				versionId: versionIds.length === 1 ? gameImport.game.id : null,
+				platformId: null,
+			},
+			draft: defaultVariantDraft,
+		});
 	}
 
+	/** Comme un changement de statut dans le tableau : au rang 5 ou plus sans date de fin, la petite fenêtre la propose (section 6) */
 	function validateAddVariant(
 		addVariantModal: Extract<Modal, { kind: "addVariant" }>,
 	) {
-		const { versionId, platformId } = addVariantModal.variantChoice;
+		const { variantChoice, draft } = addVariantModal;
+		const { versionId, platformId } = variantChoice;
 		if (versionId === null || platformId === null) {
 			return;
 		}
-		changeDatabase((current) => addVariant(current, versionId, platformId));
-		closeModal();
+		const variantId = getNextVariantId(database);
+		changeDatabase((current) =>
+			addVariant(current, versionId, platformId, draft),
+		);
+		if (isFinishedStatus(draft.status) && draft.finishDate === null) {
+			setModal({
+				kind: "finishDate",
+				variantId,
+				finishDate: getTodayIsoDate(),
+			});
+		} else {
+			closeModal();
+		}
 	}
 
 	function validateEditGame(
@@ -2638,6 +2852,7 @@ export function Backlog() {
 				kind: "addVariant",
 				gameId,
 				variantChoice: { versionId: null, platformId: null },
+				draft: defaultVariantDraft,
 			}),
 		removeGameFromBacklog: (gameId) =>
 			changeDatabase((current) =>
