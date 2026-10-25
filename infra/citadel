@@ -33,7 +33,7 @@
 #   deploy-history.log    une ligne par déploiement ou retour arrière
 #   releases/<version>/   le compose.yml de chaque version déployée (pour revenir en arrière)
 #   lock                  le verrou : jamais deux déploiements, ni un déploiement pendant
-#                         une sauvegarde (les jobs de l'étape 20 prendront le même)
+#                         une sauvegarde (les jobs de l'étape 28 prendront le même)
 
 # -e : s'arrêter à la première erreur ; -u : variable inconnue = erreur ;
 # pipefail : une commande qui échoue au milieu d'un « | » fait échouer la ligne
@@ -253,7 +253,7 @@ show_pending_migrations() {
 	fi
 }
 
-# --- Dump de la base de prod (étape 4, et plus tard les sauvegardes de l'étape 20) ---
+# --- Dump de la base de prod (étape 4, et plus tard les sauvegardes de l'étape 28) ---
 # mariadb-dump tourne DANS le conteneur de la base, avec le compte de sauvegarde en
 # lecture seule : son mot de passe ne sort jamais de ce conteneur.
 dump_prod_db() {
@@ -430,7 +430,7 @@ cmd_deploy() {
 		say "  pas de base en service : rien à sauvegarder"
 	fi
 
-	# 5. Répétition en pré-prod : arrivera avec la pré-prod (étape 20 de la roadmap)
+	# 5. Répétition en pré-prod : arrivera avec la pré-prod (étape 28 de la roadmap)
 
 	step "6. Migrations"
 	# Le script d'init de la base, lu à sa toute première initialisation (compose.yml)

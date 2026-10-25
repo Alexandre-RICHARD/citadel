@@ -1,6 +1,6 @@
 # CI/CD et hébergement sur le NAS — Cahier des charges
 
-25 octobre 2026 · v2 : tes réponses intégrées, options écartées supprimées · aucune question ouverte (§16)
+25 octobre 2026 · v3 : roadmap réordonnée, médias et console avant la bascule, sauvegardes après · aucune question ouverte (§16)
 
 Ce document décrit la cible et le chemin pour y arriver : construction et mise en production du site, stack média, sauvegardes, accès et sécurité, console d'administration. **Il fait foi pour la migration**, comme le cahier des charges du backlog.
 
@@ -158,7 +158,7 @@ citadel/
 ├── compose.dev.yml                MariaDB de dev et de test sur ton PC
 ├── apps/
 │   ├── client/nginx.conf.template conf du conteneur front : SPA, /irigo, /igdb
-│   └── admin/                     console d'administration (phase 7)
+│   └── admin/                     console d'administration (étapes 21 et 22)
 ├── infra/                         ce qui tourne sur le NAS (remplace docker/)
 │   ├── compose.yml                LE projet Compose : tous les services du NAS
 │   ├── compose.local.*            la prod sur ton PC, pour la tester avant une release (`pnpm prod:local`)
@@ -175,7 +175,7 @@ Tes questions sur ces fichiers :
 - **`.node-version`** : abandonné. La CI n'installe plus Node, et la version de Node est écrite une seule fois, dans le `Dockerfile`.
 - **`Caddyfile`** : les règles de Caddy, le remplaçant de NPM (§12.3).
 - **`infra/citadel`** remplace `start.sh`, `stop.sh` et le runner ; **`infra/ops/`** remplace `backup.sh` (§10.2).
-- Disparaissent : les Dockerfiles, `.dockerignore`, `.env` et dossiers `.github` des apps et de `docker/`. `docker/other/` reste sur ton PC, hors du dépôt (ignoré par git), en référence jusqu'à l'étape 29.
+- Disparaissent : les Dockerfiles, `.dockerignore`, `.env` et dossiers `.github` des apps et de `docker/`. `docker/other/` reste sur ton PC, hors du dépôt (ignoré par git), en référence jusqu'à l'étape 35.
 
 ---
 
@@ -223,7 +223,7 @@ Le modèle : `.env.example`. Les autres variables du NAS (`PUID`, `PGID`, clé W
 
 ## 6. Images Docker
 
-- **Un seul `Dockerfile`, à la racine**, avec une étape (« target ») par image : `client`, `server`, `migrations`, `ops`, `caddy`, puis `admin` (phase 7). La version de Node n'y est écrite qu'une fois ; l'installation des dépendances est partagée.
+- **Un seul `Dockerfile`, à la racine**, avec une étape (« target ») par image : `client`, `server`, `migrations`, `ops`, `caddy`, puis `admin` (étape 21). La version de Node n'y est écrite qu'une fois ; l'installation des dépendances est partagée.
 - Contexte de build : la racine, filtrée par `.dockerignore` ; `pnpm install --frozen-lockfile --filter <app>...`.
 - Les fichiers de config (`compose.yml`, `Caddyfile`, conf nginx, scripts) sont copiés **dans** les images : le NAS ne récupère que des images.
 - `linux/amd64`, utilisateur non-root, labels OCI (ils relient l'image au dépôt). Le tag est gravé dans l'image : `/health` et `version.json` disent quelle version tourne.
@@ -498,7 +498,7 @@ Environ 6 Go de configs et quelques centaines de Mo de base sur chaque support.
 
 ### 11.8 Remonter le NAS de zéro
 
-Version courte, qui deviendra `infra/README.md` (étape 25) :
+Version courte, qui deviendra `infra/README.md` (étape 26) :
 - À garder dans Bitwarden : `.env.prod`, `rclone.conf`, mot de passe et sel du chiffrement, accès Google, GitHub, Tailscale, Proton, Cloudflare, O2Switch et TOS.
 - Étapes : installer TOS et Docker, puis `citadel` ; déposer `.env.prod` et `rclone.conf` dans `/Volume1/citadel` ; restaurer la dernière archive dans `/Volume1/appdata` ; `citadel deploy <dernière version>` ; `citadel restore-db latest`.
 
@@ -520,7 +520,7 @@ Version courte, qui deviendra `infra/README.md` (étape 25) :
 | API Docker | ❌ | ❌ | ❌ |
 
 - API : sans authentification, rien ne distingue ton front d'un script ; n'importe qui peut appeler les routes d'écriture. Accepté jusqu'à ton chantier d'authentification.
-- Matrice à détailler avec la console (étape 31).
+- Matrice à détailler avec la console (étape 20).
 
 ### 12.2 Box et ports
 
@@ -536,10 +536,10 @@ Caddy fait le même métier que NPM : la porte d'entrée web, qui envoie chaque 
 - **Plus léger, et rien de plus à protéger** : environ 30 Mo de RAM, et pas d'interface d'admin (celle de NPM écoute sur le port 81).
 - **NAS reconstruit = rien à recliquer.**
 
-Les règles, dans `infra/Caddyfile` : `alexandre-richard.fr` envoie `/api/…` au serveur (préfixe retiré : ses routes ne changent pas) et le reste au front ; `www.` redirige vers le domaine nu ; `jellyfin.` va à Jellyfin, encore dans l'ancienne stack (réseau `proxy-net`) jusqu'à l'étape 22.
+Les règles, dans `infra/Caddyfile` : `alexandre-richard.fr` envoie `/api/…` au serveur (préfixe retiré : ses routes ne changent pas) et le reste au front ; `www.` redirige vers le domaine nu ; `jellyfin.` va à `media-jellyfin`.
 
 - Le site passe par le proxy de Cloudflare (nuage orange), Jellyfin non. Caddy obtient donc ses certificats par l'API DNS de Cloudflare, la méthode la plus fiable derrière ce proxy, avec un jeton limité au DNS de ton domaine ; et il fait confiance aux IP de Cloudflare pour voir l'IP réelle des visiteurs.
-- S'y ajoutent les en-têtes de sécurité (HSTS…) et des logs d'accès en JSON, pour la vue « accès externes » de la console. `api.alexandre-richard.fr` disparaît, son enregistrement DNS aussi (étape 29).
+- S'y ajoutent les en-têtes de sécurité (HSTS…) et des logs d'accès en JSON, pour la vue « accès externes » de la console. `api.alexandre-richard.fr` disparaît, son enregistrement DNS aussi (étape 35).
 
 ### 12.4 Tailscale
 
@@ -614,7 +614,7 @@ pnpm release --dry-run                          # attendu (tout commité) : vali
 | Les jobs : sauvegardes, test de restauration | healthchecks.io : chaque job lui signale sa réussite ou son échec | e-mail et Discord, si un job échoue **ou ne s'est pas exécuté à l'heure** |
 | Certificats, disques, conteneurs, mises à jour | console d'administration | affichage ; TOS garde ses e-mails SMART et espace disque |
 
-- Tout passe par healthchecks.io, qui alerte aussi quand un signal attendu ne vient pas : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Son offre Hobbyist est gratuite sans limite de durée (20 contrôles, il en faut 5). UptimeRobot peut ensuite être désactivé (étape 21).
+- Tout passe par healthchecks.io, qui alerte aussi quand un signal attendu ne vient pas : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Son offre Hobbyist est gratuite sans limite de durée (20 contrôles, il en faut 5). UptimeRobot peut ensuite être désactivé (étape 31).
 - `site-check` part du NAS, mais comme le site passe par Cloudflare, sa requête fait le tour par Internet (Cloudflare, puis la box) : elle suit le chemin des visiteurs. Limite : si `infra-ops` s'arrête, l'alerte annonce un site injoignable alors que c'est la surveillance qui est tombée.
 - Rien à configurer côté e-mail : healthchecks.io envoie les e-mails lui-même, et poste dans un salon de ton serveur Discord (pas en message privé).
 - Caddy renouvelle ses certificats 30 jours avant l'échéance, et réessaie seul : la console suffit pour les surveiller.
@@ -637,15 +637,13 @@ pnpm release --dry-run                          # attendu (tout commité) : vali
 
 ### 14.3 Fonctionnalités, toutes validées
 
-Premier lot (étape 32) :
+Étapes 21 et 22 : 1, 3 à 10, sans ce qui dépend des jobs. Étape 30 : le reste.
+
 1. **Services** par groupe : état, santé, depuis quand, redémarrages, CPU, RAM et limite ; démarrer, arrêter, redémarrer un service ou un groupe, avec confirmation pour les services « toujours allumés ».
 2. **Jobs** : dernier résultat et détail des contrôles, prochain passage, « Lancer maintenant », log.
 3. **Site** : version en prod, historique des déploiements.
 4. **qBittorrent** : vitesses, totaux de la session et depuis toujours, ratio, historique par jour et par semaine.
 5. **Système** : CPU et RAM du NAS, espace libre et santé des disques, températures si lisibles.
-
-Ensuite (étape 33) :
-
 6. **Accès externes** : dernières requêtes sur le site, IP les plus actives, scans suspects (`/wp-login.php`, `/.env`…), lectures Jellyfin en cours, appareils Tailscale connectés.
 7. **VPN** : IP publique de Gluetun, pays, port redirigé.
 8. **Échéances** : certificats, token IGDB, quota du Drive.
@@ -688,40 +686,45 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 **Phase 2 — Premier push**
 
 14. [nous] Refaire l'historique local sans aucun secret, scanner tout l'historique avec gitleaks, puis pousser.
-15. [toi] Premier tag : les images arrivent sur GHCR ; passer chaque package en public.
+15. [toi] Premier tag : les images arrivent sur GHCR ; passer chaque package en public. Rien ne bouge sur le NAS : c'est le test de `images.yml`.
 
-**Phase 3 — Le site sur le NAS, refait de zéro**
+**Phase 3 — La stack média dans le dépôt, testée sur ton PC**
 
-16. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
-17. [nous] Bascule : arrêt de NPM et de l'ancienne stack web, premier `pnpm release` (site et Caddy, qui rejoint l'ancien réseau `proxy-net` pour servir Jellyfin jusqu'à la phase 5).
-18. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur ; DBeaver par SSH ; mode SSL « Full (strict) » chez Cloudflare.
+16. [toi] Relever les versions des images média qui tournent sur le NAS (commande fournie), pour les figer.
+17. [moi] Services média, `infra-tailscale` et un `infra-ops` réduit au job `vpn-watch` (P18) dans `compose.yml` : versions figées, labels, modes, limites ; Caddy sert `media-jellyfin` directement, sans `proxy-net`.
+18. [moi] `pnpm prod:local` lance aussi la stack média : volumes Docker jetables à la place des dossiers du NAS, un faux Gluetun (ni VPN ni clé sur ton PC), pas de transcodage matériel ; `pnpm prod:local:down` efface tout.
+19. [toi] Tester en local : chaque service démarre, les *arr répondent sur leurs ports, Jellyfin sur `https://jellyfin.citadel.localhost:8443`.
 
-**Phase 4 — Sauvegardes et pré-prod**
+**Phase 4 — Console d'administration, sans les sauvegardes**
 
-19. [toi] Compte healthchecks.io, branché sur ton e-mail et un salon Discord ; remote rclone chiffré, mot de passe et sel dans Bitwarden **avant** le premier envoi.
-20. [moi] `infra-ops` ; `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
-21. [toi] Une semaine d'observation et un échec simulé. Fini quand : 7 matins de suite avec restauration vérifiée, et une alerte reçue. Puis désactiver UptimeRobot.
+20. [nous] Matrice d'accès détaillée (§12.1).
+21. [moi] `apps/admin`, image `admin`, `infra-socket-proxy`, connexion par mot de passe ; fonctionnalités 1, 3, 4, 5, 7, 9, 10 (§14.3). Testée dans `pnpm prod:local`.
+22. [moi] Fonctionnalités 6 et 8.
 
-**Phase 5 — La stack média dans le projet unique**
+**Phase 5 — Bascule du NAS, en une fois**
 
-22. [moi] Services média et `infra-tailscale` dans `compose.yml` : versions figées sur celles d'aujourd'hui, labels, modes, limites ; job `vpn-watch` (P18).
-23. [nous] Bascule à un moment calme : arrêt des trois anciens projets, `pnpm release`, contrôles (VPN et port forwarding, qBittorrent, *arr, transcodage Jellyfin).
-24. [moi] `config-backup`, `config-verify`, `update-check`, `qbittorrent-stats` ; [toi] suppression de la tâche planifiée de TOS.
-25. [moi] `infra/README.md` : remonter le NAS de zéro.
+23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
+24. [nous] Bascule à un moment calme : archive de `/Volume1/appdata` sur le HDD ; tâche planifiée de `backup.sh` désactivée (elle relancerait l'ancien projet) ; arrêt de NPM, de l'ancien site et des trois projets média ; premier `pnpm release`. Retour arrière : arrêter `citadel`, relancer les anciens conteneurs, arrêtés mais pas supprimés.
+25. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur et transcodage ; VPN et port forwarding, qBittorrent, *arr ; console en LAN et par Tailscale ; DBeaver par SSH ; mode SSL « Full (strict) » chez Cloudflare.
+26. [moi] `infra/README.md` : remonter le NAS de zéro.
 
-**Phase 6 — Réseau, sécurité, ménage**
+Jusqu'à la phase 6, seules sauvegardes : le dump avant chaque déploiement et l'archive de l'étape 24. Accepté.
 
-26. [nous] Réglages Tailscale (§12.4).
-27. [toi] Depuis l'extérieur (4G) : seuls 80 et 443 répondent.
-28. [toi] Changer les secrets restants (clé WireGuard Proton…).
-29. [nous] Ménage : `docker/other` sur ton PC, packages GHCR `reunification-*`, enregistrement DNS `api.` chez Cloudflare.
-30. [nous] Ménage du NAS, sans rien perdre : ce qui tourne en permanence pour rien (applis TOS, services) ; `appdata/#recycle`, `appdata/reunification`, `appdata/nginx-proxy-manager`, `appdata/docker`, `/Volume1/backup`, raccourcis de `@collect` ; `joal`, `compare_movies.py`, `Flow.jpg`, `~/bin/rclone` ; ancien dossier `NAS_BACKUP` du Drive, après un mois de nouvelles sauvegardes.
+**Phase 6 — Sauvegardes, pré-prod, alertes, par-dessus le reste**
 
-**Phase 7 — Console d'administration**
+27. [toi] Compte healthchecks.io, branché sur ton e-mail et un salon Discord ; remote rclone chiffré, mot de passe et sel dans Bitwarden **avant** le premier envoi.
+28. [moi] `infra-ops` complet ; `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
+29. [moi] `config-backup`, `config-verify`, `update-check`, `qbittorrent-stats`.
+30. [moi] Console : fonctionnalités 2, 11, 12, 13, et ce qui dépend des jobs dans 4, 8, 10 (historique de qBittorrent, quota du Drive, dernières versions publiées).
+31. [toi] Une semaine d'observation et un échec simulé. Fini quand : 7 matins de suite avec restauration vérifiée, et une alerte reçue. Puis désactiver UptimeRobot.
 
-31. [nous] Matrice d'accès détaillée (§12.1).
-32. [moi] Premier lot (§14.3, 1 à 5) et connexion par mot de passe.
-33. [moi] Fonctionnalités 6 à 13.
+**Phase 7 — Réseau, sécurité, ménage**
+
+32. [nous] Réglages Tailscale (§12.4).
+33. [toi] Depuis l'extérieur (4G) : seuls 80 et 443 répondent.
+34. [toi] Changer les secrets restants (clé WireGuard Proton…).
+35. [nous] Ménage : `docker/other` sur ton PC, packages GHCR `reunification-*`, enregistrement DNS `api.` chez Cloudflare.
+36. [nous] Ménage du NAS, sans rien perdre : ce qui tourne en permanence pour rien (applis TOS, services) ; `appdata/#recycle`, `appdata/reunification`, `appdata/nginx-proxy-manager`, `appdata/docker`, `/Volume1/backup`, raccourcis de `@collect` ; `joal`, `compare_movies.py`, `Flow.jpg`, `~/bin/rclone` ; ancien dossier `NAS_BACKUP` du Drive, après un mois de nouvelles sauvegardes.
 
 ---
 

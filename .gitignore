@@ -10,7 +10,7 @@
 /.env
 /.env.test
 
-# Ancienne infra, gardée sur le disque pour référence jusqu'à l'étape 29 : jamais versionnée (secrets)
+# Ancienne infra, gardée sur le disque pour référence jusqu'à l'étape 35 : jamais versionnée (secrets)
 /docker/
 
 # ====================
