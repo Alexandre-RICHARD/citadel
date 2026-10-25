@@ -1,0 +1,13 @@
+# =====================================================================================
+# crontab : le planning des jobs d'infra-ops (cahier des charges, §10.2 et §11.2)
+# =====================================================================================
+#
+# Lu par supercronic, un cron fait pour les conteneurs, lancé par `citadel cron`.
+# Copié dans l'image ops : un job ajouté part en prod avec la version suivante.
+# Heure de Paris (TZ de l'image).
+#
+# Format : minute heure jour-du-mois mois jour-de-la-semaine commande
+#   « * » = toutes les valeurs ; « */5 » = toutes les 5.
+
+# Chaque minute : relancer ce qui a perdu le réseau de Gluetun (P18)
+* * * * * citadel vpn-watch

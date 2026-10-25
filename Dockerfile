@@ -10,7 +10,8 @@
 #   server      l'API Express : Node et un seul fichier JavaScript (bundle esbuild)
 #   migrations  Flyway et les migrations SQL de cette version
 #   caddy       la porte d'entrée web (HTTPS, routage), avec notre Caddyfile
-#   ops         les outils du NAS : la commande citadel, compose.yml, le script d'init de la base
+#   ops         les outils du NAS : la commande citadel, compose.yml, le script d'init de la
+#               base, le planning des jobs d'infra-ops
 #
 # Les étapes intermédiaires (workspace, client-build, server-build…) ne deviennent pas
 # des images : elles préparent les fichiers que les étapes finales copient.
@@ -178,17 +179,21 @@ USER caddy
 FROM ${ALPINE_IMAGE} AS ops
 # bash, curl, jq : le script citadel ; docker-cli et son plugin compose : piloter Docker
 # du NAS (par son socket) ; mariadb-client et zstd : dumps compressés de la base ;
-# coreutils : sha256sum… ; util-linux-misc : flock, le verrou partagé ; tzdata : l'heure
-# de Paris dans les noms de fichiers.
-# supercronic arrivera avec vpn-watch (étape 17) ; rclone et regctl avec les sauvegardes et les mises à jour (étapes 28, 29).
+# coreutils : sha256sum, et un `date` qui lit les dates de Docker ; util-linux-misc :
+# flock, le verrou partagé ; tzdata : l'heure de Paris dans les noms de fichiers ;
+# supercronic : le cron d'infra-ops, qui lit infra/ops/crontab.
+# rclone et regctl arriveront avec les sauvegardes et les mises à jour (étapes 28, 29).
 RUN apk add --no-cache \
 	bash curl jq \
 	docker-cli docker-cli-compose \
 	mariadb-client zstd \
-	coreutils util-linux-misc tzdata
+	coreutils util-linux-misc tzdata \
+	supercronic
 ENV TZ=Europe/Paris
 WORKDIR /opt/citadel
 COPY infra/compose.yml infra/mariadb-init.sh ./
+# Le planning des jobs d'infra-ops
+COPY infra/ops/ ./ops/
 COPY --chmod=755 infra/citadel /usr/local/bin/citadel
 ARG APP_VERSION=local
 # CITADEL_IN_OPS : dit à citadel qu'il tourne dans ce conteneur (et pas sur le NAS),

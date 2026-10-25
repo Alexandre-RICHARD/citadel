@@ -11,6 +11,7 @@
 #   citadel up                         secours : relance tout ce qui doit toujours tourner
 #   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
 #   citadel version                    la version en service, seule (lue par pnpm release)
+#   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun (P18)
 #
 # UN fichier, DEUX endroits où il tourne :
 #
@@ -33,7 +34,10 @@
 #   deploy-history.log    une ligne par déploiement ou retour arrière
 #   releases/<version>/   le compose.yml de chaque version déployée (pour revenir en arrière)
 #   lock                  le verrou : jamais deux déploiements, ni un déploiement pendant
-#                         une sauvegarde (les jobs de l'étape 28 prendront le même)
+#                         un job (vpn-watch, puis les sauvegardes de l'étape 28)
+#
+# Le conteneur infra-ops (compose.yml) fait aussi tourner ce fichier : `citadel cron`
+# y lance le planificateur, qui appelle les jobs d'infra/ops/crontab (citadel vpn-watch…).
 
 # -e : s'arrêter à la première erreur ; -u : variable inconnue = erreur ;
 # pipefail : une commande qui échoue au milieu d'un « | » fait échouer la ligne
@@ -565,6 +569,57 @@ cmd_logs() {
 	compose logs --tail 200 "${follow[@]}" "$service"
 }
 
+# --- vpn-watch : chaque minute, par infra-ops (P18) ---
+# qBittorrent et les *arr vivent dans le réseau de Gluetun. Deux façons de le perdre,
+# hors de Compose :
+#   - au redémarrage du NAS, Docker relance les conteneurs sans ordre : partis avant
+#     Gluetun, ils échouent (« Exited (128) », avec un message d'erreur) et restent arrêtés ;
+#   - Gluetun redémarre seul (plantage) : ceux qui tournent gardent l'ancien réseau, mort.
+# Ce job relance donc, une fois Gluetun sain : les arrêtés sur une erreur, et ceux
+# démarrés avant lui. Un service arrêté exprès (citadel stop, la console) s'est arrêté
+# sans erreur : il n'est jamais relancé.
+cmd_vpn_watch() {
+	# Un déploiement en cours recrée ces conteneurs lui-même : ne pas le gêner
+	mkdir -p "$STATE_DIR"
+	exec 9>"$STATE_DIR/lock"
+	flock --nonblock 9 || return 0
+
+	# Le projet Compose de ce conteneur : « citadel » sur le NAS, « citadel-local » avec
+	# pnpm prod:local. Lancé à la main hors d'infra-ops : « citadel ».
+	local project
+	project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$HOSTNAME" 2>/dev/null || true)
+	project=${project:-citadel}
+
+	local gluetun health gluetun_id gluetun_started
+	gluetun=$(docker ps --quiet --filter "label=com.docker.compose.project=$project" \
+		--filter "label=com.docker.compose.service=media-gluetun")
+	# Gluetun arrêté, ou VPN pas encore monté : on repassera dans une minute
+	[[ -n $gluetun ]] || return 0
+	read -r health gluetun_id gluetun_started < <(docker inspect \
+		--format '{{if .State.Health}}{{.State.Health.Status}}{{end}} {{.Id}} {{.State.StartedAt}}' "$gluetun")
+	[[ $health == healthy ]] || return 0
+	# Les dates de Docker ont des nanosecondes de longueur variable : comparées en
+	# nombres (date de GNU coreutils), jamais en texte
+	gluetun_started=$(date -d "$gluetun_started" +%s%N)
+
+	local container name network_mode running started error
+	for container in $(docker ps --all --quiet --filter "label=com.docker.compose.project=$project"); do
+		IFS='|' read -r name network_mode running started error < <(docker inspect \
+			--format '{{.Name}}|{{.HostConfig.NetworkMode}}|{{.State.Running}}|{{.State.StartedAt}}|{{.State.Error}}' "$container")
+		# Seulement ceux qui vivent dans le réseau de CE Gluetun
+		[[ $network_mode == "container:$gluetun_id" ]] || continue
+		if [[ $running == true ]]; then
+			if (($(date -d "$started" +%s%N) < gluetun_started)); then
+				say "$(date '+%F %T') ${name#/} : démarré avant Gluetun, sans réseau : redémarrage"
+				docker restart "$container" >/dev/null
+			fi
+		elif [[ -n $error ]]; then
+			say "$(date '+%F %T') ${name#/} : arrêté sur « $error » : redémarrage"
+			docker start "$container" >/dev/null
+		fi
+	done
+}
+
 ops_main() {
 	local command=${1:-help}
 	shift || true
@@ -580,6 +635,13 @@ ops_main() {
 			apply_services
 			;;
 		version) current_version ;;
+		vpn-watch) cmd_vpn_watch ;;
+		cron)
+			# Le planificateur d'infra-ops, qui tourne tant que le conteneur vit.
+			# -passthrough-logs : la sortie des jobs telle quelle dans les logs du conteneur ;
+			# -quiet : sans une ligne « job démarré / réussi » chaque minute.
+			exec supercronic -passthrough-logs -quiet /opt/citadel/ops/crontab
+			;;
 		help | -h | --help) usage ;;
 		*)
 			usage

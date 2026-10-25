@@ -2,9 +2,9 @@
 # compose.yml : LE projet Docker Compose du NAS, nommé « citadel » (cahier des charges, §10)
 # =====================================================================================
 #
-# Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod) et Caddy.
-# Arriveront ensuite : la pré-prod et infra-ops (étape 20), la stack média et Tailscale
-# (étape 22), la console et son filtre Docker (phase 7).
+# Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod), Caddy,
+# Tailscale, infra-ops (réduit au job vpn-watch) et la stack média. Arriveront ensuite :
+# la console et son filtre Docker (étape 21), la pré-prod et les sauvegardes (étape 28).
 #
 # Qui lit ce fichier ?
 #   Jamais toi directement : il est copié dans l'image « ops », et c'est la commande
@@ -48,6 +48,29 @@ x-hardened: &hardened
   read_only: true
   cap_drop:
     - ALL
+
+# --- Les variables des images linuxserver (qBittorrent, Jellyfin, *arr) ---
+# PUID/PGID : l'utilisateur du NAS sous lequel elles tournent, propriétaire des fichiers
+# de /Volume1/appdata/<service> et /Volume2/data. Ils dépendent de la machine : .env.prod.
+x-linuxserver-env: &linuxserver-env
+  PUID: ${PUID:?manque dans .env.prod}
+  PGID: ${PGID:?manque dans .env.prod}
+  TZ: Europe/Paris
+
+# --- Derrière le VPN : qBittorrent et les *arr vivent DANS le réseau de Gluetun ---
+# Ils n'ont pas de réseau à eux : tout leur trafic sort par le tunnel du VPN, et si le VPN
+# tombe, Gluetun coupe tout (kill-switch). Leurs ports sont donc publiés par Gluetun.
+# Dans le même projet, Compose sait que Gluetun recréé = eux aussi à recréer (P11).
+x-behind-vpn: &behind-vpn
+  network_mode: service:media-gluetun
+  depends_on:
+    media-gluetun:
+      # Attendre que le VPN soit monté (healthcheck de Gluetun) avant de démarrer
+      condition: service_healthy
+      # Gluetun redémarré par Compose (citadel restart media-gluetun) : eux aussi, pour
+      # rejoindre son nouveau réseau. Un redémarrage hors de Compose (reboot du NAS) est
+      # rattrapé par vpn-watch, dans infra-ops (P18).
+      restart: true
 
 services:
   # ===================================================================================
@@ -229,8 +252,6 @@ services:
       - /config:uid=1000,gid=1000,mode=0700
     networks:
       - edge
-      # TEMPORAIRE, jusqu'à l'étape 22 : le réseau de l'ancienne stack, pour joindre Jellyfin
-      - proxy-net
     depends_on:
       - site-prod-server
       - site-prod-client
@@ -251,6 +272,385 @@ services:
       citadel.mode: "always"
       citadel.controllable: "false"
 
+  infra-tailscale:
+    <<: *defaults
+    image: tailscale/tailscale:v1.96.5
+    container_name: infra-tailscale
+    # Le réseau du NAS lui-même, pas un réseau Docker : Tailscale y ajoute son interface,
+    # et tes appareils joignent le NAS (SSH, TOS, ports des services) par son nom
+    # Tailscale, « leodinas », de partout, sans port ouvert sur la box (§12.4)
+    network_mode: host
+    environment:
+      # Même dossier d'état que l'ancien conteneur « tailscale » : le NAS garde son
+      # identité dans ton tailnet, sans se reconnecter. Les deux ne doivent jamais
+      # tourner en même temps (la bascule arrête l'ancien d'abord, étape 24).
+      TS_STATE_DIR: /config/state
+      # Une vraie interface réseau (tailscale0), pas l'émulation logicielle
+      TS_USERSPACE: "false"
+    volumes:
+      - /Volume1/appdata/tailscale:/config
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    # Créer l'interface et régler les routes du NAS
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    deploy:
+      resources:
+        limits:
+          # Il en utilise une quarantaine de Mo (inventaire, annexe A)
+          memory: 256M
+    labels:
+      citadel.name: "Tailscale"
+      citadel.description: "Le NAS sur ton réseau privé Tailscale"
+      citadel.group: "infra"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  infra-ops:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-ops:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: infra-ops
+    # Le planificateur (supercronic) lit infra/ops/crontab et lance les jobs à l'heure.
+    # Pour l'instant, un seul job : vpn-watch, chaque minute. Les sauvegardes arriveront
+    # à l'étape 28.
+    command: ["cron"]
+    # Un petit processus n°1 (tini) au-dessus de supercronic : il ramasse les processus
+    # terminés des jobs, et supercronic n'écrit plus d'avertissement à chaque minute
+    init: true
+    # Aucun réseau : il n'écoute rien et ne sort nulle part, il ne parle qu'à Docker, par
+    # son socket. Les sauvegardes lui donneront un accès à Internet (Drive, alertes).
+    network_mode: none
+    volumes:
+      # Piloter le Docker du NAS. Donne tous les droits sur le NAS : ce conteneur
+      # n'exécute que les scripts de son image, et n'écoute sur aucun port (§10.2).
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Le verrou partagé avec citadel deploy (state/lock) : jamais de vpn-watch pendant
+      # qu'un déploiement recrée les conteneurs
+      - /Volume1/citadel:/Volume1/citadel
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      citadel.name: "Tâches planifiées"
+      citadel.description: "infra-ops : vpn-watch, puis les sauvegardes"
+      citadel.group: "infra"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  # ===================================================================================
+  # La stack média
+  # ===================================================================================
+  # Versions figées (§10.7), jamais « latest » : pour les images linuxserver, le tag de
+  # build complet, qui désigne toujours la même image. Au départ, exactement celles qui
+  # tournaient sur le NAS (relevé du 25 octobre 2026) : la bascule ne change que la
+  # façon de les lancer ; les mises à jour viendront ensuite, une par une. Exception,
+  # Gluetun : le NAS avait une version de développement (« latest » d'avril), remplacée
+  # par la version publiée suivante (il ne garde aucune donnée). Mettre à jour = changer le tag
+  # ici, commiter, pnpm release ; revenir en arrière = citadel rollback. Attention : les
+  # *arr et Jellyfin migrent leur base en démarrant sur une version plus récente, et ne
+  # savent pas revenir à l'ancienne. Avant une grosse mise à jour d'un des leurs, une
+  # copie de son dossier /Volume1/appdata/<service> s'impose.
+  #
+  # Mode « on-demand » : citadel deploy les met à jour sans les démarrer s'ils sont
+  # arrêtés. Les démarrer : citadel start media (ou un seul : citadel start media-radarr).
+  #
+  # Ports : rien n'est ouvert vers Internet (la box n'envoie que 80 et 443, à Caddy). Ils
+  # répondent sur le LAN (http://192.168.1.113:7878) et par Tailscale (http://leodinas:7878).
+
+  media-gluetun:
+    <<: *defaults
+    image: qmcgaw/gluetun:v3.41.3
+    container_name: media-gluetun
+    # Créer le tunnel du VPN et régler le pare-feu du kill-switch
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: Europe/Paris
+      # ProtonVPN en WireGuard. La clé privée est le seul secret de la stack média.
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY:?manque dans .env.prod}
+      SERVER_COUNTRIES: Switzerland
+      # Port forwarding : Proton ouvre un port vers qBittorrent (indispensable pour bien
+      # partager). Seuls les serveurs qui le proposent sont choisis.
+      VPN_PORT_FORWARDING: "on"
+      VPN_PORT_FORWARDING_PROVIDER: protonvpn
+      PORT_FORWARD_ONLY: "on"
+      # Ce port change à chaque connexion : Gluetun le donne aussitôt à qBittorrent, par
+      # son API (qBittorrent accepte sans mot de passe ce qui vient de 127.0.0.1)
+      VPN_PORT_FORWARDING_UP_COMMAND: >-
+        /bin/sh -c 'wget -O- --retry-connrefused
+        --post-data "json={\"listen_port\":{{PORTS}}}"
+        http://127.0.0.1:8080/api/v2/app/setPreferences 2>&1'
+      # DNS chiffré (DNS over TLS) chez Cloudflare et Quad9 : le fournisseur d'accès ne
+      # voit pas les noms demandés. L'ancienne config utilisait des noms de variables
+      # (DOT, DNS_UPSTREAM_PLAIN_ADDRESSES…) que cette version ne connaît pas.
+      DNS_UPSTREAM_RESOLVER_TYPE: DoT
+      DNS_UPSTREAM_RESOLVERS: cloudflare,quad9
+      BLOCK_MALICIOUS: "off"
+      # Le LAN reste joignable depuis le tunnel (les *arr appellent Jellyfin par son IP)
+      FIREWALL_OUTBOUND_SUBNETS: 192.168.1.0/24
+      # Liste des serveurs de Proton remise à jour chaque jour
+      UPDATER_PERIOD: 24h
+    volumes:
+      # Sa liste de serveurs, gardée d'un démarrage à l'autre
+      - /Volume1/appdata/gluetun:/gluetun
+    ports:
+      # Les interfaces de ceux qui vivent dans son réseau
+      - "8080:8080" # qBittorrent
+      - "9696:9696" # Prowlarr
+      - "7878:7878" # Radarr
+      - "8989:8989" # Sonarr
+      - "6767:6767" # Bazarr
+      - "2468:2468" # cross-seed
+    networks:
+      - vpn
+    # Healthcheck : celui de l'image (« sain » = tunnel monté et Internet joignable)
+    cpu_shares: 416
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1000M
+    labels:
+      citadel.name: "Gluetun"
+      citadel.description: "VPN ProtonVPN des téléchargements, avec kill-switch"
+      citadel.group: "media"
+      citadel.mode: "always"
+      citadel.controllable: "true"
+
+  media-qbittorrent:
+    <<: [*defaults, *behind-vpn]
+    image: lscr.io/linuxserver/qbittorrent:5.1.4-r2-ls447
+    container_name: media-qbittorrent
+    environment:
+      <<: *linuxserver-env
+      WEBUI_PORT: "8080"
+    volumes:
+      - /Volume1/appdata/qbittorrent:/config
+      # /data commun à qBittorrent et aux *arr, sur un seul volume : les imports sont des
+      # liens durs (hardlinks), sans copie ni place en plus
+      - /Volume2/data:/data
+    healthcheck:
+      # La page de connexion répond : l'interface est prête
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    # Priorité basse : le NAS reste fluide pendant les téléchargements
+    cpu_shares: 128
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 1250M
+    labels:
+      citadel.name: "qBittorrent"
+      citadel.description: "Téléchargements, à travers le VPN"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-jellyfin:
+    <<: *defaults
+    # La 12 est sortie en octobre 2026, avec une migration de sa base : passage à faire
+    # à part, après une copie de /Volume1/appdata/jellyfin.
+    image: lscr.io/linuxserver/jellyfin:10.11.7ubu2404-ls26
+    container_name: media-jellyfin
+    environment:
+      <<: *linuxserver-env
+      # Ajoute au démarrage le pilote OpenCL d'Intel : tone mapping HDR sur le GPU du N95
+      DOCKER_MODS: linuxserver/mods:jellyfin-opencl-intel
+    volumes:
+      - /Volume1/appdata/jellyfin:/config
+      - /Volume2/data/medias:/data/medias
+    # Transcodage matériel : la puce graphique du N95 (Intel Quick Sync)
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      # Le groupe « render » du NAS, qui a le droit d'utiliser /dev/dri
+      - ${RENDER_GROUP:?manque dans .env.prod}
+    ports:
+      # Sur le LAN et par Tailscale ; depuis Internet, c'est Caddy (jellyfin.<domaine>)
+      - "8096:8096"
+    networks:
+      # Celui de Caddy, qui le sert sous jellyfin.<domaine>. Il sort aussi sur Internet
+      # (images et fiches des films).
+      - edge
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8096/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Le pilote OpenCL s'installe au premier démarrage
+      start_period: 120s
+    # Priorité haute : une lecture ne doit pas saccader
+    cpu_shares: 1024
+    deploy:
+      resources:
+        limits:
+          cpus: "3.00"
+          memory: 5000M
+    labels:
+      citadel.name: "Jellyfin"
+      citadel.description: "Films et séries en streaming, seul service média exposé"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-prowlarr:
+    <<: [*defaults, *behind-vpn]
+    image: lscr.io/linuxserver/prowlarr:2.3.0.5236-ls140
+    container_name: media-prowlarr
+    environment:
+      <<: *linuxserver-env
+    volumes:
+      - /Volume1/appdata/prowlarr:/config
+    healthcheck:
+      # /ping : la réponse de santé des *arr, sans clé d'API
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:9696/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    labels:
+      citadel.name: "Prowlarr"
+      citadel.description: "Indexeurs, partagés avec Radarr et Sonarr"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-radarr:
+    <<: [*defaults, *behind-vpn]
+    image: lscr.io/linuxserver/radarr:6.1.1.10360-ls297
+    container_name: media-radarr
+    environment:
+      <<: *linuxserver-env
+    volumes:
+      - /Volume1/appdata/radarr:/config
+      - /Volume2/data:/data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:7878/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    labels:
+      citadel.name: "Radarr"
+      citadel.description: "Films : recherche et import"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-sonarr:
+    <<: [*defaults, *behind-vpn]
+    image: lscr.io/linuxserver/sonarr:4.0.17.2952-ls306
+    container_name: media-sonarr
+    environment:
+      <<: *linuxserver-env
+    volumes:
+      - /Volume1/appdata/sonarr:/config
+      - /Volume2/data:/data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:8989/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    labels:
+      citadel.name: "Sonarr"
+      citadel.description: "Séries : recherche et import"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-bazarr:
+    <<: [*defaults, *behind-vpn]
+    image: lscr.io/linuxserver/bazarr:v1.5.6-ls342
+    container_name: media-bazarr
+    environment:
+      <<: *linuxserver-env
+    volumes:
+      - /Volume1/appdata/bazarr:/config
+      - /Volume2/data:/data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://127.0.0.1:6767/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    labels:
+      citadel.name: "Bazarr"
+      citadel.description: "Sous-titres des films et séries"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  media-cross-seed:
+    <<: [*defaults, *behind-vpn]
+    image: ghcr.io/cross-seed/cross-seed:6.13.6
+    container_name: media-cross-seed
+    command: ["daemon"]
+    environment:
+      <<: *linuxserver-env
+    volumes:
+      - /Volume1/appdata/cross-seed:/config
+      - /Volume2/data:/data
+      # Les .torrent de qBittorrent, en lecture seule : cross-seed y cherche ce qu'on a déjà
+      - /Volume1/appdata/qbittorrent/qBittorrent/BT_backup:/qbittorrent-check:ro
+    depends_on:
+      # Réécrit en entier (une clé redéfinie remplace celle de *behind-vpn) : Gluetun,
+      # plus les *arr qu'il interroge, démarrés avec lui
+      media-gluetun:
+        condition: service_healthy
+        restart: true
+      media-prowlarr:
+        condition: service_started
+      media-radarr:
+        condition: service_started
+      media-sonarr:
+        condition: service_started
+    healthcheck:
+      # Pas de curl dans cette image : wget. /api/ping répond sans la clé d'API.
+      test: ["CMD", "wget", "--quiet", "--output-document=/dev/null", "http://127.0.0.1:2468/api/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    labels:
+      citadel.name: "cross-seed"
+      citadel.description: "Repartage ce qui existe déjà sur d'autres trackers"
+      citadel.group: "media"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
 # --- Réseaux séparés (§10.4) : un conteneur ne joint que ceux de ses réseaux ---
 networks:
   # Caddy et ce qu'il sert. Sort sur Internet : certificats, relais du front
@@ -258,9 +658,9 @@ networks:
   # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la
   # base sur 127.0.0.1, dont DBeaver a besoin
   site: {}
-  # TEMPORAIRE : réseau créé par l'ancienne stack (NPM, Jellyfin), jusqu'à l'étape 22
-  proxy-net:
-    external: true
+  # Gluetun seul : qBittorrent et les *arr n'ont pas de réseau à eux, ils utilisent celui
+  # de Gluetun. Personne d'autre ne s'y branche.
+  vpn: {}
 
 volumes:
   caddy-data:
