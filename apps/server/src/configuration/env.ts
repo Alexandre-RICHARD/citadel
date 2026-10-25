@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
 	SERVER_PORT: z.coerce.number().int().positive(),
+	// Gravée dans l'image Docker à sa construction (tag git, v2026.10.25) ; "dev" en local
+	APP_VERSION: z.string().min(1).default("dev"),
 
 	DB_HOST: z.string().min(1),
 	DB_PORT: z.coerce.number().int().positive(),
