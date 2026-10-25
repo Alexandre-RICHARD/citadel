@@ -10,6 +10,7 @@
 #   server      l'API Express : Node et un seul fichier JavaScript (bundle esbuild)
 #   migrations  Flyway et les migrations SQL de cette version
 #   caddy       la porte d'entrée web (HTTPS, routage), avec notre Caddyfile
+#   admin       la console d'administration : son serveur Express et son front
 #   ops         les outils du NAS : la commande citadel, compose.yml, le script d'init de la
 #               base, le planning des jobs d'infra-ops
 #
@@ -111,6 +112,30 @@ LABEL org.opencontainers.image.source="https://github.com/Alexandre-RICHARD/cita
 USER node
 EXPOSE 3000
 CMD ["node", "--enable-source-maps", "build/build.server.cjs"]
+
+# =====================================================================================
+# admin : la console d'administration (cahier des charges, §14)
+# =====================================================================================
+FROM workspace AS admin-build
+RUN pnpm install --offline --frozen-lockfile --filter "@citadel/admin..."
+# Deux sorties dans apps/admin/build/ : le front (Vite, dans public/) et le serveur en un
+# seul fichier (esbuild), plus hashPassword.cjs pour `citadel admin-password`
+RUN pnpm --filter @citadel/admin build
+
+FROM ${NODE_IMAGE} AS admin
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=admin-build /repo/apps/admin/build/ ./build/
+ARG APP_VERSION=local
+# Affichée en haut de la console
+ENV APP_VERSION=${APP_VERSION}
+LABEL org.opencontainers.image.source="https://github.com/Alexandre-RICHARD/citadel" \
+	org.opencontainers.image.title="citadel-admin" \
+	org.opencontainers.image.version="${APP_VERSION}"
+# Même règle que le serveur du site : jamais root
+USER node
+EXPOSE 8100
+CMD ["node", "--enable-source-maps", "build/build.admin.cjs"]
 
 # =====================================================================================
 # migrations : Flyway et les migrations SQL de cette version

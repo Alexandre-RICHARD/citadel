@@ -1,0 +1,53 @@
+.logsDialog {
+  width: min(110rem, calc(100vw - 3.2rem));
+  height: min(72rem, calc(100vh - 3.2rem));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1.2rem 4rem rgb(0 0 0 / 35%);
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &::backdrop {
+    background: var(--overlay, rgb(0 0 0 / 50%));
+    backdrop-filter: blur(0.2rem);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem 1rem 1.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .title {
+    font-size: 1.5rem;
+    font-weight: 650;
+  }
+
+  .hint {
+    flex: 1;
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+  }
+
+  .logs {
+    flex: 1;
+    overflow: auto;
+    margin: 0;
+    padding: 1.4rem 1.8rem;
+    background: var(--surface-2);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+}

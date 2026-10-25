@@ -9,8 +9,9 @@
 # Puis :
 #   https://citadel.localhost:8443            le site (accepter l'avertissement : certificat de test)
 #   https://jellyfin.citadel.localhost:8443   Jellyfin, à travers Caddy (ou http://localhost:8096)
-#   http://localhost:8080                     qBittorrent ; 9696 Prowlarr, 7878 Radarr,
-#                                             8989 Sonarr, 6767 Bazarr, 2468 cross-seed
+#   http://localhost:8100                     la console (mot de passe : admin)
+#   http://localhost:8080                     qBittorrent (admin / adminadmin) ; 9696 Prowlarr,
+#                                             7878 Radarr, 8989 Sonarr, 6767 Bazarr, 2468 cross-seed
 #
 # Ce fichier ne remplace pas compose.yml : Compose le superpose à lui (deuxième -f).
 # On teste donc le vrai compose.yml (lecture seule, utilisateurs, healthchecks, réseaux,
@@ -23,6 +24,7 @@
 #     test, sans Let's Encrypt ni Cloudflare. Les navigateurs envoient *.localhost sur
 #     ton PC, sans rien configurer ;
 #   - un FAUX Gluetun (voir media-gluetun plus bas) : ni VPN, ni clé sur ton PC ;
+#   - qBittorrent part avec un compte connu, que la console utilise ;
 #   - Jellyfin sans transcodage matériel, Tailscale absent (il n'existe que sur le NAS).
 # Les valeurs viennent du .env de la racine (identifiants IGDB) et de compose.local.env.
 #
@@ -95,16 +97,35 @@ services:
       # À la place de /Volume1/citadel : de quoi poser le verrou
       - ops-state:/Volume1/citadel
 
+  infra-admin:
+    image: citadel-admin:local
+    build:
+      <<: *build
+      target: admin
+    volumes:
+      # Pas de déploiement sur ton PC : un state/ vide (« aucun déploiement »)
+      - admin-state:/state:ro
+      - media-data:/hdd:ro
+    ports: !override
+      - "127.0.0.1:8100:8100"
+
   # --- Le faux Gluetun ---
   # Le vrai a besoin de ta clé WireGuard et monte un VPN : hors de question sur ton PC.
   # Celui-ci ne fait que tenir un réseau, auquel qBittorrent et les *arr se branchent
   # comme sur le NAS, et publier leurs ports. Il se dit sain tout de suite.
+  # Il imite aussi le serveur de contrôle (port 8000) pour la console : deux fichiers
+  # servis par le petit serveur web de busybox, avec une IP et un port inventés.
   # SANS VPN, donc : n'ajoute aucun torrent ici, il partirait avec ton IP.
   media-gluetun:
-    image: alpine:3.24.3
-    command: ["sleep", "infinity"]
-    # Un vrai processus n°1, qui transmet l'arrêt à sleep : arrêt immédiat, pas en 10 s
+    image: busybox:1.37.0
+    command: ["httpd", "-f", "-p", "8000", "-h", "/www"]
+    # Un vrai processus n°1, qui transmet l'arrêt à httpd : arrêt immédiat, pas en 10 s
     init: true
+    configs:
+      - source: fake-gluetun-public-ip
+        target: /www/v1/publicip/ip
+      - source: fake-gluetun-port-forward
+        target: /www/v1/portforward
     cap_add: !reset []
     devices: !reset []
     environment: !reset {}
@@ -125,6 +146,12 @@ services:
     volumes:
       - qbittorrent-config:/config
       - media-data:/data
+    # Au premier démarrage, l'image copie /defaults/qBittorrent.conf dans /config : on lui
+    # en donne un avec un compte connu (admin / adminadmin), au lieu du mot de passe au
+    # hasard qu'elle écrirait dans ses logs. La console se connecte avec.
+    configs:
+      - source: qbittorrent-defaults
+        target: /defaults/qBittorrent.conf
 
   media-jellyfin:
     environment:
@@ -182,10 +209,34 @@ configs:
         matchMode: "strict",
         seasonFromEpisodes: null,
       };
+  # Réponses du faux serveur de contrôle de Gluetun, au format du vrai
+  fake-gluetun-public-ip:
+    content: |
+      {"public_ip":"203.0.113.42","country":"Switzerland","city":"Zurich"}
+  fake-gluetun-port-forward:
+    content: |
+      {"port":51413}
+  # Le qBittorrent.conf par défaut de l'image, plus le compte. Mot de passe « adminadmin »,
+  # haché comme qBittorrent l'attend (PBKDF2-SHA512, sel:hachage en base64)
+  qbittorrent-defaults:
+    content: |
+      [LegalNotice]
+      Accepted=true
+
+      [Preferences]
+      Connection\UPnP=false
+      Connection\PortRangeMin=6881
+      Downloads\SavePath=/downloads/
+      Downloads\TempPath=/downloads/incomplete/
+      WebUI\Address=*
+      WebUI\ServerDomains=*
+      WebUI\Username=admin
+      WebUI\Password_PBKDF2="@ByteArray(YQC+TrpOvjwCs1/bHXYUyw==:F78wstFtl+WX+sUztxX+dfqBObxx8AIVEx3pCxVqASO4leYRXnQv89iLS2WTS+Z+QX6O43aUefy8wH8qUbju7Q==)"
 
 volumes:
   db-data:
   ops-state:
+  admin-state:
   media-data:
   qbittorrent-config:
   jellyfin-config:

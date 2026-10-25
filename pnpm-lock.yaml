@@ -72,6 +72,76 @@ importers:
         specifier: 'catalog:'
         version: 4.1.11(@types/node@26.6.3)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.1.1(@noble/hashes@1.8.0))(vite@8.3.2(@types/node@26.6.3)(esbuild@0.28.2)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15))
 
+  apps/admin:
+    dependencies:
+      '@citadel/common':
+        specifier: workspace:*
+        version: link:../../packages/common
+      '@citadel/design-system':
+        specifier: workspace:*
+        version: link:../../packages/design-system
+      express:
+        specifier: ^5.1.0
+        version: 5.2.1(supports-color@8.1.1)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.49.0(@types/react@19.3.0)(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.5
+    devDependencies:
+      '@citadel/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@citadel/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/express':
+        specifier: ^5.0.3
+        version: 5.0.6
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.3
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: 'catalog:'
+        version: 6.1.1(vite@8.3.2(@types/node@26.6.3)(esbuild@0.28.2)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15))
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      eslint:
+        specifier: 'catalog:'
+        version: 10.11.0(supports-color@8.1.1)
+      globals:
+        specifier: 'catalog:'
+        version: 17.13.0
+      sass:
+        specifier: 'catalog:'
+        version: 1.105.1
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.2(@types/node@26.6.3)(esbuild@0.28.2)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.11(@types/node@26.6.3)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(jsdom@30.1.1(@noble/hashes@1.8.0))(vite@8.3.2(@types/node@26.6.3)(esbuild@0.28.2)(sass-embedded@1.105.1)(sass@1.105.1)(tsx@4.23.15))
+
   apps/client:
     dependencies:
       '@citadel/common':

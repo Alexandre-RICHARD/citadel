@@ -26,6 +26,7 @@
     "prod:local": "docker compose -p citadel-local -f infra/compose.yml -f infra/compose.local.yml --env-file .env --env-file infra/compose.local.env up --build --detach --wait",
     "prod:local:down": "docker compose -p citadel-local -f infra/compose.yml -f infra/compose.local.yml --env-file .env --env-file infra/compose.local.env down --volumes",
     "release": "bash scripts/release.sh",
+    "admin:password": "pnpm --silent --filter @citadel/admin hash-password",
     "=== Packages ===": "",
     "install-dependencies": "pnpm i",
     "update-minor": "pnpm update --recursive --interactive",

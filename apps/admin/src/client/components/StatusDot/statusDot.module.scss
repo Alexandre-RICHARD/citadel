@@ -1,0 +1,23 @@
+.statusDot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: var(--idle);
+
+  &[data-tone="ok"] {
+    background: var(--ok);
+    box-shadow: 0 0 0 0.3rem var(--ok-subtle);
+  }
+
+  &[data-tone="warn"] {
+    background: var(--warn);
+    box-shadow: 0 0 0 0.3rem var(--warn-subtle);
+  }
+
+  &[data-tone="danger"] {
+    background: var(--danger);
+    box-shadow: 0 0 0 0.3rem var(--danger-subtle);
+  }
+}

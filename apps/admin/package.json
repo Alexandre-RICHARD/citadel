@@ -1,0 +1,44 @@
+{
+  "name": "@citadel/admin",
+  "type": "module",
+  "scripts": {
+    "=== Dev ===": "",
+    "dev:local": "vite --open",
+    "hash-password": "tsx src/server/auth/hashPasswordCli.ts",
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "check-types": "tsc --noEmit",
+    "unit-test-once": "vitest run",
+    "unit-test-watch": "vitest watch",
+    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm build",
+    "=== Build & Production ===": "",
+    "build": "vite build && node esbuildConfig.mjs"
+  },
+  "dependencies": {
+    "@citadel/common": "workspace:*",
+    "@citadel/design-system": "workspace:*",
+    "express": "^5.1.0",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@citadel/eslint-config": "workspace:*",
+    "@citadel/typescript-config": "workspace:*",
+    "@types/express": "^5.0.3",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "esbuild": "^0.28.2",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "sass": "catalog:",
+    "tsx": "^4.23.15",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

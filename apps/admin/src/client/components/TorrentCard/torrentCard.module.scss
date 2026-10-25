@@ -1,0 +1,23 @@
+.muted {
+  color: var(--text-subtle);
+}
+
+.speeds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.8rem;
+}
+
+.speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+
+  svg {
+    color: var(--accent);
+  }
+}

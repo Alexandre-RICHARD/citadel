@@ -1,0 +1,138 @@
+// Une ligne par service. Large : une seule rangée de colonnes ; étroit (téléphone) : deux
+.serviceRow {
+  display: grid;
+  grid-template-columns: minmax(18rem, 2.2fr) minmax(11rem, 1fr) minmax(16rem, 1.2fr) minmax(9rem, 0.9fr) 11.2rem;
+  grid-template-areas: "identity state usage version actions";
+  align-items: center;
+  gap: 1.2rem 1.6rem;
+  padding: 1rem 1.6rem;
+  border-top: 1px solid var(--border);
+
+  &[data-running="false"] .names {
+    opacity: 0.6;
+  }
+
+  .identity {
+    grid-area: identity;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-width: 0;
+  }
+
+  .names {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .name {
+    font-weight: 600;
+  }
+
+  .description {
+    overflow: hidden;
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .state {
+    grid-area: state;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.8rem;
+    font-size: 1.3rem;
+  }
+
+  .muted {
+    color: var(--text-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .restarts {
+    color: var(--warn);
+    font-size: 1.2rem;
+  }
+
+  .usage {
+    grid-area: usage;
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cpu {
+    min-width: 4.6rem;
+  }
+
+  .memory {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .memoryText {
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .version {
+    grid-area: version;
+    justify-self: start;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0.2rem 0.8rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.2rem;
+  }
+
+  .spinner {
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    color: var(--accent);
+
+    svg {
+      animation: spin 0.9s linear infinite;
+    }
+  }
+
+  @media (width <= 900px) {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "identity actions"
+      "state version"
+      "usage usage";
+    gap: 0.6rem 1.2rem;
+
+    .version {
+      justify-self: end;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

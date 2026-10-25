@@ -27,8 +27,8 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        # Une étape du Dockerfile par image ; admin s'ajoutera à l'étape 21
-        image: [client, server, migrations, ops, caddy]
+        # Une étape du Dockerfile par image
+        image: [client, server, migrations, ops, caddy, admin]
     steps:
       # Chaque action est épinglée par le SHA d'un commit (un tag peut être déplacé,
       # un SHA non) ; la version lisible est en commentaire, pour les mises à jour.
