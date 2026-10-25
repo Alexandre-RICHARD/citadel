@@ -1,0 +1,25 @@
+# =====================================================================================
+# .dockerignore : ce qui n'est JAMAIS envoyé à Docker pour construire une image
+# =====================================================================================
+#
+# Avant de construire, Docker envoie tout le dossier du dépôt (le « contexte ») au moteur
+# de build. Un `COPY . .` du Dockerfile copie ensuite tout ce contexte dans l'image.
+# Ce fichier filtre le contexte : ce qui est listé ici n'existe pas pour Docker.
+# Deux raisons : la sécurité (aucun secret dans une image publique) et la vitesse.
+# La syntaxe ressemble à celle de .gitignore ; « ** » veut dire « dans n'importe quel dossier ».
+
+# --- Secrets : un .env copié dans une image publique sur GHCR serait lisible par tous ---
+**/.env*
+
+# --- Généré par pnpm ou par les builds : refait dans l'image, et lourd (plus d'1 Go) ---
+**/node_modules
+**/build
+**/tsBuildInfo.json
+report
+
+# --- Inutile pour construire, et ferait reconstruire les images à chaque changement ---
+.git
+.vscode
+docs
+docker
+**/*.md

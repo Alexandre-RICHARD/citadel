@@ -1,0 +1,110 @@
+# =====================================================================================
+# nginx.conf.template : le serveur du front, dans l'image « client » (Dockerfile)
+# =====================================================================================
+#
+# Ce que fait ce conteneur :
+#   - servir les fichiers du build Vite (le site) ;
+#   - renvoyer index.html pour les routes de la SPA (/backlog, /game-death-counter…) :
+#     c'est React Router, dans le navigateur, qui affiche la bonne page ;
+#   - relayer /irigo/ et /igdb/, comme le fait Vite en dev (vite.config.ts).
+# Il ne voit jamais /api : Caddy envoie /api/… au serveur avant d'arriver ici.
+#
+# Modèle : au démarrage, l'image remplace les ${INTERNET_GAME_DATA_BASE_…} par les variables
+# du conteneur (seulement celles-là : NGINX_ENVSUBST_FILTER, dans le Dockerfile), puis
+# écrit le résultat dans /etc/nginx/conf.d/default.conf. Les $uri, $host… restent tels quels.
+#
+# Pas de compression ni d'en-têtes de sécurité ici : Caddy s'en charge pour tout le site.
+
+server {
+	# Port 8080 : l'image tourne sans root, et Caddy vient chercher les pages ici
+	listen 8080;
+	server_name _;
+
+	root /usr/share/nginx/html;
+	# Ne pas annoncer la version de nginx dans les réponses
+	server_tokens off;
+
+	# DNS interne de Docker, pour les relais : les adresses d'IGDB et d'Irigo sont
+	# cherchées à chaque besoin (et gardées 5 minutes), pas une seule fois au démarrage.
+	# Sans ça, un NAS qui redémarre sans Internet donnerait un nginx qui refuse de démarrer.
+	resolver 127.0.0.11 valid=300s ipv6=off;
+	resolver_timeout 5s;
+
+	# Relais en HTTPS : vérifier le certificat d'Irigo et d'IGDB (nginx ne le fait pas par
+	# défaut), avec le nom du site demandé (SNI, exigé par la plupart des hébergeurs)
+	proxy_ssl_server_name on;
+	proxy_ssl_verify on;
+	proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+	proxy_ssl_verify_depth 3;
+
+	# --- Fichiers cachés (.vite/manifest.json…) : jamais servis ---
+	location ~ /\. {
+		return 404;
+	}
+
+	# --- Fichiers dont le nom contient une empreinte (app-BmNDA-d6.js…) ---
+	# Leur contenu ne change jamais sous ce nom : le navigateur les garde un an sans
+	# redemander. Un nouveau build produit de nouveaux noms.
+	# Un fichier absent répond 404, pas index.html : un vieux nom après un déploiement
+	# doit échouer clairement, pas renvoyer du HTML à la place d'un script.
+	location ~* "-[A-Za-z0-9_-]{8}\.(?:js|css|png|jpe?g|gif|svg|webp|avif|woff2?)$" {
+		add_header Cache-Control "public, max-age=31536000, immutable";
+		try_files $uri =404;
+	}
+
+	# --- Icônes : noms fixes, donc gardées un jour seulement ---
+	location /favicon/ {
+		add_header Cache-Control "public, max-age=86400";
+		try_files $uri =404;
+	}
+
+	# --- index.html et version.json : toujours revérifiés, pour voir une nouvelle version aussitôt ---
+	location = /index.html {
+		add_header Cache-Control "no-cache";
+	}
+	location = /version.json {
+		add_header Cache-Control "no-store";
+	}
+
+	# --- Tout le reste : le fichier s'il existe, sinon index.html (routes de la SPA) ---
+	location / {
+		try_files $uri /index.html;
+	}
+
+	# --- Relais vers Irigo (Angers) : contourne seulement l'absence de CORS chez Irigo ---
+	# /irigo/gtfs/… → https://ara-api.enroute.mobi/irigo/gtfs/… (chemin gardé tel quel)
+	location /irigo/ {
+		# Adresse dans une variable : c'est ce qui oblige nginx à passer par le resolver
+		set $irigo_upstream https://ara-api.enroute.mobi;
+		proxy_pass $irigo_upstream;
+		proxy_ssl_name ara-api.enroute.mobi;
+		proxy_set_header Host ara-api.enroute.mobi;
+		# Ne rien transmettre du visiteur (cookies, IP) à un service tiers.
+		# Une valeur vide retire l'en-tête ; nginx ne reprend aucun proxy_set_header du
+		# niveau server dès qu'un bloc location en définit un : d'où la répétition plus bas.
+		proxy_set_header Cookie "";
+		proxy_set_header X-Forwarded-For "";
+		proxy_set_header X-Real-IP "";
+		proxy_set_header CF-Connecting-IP "";
+		proxy_set_header True-Client-IP "";
+	}
+
+	# --- Relais vers IGDB, pour le POC Backlog (cahier des charges, §6) ---
+	# /igdb/games → https://api.igdb.com/v4/games, avec les identifiants ajoutés ici :
+	# le navigateur ne les voit jamais. Quand le token expire, mettre le nouveau dans
+	# .env.prod, puis redémarrer site-prod-client.
+	location /igdb/ {
+		set $igdb_upstream https://api.igdb.com;
+		rewrite ^/igdb/(.*)$ /v4/$1 break;
+		proxy_pass $igdb_upstream;
+		proxy_ssl_name api.igdb.com;
+		proxy_set_header Host api.igdb.com;
+		proxy_set_header Client-ID "${INTERNET_GAME_DATA_BASE_CLIENT_ID}";
+		proxy_set_header Authorization "Bearer ${INTERNET_GAME_DATA_BASE_TOKEN}";
+		proxy_set_header Cookie "";
+		proxy_set_header X-Forwarded-For "";
+		proxy_set_header X-Real-IP "";
+		proxy_set_header CF-Connecting-IP "";
+		proxy_set_header True-Client-IP "";
+	}
+}
