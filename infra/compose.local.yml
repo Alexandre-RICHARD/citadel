@@ -1,0 +1,79 @@
+# =====================================================================================
+# compose.local.yml : faire tourner la prod sur ton PC, pour la tester avant une release
+# =====================================================================================
+#
+#   pnpm prod:local        construit nos images en local et lance le site complet
+#   pnpm prod:local:down   arrête tout et efface ses données
+#
+# Puis https://citadel.localhost:8443 (accepter l'avertissement : certificat de test).
+#
+# Ce fichier ne remplace pas compose.yml : Compose le superpose à lui (deuxième -f).
+# On teste donc le vrai compose.yml (lecture seule, utilisateurs, healthchecks, réseaux,
+# limites, Caddyfile), avec seulement ces différences :
+#   - nos images sont construites depuis le Dockerfile, au lieu d'être tirées de GHCR ;
+#   - les dossiers du NAS (/Volume1/…) deviennent des volumes Docker ;
+#   - les ports sont publiés sur 127.0.0.1 de ton PC, à des numéros libres ;
+#   - le domaine est citadel.localhost : Caddy le sert avec ses propres certificats de
+#     test, sans Let's Encrypt ni Cloudflare. Les navigateurs envoient *.localhost sur
+#     ton PC, sans rien configurer.
+# Les valeurs viennent du .env de la racine (identifiants IGDB) et de compose.local.env.
+#
+# `!override` remplace une liste au lieu de la compléter (sinon les ports du NAS
+# resteraient publiés en plus des nôtres).
+
+services:
+  site-prod-db:
+    volumes:
+      # Mêmes destinations que dans compose.yml : Compose remplace ces deux montages
+      - db-data:/var/lib/mysql
+      - type: bind
+        source: ./mariadb-init.sh
+        target: /docker-entrypoint-initdb.d/citadel.sh
+        read_only: true
+    ports: !override
+      # Pas 3306 : ta MariaDB Windows l'occupe tant qu'elle est installée
+      - "127.0.0.1:3309:3306"
+
+  site-prod-migrations:
+    image: citadel-migrations:local
+    build: &build
+      # Chemin relatif au dossier de compose.yml (infra/) : la racine du dépôt
+      context: ..
+      target: migrations
+      args:
+        APP_VERSION: local
+    # Sur le NAS, citadel lance les migrations à part (profil « jobs »). Ici, plus de
+    # profil : `up` les lance, et le serveur attend qu'elles aient réussi (plus bas)
+    profiles: !reset []
+
+  site-prod-server:
+    image: citadel-server:local
+    build:
+      <<: *build
+      target: server
+    depends_on:
+      site-prod-migrations:
+        condition: service_completed_successfully
+
+  site-prod-client:
+    image: citadel-client:local
+    build:
+      <<: *build
+      target: client
+
+  infra-caddy:
+    image: citadel-caddy:local
+    build:
+      <<: *build
+      target: caddy
+    ports: !override
+      - "127.0.0.1:8000:80"
+      - "127.0.0.1:8443:443"
+
+networks:
+  # Sur le NAS, ce réseau appartient à l'ancienne stack ; ici, Compose le crée
+  proxy-net:
+    external: false
+
+volumes:
+  db-data:

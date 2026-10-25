@@ -1,29 +1,21 @@
 # Citadel
 
-## Client
-### Pour lancer ce projet :
-#### Prérequis
-- Remplir le .env à partir du .env.example en cohérence avec le projet back
-- Installer Node
-- Activer corepack avec `corepack enable`
+## Lancer le projet en local
+### Prérequis
+- Node 24, et pnpm par corepack : `corepack enable`
+- Docker Desktop, lancé : les bases MariaDB de dev et de test tournent dedans
+- Git Bash pour les scripts (`pnpm release`)
+- `.env` et `.env.test` à la racine, copiés de `.env.example` et remplis (les commentaires du modèle disent quoi mettre dans chacun)
 
-#### Démarrage
-- Installer les dépendances
-- Exécuter le script `start`
+### Démarrage
+- `pnpm install`
+- `pnpm db:up` : démarre la base de dev et applique les migrations
+- `pnpm dev-all` : le front sur http://localhost:3001, qui appelle l'API par `/api`
 
-## Server
-### Pour lancer ce projet :
-#### Prérequis
-- Remplir le .env à partir du .env.example en cohérence avec le projet front
-- Installer MariaDB
-- Installer Docker ou Docker Desktop
-- Installer Node
-
-#### Démarrage
-- Exécuter le script `init-db`
-- Exécuter le script `migrate`
-- Installer les dépendances
-- Lancer avec `start`
+### Tests et mise en prod
+- `pnpm validate-all` : types, lint, tests (la base de test est recréée à chaque lancement), builds
+- `pnpm prod:local` : les images de prod sur ton PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter)
+- `pnpm release` : la mise en prod ; tout est expliqué dans `docs/ci_cd/README.md`
 
 ## TODO
 - Ajouter des tests (unitaire uniquement)
@@ -41,7 +33,6 @@ https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - Faire des data-portal avec tout les éléments de type : tooltip, modal, dropdown
 - Claude a répéré "Un bug repéré en passant dans DeathRow, non corrigé. Le champ de date est en datetime-local, mais toDateInputValue renvoie seulement AAAA-MM-JJ, une valeur que ce type de champ refuse. Le champ s'affiche donc vide, et enregistrer une mort sans toucher à la date remet son heure à minuit UTC. C'est à régler quand tu brancheras gameDeathCounter sur l'API."
 - + point bonus : avec les collègues on a vu que c'était bien que les tests d'intégration ne nettoie pas leurs données de tests avant ou après l'exécution individuelle. La base ne doit être clean qu'au tout début des tests. Cela permet de s'assurer d'une meilleure compatibilité des endpoints les uns par rapport aux autres. Aussi, pour renforcer ça, les tests d'intégration doivent être joué dans un ordre aléatoire à chaque fois. Si un test échoue une fois, soit il est mal conçu, soit il a révélé une faille entre plusieurs endpoints.
-- Transformer tout l'infra. Avoir des base uniquement en container docker. La base dev est persisté mais facile à vider. La base de test est reset à chaque fois.
 - getSortStringValue classe les majuscules avant les minuscules et les accents après « z ». Il y a déjà un TODO sur le sujet ; les tests décrivent ce comportement actuel.
 - Rajouter un petit toast global à l'appli quand le client n'est plus connecté à internet. Avoir un toast de succès quand cela revient à la normale.
 - Tout convertir en REM
