@@ -185,10 +185,10 @@ Tes questions sur ces fichiers :
 
 | Fichier | Où | Pour |
 |---|---|---|
-| `.env.example` | dépôt (versionné, donc public) | **le modèle** : chaque variable une fois, commentée, sans valeur secrète |
-| `.env` | ton PC | dev |
-| `.env.test` | ton PC | tests d'intégration |
-| `.env.prod` | NAS, `/Volume1/citadel/` (droits 600) | prod et pré-prod, stack média, infra |
+| `.env.example` | dépôt (versionné, donc public) | **le modèle** : chaque variable une fois, commentée, sans valeur secrète, en trois sections (1 : PC seulement ; 2 : PC et NAS ; 3 : NAS seulement) |
+| `.env` | ton PC | dev : sections 1 et 2 |
+| `.env.test` | ton PC | tests d'intégration : sections 1 et 2 |
+| `.env.prod` | NAS, `/Volume1/citadel/` (droits 600) | prod et pré-prod, stack média, infra : sections 2 et 3, tout rempli |
 
 - **Mêmes noms partout** : `DB_USER_PASSWORD` est le mot de passe de l'application dans chaque fichier.
 - **Pas de `.env.preprod`** : la pré-prod réutilise les secrets de la prod, mais sa base s'appelle `citadel_preprod` et chaque compte n'a de droits que sur sa propre base. Un job de pré-prod qui viserait la prod par erreur échoue donc à la connexion au lieu de l'écraser.
@@ -616,7 +616,7 @@ ssh nas echo ok                                 # attendu : phrase de passe de l
 ssh -o PubkeyAuthentication=no nas echo ok      # attendu : Permission denied (publickey), sans demande de mot de passe
 pnpm db:up                                      # attendu : base de dev saine, migrations à jour
 pnpm test:integration                           # attendu : tous les tests passent, sur une base de test neuve
-pnpm prod:local                                 # attendu : 13 conteneurs « Healthy » ; https://citadel.localhost:8443 et https://jellyfin.citadel.localhost:8443 répondent ; puis pnpm prod:local:down
+pnpm prod:local                                 # attendu : 15 conteneurs « Healthy » ; https://citadel.localhost:8443, https://jellyfin.citadel.localhost:8443 et la console http://localhost:8100 (mot de passe admin) répondent ; puis pnpm prod:local:down
 pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
 
@@ -719,9 +719,9 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 
 **Phase 5 — Bascule du NAS, en une fois**
 
-23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
+23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure (mot de passe de la console : `pnpm admin:password` sur ton PC) ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
 24. [nous] Bascule à un moment calme : archive de `/Volume1/appdata` sur le HDD ; tâche planifiée de `backup.sh` désactivée (elle relancerait l'ancien projet) ; arrêt de NPM, de l'ancien site et des trois projets média ; premier `pnpm release`, puis `citadel start media` (les services « à la demande » sont créés arrêtés). Retour arrière : arrêter `citadel`, relancer les anciens conteneurs, arrêtés mais pas supprimés ; les *arr et cross-seed, dont les conteneurs n'existent déjà plus, se recréent avec l'ancien `docker-compose -f docker-compose.stackarr.yml up -d` (leurs images sont encore sur le NAS).
-25. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur et transcodage ; VPN et port forwarding, qBittorrent, *arr ; console en LAN et par Tailscale ; DBeaver par SSH ; mode SSL « Full (strict) » chez Cloudflare.
+25. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur et transcodage ; VPN et port forwarding, qBittorrent, *arr ; console en LAN et par Tailscale ; DBeaver par SSH ; Jellyfin, Réseau, « Proxys connus » : `infra-caddy` (vide jusqu'ici : Jellyfin voit alors l'adresse du proxy, un réseau Docker local, et prend sans doute tout visiteur extérieur pour le LAN ; l'interdiction d'accès distant à ton compte admin, §12.6, en dépend) ; mode SSL « Full (strict) » chez Cloudflare.
 26. [moi] `infra/README.md` : remonter le NAS de zéro.
 
 Jusqu'à la phase 6, seules sauvegardes : le dump avant chaque déploiement et l'archive de l'étape 24. Accepté.

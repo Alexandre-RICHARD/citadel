@@ -1,0 +1,11 @@
+.muted {
+  color: var(--text-subtle);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}

@@ -1,0 +1,55 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  min-width: 0;
+  padding: 1.6rem 1.8rem 1.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: var(--radius-s);
+    background: var(--accent-subtle);
+    color: var(--accent);
+  }
+
+  .title {
+    flex: 1;
+    font-size: 1.4rem;
+    font-weight: 650;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+  }
+
+  .error {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-s);
+    background: var(--danger-subtle);
+    color: var(--danger);
+    font-size: 1.2rem;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+}

@@ -1,0 +1,30 @@
+{
+	"extends": "@citadel/typescript-config/tsconfig.json",
+	// Un seul tsconfig pour le serveur (Node) et le front (navigateur) : tous deux passent par
+	// un bundler (esbuild, Vite), d'où la résolution « bundler » et les deux familles de types
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"target": "esnext",
+		"jsx": "react-jsx",
+		"lib": [
+			"DOM",
+			"DOM.Iterable",
+			"ESNext"
+		],
+		"types": [
+			"node",
+			"vite/client"
+		]
+	},
+	"include": [
+		"src",
+		"vite.config.ts",
+		"vitest.config.ts",
+		"eslint.config.js"
+	],
+	"exclude": [
+		"build",
+		"node_modules"
+	]
+}

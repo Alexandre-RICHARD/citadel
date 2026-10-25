@@ -3,8 +3,8 @@
 # =====================================================================================
 #
 # Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod), Caddy,
-# Tailscale, infra-ops (réduit au job vpn-watch) et la stack média. Arriveront ensuite :
-# la console et son filtre Docker (étape 21), la pré-prod et les sauvegardes (étape 28).
+# Tailscale, infra-ops (réduit au job vpn-watch), la console et son filtre Docker, et la
+# stack média. Arriveront ensuite : la pré-prod et les sauvegardes (étape 28).
 #
 # Qui lit ce fichier ?
 #   Jamais toi directement : il est copié dans l'image « ops », et c'est la commande
@@ -24,7 +24,7 @@
 # Les labels citadel.* décrivent chaque service, pour citadel et la future console :
 #   citadel.group         infra | site-prod | site-preprod | media
 #   citadel.mode          always (toujours allumé) | on-demand (à la demande) | job (ponctuel)
-#   citadel.controllable  la console pourra le démarrer et l'arrêter
+#   citadel.controllable  la console peut le démarrer et l'arrêter
 
 name: citadel
 
@@ -280,6 +280,10 @@ services:
     # et tes appareils joignent le NAS (SSH, TOS, ports des services) par son nom
     # Tailscale, « leodinas », de partout, sans port ouvert sur la box (§12.4)
     network_mode: host
+    # Le nom que Tailscale annonce au tailnet, comme l'ancien conteneur : sans lui, ce
+    # serait le nom système du NAS, et « leodinas » (ton alias ssh nas, les adresses par
+    # Tailscale) pourrait changer
+    hostname: leodinas
     environment:
       # Même dossier d'état que l'ancien conteneur « tailscale » : le NAS garde son
       # identité dans ton tailnet, sans se reconnecter. Les deux ne doivent jamais
@@ -341,6 +345,111 @@ services:
       citadel.mode: "always"
       citadel.controllable: "false"
 
+  # --- Le filtre entre la console et Docker (§14.2) ---
+  # Le socket de Docker donne tous les droits sur le NAS. La console ne le voit jamais :
+  # elle parle à ce petit proxy, qui ne laisse passer que les requêtes de ses listes
+  # (méthode + chemin), et refuse tout le reste (créer un conteneur, exécuter une
+  # commande dedans, toucher aux images, aux volumes…).
+  infra-socket-proxy:
+    <<: [*defaults, *hardened]
+    image: wollomatic/socket-proxy:1.13.2
+    container_name: infra-socket-proxy
+    # Personne (65534), avec le groupe propriétaire du socket : juste de quoi l'ouvrir.
+    # Le groupe dépend de la machine : `stat -c %g /var/run/docker.sock` sur le NAS.
+    user: "65534:${DOCKER_GID:?manque dans .env.prod}"
+    command:
+      - -loglevel=warn
+      # Écouter sur son réseau Docker, mais ne répondre qu'à la console
+      - -listenip=0.0.0.0
+      - -allowfrom=infra-admin
+      # Les listes : des expressions régulières sur le chemin, ancrées au début et à la
+      # fin. « (/v1.xx)? » : avec ou sans numéro de version de l'API devant.
+      # GET : liste, détail, statistiques et logs des conteneurs. Rien d'autre.
+      - -allowGET=(/v1\.[0-9]+)?/containers/(json|[a-zA-Z0-9_.-]+/(json|stats|logs))
+      # POST : démarrer, arrêter. Un redémarrage, pour la console, c'est l'un puis l'autre.
+      - -allowPOST=(/v1\.[0-9]+)?/containers/[a-zA-Z0-9_.-]+/(start|stop)
+      # Son healthcheck, sur 127.0.0.1 du conteneur seulement
+      - -allowhealthcheck
+      - -shutdowngracetime=5
+    volumes:
+      # :ro empêche de remplacer le fichier du socket, pas de lui parler : c'est le
+      # proxy qui filtre
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - docker-api
+    healthcheck:
+      test: ["CMD", "./healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 2
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+    labels:
+      citadel.name: "Filtre Docker"
+      citadel.description: "Ne laisse passer vers Docker que ce dont la console a besoin"
+      citadel.group: "infra"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  # --- La console d'administration (§14) ---
+  # http://192.168.1.113:8100 chez toi, http://leodinas:8100 par Tailscale ; jamais depuis
+  # Internet (la box n'envoie que 80 et 443, à Caddy). Protégée par son mot de passe.
+  infra-admin:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-admin:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: infra-admin
+    environment:
+      TZ: Europe/Paris
+      ADMIN_PORT: "8100"
+      # Le hachage de son mot de passe, jamais le mot de passe : citadel admin-password
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?manque dans .env.prod, voir citadel admin-password}
+      # Docker, à travers le filtre
+      DOCKER_API_URL: http://infra-socket-proxy:2375
+      # qBittorrent et le serveur de contrôle de Gluetun, dans le réseau de Gluetun
+      QBITTORRENT_URL: http://media-gluetun:8080
+      QBITTORRENT_USER: ${QBITTORRENT_USER:?manque dans .env.prod}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:?manque dans .env.prod}
+      GLUETUN_URL: http://media-gluetun:8000
+      GLUETUN_API_KEY: ${GLUETUN_API_KEY:?manque dans .env.prod}
+      # Version en service et historique des déploiements, écrits par citadel
+      STATE_DIR: /state
+      # Espace libre des deux disques : un dossier de chacun suffit
+      SSD_PATH: /state
+      HDD_PATH: /hdd
+    volumes:
+      # En lecture seule. Seulement state/ : pas .env.prod, qui est à côté
+      - /Volume1/citadel/state:/state:ro
+      # Seul son espace libre est lu (statfs) ; lecture seule
+      - /Volume2/data:/hdd:ro
+    ports:
+      - "8100:8100"
+    networks:
+      # Le filtre Docker
+      - docker-api
+      # Gluetun, donc qBittorrent
+      - vpn
+    depends_on:
+      - infra-socket-proxy
+    healthcheck:
+      # /health répond sans session (pas de curl dans l'image : Node fait la requête)
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8100/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    labels:
+      citadel.name: "Console"
+      citadel.description: "La console d'administration, sur le port 8100"
+      citadel.group: "infra"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
   # ===================================================================================
   # La stack média
   # ===================================================================================
@@ -398,8 +507,13 @@ services:
       FIREWALL_OUTBOUND_SUBNETS: 192.168.1.0/24
       # Liste des serveurs de Proton remise à jour chaque jour
       UPDATER_PERIOD: 24h
+      # Son serveur de contrôle (port 8000, jamais publié) : la console y lit l'IP de
+      # sortie et le port redirigé. Chaque route exige cette clé d'API (en-tête X-API-Key)
+      HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE: '{"auth":"apikey","apikey":"${GLUETUN_API_KEY:?manque dans .env.prod}"}'
     volumes:
-      # Sa liste de serveurs, gardée d'un démarrage à l'autre
+      # Sa liste de serveurs, gardée d'un démarrage à l'autre. Même dossier que l'ancien
+      # conteneur, mais monté là où Gluetun écrit vraiment (/gluetun) : l'ancien le
+      # montait sur /config, que Gluetun n'utilise pas
       - /Volume1/appdata/gluetun:/gluetun
     ports:
       # Les interfaces de ceux qui vivent dans son réseau
@@ -658,9 +772,12 @@ networks:
   # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la
   # base sur 127.0.0.1, dont DBeaver a besoin
   site: {}
-  # Gluetun seul : qBittorrent et les *arr n'ont pas de réseau à eux, ils utilisent celui
-  # de Gluetun. Personne d'autre ne s'y branche.
+  # Gluetun (qBittorrent et les *arr n'ont pas de réseau à eux, ils utilisent celui de
+  # Gluetun) et la console, qui lit qBittorrent et Gluetun
   vpn: {}
+  # La console et le filtre Docker. « internal » : aucune sortie vers Internet
+  docker-api:
+    internal: true
 
 volumes:
   caddy-data:

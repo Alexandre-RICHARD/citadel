@@ -12,6 +12,7 @@
 #   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
 #   citadel version                    la version en service, seule (lue par pnpm release)
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun (P18)
+#   citadel admin-password             fabrique ADMIN_PASSWORD_HASH (mot de passe de la console)
 #
 # UN fichier, DEUX endroits où il tourne :
 #
@@ -110,6 +111,17 @@ host_main() {
 		version)
 			# Pas besoin de conteneur pour lire un fichier
 			current_version
+			;;
+		admin-password)
+			# L'outil est dans l'image de la console (Node), pas dans l'image ops. Avant le
+			# premier déploiement, sa version se donne en argument : citadel admin-password v2026.10.26
+			local version=${2:-$(current_version)}
+			[[ -n $version ]] || die "usage : citadel admin-password <version>"
+			local terminal_flags=(-i)
+			if [[ -t 0 && -t 1 ]]; then terminal_flags=(-it); fi
+			# Sans réseau : le mot de passe ne sort pas du conteneur, seul le hachage s'affiche
+			exec docker run --rm "${terminal_flags[@]}" --network none \
+				"$REGISTRY/citadel-admin:$version" node build/hashPassword.cjs
 			;;
 		deploy)
 			# L'image ops de la version DEMANDÉE : son compose.yml est celui à déployer

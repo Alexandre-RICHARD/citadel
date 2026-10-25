@@ -1,0 +1,36 @@
+.label {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.version {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.2rem;
+}
+
+.date {
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

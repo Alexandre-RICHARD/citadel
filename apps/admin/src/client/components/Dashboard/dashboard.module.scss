@@ -1,0 +1,85 @@
+.dashboard {
+  min-height: 100vh;
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    // Aligné sur le contenu de .main (largeur max 128rem, marges de 1,6rem)
+    padding: 1rem max(1.6rem, calc((100vw - 128rem) / 2 + 1.6rem));
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(1rem);
+  }
+
+  .brand {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .logo {
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: var(--radius-s);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .subtitle {
+    color: var(--text-subtle);
+    font-weight: 500;
+  }
+
+  .version {
+    color: var(--text-subtle);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 3.2rem;
+    max-width: 128rem;
+    margin: 0 auto;
+    padding: 2.4rem 1.6rem 6rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+    align-items: start;
+    gap: 1.6rem;
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .muted {
+    color: var(--text-subtle);
+  }
+
+  .error {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--danger-subtle);
+    color: var(--danger);
+  }
+}
