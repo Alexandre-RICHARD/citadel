@@ -2,24 +2,33 @@
 # compose.local.yml : faire tourner la prod sur ton PC, pour la tester avant une release
 # =====================================================================================
 #
-#   pnpm prod:local        construit nos images en local et lance le site complet
-#   pnpm prod:local:down   arrête tout et efface ses données
+#   pnpm prod:local        construit nos images en local et lance tout : site, Caddy,
+#                          infra-ops et la stack média
+#   pnpm prod:local:down   arrête tout et efface ses données (volumes compris)
 #
-# Puis https://citadel.localhost:8443 (accepter l'avertissement : certificat de test).
+# Puis :
+#   https://citadel.localhost:8443            le site (accepter l'avertissement : certificat de test)
+#   https://jellyfin.citadel.localhost:8443   Jellyfin, à travers Caddy (ou http://localhost:8096)
+#   http://localhost:8080                     qBittorrent ; 9696 Prowlarr, 7878 Radarr,
+#                                             8989 Sonarr, 6767 Bazarr, 2468 cross-seed
 #
 # Ce fichier ne remplace pas compose.yml : Compose le superpose à lui (deuxième -f).
 # On teste donc le vrai compose.yml (lecture seule, utilisateurs, healthchecks, réseaux,
 # limites, Caddyfile), avec seulement ces différences :
 #   - nos images sont construites depuis le Dockerfile, au lieu d'être tirées de GHCR ;
-#   - les dossiers du NAS (/Volume1/…) deviennent des volumes Docker ;
-#   - les ports sont publiés sur 127.0.0.1 de ton PC, à des numéros libres ;
+#   - les dossiers du NAS (/Volume1/…, /Volume2/…) deviennent des volumes Docker neufs,
+#     effacés par prod:local:down : chaque test part de zéro, sans rien toucher sur le NAS ;
+#   - les ports sont publiés sur 127.0.0.1 de ton PC seulement ;
 #   - le domaine est citadel.localhost : Caddy le sert avec ses propres certificats de
 #     test, sans Let's Encrypt ni Cloudflare. Les navigateurs envoient *.localhost sur
-#     ton PC, sans rien configurer.
+#     ton PC, sans rien configurer ;
+#   - un FAUX Gluetun (voir media-gluetun plus bas) : ni VPN, ni clé sur ton PC ;
+#   - Jellyfin sans transcodage matériel, Tailscale absent (il n'existe que sur le NAS).
 # Les valeurs viennent du .env de la racine (identifiants IGDB) et de compose.local.env.
 #
 # `!override` remplace une liste au lieu de la compléter (sinon les ports du NAS
-# resteraient publiés en plus des nôtres).
+# resteraient publiés en plus des nôtres) ; `!reset` l'efface.
+# Pour les volumes, pas besoin : Compose remplace un montage qui a la même destination.
 
 services:
   site-prod-db:
@@ -70,10 +79,118 @@ services:
       - "127.0.0.1:8000:80"
       - "127.0.0.1:8443:443"
 
-networks:
-  # Sur le NAS, ce réseau appartient à l'ancienne stack ; ici, Compose le crée
-  proxy-net:
-    external: false
+  # Tailscale : seulement sur le NAS (il lui faut un compte et le réseau de l'hôte).
+  # Un profil jamais activé : `up` ne le lance pas.
+  infra-tailscale:
+    profiles: [nas-only]
+
+  infra-ops:
+    image: citadel-ops:local
+    build:
+      <<: *build
+      target: ops
+    volumes:
+      # Le socket de Docker Desktop : vpn-watch pilote les conteneurs de ce test
+      - /var/run/docker.sock:/var/run/docker.sock
+      # À la place de /Volume1/citadel : de quoi poser le verrou
+      - ops-state:/Volume1/citadel
+
+  # --- Le faux Gluetun ---
+  # Le vrai a besoin de ta clé WireGuard et monte un VPN : hors de question sur ton PC.
+  # Celui-ci ne fait que tenir un réseau, auquel qBittorrent et les *arr se branchent
+  # comme sur le NAS, et publier leurs ports. Il se dit sain tout de suite.
+  # SANS VPN, donc : n'ajoute aucun torrent ici, il partirait avec ton IP.
+  media-gluetun:
+    image: alpine:3.24.3
+    command: ["sleep", "infinity"]
+    # Un vrai processus n°1, qui transmet l'arrêt à sleep : arrêt immédiat, pas en 10 s
+    init: true
+    cap_add: !reset []
+    devices: !reset []
+    environment: !reset {}
+    volumes: !reset []
+    ports: !override
+      - "127.0.0.1:8080:8080" # qBittorrent
+      - "127.0.0.1:9696:9696" # Prowlarr
+      - "127.0.0.1:7878:7878" # Radarr
+      - "127.0.0.1:8989:8989" # Sonarr
+      - "127.0.0.1:6767:6767" # Bazarr
+      - "127.0.0.1:2468:2468" # cross-seed
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 5s
+      start_period: 0s
+
+  media-qbittorrent:
+    volumes:
+      - qbittorrent-config:/config
+      - media-data:/data
+
+  media-jellyfin:
+    environment:
+      # Pas de pilote Intel à télécharger : aucun transcodage matériel sur ton PC
+      DOCKER_MODS: ""
+    volumes:
+      - jellyfin-config:/config
+      - media-data:/data/medias
+    devices: !reset []
+    group_add: !reset []
+    ports: !override
+      - "127.0.0.1:8096:8096"
+
+  media-prowlarr:
+    volumes:
+      - prowlarr-config:/config
+
+  media-radarr:
+    volumes:
+      - radarr-config:/config
+      - media-data:/data
+
+  media-sonarr:
+    volumes:
+      - sonarr-config:/config
+      - media-data:/data
+
+  media-bazarr:
+    volumes:
+      - bazarr-config:/config
+      - media-data:/data
+
+  media-cross-seed:
+    volumes:
+      - cross-seed-config:/config
+      - media-data:/data
+      - qbittorrent-config:/qbittorrent-check:ro
+    # Sans config.js, cross-seed refuse de démarrer. Sur le NAS, c'est la tienne ; ici,
+    # la plus petite acceptée : aucun indexeur, aucun client, il ne fait rien.
+    configs:
+      - source: cross-seed-config
+        target: /config/config.js
+
+configs:
+  cross-seed-config:
+    content: |
+      module.exports = {
+        torznab: [],
+        useClientTorrents: false,
+        dataDirs: [],
+        linkDirs: [],
+        torrentDir: null,
+        action: "save",
+        outputDir: null,
+        matchMode: "strict",
+        seasonFromEpisodes: null,
+      };
 
 volumes:
   db-data:
+  ops-state:
+  media-data:
+  qbittorrent-config:
+  jellyfin-config:
+  prowlarr-config:
+  radarr-config:
+  sonarr-config:
+  bazarr-config:
+  cross-seed-config:

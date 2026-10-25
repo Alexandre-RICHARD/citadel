@@ -90,11 +90,10 @@ www.{$SITE_DOMAIN:alexandre-richard.fr} {
 }
 
 # ===== Jellyfin : seul service média exposé, sans le proxy de Cloudflare =====
-# Nom repris de NPM. Jusqu'à l'étape 22, Jellyfin tourne encore dans l'ancienne stack :
-# Caddy le rejoint par le réseau Docker « proxy-net » (compose.yml), sous son ancien nom
-# « jellyfin ». À l'étape 22, il deviendra media-jellyfin.
+# Nom repris de NPM. Caddy et Jellyfin partagent le réseau Docker « edge » (compose.yml).
+# Jellyfin arrêté (il est « à la demande ») : Caddy répond 502, et rien d'autre ne casse.
 jellyfin.{$SITE_DOMAIN:alexandre-richard.fr} {
 	import security_headers
 	import access_log
-	reverse_proxy jellyfin:8096
+	reverse_proxy media-jellyfin:8096
 }

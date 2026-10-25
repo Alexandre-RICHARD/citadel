@@ -215,9 +215,10 @@ Oui, avec `envDir` et `loadEnv` et un chemin absolu, pnpm lançant Vite depuis `
 | `MYSQL_ROOT_PASSWORD`, `DB_ROOT_PASSWORD` | `DB_ROOT_PASSWORD` | un seul nom |
 | `INTERNET_GAME_DATA_BASE_*` | inchangées | le relais IGDB sera refait plus tard, côté serveur |
 | `PROTON_VPN_OPENVPN_*` | supprimées | inutiles : Gluetun se connecte déjà à Proton en WireGuard (`VPN_TYPE=wireguard`) |
+| `PROTON_VPN_WIREGUARD_PRIVATE_KEY` | `WIREGUARD_PRIVATE_KEY` | le nom que Gluetun attend |
 | `DB_DRIVER`, `DOTENV_CONFIG_QUIET` | supprimées | le pilote `mariadb` est fixé dans le code ; `dotenv` laisse la place à l'option `--env-file` de Node |
 
-Le modèle : `.env.example`. Les autres variables du NAS (`PUID`, `PGID`, clé WireGuard, console, healthchecks.io) s'y ajoutent avec leurs étapes.
+Le modèle : `.env.example`. Les autres variables du NAS (console, healthchecks.io) s'y ajoutent avec leurs étapes.
 
 ---
 
@@ -315,7 +316,7 @@ Durée : 1 à 3 minutes, dont 5 à 15 secondes de coupure du site.
 
 - Les deux bases locales tournent dans Docker Desktop (`compose.dev.yml`) : `pnpm db:up`, `db:down`, `db:reset`, `db:migrate`, `test:integration`. Ports 3307 (dev) et 3308 (tests) : ta MariaDB Windows garde 3306 jusqu'à sa désinstallation (étape 10).
 - Les tests d'intégration recréent et migrent eux-mêmes la base de test à chaque lancement : plus de `resetDatabase`.
-- `pnpm prod:local` fait tourner les images de prod sur ton PC (`https://citadel.localhost:8443`), avec le vrai `compose.yml` : à lancer avant une release qui touche au `Dockerfile`, à nginx ou au `Caddyfile`.
+- `pnpm prod:local` fait tourner les images de prod sur ton PC (`https://citadel.localhost:8443`), avec le vrai `compose.yml`, stack média comprise : volumes jetables, faux Gluetun sans VPN, pas de Tailscale. À lancer avant une release qui touche au `Dockerfile`, à nginx, au `Caddyfile` ou à `compose.yml`.
 
 ---
 
@@ -415,7 +416,7 @@ Les limites de la stack média restent celles d'aujourd'hui, ajustées ensuite a
 
 ### 10.7 Mises à jour des images tierces
 
-- Version exacte dans `compose.yml`, jamais `latest` ; pour les images linuxserver, le tag de build complet (par exemple `5.14.0.9383-ls280`), qui désigne toujours la même image. Au départ : les versions qui tournent aujourd'hui.
+- Version exacte dans `compose.yml`, jamais `latest` ; pour les images linuxserver, le tag de build complet (par exemple `5.14.0.9383-ls280`), qui désigne toujours la même image. Au départ : exactement celles qui tournaient sur le NAS (étape 16), pour que la bascule ne change rien d'autre ; les mises à jour viennent après, une par une (les *arr et Jellyfin migrent leur base vers l'avant, jamais vers l'arrière). Seule exception, Gluetun : sa version de développement est remplacée par la version publiée suivante.
 - Chaque nuit, `update-check` compare avec les versions publiées ; la console liste les mises à jour disponibles, avec leurs notes de version.
 - Toutes les versions d'un coup d'œil : la page « Versions » de la console (§14.3) liste chaque outil, nos images comme les images tierces, avec sa version en service et la dernière publiée.
 - Mettre à jour : changer la version dans `compose.yml`, commiter, `pnpm release`. Revenir en arrière : `citadel rollback`.
@@ -600,7 +601,7 @@ ssh nas echo ok                                 # attendu : phrase de passe de l
 ssh -o PubkeyAuthentication=no nas echo ok      # attendu : Permission denied (publickey), sans demande de mot de passe
 pnpm db:up                                      # attendu : base de dev saine, migrations à jour
 pnpm test:integration                           # attendu : tous les tests passent, sur une base de test neuve
-pnpm prod:local                                 # attendu : 4 conteneurs « Healthy » ; https://citadel.localhost:8443 répond ; puis pnpm prod:local:down
+pnpm prod:local                                 # attendu : 13 conteneurs « Healthy » ; https://citadel.localhost:8443 et https://jellyfin.citadel.localhost:8443 répondent ; puis pnpm prod:local:down
 pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
 
@@ -690,10 +691,10 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 
 **Phase 3 — La stack média dans le dépôt, testée sur ton PC**
 
-16. [toi] Relever les versions des images média qui tournent sur le NAS (commande fournie), pour les figer.
+16. [toi] Relever les versions des images média qui tournent sur le NAS (commande fournie), pour les figer telles quelles.
 17. [moi] Services média, `infra-tailscale` et un `infra-ops` réduit au job `vpn-watch` (P18) dans `compose.yml` : versions figées, labels, modes, limites ; Caddy sert `media-jellyfin` directement, sans `proxy-net`.
 18. [moi] `pnpm prod:local` lance aussi la stack média : volumes Docker jetables à la place des dossiers du NAS, un faux Gluetun (ni VPN ni clé sur ton PC), pas de transcodage matériel ; `pnpm prod:local:down` efface tout.
-19. [toi] Tester en local : chaque service démarre, les *arr répondent sur leurs ports, Jellyfin sur `https://jellyfin.citadel.localhost:8443`.
+19. [toi] Tester en local : chaque service démarre, les *arr répondent sur leurs ports, Jellyfin sur `https://jellyfin.citadel.localhost:8443`. En local, rien ne passe par un VPN : aucun torrent.
 
 **Phase 4 — Console d'administration, sans les sauvegardes**
 
@@ -704,7 +705,7 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 **Phase 5 — Bascule du NAS, en une fois**
 
 23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
-24. [nous] Bascule à un moment calme : archive de `/Volume1/appdata` sur le HDD ; tâche planifiée de `backup.sh` désactivée (elle relancerait l'ancien projet) ; arrêt de NPM, de l'ancien site et des trois projets média ; premier `pnpm release`. Retour arrière : arrêter `citadel`, relancer les anciens conteneurs, arrêtés mais pas supprimés.
+24. [nous] Bascule à un moment calme : archive de `/Volume1/appdata` sur le HDD ; tâche planifiée de `backup.sh` désactivée (elle relancerait l'ancien projet) ; arrêt de NPM, de l'ancien site et des trois projets média ; premier `pnpm release`, puis `citadel start media` (les services « à la demande » sont créés arrêtés). Retour arrière : arrêter `citadel`, relancer les anciens conteneurs, arrêtés mais pas supprimés ; les *arr et cross-seed, dont les conteneurs n'existent déjà plus, se recréent avec l'ancien `docker-compose -f docker-compose.stackarr.yml up -d` (leurs images sont encore sur le NAS).
 25. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur et transcodage ; VPN et port forwarding, qBittorrent, *arr ; console en LAN et par Tailscale ; DBeaver par SSH ; mode SSL « Full (strict) » chez Cloudflare.
 26. [moi] `infra/README.md` : remonter le NAS de zéro.
 
@@ -747,6 +748,7 @@ Aucune pour l'instant.
 - IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
 - Relais IGDB par le serveur, avec renouvellement du token, en même temps que l'authentification du site.
 - Node 26, MariaDB 12.3 et Flyway 13, testés en pré-prod.
+- Jellyfin 12, sortie en octobre 2026 : sa base migre sans retour possible, donc après une copie de `/Volume1/appdata/jellyfin`.
 
 ---
 
