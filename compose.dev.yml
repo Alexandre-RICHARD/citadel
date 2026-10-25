@@ -1,0 +1,120 @@
+# =====================================================================================
+# compose.dev.yml : les bases MariaDB de ton PC, dans Docker Desktop
+# =====================================================================================
+#
+# Deux bases, qui ne se mélangent jamais :
+#   - mariadb-dev  : ta base de dev, gardée d'un lancement à l'autre (volume Docker) ;
+#   - mariadb-test : la base des tests d'intégration, en mémoire, neuve à chaque lancement.
+# Plus deux conteneurs jetables, flyway-dev et flyway-test, qui appliquent les migrations
+# de apps/server/src/sql/migrations, comme en prod.
+#
+# On ne lance pas ce fichier à la main : les scripts pnpm le font (package.json de la racine).
+#   pnpm db:up       démarre la base de dev et applique les migrations
+#   pnpm db:migrate  applique les nouvelles migrations à la base de dev
+#   pnpm db:down     arrête les deux bases (les données de dev restent)
+#   pnpm db:reset    efface la base de dev et la recrée, migrations comprises
+#   pnpm test:integration
+#                    recrée la base de test, la migre, puis lance les tests
+#                    (fait par apps/server/vitestIntegrationGlobalSetup.ts)
+#
+# D'où viennent les valeurs ${…} ?
+#   Docker Compose les lit dans un fichier d'environnement : par défaut le .env de la
+#   racine (le dev) ; les commandes de test passent `--env-file .env.test`.
+#   Les deux services d'une même base ont donc la même écriture, et ce fichier ne
+#   contient aucun mot de passe. `:?` arrête tout avec un message si la valeur manque.
+#   Ne travailler que sur le service nommé (mariadb-dev OU mariadb-test) avec le bon
+#   fichier : les profils ci-dessous empêchent un `up` sans nom de tout démarrer.
+
+# Nom du projet Compose : préfixe des conteneurs, du réseau et du volume
+name: citadel-dev
+
+# --- Réglages communs aux deux bases (« x- » : bloc réutilisé plus bas, ignoré par Compose) ---
+x-mariadb: &mariadb
+  # Version exacte : la même que la prod, mise à jour en même temps (§10.7 du cahier des charges)
+  image: mariadb:11.8.9
+  environment:
+    # Mot de passe root, demandé par l'image. root n'est joignable que de l'intérieur
+    # du conteneur (MARIADB_ROOT_HOST=localhost) : ton PC passe par le compte de la base
+    MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?à remplir dans .env ou .env.test}
+    MARIADB_ROOT_HOST: localhost
+    # Lus par infra/mariadb-init.sh, qui crée la base et son compte au premier démarrage
+    DB_DATABASE_NAME: ${DB_DATABASE_NAME:?à remplir dans .env ou .env.test}
+    DB_USER_NAME: ${DB_USER_NAME:?à remplir dans .env ou .env.test}
+    DB_USER_PASSWORD: ${DB_USER_PASSWORD:?à remplir dans .env ou .env.test}
+  ports:
+    # Publiée sur 127.0.0.1 seulement : joignable depuis ton PC, pas depuis ton réseau.
+    # Pas sur 3306, le port par défaut : ta MariaDB Windows l'occupe tant qu'elle est installée
+    - "127.0.0.1:${DB_PORT:?à remplir dans .env ou .env.test}:3306"
+  healthcheck:
+    # Script fourni par l'image. « --connect » échoue pendant l'initialisation (le serveur
+    # temporaire n'écoute pas sur le réseau) : « sain » veut donc dire « prêt pour de vrai ».
+    # C'est ce qu'attendent `up --wait` et le depends_on des conteneurs Flyway.
+    test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+    interval: 2s
+    timeout: 5s
+    retries: 30
+
+# --- Réglages communs aux deux Flyway ---
+x-flyway: &flyway
+  # Même version que l'image « migrations » de la prod (Dockerfile)
+  image: flyway/flyway:12.11.0-alpine
+  # Le dossier du serveur est vu par Flyway comme sur ton disque, en lecture seule :
+  # flyway.toml y trouve les migrations par son chemin relatif (src/sql/migrations)
+  volumes:
+    - ./apps/server:/flyway/project:ro
+  working_dir: /flyway/project
+  command: ["-configFiles=flyway.toml", "migrate"]
+  # Pas d'environment ici : chaque service donne le sien en entier (une fusion « <<: »
+  # remplace un bloc, elle ne le complète pas). Flyway lit FLYWAY_URL, FLYWAY_USER et
+  # FLYWAY_PASSWORD comme ses options -url, -user et -password ; REDGATE_DISABLE_TELEMETRY
+  # l'empêche d'envoyer des statistiques d'usage à son éditeur.
+
+services:
+  mariadb-dev:
+    <<: *mariadb
+    # Profil « dev » : démarré seulement quand on le nomme (pnpm db:up)
+    profiles: [dev]
+    volumes:
+      # Les données, dans un volume Docker : gardées après un arrêt, effacées par db:reset
+      - mariadb-dev-data:/var/lib/mysql
+      # Le script qui crée la base et son compte, exécuté une seule fois, base vide
+      - ./infra/mariadb-init.sh:/docker-entrypoint-initdb.d/citadel.sh:ro
+
+  mariadb-test:
+    <<: *mariadb
+    profiles: [test]
+    # Les données en mémoire (tmpfs) : rapide, et perdues à chaque recréation du conteneur.
+    # Les tests la recréent à chaque lancement : ils partent toujours d'une base neuve
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ./infra/mariadb-init.sh:/docker-entrypoint-initdb.d/citadel.sh:ro
+
+  flyway-dev:
+    <<: *flyway
+    profiles: [dev]
+    environment:
+      # Les conteneurs d'un même projet se joignent par leur nom, sur le port interne 3306
+      FLYWAY_URL: jdbc:mariadb://mariadb-dev:3306/${DB_DATABASE_NAME}
+      FLYWAY_USER: ${DB_USER_NAME}
+      FLYWAY_PASSWORD: ${DB_USER_PASSWORD}
+      REDGATE_DISABLE_TELEMETRY: "true"
+    depends_on:
+      mariadb-dev:
+        # Démarre la base si besoin, et attend qu'elle soit prête
+        condition: service_healthy
+
+  flyway-test:
+    <<: *flyway
+    profiles: [test]
+    environment:
+      FLYWAY_URL: jdbc:mariadb://mariadb-test:3306/${DB_DATABASE_NAME}
+      FLYWAY_USER: ${DB_USER_NAME}
+      FLYWAY_PASSWORD: ${DB_USER_PASSWORD}
+      REDGATE_DISABLE_TELEMETRY: "true"
+    depends_on:
+      mariadb-test:
+        condition: service_healthy
+
+volumes:
+  mariadb-dev-data:
