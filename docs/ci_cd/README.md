@@ -507,21 +507,36 @@ Version courte, qui deviendra `infra/README.md` (étape 26) :
 
 ## 12. Réseau, accès et sécurité
 
-### 12.1 Matrice d'exposition
+### 12.1 Matrice d'accès
 
-| Service | Internet | Tailscale | LAN |
-|---|---|---|---|
-| Site (`alexandre-richard.fr`, `www` redirigé) | ✅ | ✅ | ✅ |
-| API (`/api`) | ✅ lectures et écritures, comme aujourd'hui | ✅ | ✅ |
-| Jellyfin | ✅ | ✅ | ✅ |
-| qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | ❌ | ✅ | ✅ |
-| Pré-prod, console d'administration | ❌ | ✅ | ✅ |
-| Interface de TOS, SSH | ❌ jamais | ✅ | ✅ |
-| MariaDB | ❌ | tunnel SSH | tunnel SSH |
-| API Docker | ❌ | ❌ | ❌ |
+Depuis tes appareils. « `:port` » : `192.168.1.113` en LAN, `leodinas` par Tailscale, même port des deux côtés. Internet n'atteint que ce que la box redirige : 80 et 443, vers Caddy.
+
+| Service | Adresse | Internet | LAN, Tailscale | Connexion |
+|---|---|---|---|---|
+| Site (`www` redirigé) | `https://alexandre-richard.fr`, par Cloudflare | ✅ | ✅ par le domaine | aucune |
+| API | `https://alexandre-richard.fr/api` | ✅ lectures et écritures, comme aujourd'hui | ✅ | aucune (plus bas) |
+| Jellyfin | `https://jellyfin.alexandre-richard.fr` ; `:8096` en direct | ✅ par le domaine | ✅ les deux | comptes Jellyfin (§12.6) |
+| qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | `:8080`, `:9696`, `:7878`, `:8989`, `:6767`, `:2468` | ❌ | ✅ | la leur, inchangée : leurs réglages suivent leurs dossiers |
+| Console | `http://…:8100` | ❌ | ✅ | son mot de passe (§14.4) |
+| Pré-prod (phase 6) | `http://…:8002`, servie par Caddy | ❌ | ✅ | aucune |
+| Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
+| SSH | `:9222` | ❌ jamais | ✅ | clé seulement (étape 7) |
+| MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes du §12.5 |
+| API Docker | socket du NAS | ❌ | ❌ | `infra-ops` ; la console à travers `infra-socket-proxy` |
 
 - API : sans authentification, rien ne distingue ton front d'un script ; n'importe qui peut appeler les routes d'écriture. Accepté jusqu'à ton chantier d'authentification.
-- Matrice à détailler avec la console (étape 20).
+- Console en HTTP, sans certificat à installer sur chaque appareil : par Tailscale, WireGuard chiffre tout ; en LAN, le mot de passe ne traverse que ton réseau domestique. Accepté.
+
+Entre conteneurs, pour la console (étapes 21 et 22) : chaque identifiant est dans `.env.prod`, et rien de tout ça n'est publié sur un port.
+
+| De | Vers | Pour | Identifiant |
+|---|---|---|---|
+| `infra-admin` | `infra-socket-proxy` | état, statistiques, logs ; démarrer, arrêter, redémarrer | aucun : le filtre (§14.2) |
+| `infra-admin` | qBittorrent, `media-gluetun:8080` | vitesses, totaux, ratio | `QBITTORRENT_USER`, `QBITTORRENT_PASSWORD` : ton compte qBittorrent |
+| `infra-admin` | serveur de contrôle de Gluetun, `:8000` | IP publique, pays, port redirigé | `GLUETUN_API_KEY`, neuve |
+| `infra-admin` | `media-jellyfin:8096` | lectures en cours | `JELLYFIN_API_KEY`, créée dans Jellyfin |
+| `infra-admin` | logs de Caddy, `/proc` de l'hôte | accès externes, système | aucun : montés en lecture seule |
+| `infra-ops` | Docker, dont `infra-tailscale` | tâches ; appareils Tailscale connectés (`tailscale status`), déposés dans `state/` pour la console | aucun |
 
 ### 12.2 Box et ports
 
@@ -546,7 +561,7 @@ Les règles, dans `infra/Caddyfile` : `alexandre-richard.fr` envoie `/api/…` a
 
 - Expiration de clé désactivée pour le NAS : sinon il sort du tailnet sans prévenir, tous les 180 jours (P19).
 - ACL : tes appareils vers le NAS. MagicDNS activé.
-- Seuls le site, `/api` et Jellyfin ont un nom de domaine. Les services internes gardent leurs adresses actuelles : `http://192.168.1.113:7878` chez toi, `http://leodinas:7878` par Tailscale.
+- Seuls le site, `/api` et Jellyfin ont un nom de domaine ; le reste s'ouvre par IP et port, comme aujourd'hui (§12.1).
 
 ### 12.5 La base de prod depuis DBeaver
 
