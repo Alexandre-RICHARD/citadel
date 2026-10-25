@@ -1,0 +1,266 @@
+# =====================================================================================
+# compose.yml : LE projet Docker Compose du NAS, nommé « citadel » (cahier des charges, §10)
+# =====================================================================================
+#
+# Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod) et Caddy.
+# Arriveront ensuite : la pré-prod et infra-ops (étape 20), la stack média et Tailscale
+# (étape 22), la console et son filtre Docker (phase 7).
+#
+# Qui lit ce fichier ?
+#   Jamais toi directement : il est copié dans l'image « ops », et c'est la commande
+#   citadel (infra/citadel) qui le lance, depuis un conteneur ops de la bonne version.
+#   Elle fournit deux choses :
+#     - CITADEL_VERSION : le tag de nos images (v2026.10.25) ;
+#     - --env-file /Volume1/citadel/.env.prod : les secrets, pour les ${…} de ce fichier.
+#   `${NOM:?message}` arrête tout avec ce message si NOM manque : un oubli dans .env.prod
+#   est signalé avant que quoi que ce soit ne change (citadel deploy, étape « Contrôle »).
+#
+# Chaque conteneur ne reçoit que SES variables (bloc environment) : le front ne voit pas
+# le mot de passe de la base, Caddy ne voit pas celui d'IGDB.
+#
+# Les chemins de l'hôte sont absolus (/Volume1/…) : compose tourne dans un conteneur, et
+# Docker les cherche sur le NAS. Un chemin relatif serait faux.
+#
+# Les labels citadel.* décrivent chaque service, pour citadel et la future console :
+#   citadel.group         infra | site-prod | site-preprod | media
+#   citadel.mode          always (toujours allumé) | on-demand (à la demande) | job (ponctuel)
+#   citadel.controllable  la console pourra le démarrer et l'arrêter
+
+name: citadel
+
+# --- Règles communes à tous les services (§10.4), reprises par « <<: *defaults » ---
+x-defaults: &defaults
+  # Après un redémarrage du NAS, Docker relance ce qui tournait, et pas ce qu'on a arrêté
+  restart: unless-stopped
+  # Logs limités à 3 fichiers de 10 Mo par conteneur : le SSD ne se remplit jamais (P13)
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+  # Un processus du conteneur ne peut jamais gagner de droits (programmes « setuid »…)
+  security_opt:
+    - no-new-privileges:true
+
+# --- En plus, pour NOS images : système de fichiers en lecture seule, aucune capacité ---
+# Une faille dans notre code ne peut ni modifier l'image, ni rien faire de privilégié.
+x-hardened: &hardened
+  read_only: true
+  cap_drop:
+    - ALL
+
+services:
+  # ===================================================================================
+  # Le site en prod
+  # ===================================================================================
+
+  site-prod-db:
+    <<: *defaults
+    # Image tierce : version exacte, la même que sur ton PC (compose.dev.yml)
+    image: mariadb:11.8.9
+    container_name: site-prod-db
+    # La base est petite : InnoDB garde 64 Mo de données en mémoire au lieu de 128 par
+    # défaut, bien en dessous de la limite du conteneur (512 Mo)
+    command: ["--innodb-buffer-pool-size=64M"]
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?manque dans .env.prod}
+      # root n'est joignable que de l'intérieur du conteneur (§12.5)
+      MARIADB_ROOT_HOST: localhost
+      # Lus par mariadb-init.sh à la première initialisation : base et trois comptes
+      DB_DATABASE_NAME: citadel
+      DB_USER_NAME: citadel_app
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+      DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD:?manque dans .env.prod}
+      DB_BACKUP_PASSWORD: ${DB_BACKUP_PASSWORD:?manque dans .env.prod}
+    volumes:
+      - /Volume1/appdata/site-prod-db:/var/lib/mysql
+      # Copié là par citadel deploy depuis l'image ops. « create_host_path: false » :
+      # si le fichier manque, le conteneur refuse de démarrer au lieu de créer une base
+      # sans ses comptes.
+      - type: bind
+        source: /Volume1/citadel/mariadb-init.sh
+        target: /docker-entrypoint-initdb.d/citadel.sh
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      # Seulement sur 127.0.0.1 du NAS : invisible du réseau, joignable par un tunnel
+      # SSH (DBeaver, §12.5)
+      - "127.0.0.1:3306:3306"
+    networks:
+      - site
+    healthcheck:
+      # « sain » = initialisation finie et base prête (voir compose.dev.yml)
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    labels:
+      citadel.name: "Base du site"
+      citadel.description: "MariaDB de la prod"
+      citadel.group: "site-prod"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  site-prod-migrations:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-migrations:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-prod-migrations
+    # Profil « jobs » : jamais lancé par `up`. citadel le lance à part, au bon moment
+    # du déploiement (`run --rm site-prod-migrations migrate`), puis il disparaît.
+    profiles: [jobs]
+    restart: "no"
+    environment:
+      FLYWAY_URL: jdbc:mariadb://site-prod-db:3306/citadel
+      # Le compte qui a le droit de changer la structure de la base, et lui seul
+      FLYWAY_USER: citadel_migrator
+      FLYWAY_PASSWORD: ${DB_MIGRATOR_PASSWORD:?manque dans .env.prod}
+    # Java écrit quelques fichiers temporaires
+    tmpfs:
+      - /tmp
+    networks:
+      - site
+    depends_on:
+      site-prod-db:
+        condition: service_healthy
+    labels:
+      citadel.name: "Migrations"
+      citadel.description: "Flyway : applique les migrations SQL de la version"
+      citadel.group: "site-prod"
+      citadel.mode: "job"
+      citadel.controllable: "false"
+
+  site-prod-server:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-server:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-prod-server
+    environment:
+      SERVER_PORT: "3000"
+      DB_HOST: site-prod-db
+      DB_PORT: "3306"
+      DB_DATABASE_NAME: citadel
+      # Le compte qui ne peut que lire et écrire des lignes
+      DB_USER_NAME: citadel_app
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+    networks:
+      - site
+      - edge
+    depends_on:
+      site-prod-db:
+        condition: service_healthy
+    healthcheck:
+      # /health répond 200 si la base répond (pas de curl dans l'image : Node fait la requête)
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      citadel.name: "API du site"
+      citadel.description: "Serveur Express, derrière /api"
+      citadel.group: "site-prod"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  site-prod-client:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-client:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-prod-client
+    environment:
+      # Ajoutés par nginx aux requêtes du relais /igdb/ (apps/client/nginx.conf.template)
+      INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_TOKEN: ${INTERNET_GAME_DATA_BASE_TOKEN:?manque dans .env.prod}
+    # Les seuls dossiers où nginx écrit, en mémoire, à son utilisateur (101) :
+    # sa conf générée au démarrage, et ses fichiers temporaires
+    tmpfs:
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+      - /tmp:uid=101,gid=101,mode=0700
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    labels:
+      citadel.name: "Front du site"
+      citadel.description: "nginx : fichiers du site, relais /irigo et /igdb"
+      citadel.group: "site-prod"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+  # ===================================================================================
+  # Infra
+  # ===================================================================================
+
+  infra-caddy:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-caddy:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: infra-caddy
+    environment:
+      # Jeton Cloudflare limité au DNS du domaine : certificats par challenge DNS (§12.3)
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?manque dans .env.prod}
+      ACME_EMAIL: ${ACME_EMAIL:?manque dans .env.prod}
+      # Absent de .env.prod : alexandre-richard.fr. Les tests sur ton PC mettent
+      # citadel.localhost (infra/compose.local.env)
+      SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
+    ports:
+      # TOS occupe les ports 80 et 443 du NAS : la box envoie 80 → 8001 et 443 → 4443
+      - "8001:80"
+      - "4443:443"
+    volumes:
+      # Certificats et comptes ACME, gardés d'une version à l'autre (volume Docker : il
+      # reprend les droits de l'utilisateur caddy de l'image, sans réglage)
+      - caddy-data:/data
+    tmpfs:
+      # Copie de travail de sa config, réécrite à chaque démarrage
+      - /config:uid=1000,gid=1000,mode=0700
+    networks:
+      - edge
+      # TEMPORAIRE, jusqu'à l'étape 22 : le réseau de l'ancienne stack, pour joindre Jellyfin
+      - proxy-net
+    depends_on:
+      - site-prod-server
+      - site-prod-client
+    healthcheck:
+      # L'API d'administration de Caddy, joignable seulement dans le conteneur
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    labels:
+      citadel.name: "Caddy"
+      citadel.description: "Porte d'entrée web : HTTPS, routage du site et de Jellyfin"
+      citadel.group: "infra"
+      citadel.mode: "always"
+      citadel.controllable: "false"
+
+# --- Réseaux séparés (§10.4) : un conteneur ne joint que ceux de ses réseaux ---
+networks:
+  # Caddy et ce qu'il sert. Sort sur Internet : certificats, relais du front
+  edge: {}
+  # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la
+  # base sur 127.0.0.1, dont DBeaver a besoin
+  site: {}
+  # TEMPORAIRE : réseau créé par l'ancienne stack (NPM, Jellyfin), jusqu'à l'étape 22
+  proxy-net:
+    external: true
+
+volumes:
+  caddy-data:

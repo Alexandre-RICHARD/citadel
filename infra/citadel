@@ -1,0 +1,598 @@
+#!/usr/bin/env bash
+# =====================================================================================
+# citadel : la commande du NAS (cahier des charges, §8.2, §8.4 et §10.6)
+# =====================================================================================
+#
+#   citadel status                     état des services, version en service
+#   citadel deploy <version>           déploie une version (plan, confirmation, migrations…)
+#   citadel rollback                   revient à la version précédente
+#   citadel start|stop|restart <cible> un service (site-prod-server) ou un groupe (site-prod)
+#   citadel logs <service>             200 dernières lignes, puis la suite en direct
+#   citadel up                         secours : relance tout ce qui doit toujours tourner
+#   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
+#   citadel version                    la version en service, seule (lue par pnpm release)
+#
+# UN fichier, DEUX endroits où il tourne :
+#
+#   1. Sur le NAS lui-même (« l'hôte ») : /Volume1/citadel/citadel.
+#      Là, il ne fait presque rien : il lance un conteneur jetable de l'image ops, à la
+#      bonne version, et lui passe la commande. Le NAS n'a besoin que de Docker.
+#
+#   2. Dans ce conteneur ops (/usr/local/bin/citadel, CITADEL_IN_OPS=1).
+#      Là, il fait le vrai travail, avec les outils de l'image (docker compose, jq,
+#      mariadb-dump…) et le compose.yml de SA version, copié dans l'image.
+#      Il pilote le Docker du NAS par son « socket » (/var/run/docker.sock), monté dans
+#      le conteneur : c'est comme taper les commandes docker sur le NAS.
+#
+# Pourquoi ce détour ? Déployer v2026.10.25, c'est lancer l'image ops v2026.10.25 :
+# elle apporte le compose.yml et la logique de déploiement de cette version, sans git
+# ni Node sur le NAS. Et la commande de l'hôte se met à jour seule à chaque déploiement.
+#
+# Ce qu'il garde dans /Volume1/citadel/state/ :
+#   current-version       la version en service
+#   deploy-history.log    une ligne par déploiement ou retour arrière
+#   releases/<version>/   le compose.yml de chaque version déployée (pour revenir en arrière)
+#   lock                  le verrou : jamais deux déploiements, ni un déploiement pendant
+#                         une sauvegarde (les jobs de l'étape 20 prendront le même)
+
+# -e : s'arrêter à la première erreur ; -u : variable inconnue = erreur ;
+# pipefail : une commande qui échoue au milieu d'un « | » fait échouer la ligne
+set -euo pipefail
+
+# --- Réglages ---
+# Les dossiers sont les mêmes sur le NAS et dans le conteneur ops (montés au même chemin)
+CITADEL_DIR=${CITADEL_DIR:-/Volume1/citadel}
+BACKUP_DIR=${CITADEL_BACKUP_DIR:-/Volume2/backups}
+STATE_DIR=$CITADEL_DIR/state
+ENV_FILE=$CITADEL_DIR/.env.prod
+REGISTRY=ghcr.io/alexandre-richard
+# Nombre de versions dont on garde les images (retour arrière en quelques secondes)
+KEEP_VERSIONS=5
+# Nombre de dumps « avant déploiement » gardés (cahier des charges, §11.7)
+KEEP_PRE_DEPLOY_DUMPS=10
+
+# --- Affichage ---
+say() { printf '%s\n' "$*"; }
+step() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
+warn() { printf '\033[33mAttention : %s\033[0m\n' "$*" >&2; }
+die() {
+	printf '\033[31mErreur : %s\033[0m\n' "$*" >&2
+	exit 1
+}
+
+usage() {
+	# Le bloc de commentaires du début de ce fichier, lignes « #   citadel … »
+	grep '^#   citadel ' "$0" | sed 's/^#   //'
+}
+
+# Version en service, ou rien avant le premier déploiement
+current_version() {
+	cat "$STATE_DIR/current-version" 2>/dev/null || true
+}
+
+# =====================================================================================
+# 1. Sur le NAS : lancer le conteneur ops
+# =====================================================================================
+
+run_ops() {
+	local version=$1
+	shift
+	# CITADEL_OPS_IMAGE remplace l'image, pour tester une image construite en local
+	local image=${CITADEL_OPS_IMAGE:-$REGISTRY/citadel-ops:$version}
+
+	# -i : le conteneur lit le clavier (la confirmation [o/N]) ;
+	# -t : seulement si on est dans un vrai terminal (ssh -t, ou une session SSH)
+	local terminal_flags=(-i)
+	if [[ -t 0 && -t 1 ]]; then terminal_flags=(-it); fi
+
+	# --rm : le conteneur disparaît à la fin. exec : ce script s'efface derrière docker,
+	# il peut donc être remplacé pendant le déploiement sans risque.
+	exec docker run --rm "${terminal_flags[@]}" \
+		--name "citadel-ops-$$" \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
+		--volume "$CITADEL_DIR:$CITADEL_DIR" \
+		--volume "$BACKUP_DIR:$BACKUP_DIR" \
+		--env CITADEL_DIR="$CITADEL_DIR" \
+		--env CITADEL_BACKUP_DIR="$BACKUP_DIR" \
+		"$image" "$@"
+}
+
+host_main() {
+	local command=${1:-help}
+	case $command in
+		help | -h | --help)
+			usage
+			;;
+		version)
+			# Pas besoin de conteneur pour lire un fichier
+			current_version
+			;;
+		deploy)
+			# L'image ops de la version DEMANDÉE : son compose.yml est celui à déployer
+			[[ -n ${2:-} ]] || die "usage : citadel deploy <version>"
+			# Le dossier des sauvegardes doit exister avant d'être monté
+			mkdir -p "$BACKUP_DIR"
+			run_ops "$2" "$@"
+			;;
+		*)
+			# Toutes les autres commandes : l'image ops de la version en service
+			local version
+			version=$(current_version)
+			[[ -n $version ]] || die "aucune version déployée : commencer par citadel deploy <version>"
+			run_ops "$version" "$@"
+			;;
+	esac
+}
+
+# =====================================================================================
+# 2. Dans le conteneur ops : le vrai travail
+# =====================================================================================
+
+# --- Quel compose.yml, quelle version ---
+# Par défaut, celui de cette image ; un retour arrière prend celui d'une version passée.
+TARGET_COMPOSE=/opt/citadel/compose.yml
+TARGET_VERSION=${CITADEL_VERSION:-}
+
+# docker compose sur le projet « citadel », avec les secrets de .env.prod.
+# CITADEL_VERSION choisit le tag de nos images dans compose.yml.
+compose() {
+	CITADEL_VERSION=$TARGET_VERSION docker compose \
+		--project-name citadel \
+		--file "$TARGET_COMPOSE" \
+		--env-file "$ENV_FILE" \
+		"$@"
+}
+
+# La configuration complète (variables remplacées), en JSON, pour la lire avec jq
+compose_json() {
+	compose --profile jobs config --format json
+}
+
+# Services lancés par `up` (sans les jobs, comme les migrations)
+long_running_services() {
+	compose config --services
+}
+
+# Valeur d'un label citadel.* d'un service
+service_label() {
+	jq -r --arg service "$1" --arg label "$2" '.services[$service].labels[$label] // ""' <<<"$CONFIG_JSON"
+}
+
+# Identifiant du conteneur d'un service, vide s'il n'existe pas
+container_of() {
+	docker ps --all --quiet \
+		--filter "label=com.docker.compose.project=citadel" \
+		--filter "label=com.docker.compose.service=$1"
+}
+
+is_running() {
+	[[ -n $(docker ps --quiet --filter "label=com.docker.compose.project=citadel" --filter "label=com.docker.compose.service=$1") ]]
+}
+
+is_healthy() {
+	local container
+	container=$(container_of "$1")
+	[[ -n $container && $(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' "$container") == healthy ]]
+}
+
+# Confirmation : seul « o » (ou « oui ») continue. Lue au clavier, ou depuis l'entrée
+# standard (echo o | citadel …) : rien ne change sans une réponse explicite.
+confirm() {
+	local answer=""
+	printf '\n%s ' "$1"
+	read -r answer || true
+	[[ $answer =~ ^[oO](ui)?$ ]] || die "annulé : rien n'a été modifié"
+}
+
+# Le verrou, partagé avec les jobs. flock tient tant que ce processus vit, et se libère
+# seul à sa fin, même en cas d'erreur : jamais de verrou oublié.
+take_lock() {
+	mkdir -p "$STATE_DIR"
+	exec 9>"$STATE_DIR/lock"
+	flock --nonblock 9 || die "une autre opération est en cours (déploiement ou sauvegarde) : réessaie plus tard"
+}
+
+# Une ligne de l'historique : « 2026-10-25 15:02:11  v2026.10.25  ok  (depuis …) »
+history_line() {
+	printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$STATE_DIR/deploy-history.log"
+}
+
+# Les versions déployées avec succès, de la plus ancienne à la plus récente
+# (3e colonne des lignes « ok » de l'historique)
+successful_versions() {
+	grep -E '  ok  ' "$STATE_DIR/deploy-history.log" 2>/dev/null | awk '{print $3}' || true
+}
+
+# Version déployée avec succès juste avant la version en service
+previous_version() {
+	successful_versions | grep -vxF -- "$(current_version)" | tail -n 1 || true
+}
+
+# --- Le plan : ce qui va changer, et pourquoi (étape 3 du déploiement) ---
+show_plan() {
+	local service container old_image_id new_image new_image_id old_hash new_hash reason
+	for service in $(long_running_services); do
+		new_image=$(jq -r --arg s "$service" '.services[$s].image' <<<"$CONFIG_JSON")
+		container=$(container_of "$service")
+		if [[ -z $container ]]; then
+			reason="créé ($new_image)"
+		else
+			# Compose note dans chaque conteneur une empreinte de sa configuration ;
+			# `config --hash` calcule celle de la nouvelle. Différentes = recréé.
+			old_hash=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.config-hash"}}' "$container")
+			new_hash=$(compose config --hash "$service" | awk '{print $2}')
+			old_image_id=$(docker inspect --format '{{.Image}}' "$container")
+			new_image_id=$(docker image inspect --format '{{.Id}}' "$new_image")
+			if [[ $old_image_id != "$new_image_id" ]]; then
+				reason="recréé : nouvelle image ($(docker inspect --format '{{.Config.Image}}' "$container") → $new_image)"
+			elif [[ $old_hash != "$new_hash" ]]; then
+				reason="recréé : réglage modifié"
+			else
+				reason="inchangé"
+			fi
+		fi
+		printf '  %-22s %s\n' "$service" "$reason"
+	done
+}
+
+# --- Migrations en attente : demandées à Flyway, avec les migrations de la nouvelle version ---
+show_pending_migrations() {
+	if ! is_healthy site-prod-db; then
+		say "  base pas encore démarrée : toutes les migrations de la version seront appliquées"
+		return
+	fi
+	local pending
+	# </dev/null : sinon `compose run` lit le clavier, et avalerait la réponse à la confirmation
+	pending=$(compose run --rm --no-deps site-prod-migrations info -outputType=json </dev/null 2>/dev/null |
+		jq -r '.migrations[] | select(.state == "Pending") | "  V\(.version)  \(.description)"') ||
+		die "Flyway n'a pas pu lire l'état de la base"
+	if [[ -n $pending ]]; then
+		say "$pending"
+	else
+		say "  aucune"
+	fi
+}
+
+# --- Dump de la base de prod (étape 4, et plus tard les sauvegardes de l'étape 20) ---
+# mariadb-dump tourne DANS le conteneur de la base, avec le compte de sauvegarde en
+# lecture seule : son mot de passe ne sort jamais de ce conteneur.
+dump_prod_db() {
+	local kind=$1 label=$2
+	local dir=$BACKUP_DIR/db/$kind
+	local file
+	file="$dir/citadel-$(date +%Y%m%d-%H%M%S)-$label.sql.zst"
+	mkdir -p "$dir"
+
+	# --single-transaction : une image cohérente de la base, sans la bloquer.
+	# Sans --databases : le dump se restaure dans n'importe quelle base (§11.3).
+	docker exec site-prod-db sh -c 'MYSQL_PWD="$DB_BACKUP_PASSWORD" exec mariadb-dump \
+		--host=127.0.0.1 --user=citadel_backup \
+		--single-transaction --quick --routines --triggers --events --hex-blob --no-tablespaces \
+		citadel' | zstd --quiet --threads=0 -o "$file.tmp"
+
+	# Contrôle : l'archive se relit, et mariadb-dump a écrit sa dernière ligne
+	zstd --quiet --test "$file.tmp" || die "dump illisible : $file.tmp"
+	zstd --decompress --stdout "$file.tmp" | tail -n 1 | grep -q '^-- Dump completed' ||
+		die "dump incomplet : $file.tmp"
+	mv "$file.tmp" "$file"
+	(cd "$dir" && sha256sum "$(basename "$file")" >"$(basename "$file").sha256")
+	say "  $file"
+
+	# Rétention : les plus récents seulement
+	if [[ $kind == pre-deploy ]]; then
+		find "$dir" -name 'citadel-*.sql.zst' | sort -r | tail -n +$((KEEP_PRE_DEPLOY_DUMPS + 1)) |
+			while read -r old; do rm -f "$old" "$old.sha256"; done
+	fi
+}
+
+# --- Démarrer ce qui doit tourner (étape 7, retour arrière, citadel up) ---
+# « always » : démarré et recréé si besoin ; « on-demand » : seulement s'il tournait,
+# sinon juste mis à jour sans démarrer (§8.2) ; les jobs ne sont pas lancés ici.
+#
+# Piège de bash : une fonction appelée dans un « || » ou un « if » ne s'arrête PAS à la
+# première erreur (set -e y est suspendu). D'où les « || return 1 » explicites ici et
+# dans les fonctions suivantes : un échec doit remonter jusqu'au retour arrière.
+apply_services() {
+	local service mode
+	local to_start=() to_create=()
+	for service in $(long_running_services); do
+		mode=$(service_label "$service" citadel.mode)
+		if [[ $mode == always ]] || is_running "$service"; then
+			to_start+=("$service")
+		else
+			to_create+=("$service")
+		fi
+	done
+	# --wait : attend que les healthchecks passent ; --remove-orphans : supprime les
+	# conteneurs du projet dont le service a disparu de compose.yml
+	compose up --detach --wait --wait-timeout 180 --remove-orphans "${to_start[@]}" || return 1
+	if ((${#to_create[@]} > 0)); then
+		compose create "${to_create[@]}" || return 1
+	fi
+}
+
+# --- Vérifications (étape 8) : comme un visiteur, à travers Caddy ---
+verify_site() {
+	local version=$1
+	# Le conteneur ops rejoint le réseau de Caddy, pour l'appeler par son adresse interne
+	docker network connect citadel_edge "$HOSTNAME" 2>/dev/null || true
+	local domain caddy_ip health="" running_version=""
+	domain=$(jq -r '.services["infra-caddy"].environment.SITE_DOMAIN' <<<"$CONFIG_JSON")
+	caddy_ip=$(docker inspect --format '{{(index .NetworkSettings.Networks "citadel_edge").IPAddress}}' infra-caddy) ||
+		return 1
+
+	# --resolve : le domaine pointe sur Caddy, sans passer par Internet. -k : un premier
+	# certificat peut prendre une minute à arriver ; on vérifie la version, pas le certificat.
+	# Jusqu'à une minute d'essais : le serveur vient peut-être de démarrer.
+	for _ in $(seq 1 30); do
+		health=$(curl --silent --fail --insecure --max-time 5 \
+			--resolve "$domain:443:$caddy_ip" "https://$domain/api/health" || true)
+		running_version=$(jq -r '.version // ""' <<<"$health" 2>/dev/null || true)
+		[[ $running_version == "$version" ]] && break
+		sleep 2
+	done
+	say "  /api/health : ${health:-pas de réponse}"
+	[[ $running_version == "$version" ]] || return 1
+
+	local home_status
+	home_status=$(curl --silent --insecure --max-time 10 --output /dev/null --write-out '%{http_code}' \
+		--resolve "$domain:443:$caddy_ip" "https://$domain/" || true)
+	say "  page d'accueil : $home_status"
+	[[ $home_status == 200 ]]
+}
+
+# --- Retour à une version précédente, avec SON compose.yml ---
+switch_to() {
+	local version=$1
+	local saved_compose=$STATE_DIR/releases/$version/compose.yml
+	[[ -f $saved_compose ]] || die "compose.yml de $version introuvable ($saved_compose)"
+	TARGET_COMPOSE=$saved_compose
+	TARGET_VERSION=$version
+	CONFIG_JSON=$(compose_json) || return 1
+	apply_services || return 1
+}
+
+# Échec aux étapes 7 ou 8 : retour automatique à la version précédente (étape 9)
+auto_rollback() {
+	local failed=$1 previous=$2
+	if [[ -z $previous ]]; then
+		history_line "$failed  échec  (premier déploiement, pas de retour possible)"
+		die "échec du déploiement de $failed, et pas de version précédente où revenir"
+	fi
+	step "9. Échec : retour automatique à $previous"
+	if switch_to "$previous" && verify_site "$previous"; then
+		history_line "$failed  échec  (retour automatique à $previous)"
+		die "$failed n'a pas marché : $previous est de nouveau en service. Logs : citadel logs <service>"
+	fi
+	history_line "$failed  échec  (retour à $previous lui aussi en échec)"
+	die "le retour à $previous a aussi échoué : citadel status, puis citadel logs <service>"
+}
+
+# Garde les images des KEEP_VERSIONS dernières versions déployées, supprime les autres :
+# les plus anciennes, et celles d'une version jamais déployée (téléchargée pour un
+# déploiement annulé). Elles se retéléchargent si besoin.
+cleanup_old_versions() {
+	local keep
+	# Les plus récentes d'abord, sans doublon (un retour arrière répète une version)
+	keep=$(successful_versions | tac | awk '!seen[$0]++' | head -n "$KEEP_VERSIONS")
+	docker image ls --format '{{.Repository}}:{{.Tag}}' | { grep "^$REGISTRY/citadel-" || true; } |
+		while read -r image; do
+			# Une image encore utilisée par un conteneur refuse d'être supprimée : tant mieux
+			grep -qxF -- "${image##*:}" <<<"$keep" || docker image rm "$image" >/dev/null 2>&1 || true
+		done
+	local release
+	shopt -s nullglob
+	for release in "$STATE_DIR"/releases/*/; do
+		grep -qxF -- "$(basename "$release")" <<<"$keep" || rm -rf "$release"
+	done
+	shopt -u nullglob
+}
+
+cmd_deploy() {
+	local version=${1:-}
+	[[ -n $version ]] || die "usage : citadel deploy <version>"
+	[[ $version == "$CITADEL_VERSION" ]] ||
+		die "cette image ops est en $CITADEL_VERSION, pas en $version : passer par /Volume1/citadel/citadel"
+	take_lock
+	local previous
+	previous=$(current_version)
+
+	step "1. Contrôle"
+	[[ -f $ENV_FILE ]] || die "$ENV_FILE introuvable"
+	if [[ $(stat -c '%a' "$ENV_FILE") != 600 ]]; then
+		warn "$ENV_FILE devrait être en 600 (chmod 600 $ENV_FILE) : il contient tous les secrets"
+	fi
+	# Fichier valide, et toutes les variables ${…:?} présentes dans .env.prod
+	compose --profile jobs config --quiet
+	CONFIG_JSON=$(compose_json)
+	say "  compose.yml et .env.prod : OK"
+
+	step "2. Téléchargement des images de $version"
+	# Les échecs sont vérifiés juste après : une image absente arrête tout, ici
+	compose --profile jobs pull --quiet --ignore-pull-failures || true
+	local image
+	for image in $(jq -r '.services[].image' <<<"$CONFIG_JSON" | sort -u); do
+		docker image inspect "$image" >/dev/null 2>&1 || die "image introuvable : $image (la version est-elle construite ?)"
+	done
+	say "  toutes les images sont là"
+
+	step "3. Plan : ${previous:-aucune version} → $version"
+	show_plan
+	say ""
+	say "Migrations à appliquer :"
+	show_pending_migrations
+	confirm "Déployer $version ? [o/N]"
+
+	step "4. Dump de la base de prod"
+	if is_healthy site-prod-db; then
+		dump_prod_db pre-deploy "${previous:-aucune}-vers-$version"
+	else
+		say "  pas de base en service : rien à sauvegarder"
+	fi
+
+	# 5. Répétition en pré-prod : arrivera avec la pré-prod (étape 20 de la roadmap)
+
+	step "6. Migrations"
+	# Le script d'init de la base, lu à sa toute première initialisation (compose.yml)
+	install -m 644 /opt/citadel/mariadb-init.sh "$CITADEL_DIR/mariadb-init.sh"
+	compose up --detach --wait site-prod-db
+	compose run --rm site-prod-migrations migrate </dev/null ||
+		die "migrations en échec : la version précédente tourne toujours (voir §8.4 du cahier des charges)"
+
+	# Le compose.yml de cette version est gardé : un retour arrière le reprendra
+	mkdir -p "$STATE_DIR/releases/$version"
+	cp /opt/citadel/compose.yml "$STATE_DIR/releases/$version/compose.yml"
+
+	step "7. Application"
+	apply_services || auto_rollback "$version" "$previous"
+
+	step "8. Vérifications"
+	verify_site "$version" || auto_rollback "$version" "$previous"
+
+	step "10. Enregistrement"
+	printf '%s\n' "$version" >"$STATE_DIR/current-version"
+	history_line "$version  ok  (depuis ${previous:-aucune})"
+	cleanup_old_versions
+	# La commande du NAS se met à jour depuis cette image (copie puis renommage : jamais
+	# de fichier à moitié écrit)
+	cp /usr/local/bin/citadel "$CITADEL_DIR/citadel.new"
+	chmod 755 "$CITADEL_DIR/citadel.new"
+	mv "$CITADEL_DIR/citadel.new" "$CITADEL_DIR/citadel"
+	say "  $version en service"
+}
+
+# citadel rollback : la version précédente, avec son compose.yml et ses images, déjà là.
+# Pas de migrations : celles passées restent, elles sont rétrocompatibles (§8.3).
+cmd_rollback() {
+	take_lock
+	local current previous
+	current=$(current_version)
+	previous=$(previous_version)
+	[[ -n $previous ]] || die "pas de version précédente dans l'historique"
+
+	step "Retour arrière : $current → $previous"
+	TARGET_COMPOSE=$STATE_DIR/releases/$previous/compose.yml
+	TARGET_VERSION=$previous
+	[[ -f $TARGET_COMPOSE ]] || die "compose.yml de $previous introuvable"
+	CONFIG_JSON=$(compose_json)
+	show_plan
+	confirm "Revenir à $previous ? [o/N]"
+
+	switch_to "$previous" || die "échec du retour à $previous : citadel status"
+	verify_site "$previous" || die "$previous ne répond pas comme prévu : citadel status"
+	printf '%s\n' "$previous" >"$STATE_DIR/current-version"
+	history_line "$previous  ok  (retour arrière depuis $current)"
+	say "  $previous en service"
+}
+
+# citadel restore-db <pre-deploy | latest | fichier> : remet la base de prod d'un dump.
+# Les écritures faites depuis ce dump sont perdues : confirmation renforcée.
+cmd_restore_db() {
+	local source=${1:-}
+	local file
+	# Les noms commencent par citadel-AAAAMMJJ-HHMMSS : trier les noms, c'est trier les dates
+	case $source in
+		pre-deploy) file=$(find "$BACKUP_DIR/db/pre-deploy" -name 'citadel-*.sql.zst' 2>/dev/null | sort | tail -n 1) ;;
+		latest)
+			file=$(find "$BACKUP_DIR/db" -name 'citadel-*.sql.zst' 2>/dev/null |
+				awk -F/ '{print $NF " " $0}' | sort | tail -n 1 | cut -d' ' -f2-)
+			;;
+		"") die "usage : citadel restore-db <pre-deploy | latest | chemin du dump>" ;;
+		*) file=$source ;;
+	esac
+	[[ -n $file && -f $file ]] || die "dump introuvable : ${file:-$source}"
+	take_lock
+	CONFIG_JSON=$(compose_json)
+
+	if [[ -f $file.sha256 ]]; then
+		(cd "$(dirname "$file")" && sha256sum --check --quiet "$(basename "$file").sha256") ||
+			die "empreinte sha256 différente : dump abîmé"
+	fi
+
+	step "Restauration de la base de prod"
+	say "  dump : $file"
+	say "  Tout ce qui a été écrit dans la base depuis ce dump sera perdu."
+	local answer=""
+	printf '\nPour confirmer, tape RESTAURER : '
+	read -r answer || true
+	[[ $answer == RESTAURER ]] || die "annulé : rien n'a été modifié"
+
+	# Le serveur est arrêté pendant l'opération : aucune écriture au milieu
+	compose stop site-prod-server
+	# root, de l'intérieur du conteneur (seul endroit où il est accepté). Les droits des
+	# comptes sont attachés au nom de la base : ils survivent à DROP / CREATE.
+	docker exec site-prod-db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" exec mariadb --user=root --execute="
+		DROP DATABASE IF EXISTS citadel;
+		CREATE DATABASE citadel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci;"'
+	zstd --decompress --stdout "$file" |
+		docker exec -i site-prod-db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" exec mariadb --user=root citadel'
+	compose up --detach --wait site-prod-server
+	history_line "$(current_version)  restore-db  ($file)"
+	say "  base restaurée"
+}
+
+# start | stop | restart <service ou groupe>
+cmd_service() {
+	local action=$1 target=${2:-}
+	[[ -n $target ]] || die "usage : citadel $action <service ou groupe>"
+	CONFIG_JSON=$(compose_json)
+	local service targets=()
+	for service in $(long_running_services); do
+		if [[ $service == "$target" || $(service_label "$service" citadel.group) == "$target" ]]; then
+			targets+=("$service")
+		fi
+	done
+	((${#targets[@]} > 0)) || die "ni service ni groupe nommé $target (citadel status les liste)"
+	case $action in
+		start) compose up --detach --wait "${targets[@]}" ;;
+		stop) compose stop "${targets[@]}" ;;
+		restart) compose restart "${targets[@]}" ;;
+	esac
+}
+
+cmd_status() {
+	say "Version en service : $(current_version)"
+	tail -n 3 "$STATE_DIR/deploy-history.log" 2>/dev/null | sed 's/^/  /' || true
+	say ""
+	compose ps --all --format 'table {{.Service}}\t{{.State}}\t{{.Status}}'
+}
+
+cmd_logs() {
+	local service=${1:-}
+	[[ -n $service ]] || die "usage : citadel logs <service>"
+	local follow=()
+	if [[ -t 1 ]]; then follow=(--follow); fi
+	compose logs --tail 200 "${follow[@]}" "$service"
+}
+
+ops_main() {
+	local command=${1:-help}
+	shift || true
+	case $command in
+		deploy) cmd_deploy "$@" ;;
+		rollback) cmd_rollback ;;
+		restore-db) cmd_restore_db "$@" ;;
+		start | stop | restart) cmd_service "$command" "$@" ;;
+		status) cmd_status ;;
+		logs) cmd_logs "$@" ;;
+		up)
+			CONFIG_JSON=$(compose_json)
+			apply_services
+			;;
+		version) current_version ;;
+		help | -h | --help) usage ;;
+		*)
+			usage
+			die "commande inconnue : $command"
+			;;
+	esac
+}
+
+# =====================================================================================
+# Point d'entrée : sur le NAS ou dans le conteneur ops ?
+# =====================================================================================
+if [[ -n ${CITADEL_IN_OPS:-} ]]; then
+	ops_main "$@"
+else
+	host_main "$@"
+fi

@@ -75,7 +75,7 @@ L'ancienne chaîne (tag → images `reunification-*` → runner du NAS) est cass
 
 | # | Constat | Correction |
 |---|---|---|
-| P1 | Des commits locaux contiennent des secrets (`d619234` : clé WireGuard, mots de passe de la base, utilisateur TOS) : un push les publierait pour toujours | Historique refait avant le premier push (étape 14) |
+| P1 | Des commits locaux contenaient des secrets (clé WireGuard, mots de passe de la base, utilisateur TOS), tous sous `docker/other/` : un push les aurait publiés pour toujours | Historique refait (étape 14) : `docker/other/` retiré de tous les commits, gardé sur ton PC hors du dépôt ; scan gitleaks propre |
 | P2 | Workflows rangés hors de `.github/workflows/` à la racine : aucune CI ne tourne | Un seul workflow (§7) |
 | P3 | Dockerfiles d'avant le monorepo (lockfile et paquets `workspace:*` absents) : le build échoue | `Dockerfile` unique, contexte = racine (§6) |
 | P4 | Le Dockerfile du serveur lance `build.server.js`, esbuild produit `build.server.cjs` | Corrigé dans le nouveau `Dockerfile` |
@@ -154,12 +154,14 @@ citadel/
 ├── .dockerignore                  ce qui n'entre jamais dans une image (.env*, node_modules…)
 ├── .env.example                   LE modèle : toutes les variables, commentées
 ├── .env, .env.test                (ignorés) tes valeurs de dev et de test
+├── .gitattributes                 fins de ligne LF pour ce qui tourne sous Linux
 ├── compose.dev.yml                MariaDB de dev et de test sur ton PC
 ├── apps/
 │   ├── client/nginx.conf.template conf du conteneur front : SPA, /irigo, /igdb
 │   └── admin/                     console d'administration (phase 7)
 ├── infra/                         ce qui tourne sur le NAS (remplace docker/)
 │   ├── compose.yml                LE projet Compose : tous les services du NAS
+│   ├── compose.local.*            la prod sur ton PC, pour la tester avant une release (`pnpm prod:local`)
 │   ├── Caddyfile                  quel nom et quel chemin vont vers quel conteneur
 │   ├── citadel                    la commande du NAS : deploy, rollback, start, stop, status, run…
 │   ├── mariadb-init.sh            crée les comptes de la base à sa première initialisation
@@ -173,7 +175,7 @@ Tes questions sur ces fichiers :
 - **`.node-version`** : abandonné. La CI n'installe plus Node, et la version de Node est écrite une seule fois, dans le `Dockerfile`.
 - **`Caddyfile`** : les règles de Caddy, le remplaçant de NPM (§12.3).
 - **`infra/citadel`** remplace `start.sh`, `stop.sh` et le runner ; **`infra/ops/`** remplace `backup.sh` (§10.2).
-- Disparaissent : les Dockerfiles, `.dockerignore`, `.env` et dossiers `.github` des apps et de `docker/`. `docker/other/` reste en référence jusqu'à l'étape 29.
+- Disparaissent : les Dockerfiles, `.dockerignore`, `.env` et dossiers `.github` des apps et de `docker/`. `docker/other/` reste sur ton PC, hors du dépôt (ignoré par git), en référence jusqu'à l'étape 29.
 
 ---
 
@@ -196,36 +198,11 @@ Tes questions sur ces fichiers :
 
 ### 5.2 Ta question : `vite.config.ts` peut-il lire le `.env` de la racine ?
 
-Oui, avec `envDir` et `loadEnv`. pnpm lançant Vite depuis `apps/client`, il faut un chemin absolu :
-
-```ts
-// apps/client/vite.config.ts (extrait)
-const rootDir = path.resolve(import.meta.dirname, "../..");
-
-export default defineConfig(({ mode }) => {
-	// .env de la racine, lu côté Node : port de dev, identifiants du proxy IGDB…
-	const env = loadEnv(mode, rootDir, "");
-
-	return {
-		envDir: rootDir, // les éventuelles variables VITE_* viendront aussi de la racine
-		server: {
-			port: Number(env.CLIENT_DEV_PORT),
-			proxy: {
-				// Le front appelle /api comme en prod ; en dev, Vite relaie vers le serveur local
-				"/api": {
-					target: `http://localhost:${env.SERVER_PORT}`,
-					rewrite: (requestPath) => requestPath.slice("/api".length),
-				},
-				// "/igdb/" et "/irigo" : inchangés
-			},
-		},
-	};
-});
-```
+Oui, avec `envDir` et `loadEnv` et un chemin absolu, pnpm lançant Vite depuis `apps/client` : voir `apps/client/vite.config.ts`. En dev, Vite y relaie aussi `/api` vers le serveur local, préfixe retiré, comme Caddy en prod.
 
 - Les variables `VITE_*` arrivent dans le code du navigateur, donc deviennent publiques : jamais de secret en `VITE_`.
 - Le serveur lit le même `.env` en dev (`node --env-file-if-exists=../../.env`) ; en conteneur, Compose fournit les variables.
-- `loadIntegrationTestEnvironment.ts` et `resolveTestSeed.ts` liront `.env.test` à la racine.
+- Les tests d'intégration lisent `.env.test` à la racine.
 
 ### 5.3 Renommages et suppressions
 
@@ -238,38 +215,9 @@ export default defineConfig(({ mode }) => {
 | `MYSQL_ROOT_PASSWORD`, `DB_ROOT_PASSWORD` | `DB_ROOT_PASSWORD` | un seul nom |
 | `INTERNET_GAME_DATA_BASE_*` | inchangées | le relais IGDB sera refait plus tard, côté serveur |
 | `PROTON_VPN_OPENVPN_*` | supprimées | inutiles : Gluetun se connecte déjà à Proton en WireGuard (`VPN_TYPE=wireguard`) |
+| `DB_DRIVER`, `DOTENV_CONFIG_QUIET` | supprimées | le pilote `mariadb` est fixé dans le code ; `dotenv` laisse la place à l'option `--env-file` de Node |
 
-Extrait du futur `.env.example` :
-
-```dotenv
-# Modèle de TOUTES les variables de Citadel. Fichier public : aucune vraie valeur ici.
-# Copies réelles, jamais versionnées : .env (dev) et .env.test (tests) sur ton PC
-# → sections SITE ; .env.prod sur le NAS → toutes les sections.
-
-# ===== SITE =====
-CLIENT_DEV_PORT=3001
-SERVER_PORT=3000
-# Proxy IGDB du Backlog (POC) : le token expire, à remplacer à la main
-INTERNET_GAME_DATA_BASE_CLIENT_ID=
-INTERNET_GAME_DATA_BASE_TOKEN=
-# En prod, hôte, base et compte sont fixés par compose.yml : seuls les mots de passe viennent d'ici
-DB_HOST=127.0.0.1
-DB_DATABASE_NAME=citadel_dev
-DB_USER_NAME=citadel_dev
-DB_USER_PASSWORD=
-DB_ROOT_PASSWORD=
-
-# ===== NAS =====
-DB_MIGRATOR_PASSWORD=
-DB_BACKUP_PASSWORD=
-PUID=
-PGID=
-PROTON_VPN_WIREGUARD_PRIVATE_KEY=
-# Hachage du mot de passe de la console, produit par `citadel admin-password`
-ADMIN_PASSWORD_HASH=
-# Adresses de signal healthchecks.io, une par job surveillé
-HC_DB_BACKUP=
-```
+Le modèle : `.env.example`. Les autres variables du NAS (`PUID`, `PGID`, clé WireGuard, console, healthchecks.io) s'y ajoutent avec leurs étapes.
 
 ---
 
@@ -297,7 +245,7 @@ Les proxys du front reproduisent ceux du serveur de dev Vite :
 
 Satisfactory appelle `http://localhost:8080`, le mod qui tourne chez le visiteur : c'est normal. Depuis sa version 142, Chrome demande alors l'autorisation d'accéder au réseau local : à accepter une fois.
 
-Versions de base : Node 24 (maintenance jusqu'en avril 2028), MariaDB 11.8 LTS (jusqu'en 2028), Flyway 12. Node 26 et MariaDB 12.3 plus tard, testés en pré-prod.
+Versions de base : Node 24 (maintenance jusqu'en avril 2028), MariaDB 11.8 LTS (jusqu'en 2028), Flyway 12. Node 26, MariaDB 12.3 et Flyway 13 plus tard, testés en pré-prod.
 
 ---
 
@@ -305,57 +253,7 @@ Versions de base : Node 24 (maintenance jusqu'en avril 2028), MariaDB 11.8 LTS (
 
 Un seul workflow, `.github/workflows/images.yml` : il construit et publie les images **quand un tag `v*` est poussé**, et ne fait rien d'autre. Rien sur un simple commit, puisque tu travailles sur `main` ; pas de `validate-all`, que tu lances avant chaque push et que `pnpm release` relance avant le tag.
 
-```yaml
-# .github/workflows/images.yml
-# Construit les images de Citadel et les publie sur ghcr.io.
-# Déclenché seulement par un tag v* (créé par `pnpm release`) : un commit seul ne lance rien.
-name: Images
-
-on:
-  push:
-    tags: ["v*"]
-
-# Droits du GITHUB_TOKEN, fourni automatiquement : lire le code, publier les images. Rien d'autre.
-permissions:
-  contents: read
-  packages: write
-
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    strategy:
-      matrix:
-        # Une étape (« target ») du Dockerfile racine par image ; admin s'ajoutera en phase 7
-        image: [client, server, migrations, ops, caddy]
-    steps:
-      # Chaque action est épinglée par le SHA d'un commit (un tag peut être déplacé, un SHA non)
-      - uses: actions/checkout@<sha>
-        with:
-          fetch-depth: 0   # tout l'historique, pour le contrôle suivant
-      - name: Le tag est-il sur main ?
-        # Refuse un tag posé sur un commit absent de main
-        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
-      - uses: docker/setup-buildx-action@<sha>
-      - uses: docker/login-action@<sha>
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@<sha>
-        with:
-          context: .
-          target: ${{ matrix.image }}
-          platforms: linux/amd64   # le N95 du NAS est un processeur x86_64
-          push: true
-          build-args: APP_VERSION=${{ github.ref_name }}
-          tags: ghcr.io/alexandre-richard/citadel-${{ matrix.image }}:${{ github.ref_name }}
-          # Cache des couches chez GitHub : seules les étapes modifiées sont reconstruites
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
-```
-
-Aucun secret à créer chez GitHub. Durée : 3 à 6 minutes, images en parallèle.
+Il refuse un tag posé hors de `main`, et chaque action y est épinglée par le SHA d'un commit. Aucun secret à créer chez GitHub. Durée : 3 à 6 minutes, images en parallèle.
 
 ---
 
@@ -397,7 +295,6 @@ Durée : 1 à 3 minutes, dont 5 à 15 secondes de coupure du site.
 - Une migration passée en prod ne se modifie plus : Flyway vérifie les sommes de contrôle.
 - MariaDB n'annule pas un `ALTER TABLE` : une migration qui échoue au milieu laisse ses premières instructions appliquées. D'où le dump et la répétition en pré-prod.
 - **Migrations rétrocompatibles** : le code N-1 doit fonctionner sur le schéma N. Pour renommer une colonne : ajouter la nouvelle et copier les données (release 1), supprimer l'ancienne (release 2). Revenir à l'ancien code n'oblige alors jamais à restaurer la base.
-- `baselineOnMigrate` reste réservé au local.
 
 ### 8.4 Retour arrière
 
@@ -416,8 +313,9 @@ Durée : 1 à 3 minutes, dont 5 à 15 secondes de coupure du site.
 | Adresse | `localhost:3001` | — | interne : IP et port du NAS, en LAN ou par Tailscale | `alexandre-richard.fr` |
 | Variables | `.env` | `.env.test` | `.env.prod`, base `citadel_preprod` | `.env.prod` |
 
-- Les deux bases locales tournent dans Docker Desktop (`compose.dev.yml`) : `pnpm db:up`, `db:down`, `db:reset`, `db:migrate`, `test:integration`. Tu désinstalles alors MariaDB de ton PC (étape 10).
-- La base de test étant neuve à chaque lancement, le `resetDatabase` de `vitestIntegrationGlobalSetup.ts` disparaît, comme le prévoit sa TODO.
+- Les deux bases locales tournent dans Docker Desktop (`compose.dev.yml`) : `pnpm db:up`, `db:down`, `db:reset`, `db:migrate`, `test:integration`. Ports 3307 (dev) et 3308 (tests) : ta MariaDB Windows garde 3306 jusqu'à sa désinstallation (étape 10).
+- Les tests d'intégration recréent et migrent eux-mêmes la base de test à chaque lancement : plus de `resetDatabase`.
+- `pnpm prod:local` fait tourner les images de prod sur ton PC (`https://citadel.localhost:8443`), avec le vrai `compose.yml` : à lancer avant une release qui touche au `Dockerfile`, à nginx ou au `Caddyfile`.
 
 ---
 
@@ -430,8 +328,10 @@ Durée : 1 à 3 minutes, dont 5 à 15 secondes de coupure du site.
 ├── citadel                     la commande du NAS (§10.6)
 ├── .env.prod                   secrets et réglages (600)
 ├── rclone.conf                 accès au Drive et clés du chiffrement (600)
+├── mariadb-init.sh             copié par citadel deploy : crée les comptes à la création de la base
 └── state/                      version en service, historiques, demandes de la console, logs, verrou
-/Volume1/appdata/<service>/     données des services : chemins inchangés, plus caddy/, site-prod-db/, site-preprod-db/
+/Volume1/appdata/<service>/     données des services : chemins inchangés, plus site-prod-db/, site-preprod-db/
+                                (les certificats de Caddy : volume Docker citadel_caddy-data)
 /Volume2/data/                  médias et torrents (inchangé)
 /Volume2/backups/               db/, configs/ : les sauvegardes, sur l'autre disque
 ```
@@ -636,34 +536,7 @@ Caddy fait le même métier que NPM : la porte d'entrée web, qui envoie chaque 
 - **Plus léger, et rien de plus à protéger** : environ 30 Mo de RAM, et pas d'interface d'admin (celle de NPM écoute sur le port 81).
 - **NAS reconstruit = rien à recliquer.**
 
-```caddyfile
-# infra/Caddyfile : copié dans l'image caddy au build
-{
-	email {$ACME_EMAIL}   # adresse donnée à Let's Encrypt
-}
-
-# ===== Entrée publique : la box envoie 80/443 vers les ports 8001/4443 du NAS =====
-alexandre-richard.fr {
-	encode zstd gzip
-	# /api/… va au serveur, préfixe retiré : les routes du serveur ne changent pas
-	handle_path /api/* {
-		reverse_proxy site-prod-server:3000
-	}
-	# Tout le reste va au nginx du front : fichiers du site, /irigo, /igdb
-	handle {
-		reverse_proxy site-prod-client:8080
-	}
-}
-
-www.alexandre-richard.fr {
-	redir https://alexandre-richard.fr{uri} permanent
-}
-
-# Nom actuel de Jellyfin, repris de NPM (annexe A)
-jellyfin.alexandre-richard.fr {
-	reverse_proxy media-jellyfin:8096
-}
-```
+Les règles, dans `infra/Caddyfile` : `alexandre-richard.fr` envoie `/api/…` au serveur (préfixe retiré : ses routes ne changent pas) et le reste au front ; `www.` redirige vers le domaine nu ; `jellyfin.` va à Jellyfin, encore dans l'ancienne stack (réseau `proxy-net`) jusqu'à l'étape 22.
 
 - Le site passe par le proxy de Cloudflare (nuage orange), Jellyfin non. Caddy obtient donc ses certificats par l'API DNS de Cloudflare, la méthode la plus fiable derrière ce proxy, avec un jeton limité au DNS de ton domaine ; et il fait confiance aux IP de Cloudflare pour voir l'IP réelle des visiteurs.
 - S'y ajoutent les en-têtes de sécurité (HSTS…) et des logs d'accès en JSON, pour la vue « accès externes » de la console. `api.alexandre-richard.fr` disparaît, son enregistrement DNS aussi (étape 29).
@@ -713,6 +586,7 @@ Aucun fichier du dépôt ne les contient : à refaire à la main si le NAS, la b
 | TOS, `/etc/ssh/sshd_config` | `PermitRootLogin prohibit-password`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no` ; l'original est dans `sshd_config.avant-etape7` |
 | TOS, dossier personnel | Droits `755` : TOS 7 l'avait ouvert en `777`, et SSH refuse alors la clé |
 | PC | Clé `~/.ssh/nas`, avec phrase de passe ; alias `nas` dans `~/.ssh/config` : `leodinas`, port 9222, `IdentitiesOnly yes` |
+| PC, dépôt | `.env` et `.env.test` à la racine, remplis depuis `.env.example` ; Docker Desktop lancé pour les bases et les tests |
 
 ```sh
 # ----- Sur le NAS, dans le terminal web de TOS : il marche même si SSH est cassé -----
@@ -724,6 +598,10 @@ docker exec tailscale tailscale ping <téléphone>  # téléphone en 4G ; attend
 # ----- Sur le PC, dans Git Bash -----
 ssh nas echo ok                                 # attendu : phrase de passe de la clé, puis ok
 ssh -o PubkeyAuthentication=no nas echo ok      # attendu : Permission denied (publickey), sans demande de mot de passe
+pnpm db:up                                      # attendu : base de dev saine, migrations à jour
+pnpm test:integration                           # attendu : tous les tests passent, sur une base de test neuve
+pnpm prod:local                                 # attendu : 4 conteneurs « Healthy » ; https://citadel.localhost:8443 répond ; puis pnpm prod:local:down
+pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
 
 ---
@@ -821,12 +699,12 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 **Phase 4 — Sauvegardes et pré-prod**
 
 19. [toi] Compte healthchecks.io, branché sur ton e-mail et un salon Discord ; remote rclone chiffré, mot de passe et sel dans Bitwarden **avant** le premier envoi.
-20. [moi] `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
+20. [moi] `infra-ops` ; `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
 21. [toi] Une semaine d'observation et un échec simulé. Fini quand : 7 matins de suite avec restauration vérifiée, et une alerte reçue. Puis désactiver UptimeRobot.
 
 **Phase 5 — La stack média dans le projet unique**
 
-22. [moi] Services média dans `compose.yml` : versions figées sur celles d'aujourd'hui, labels, modes, limites ; job `vpn-watch` (P18).
+22. [moi] Services média et `infra-tailscale` dans `compose.yml` : versions figées sur celles d'aujourd'hui, labels, modes, limites ; job `vpn-watch` (P18).
 23. [nous] Bascule à un moment calme : arrêt des trois anciens projets, `pnpm release`, contrôles (VPN et port forwarding, qBittorrent, *arr, transcodage Jellyfin).
 24. [moi] `config-backup`, `config-verify`, `update-check`, `qbittorrent-stats` ; [toi] suppression de la tâche planifiée de TOS.
 25. [moi] `infra/README.md` : remonter le NAS de zéro.
@@ -836,7 +714,7 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 26. [nous] Réglages Tailscale (§12.4).
 27. [toi] Depuis l'extérieur (4G) : seuls 80 et 443 répondent.
 28. [toi] Changer les secrets restants (clé WireGuard Proton…).
-29. [nous] Ménage du dépôt et de GitHub : `docker/other`, packages GHCR `reunification-*`, enregistrement DNS `api.` chez Cloudflare.
+29. [nous] Ménage : `docker/other` sur ton PC, packages GHCR `reunification-*`, enregistrement DNS `api.` chez Cloudflare.
 30. [nous] Ménage du NAS, sans rien perdre : ce qui tourne en permanence pour rien (applis TOS, services) ; `appdata/#recycle`, `appdata/reunification`, `appdata/nginx-proxy-manager`, `appdata/docker`, `/Volume1/backup`, raccourcis de `@collect` ; `joal`, `compare_movies.py`, `Flow.jpg`, `~/bin/rclone` ; ancien dossier `NAS_BACKUP` du Drive, après un mois de nouvelles sauvegardes.
 
 **Phase 7 — Console d'administration**
@@ -865,7 +743,7 @@ Aucune pour l'instant.
 - Double authentification sur TOS, pas trouvée dans TOS 7 : risque limité, son interface n'est jamais exposée sur Internet.
 - IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
 - Relais IGDB par le serveur, avec renouvellement du token, en même temps que l'authentification du site.
-- Node 26 et MariaDB 12.3, testés en pré-prod.
+- Node 26, MariaDB 12.3 et Flyway 13, testés en pré-prod.
 
 ---
 
