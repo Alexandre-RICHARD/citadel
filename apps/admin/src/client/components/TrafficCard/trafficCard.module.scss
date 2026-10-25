@@ -1,0 +1,47 @@
+.muted {
+  color: var(--text-subtle);
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.topIps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.ip {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.25rem;
+}
+
+.address {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.country {
+  color: var(--text-subtle);
+  font-size: 1.1rem;
+}
+
+.count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scans {
+  color: var(--warn);
+}

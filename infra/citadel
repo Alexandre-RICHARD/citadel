@@ -12,6 +12,7 @@
 #   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
 #   citadel version                    la version en service, seule (lue par pnpm release)
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun (P18)
+#   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #   citadel admin-password             fabrique ADMIN_PASSWORD_HASH (mot de passe de la console)
 #
 # UN fichier, DEUX endroits où il tourne :
@@ -34,6 +35,7 @@
 #   current-version       la version en service
 #   deploy-history.log    une ligne par déploiement ou retour arrière
 #   releases/<version>/   le compose.yml de chaque version déployée (pour revenir en arrière)
+#   tailscale.json        les appareils de ton tailnet, relevés chaque minute pour la console
 #   lock                  le verrou : jamais deux déploiements, ni un déploiement pendant
 #                         un job (vpn-watch, puis les sauvegardes de l'étape 28)
 #
@@ -581,6 +583,14 @@ cmd_logs() {
 	compose logs --tail 200 "${follow[@]}" "$service"
 }
 
+# Le projet Compose du conteneur où tourne ce script : « citadel » sur le NAS,
+# « citadel-local » avec pnpm prod:local. Lancé à la main hors d'infra-ops : « citadel ».
+own_project() {
+	local project
+	project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$HOSTNAME" 2>/dev/null || true)
+	printf '%s\n' "${project:-citadel}"
+}
+
 # --- vpn-watch : chaque minute, par infra-ops (P18) ---
 # qBittorrent et les *arr vivent dans le réseau de Gluetun. Deux façons de le perdre,
 # hors de Compose :
@@ -596,11 +606,8 @@ cmd_vpn_watch() {
 	exec 9>"$STATE_DIR/lock"
 	flock --nonblock 9 || return 0
 
-	# Le projet Compose de ce conteneur : « citadel » sur le NAS, « citadel-local » avec
-	# pnpm prod:local. Lancé à la main hors d'infra-ops : « citadel ».
 	local project
-	project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$HOSTNAME" 2>/dev/null || true)
-	project=${project:-citadel}
+	project=$(own_project)
 
 	local gluetun health gluetun_id gluetun_started
 	gluetun=$(docker ps --quiet --filter "label=com.docker.compose.project=$project" \
@@ -632,6 +639,41 @@ cmd_vpn_watch() {
 	done
 }
 
+# --- tailscale-status : chaque minute, par infra-ops ---
+# Les appareils de ton tailnet, pour la console (§14.3, fonctionnalité 6). Elle n'a pas
+# accès à Tailscale : infra-ops lui dépose state/tailscale.json, réduit à ce qu'elle
+# affiche (nom, système, en ligne, liaison directe ou relayée, dernière connexion) et à
+# l'expiration de la clé du NAS (null : désactivée, §12.4).
+cmd_tailscale_status() {
+	local tailscale status
+	tailscale=$(docker ps --quiet --filter "label=com.docker.compose.project=$(own_project)" \
+		--filter "label=com.docker.compose.service=infra-tailscale")
+	# Tailscale arrêté (ou pnpm prod:local, où il ne tourne pas) : l'ancien relevé reste,
+	# et la console affiche son âge
+	[[ -n $tailscale ]] || return 0
+	status=$(docker exec "$tailscale" tailscale status --json) || return 0
+
+	mkdir -p "$STATE_DIR"
+	# Le nom affiché par Tailscale est le début du nom MagicDNS (DNSName) ; HostName est
+	# celui du système. LastSeen vaut « 0001-01-01… » pour un appareil jamais vu.
+	# Écrit à côté puis renommé : la console ne lit jamais un fichier à moitié écrit.
+	jq '
+		def seen: if . == null or startswith("0001-") then null else . end;
+		{
+			collectedAt: (now | todate),
+			selfKeyExpiry: (.Self.KeyExpiry // null),
+			devices: [(.Peer // {})[] | {
+				name: (((.DNSName // "") | split(".")[0] // "") as $dns
+					| if $dns == "" then .HostName else $dns end),
+				os: (.OS // ""),
+				online: (.Online // false),
+				direct: ((.CurAddr // "") != ""),
+				lastSeen: (if .Online then null else (.LastSeen | seen) end)
+			}]
+		}' <<<"$status" >"$STATE_DIR/tailscale.json.tmp"
+	mv "$STATE_DIR/tailscale.json.tmp" "$STATE_DIR/tailscale.json"
+}
+
 ops_main() {
 	local command=${1:-help}
 	shift || true
@@ -648,6 +690,7 @@ ops_main() {
 			;;
 		version) current_version ;;
 		vpn-watch) cmd_vpn_watch ;;
+		tailscale-status) cmd_tailscale_status ;;
 		cron)
 			# Le planificateur d'infra-ops, qui tourne tant que le conteneur vit.
 			# -passthrough-logs : la sortie des jobs telle quelle dans les logs du conteneur ;

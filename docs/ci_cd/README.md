@@ -535,7 +535,9 @@ Entre conteneurs, pour la console (étapes 21 et 22) : chaque identifiant est da
 | `infra-admin` | qBittorrent, `media-gluetun:8080` | vitesses, totaux, ratio | `QBITTORRENT_USER`, `QBITTORRENT_PASSWORD` : ton compte qBittorrent |
 | `infra-admin` | serveur de contrôle de Gluetun, `:8000` | IP publique, pays, port redirigé | `GLUETUN_API_KEY`, neuve |
 | `infra-admin` | `media-jellyfin:8096` | lectures en cours | `JELLYFIN_API_KEY`, créée dans Jellyfin |
-| `infra-admin` | logs de Caddy, `/proc` de l'hôte | accès externes, système | aucun : montés en lecture seule |
+| `infra-admin` | logs d'accès de Caddy, par `infra-socket-proxy` ; certificats servis par `infra-caddy:443` | accès externes, échéances | aucun : jamais ses fichiers ni ses clés |
+| `infra-admin` | Twitch (`id.twitch.tv`) | expiration du token IGDB | `INTERNET_GAME_DATA_BASE_TOKEN`, celui du site |
+| `infra-admin` | `/proc` de l'hôte, disques | système | aucun : lecture seule |
 | `infra-ops` | Docker, dont `infra-tailscale` | tâches ; appareils Tailscale connectés (`tailscale status`), déposés dans `state/` pour la console | aucun |
 
 ### 12.2 Box et ports
@@ -649,7 +651,7 @@ pnpm release --dry-run                          # attendu (tout commité) : vali
 - `apps/admin` : un serveur Express et un front React, avec `@citadel/design-system` et `@citadel/common`, dans un seul conteneur, `infra-admin`.
 - **Docker, à travers `infra-socket-proxy`** (`wollomatic/socket-proxy`), qui filtre chaque requête par méthode et par chemin : lire l'état, les statistiques et les logs des conteneurs ; les démarrer, arrêter, redémarrer. Tout le reste est refusé (créer un conteneur, exécuter une commande dedans, toucher aux images ou aux volumes). En plus, la console n'agit que sur les conteneurs étiquetés `citadel.controllable`.
 - **Jobs et déploiements** : la console dépose une demande dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute. Une faille dans la console ne donne donc ni les pleins droits sur Docker, ni l'accès au Drive.
-- **Sources** : API Docker ; `state/` (jobs, déploiements, mises à jour) ; API de qBittorrent, de Jellyfin et de Gluetun ; logs de Caddy ; relevés d'`infra-ops` (Drive, disques) ; `/proc` de l'hôte, en lecture seule.
+- **Sources** : API Docker ; `state/` (jobs, déploiements, mises à jour) ; API de qBittorrent, de Jellyfin et de Gluetun ; logs de Caddy ; relevés d'`infra-ops` (Tailscale, puis Drive) ; `/proc` de l'hôte, en lecture seule.
 
 ### 14.3 Fonctionnalités, toutes validées
 
@@ -719,7 +721,7 @@ Chaque étape se termine par une vérification. Jusqu'à l'étape 14, on ne fait
 
 **Phase 5 — Bascule du NAS, en une fois**
 
-23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure (mot de passe de la console : `pnpm admin:password` sur ton PC) ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
+23. [nous] `/Volume1/citadel` et `.env.prod`, avec des secrets neufs rangés dans Bitwarden au fur et à mesure (mot de passe de la console : `pnpm admin:password` sur ton PC ; clé API Jellyfin « citadel-console », créée dans le Jellyfin actuel, qui garde ses données) ; installation de `citadel` ; [toi] jeton API Cloudflare limité au DNS de ton domaine (§12.3).
 24. [nous] Bascule à un moment calme : archive de `/Volume1/appdata` sur le HDD ; tâche planifiée de `backup.sh` désactivée (elle relancerait l'ancien projet) ; arrêt de NPM, de l'ancien site et des trois projets média ; premier `pnpm release`, puis `citadel start media` (les services « à la demande » sont créés arrêtés). Retour arrière : arrêter `citadel`, relancer les anciens conteneurs, arrêtés mais pas supprimés ; les *arr et cross-seed, dont les conteneurs n'existent déjà plus, se recréent avec l'ancien `docker-compose -f docker-compose.stackarr.yml up -d` (leurs images sont encore sur le NAS).
 25. [toi] Vérifier : site, `/api`, Irigo, Backlog ; Jellyfin depuis l'extérieur et transcodage ; VPN et port forwarding, qBittorrent, *arr ; console en LAN et par Tailscale ; DBeaver par SSH ; Jellyfin, Réseau, « Proxys connus » : `infra-caddy` (vide jusqu'ici : Jellyfin voit alors l'adresse du proxy, un réseau Docker local, et prend sans doute tout visiteur extérieur pour le LAN ; l'interdiction d'accès distant à ton compte admin, §12.6, en dépend) ; mode SSL « Full (strict) » chez Cloudflare.
 26. [moi] `infra/README.md` : remonter le NAS de zéro.

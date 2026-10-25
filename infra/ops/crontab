@@ -11,3 +11,6 @@
 
 # Chaque minute : relancer ce qui a perdu le réseau de Gluetun (P18)
 * * * * * citadel vpn-watch
+
+# Chaque minute : les appareils de ton tailnet, déposés pour la console (state/tailscale.json)
+* * * * * citadel tailscale-status

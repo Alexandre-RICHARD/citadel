@@ -96,6 +96,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # À la place de /Volume1/citadel : de quoi poser le verrou
       - ops-state:/Volume1/citadel
+      # Et son state/, partagé avec la console comme sur le NAS (relevés pour la console)
+      - admin-state:/Volume1/citadel/state
 
   infra-admin:
     image: citadel-admin:local

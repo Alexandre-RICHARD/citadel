@@ -3,7 +3,7 @@
 # =====================================================================================
 #
 # Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod), Caddy,
-# Tailscale, infra-ops (réduit au job vpn-watch), la console et son filtre Docker, et la
+# Tailscale, infra-ops (vpn-watch et le relevé Tailscale), la console et son filtre Docker, et la
 # stack média. Arriveront ensuite : la pré-prod et les sauvegardes (étape 28).
 #
 # Qui lit ce fichier ?
@@ -316,8 +316,8 @@ services:
     image: ghcr.io/alexandre-richard/citadel-ops:${CITADEL_VERSION:?version manquante, passer par citadel}
     container_name: infra-ops
     # Le planificateur (supercronic) lit infra/ops/crontab et lance les jobs à l'heure.
-    # Pour l'instant, un seul job : vpn-watch, chaque minute. Les sauvegardes arriveront
-    # à l'étape 28.
+    # Pour l'instant, deux jobs, chaque minute : vpn-watch, et tailscale-status pour la
+    # console. Les sauvegardes arriveront à l'étape 28.
     command: ["cron"]
     # Un petit processus n°1 (tini) au-dessus de supercronic : il ramasse les processus
     # terminés des jobs, et supercronic n'écrit plus d'avertissement à chaque minute
@@ -330,7 +330,7 @@ services:
       # n'exécute que les scripts de son image, et n'écoute sur aucun port (§10.2).
       - /var/run/docker.sock:/var/run/docker.sock
       # Le verrou partagé avec citadel deploy (state/lock) : jamais de vpn-watch pendant
-      # qu'un déploiement recrée les conteneurs
+      # qu'un déploiement recrée les conteneurs ; et state/tailscale.json, pour la console
       - /Volume1/citadel:/Volume1/citadel
     tmpfs:
       - /tmp
@@ -340,7 +340,7 @@ services:
           memory: 256M
     labels:
       citadel.name: "Tâches planifiées"
-      citadel.description: "infra-ops : vpn-watch, puis les sauvegardes"
+      citadel.description: "infra-ops : vpn-watch, relevé Tailscale, puis les sauvegardes"
       citadel.group: "infra"
       citadel.mode: "always"
       citadel.controllable: "false"
@@ -413,6 +413,15 @@ services:
       QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:?manque dans .env.prod}
       GLUETUN_URL: http://media-gluetun:8000
       GLUETUN_API_KEY: ${GLUETUN_API_KEY:?manque dans .env.prod}
+      # Les lectures en cours, avec une clé créée dans Jellyfin pour la console
+      JELLYFIN_URL: http://media-jellyfin:8096
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:?manque dans .env.prod}
+      # Le token IGDB du site : la console demande à Twitch quand il expire
+      INTERNET_GAME_DATA_BASE_TOKEN: ${INTERNET_GAME_DATA_BASE_TOKEN:?manque dans .env.prod}
+      # Caddy : ses logs d'accès (lus par le filtre Docker) et les dates de ses
+      # certificats (lues en HTTPS, sans accès à ses fichiers ni à ses clés)
+      CADDY_CONTAINER: infra-caddy
+      SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
       # Version en service et historique des déploiements, écrits par citadel
       STATE_DIR: /state
       # Espace libre des deux disques : un dossier de chacun suffit
@@ -430,6 +439,8 @@ services:
       - docker-api
       # Gluetun, donc qBittorrent
       - vpn
+      # Caddy et Jellyfin ; et la sortie vers Internet, pour Twitch
+      - edge
     depends_on:
       - infra-socket-proxy
     healthcheck:
@@ -767,7 +778,8 @@ services:
 
 # --- Réseaux séparés (§10.4) : un conteneur ne joint que ceux de ses réseaux ---
 networks:
-  # Caddy et ce qu'il sert. Sort sur Internet : certificats, relais du front
+  # Caddy et ce qu'il sert, plus la console, qui lit Jellyfin et les certificats de Caddy.
+  # Sort sur Internet : certificats, relais du front, token IGDB vérifié par la console
   edge: {}
   # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la
   # base sur 127.0.0.1, dont DBeaver a besoin
