@@ -7,8 +7,3 @@ CREATE OR REPLACE TABLE tests (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_520_ci;
-
-INSERT INTO tests (name, is_active)
-VALUES
-	('jean', TRUE),
-	('michel', false);
