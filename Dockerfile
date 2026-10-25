@@ -180,7 +180,7 @@ FROM ${ALPINE_IMAGE} AS ops
 # du NAS (par son socket) ; mariadb-client et zstd : dumps compressés de la base ;
 # coreutils : sha256sum… ; util-linux-misc : flock, le verrou partagé ; tzdata : l'heure
 # de Paris dans les noms de fichiers.
-# rclone, supercronic et regctl arriveront avec les sauvegardes et les mises à jour (étapes 20, 24).
+# supercronic arrivera avec vpn-watch (étape 17) ; rclone et regctl avec les sauvegardes et les mises à jour (étapes 28, 29).
 RUN apk add --no-cache \
 	bash curl jq \
 	docker-cli docker-cli-compose \

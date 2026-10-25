@@ -23,7 +23,7 @@
 	# Certificats par l'API DNS de Cloudflare (le « challenge DNS ») : Caddy prouve qu'il
 	# contrôle le domaine en créant un enregistrement DNS temporaire. C'est la méthode
 	# fiable derrière le proxy de Cloudflare, qui intercepte les autres. Le jeton n'a le
-	# droit que de modifier le DNS de ton domaine (étape 16).
+	# droit que de modifier le DNS de ton domaine (étape 23).
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 
 	servers {
