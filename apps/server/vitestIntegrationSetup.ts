@@ -15,7 +15,7 @@ const testSeed = inject("testSeed");
 // Le terminal ne l'affiche que sous un échec, le rapport HTML sur chaque test
 beforeEach(async ({ annotate }) => {
 	await annotate(
-		`Ordre aléatoire de graine ${testSeed} : pour rejouer exactement le même ordre, ajouter TEST_SEED=${testSeed} dans apps/server/.env.test (puis retirer la ligne pour revenir au hasard)`,
+		`Ordre aléatoire de graine ${testSeed} : pour rejouer exactement le même ordre, ajouter TEST_SEED=${testSeed} dans le .env.test de la racine (puis retirer la ligne pour revenir au hasard)`,
 	);
 });
 

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { parseEnv } from "node:util";
 
-const TEST_ENV_FILE_URL = new URL("../../../.env.test", import.meta.url);
+import { testEnvFileUrl } from "./testEnvFileUrl.ts";
 
 function readNonEmpty(value: string | undefined): string | undefined {
 	return value === undefined || value.trim() === "" ? undefined : value;
@@ -9,13 +9,13 @@ function readNonEmpty(value: string | undefined): string | undefined {
 
 // Lit seulement TEST_SEED : le reste de .env.test n'a rien à faire dans les configs Vitest
 function readSeedFromTestEnvFile(): string | undefined {
-	if (!existsSync(TEST_ENV_FILE_URL)) return undefined;
-	return parseEnv(readFileSync(TEST_ENV_FILE_URL, "utf8")).TEST_SEED;
+	if (!existsSync(testEnvFileUrl)) return undefined;
+	return parseEnv(readFileSync(testEnvFileUrl, "utf8")).TEST_SEED;
 }
 
 /**
  * Graine de l'ordre aléatoire des tests, par priorité : variable d'environnement TEST_SEED,
- * puis TEST_SEED dans apps/server/.env.test, sinon une graine neuve.
+ * puis TEST_SEED dans le .env.test de la racine, sinon une graine neuve.
  * Écrite ensuite dans process.env : la config racine et celle d'intégration mélangent avec la même.
  */
 export function resolveTestSeed(): number {

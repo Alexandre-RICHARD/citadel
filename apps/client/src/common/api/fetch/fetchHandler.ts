@@ -7,8 +7,11 @@ import { ApiError } from "../error/ApiError";
 import { buildQueryString } from "./buildQueryString";
 import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
 
+// Adresse relative, la même partout : Vite en dev, Caddy en prod la transmettent au serveur
+const API_BASE_URL = "/api";
+
 type Options = {
-	// Domaine de l'API, VITE_API_ADRESS par défaut
+	// Domaine de l'API, API_BASE_URL par défaut
 	urlDomain?: string;
 	// Fourni par TanStack Query pour interrompre une requête devenue inutile
 	signal?: AbortSignal;
@@ -39,7 +42,7 @@ async function readErrorBody(response: Response): Promise<ErrorBody> {
 
 export async function fetchHandler<Spec extends EndpointModel>(
 	request: Spec["request"],
-	{ urlDomain = import.meta.env.VITE_API_ADRESS, signal }: Options = {},
+	{ urlDomain = API_BASE_URL, signal }: Options = {},
 ): Promise<Spec["response"]> {
 	const urlWithPathParams = insertParamsInRequestUrl({
 		baseUrl: request.url,

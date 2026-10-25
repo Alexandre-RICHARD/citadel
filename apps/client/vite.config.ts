@@ -14,15 +14,25 @@ function normalizePath(id: string): string {
 
 export default defineConfig(({ mode }) => {
 	const dirname = import.meta.dirname;
+	// Racine du dépôt : pnpm lance Vite depuis apps/client, le .env est deux dossiers plus haut
+	const rootDir = path.resolve(dirname, "../..");
 
-	const env = loadEnv(mode, process.cwd(), "");
+	// .env de la racine, lu côté Node : port de dev, identifiants du proxy IGDB…
+	const env = loadEnv(mode, rootDir, "");
 
 	return {
+		// Les éventuelles variables VITE_* viendront aussi de la racine (publiques : jamais de secret en VITE_)
+		envDir: rootDir,
 		server: {
-			port: parseInt(env.VITE_LOCAL_PORT, 10),
+			port: Number(env.CLIENT_DEV_PORT),
 			strictPort: true,
-			// POC Backlog : relais vers IGDB (pas de CORS chez IGDB, identifiants gardés côté serveur de dev)
 			proxy: {
+				// Le front appelle /api comme en prod ; en dev, Vite relaie vers le serveur local
+				"/api": {
+					target: `http://localhost:${env.SERVER_PORT}`,
+					rewrite: (requestPath) => requestPath.slice("/api".length),
+				},
+				// POC Backlog : relais vers IGDB (pas de CORS chez IGDB, identifiants gardés côté serveur de dev)
 				"/igdb/": {
 					target: "https://api.igdb.com/v4",
 					changeOrigin: true,

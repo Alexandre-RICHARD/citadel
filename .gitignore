@@ -1,9 +1,17 @@
 # ====================
 # =     Globals      =
 # ====================
+# Folder
 /.vscode
 /node_modules/
 /report/
+
+# Files
+/.env
+/.env.test
+
+# Ancienne infra, gardée sur le disque pour référence jusqu'à l'étape 29 : jamais versionnée (secrets)
+/docker/
 
 # ====================
 # =      Client      =
@@ -13,7 +21,6 @@
 /apps/client/node_modules/
 
 # Files
-/apps/client/.env
 /apps/client/tsBuildInfo.json
 
 # ====================
@@ -22,16 +29,6 @@
 # Folders
 /apps/server/build/
 /apps/server/node_modules/
-
-# Env Files
-/apps/server/.env
-/apps/server/.env.test
-
-# ====================
-# =      Docker      =
-# ====================
-# Env Files
-/docker/.env
 
 # ====================
 # =      Common      =
