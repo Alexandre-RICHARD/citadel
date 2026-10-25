@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "=== Dev ===": "",
-    "dev": "vite --open --port 3001",
+    "dev": "vite --open",
     "=== Validation ===": "",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",

@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "=== Dev ===": "",
-    "dev": "tsx watch ./src/index.ts",
+    "dev": "tsx watch --env-file-if-exists=../../.env ./src/index.ts",
     "init-db": "bash ./scripts/init_db.sh",
     "migrate": "bash ./scripts/flyway_local.sh",
     "=== Validation ===": "",
@@ -16,13 +16,11 @@
     "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm integration-test && pnpm build",
     "=== Build & Production ===": "",
     "build": "node esbuildConfig.mjs",
-    "start": "node --enable-source-maps ./build/build.server.cjs"
+    "start": "node --env-file-if-exists=../../.env --enable-source-maps ./build/build.server.cjs"
   },
   "dependencies": {
     "@citadel/common": "workspace:*",
     "@citadel/specs": "workspace:*",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "mariadb": "^3.5.4",
     "sequelize": "6.37.8",
@@ -31,7 +29,6 @@
   "devDependencies": {
     "@citadel/eslint-config": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
-    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "catalog:",
     "@types/supertest": "^7.2.1",

@@ -1,14 +1,8 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-	LOCAL_PORT: z.coerce.number().int().positive(),
+	SERVER_PORT: z.coerce.number().int().positive(),
 
-	CORS_ORIGIN: z
-		.string()
-		.min(1)
-		.transform((corsOrigin) => corsOrigin.split("|")),
-
-	DB_DRIVER: z.literal("mariadb"),
 	DB_HOST: z.string().min(1),
 	DB_PORT: z.coerce.number().int().positive(),
 	DB_USER_NAME: z.string().min(1),

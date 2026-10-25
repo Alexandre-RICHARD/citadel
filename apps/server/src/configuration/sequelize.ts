@@ -8,7 +8,7 @@ export const sequelize = new Sequelize(
 	env.DB_USER_NAME,
 	env.DB_USER_PASSWORD,
 	{
-		dialect: env.DB_DRIVER,
+		dialect: "mariadb",
 		// Import statique : sinon Sequelize charge le driver par un require dynamique, absent du bundle esbuild
 		dialectModule: mariadb,
 		host: env.DB_HOST,
