@@ -1,0 +1,6 @@
+# Fichiers lus sous Linux (conteneurs, NAS) : toujours en fins de ligne LF, même extraits sous Windows.
+# Ton Git convertit sinon en CRLF (core.autocrlf=true), et bash échoue alors sur le « \r » de fin de ligne.
+*.sh text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf
+infra/** text eol=lf

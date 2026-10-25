@@ -4,8 +4,6 @@
   "scripts": {
     "=== Dev ===": "",
     "dev": "tsx watch --env-file-if-exists=../../.env ./src/index.ts",
-    "init-db": "bash ./scripts/init_db.sh",
-    "migrate": "bash ./scripts/flyway_local.sh",
     "=== Validation ===": "",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
