@@ -15,6 +15,8 @@ import { apiRequest } from "../../api/apiRequest";
 import { usePolling } from "../../api/usePolling";
 import { ACTION_LABELS } from "../../status/actionLabels";
 import { GROUP_LABELS } from "../../status/groupLabels";
+import { AccessSection } from "../AccessSection";
+import { DeadlinesCard } from "../DeadlinesCard";
 import { LogsDialog } from "../LogsDialog";
 import { ServiceGroup } from "../ServiceGroup";
 import { SiteCard } from "../SiteCard";
@@ -189,6 +191,7 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 					<VpnCard />
 					<TorrentCard />
 					<SiteCard />
+					<DeadlinesCard />
 				</div>
 
 				<ThemeProvider theme={SERVICES_THEME}>
@@ -240,6 +243,8 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 						))}
 					</section>
 				</ThemeProvider>
+
+				<AccessSection />
 
 				{services.data ? (
 					<section

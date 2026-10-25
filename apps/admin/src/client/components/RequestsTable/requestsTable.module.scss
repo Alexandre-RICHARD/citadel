@@ -1,0 +1,98 @@
+.muted {
+  color: var(--text-subtle);
+}
+
+// Même habillage que le tableau des versions
+.requestsTable {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  table {
+    width: 100%;
+    font-size: 1.3rem;
+    table-layout: fixed;
+  }
+
+  th {
+    padding: 1rem 1.6rem;
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-align: left;
+
+    &:nth-child(1) {
+      width: 13rem;
+    }
+
+    &:nth-child(2) {
+      width: 19rem;
+    }
+
+    &:nth-child(4) {
+      width: 7rem;
+    }
+  }
+
+  td {
+    padding: 0.7rem 1.6rem;
+    border-top: 1px solid var(--border);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .when {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+  }
+
+  .ip {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+  }
+
+  .country {
+    margin-left: 0.8rem;
+    color: var(--text-subtle);
+    font-family: var(--font);
+    font-size: 1.1rem;
+  }
+
+  .request {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+  }
+
+  .method {
+    margin-right: 0.8rem;
+    color: var(--text-subtle);
+  }
+
+  .status {
+    font-family: var(--mono);
+    font-size: 1.2rem;
+
+    &[data-tone="warn"] {
+      color: var(--warn);
+    }
+
+    &[data-tone="danger"] {
+      color: var(--danger);
+    }
+  }
+
+  // Sur un téléphone : quand, requête, code ; l'IP est dans la carte des IP actives
+  @media (width <= 600px) {
+    th:nth-child(2),
+    .ip {
+      display: none;
+    }
+
+    th:nth-child(1) {
+      width: 10rem;
+    }
+  }
+}

@@ -1,0 +1,28 @@
+.muted {
+  color: var(--text-subtle);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.scan {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.path {
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--text-subtle);
+  font-size: 1.15rem;
+}

@@ -57,12 +57,25 @@
 }
 
 (access_log) {
-	# Une ligne JSON par requête dans les logs du conteneur : lue plus tard par la
-	# console (accès externes, scans suspects). La rotation est réglée par Docker.
+	# Une ligne JSON par requête sur la sortie standard du conteneur : la console la lit
+	# (accès externes, scans suspects, §14.3). Les messages de Caddy lui-même vont sur la
+	# sortie d'erreur. La rotation est réglée par Docker.
 	log {
 		output stdout
-		format json
+		# Sans les en-têtes de la requête et de la réponse ni le détail TLS : les trois
+		# quarts de chaque ligne, inutiles à la console. Restent l'IP, la méthode, le
+		# nom, le chemin, le code de réponse, la taille et la durée.
+		format filter {
+			fields {
+				request>headers delete
+				request>tls delete
+				resp_headers delete
+			}
+			wrap json
+		}
 	}
+	# Le pays du visiteur, donné par Cloudflare (vide pour Jellyfin, hors Cloudflare)
+	log_append country {http.request.header.Cf-Ipcountry}
 }
 
 # ===== Le site : la box envoie 80/443 vers les ports 8001/4443 du NAS =====

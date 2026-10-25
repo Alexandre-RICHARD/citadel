@@ -9,7 +9,7 @@ type Props = {
 	title: string;
 	icon: IconComponent;
 	// Pastille d'état à droite du titre, avec son texte
-	status?: { tone: StatusTone; text: string };
+	status?: { tone: StatusTone; text: string } | undefined;
 	// Message d'erreur de la dernière lecture : les données d'avant restent affichées
 	error?: string | null;
 	children: ReactNode;
