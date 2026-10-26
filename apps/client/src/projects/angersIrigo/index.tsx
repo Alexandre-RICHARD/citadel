@@ -86,18 +86,21 @@ export function AngersIrigo() {
 		[positions.feed, tripUpdates, shapes],
 	);
 
-	// Simulation : trajets prévus recalculés à chaque nouvelle donnée, positions estimées chaque seconde
+	// Trajets prévus, recalculés à chaque nouvelle donnée : la simulation en tire les positions
+	// estimées chaque seconde, les repères de temps du tracé sélectionné s'en servent même sans elle
 	const motions = useMemo(
 		() =>
-			shapes && settings.simulateMovement
+			shapes
 				? planMotions(vehicles, tripUpdates, shapes, GTFS_STATIC)
 				: undefined,
-		[vehicles, tripUpdates, shapes, settings.simulateMovement],
+		[vehicles, tripUpdates, shapes],
 	);
-	const now = useNow(motions ? SIMULATION_TICK_MS : null);
-	const currentVehicles = motions
-		? simulateVehicles(vehicles, motions, now / 1000)
-		: vehicles;
+	const isSimulating = motions !== undefined && settings.simulateMovement;
+	const now = useNow(isSimulating ? SIMULATION_TICK_MS : null);
+	const currentVehicles =
+		motions && isSimulating
+			? simulateVehicles(vehicles, motions, now / 1000)
+			: vehicles;
 
 	// Les paramètres décident de ce qui est affichable ; les filtres (mode, lignes) s'appliquent ensuite
 	const displayableVehicles = settings.showStaleVehicles
@@ -156,6 +159,9 @@ export function AngersIrigo() {
 					vehicles={filterVehicles(displayableVehicles, filter, lineFilter)}
 					stops={stops}
 					routeIdsByStopGroup={routeIdsByStopGroup}
+					motions={motions}
+					simulationSeconds={isSimulating ? now / 1000 : undefined}
+					timeMarkersMinutes={settings.timeMarkersMinutes}
 					tripUpdates={tripUpdates}
 					stopFocus={stopFocus}
 					onStopFocusEnd={endStopFocus}

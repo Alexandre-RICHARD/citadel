@@ -1,4 +1,5 @@
 /* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { TIME_MARKER_STEPS_MINUTES } from "../config";
 import type { Settings } from "../types/settings";
 import type { VehicleFilter } from "../types/vehicle";
 
@@ -13,6 +14,7 @@ export const DEFAULT_SETTINGS: Settings = {
 	showStaleVehicles: false,
 	showStops: true,
 	simulateMovement: true,
+	timeMarkersMinutes: 5,
 };
 
 /**
@@ -24,15 +26,23 @@ export function sanitizeSettings(stored: unknown): Settings {
 		typeof stored === "object" && stored !== null
 			? (stored as Record<string, unknown>)
 			: {};
-	function readBoolean(key: keyof Settings): boolean {
+	function readBoolean(
+		key: Exclude<keyof Settings, "timeMarkersMinutes">,
+	): boolean {
 		const value = candidate[key];
 		return typeof value === "boolean" ? value : DEFAULT_SETTINGS[key];
 	}
+	const { timeMarkersMinutes } = candidate;
 
 	return {
 		showStaleVehicles: readBoolean("showStaleVehicles"),
 		showStops: readBoolean("showStops"),
 		simulateMovement: readBoolean("simulateMovement"),
+		timeMarkersMinutes:
+			typeof timeMarkersMinutes === "number" &&
+			TIME_MARKER_STEPS_MINUTES.includes(timeMarkersMinutes)
+				? timeMarkersMinutes
+				: DEFAULT_SETTINGS.timeMarkersMinutes,
 	};
 }
 

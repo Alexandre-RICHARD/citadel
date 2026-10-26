@@ -2,6 +2,7 @@
 // Simulation « optimiste » : entre deux positions reçues (une par minute), chaque véhicule
 // avance le long du tracé de sa course au rythme des heures de passage prévues à ses
 // prochains arrêts. Chaque nouvelle position reçue recale la simulation.
+import type { Point } from "../types/geo";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { GtfsStaticData } from "../types/gtfs-static";
 import type { TripShape } from "../types/shape";
@@ -175,6 +176,37 @@ function getDistanceAt(
 	const [from, to] = [waypoints[nextIndex - 1], waypoints[nextIndex]];
 	const progress = (nowSeconds - from.time) / (to.time - from.time);
 	return from.distance + (to.distance - from.distance) * progress;
+}
+
+/** Repère de temps : où le trajet prévu place le véhicule `minutes` min après l'instant de référence */
+export type TimeMarker = {
+	minutes: number;
+	point: Point;
+};
+
+/**
+ * Repères toutes les `intervalMinutes` à partir de `fromSeconds` (s depuis l'epoch), jusqu'à la
+ * fin du trajet prévu : au-delà, les prévisions du flux ne disent plus rien.
+ */
+export function getTimeMarkers(
+	motion: VehicleMotion,
+	fromSeconds: number,
+	intervalMinutes: number,
+): TimeMarker[] {
+	const lastTime = motion.waypoints[motion.waypoints.length - 1].time;
+	const markers: TimeMarker[] = [];
+	for (
+		let minutes = intervalMinutes;
+		intervalMinutes > 0 && fromSeconds + minutes * 60 <= lastTime;
+		minutes += intervalMinutes
+	) {
+		const distance = getDistanceAt(motion, fromSeconds + minutes * 60);
+		markers.push({
+			minutes,
+			point: pointAtDistance(motion.shape, distance).point,
+		});
+	}
+	return markers;
 }
 
 /** Trajets prévus des véhicules simulables, indexés par entityId */

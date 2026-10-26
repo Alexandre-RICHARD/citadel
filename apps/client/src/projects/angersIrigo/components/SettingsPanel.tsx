@@ -3,11 +3,16 @@ import "./SettingsPanel.scss";
 
 import type { JSX } from "react";
 
-import { STALE_POSITION_SECONDS } from "../config";
+import { STALE_POSITION_SECONDS, TIME_MARKER_STEPS_MINUTES } from "../config";
 import type { Settings } from "../types/settings";
 import { ToggleSwitch } from "./ToggleSwitch";
 
 const STALE_POSITION_MINUTES = STALE_POSITION_SECONDS / 60;
+
+/** "Non", "5 min" */
+function formatStep(minutes: number): string {
+	return minutes === 0 ? "Non" : `${minutes} min`;
+}
 
 type SettingsPanelProps = {
 	id: string;
@@ -54,6 +59,45 @@ export function SettingsPanel({
 					onChange({ ...settings, simulateMovement })
 				}
 			/>
+			{/* Le curseur parcourt les crans de TIME_MARKER_STEPS_MINUTES, pas des minutes */}
+			<label className="settings-panel__slider">
+				<span className="settings-panel__slider-header">
+					<span className="settings-panel__slider-label">Repères de temps</span>
+					<span className="settings-panel__slider-value">
+						{formatStep(settings.timeMarkersMinutes)}
+					</span>
+				</span>
+				<span className="settings-panel__slider-description">
+					Sur le tracé d&apos;un véhicule sélectionné, où il sera dans X min
+				</span>
+				<input
+					type="range"
+					className="settings-panel__slider-input"
+					min={0}
+					max={TIME_MARKER_STEPS_MINUTES.length - 1}
+					step={1}
+					value={Math.max(
+						0,
+						TIME_MARKER_STEPS_MINUTES.indexOf(settings.timeMarkersMinutes),
+					)}
+					aria-valuetext={formatStep(settings.timeMarkersMinutes)}
+					onChange={(event) =>
+						onChange({
+							...settings,
+							timeMarkersMinutes:
+								TIME_MARKER_STEPS_MINUTES[Number(event.target.value)],
+						})
+					}
+				/>
+				<span
+					className="settings-panel__slider-ticks"
+					aria-hidden="true"
+				>
+					{TIME_MARKER_STEPS_MINUTES.map((minutes) => (
+						<span key={minutes}>{minutes === 0 ? "Non" : minutes}</span>
+					))}
+				</span>
+			</label>
 		</section>
 	);
 }

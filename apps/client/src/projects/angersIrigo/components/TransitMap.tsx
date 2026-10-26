@@ -19,11 +19,13 @@ import { MAP_CENTER, MAP_ZOOM } from "../config";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { StopFocusRequest, StopGroup } from "../types/stop";
 import type { Vehicle } from "../types/vehicle";
+import type { VehicleMotion } from "../utils/simulation";
 import { filterStopsByRoute } from "../utils/stops";
 import { FocusedStopMarker } from "./FocusedStopMarker";
 import { FollowStatus } from "./FollowStatus";
 import { StopsLayer } from "./StopsLayer";
 import { TripPathLayer } from "./TripPathLayer";
+import { TripTimeMarkers } from "./TripTimeMarkers";
 import { VehicleFollower } from "./VehicleFollower";
 import { VehicleMarker } from "./VehicleMarker";
 
@@ -39,6 +41,12 @@ type TransitMapProps = {
 	stops: StopGroup[];
 	/** Lignes de chaque arrêt (voir indexRoutesByStopGroup), une fois les tracés chargés */
 	routeIdsByStopGroup?: ReadonlyMap<string, ReadonlySet<string>> | undefined;
+	/** Trajets prévus des véhicules (voir utils/simulation.ts), une fois les tracés chargés */
+	motions?: ReadonlyMap<string, VehicleMotion> | undefined;
+	/** Instant des positions simulées (s depuis l'epoch) ; absent si la simulation est désactivée */
+	simulationSeconds?: number | undefined;
+	/** Intervalle des repères de temps sur le tracé du véhicule sélectionné ; 0 pour aucun */
+	timeMarkersMinutes: number;
 	tripUpdates: ReadonlyMap<string, TripUpdate>;
 	/** Arrêt choisi hors de la carte, sur lequel se centrer */
 	stopFocus?: StopFocusRequest | undefined;
@@ -118,6 +126,9 @@ export function TransitMap({
 	vehicles,
 	stops,
 	routeIdsByStopGroup,
+	motions,
+	simulationSeconds,
+	timeMarkersMinutes,
 	tripUpdates,
 	stopFocus,
 	onStopFocusEnd,
@@ -130,6 +141,8 @@ export function TransitMap({
 		(vehicle) => vehicle.entityId === selectedVehicleId,
 	);
 	const clearSelection = useCallback(() => setSelectedVehicleId(undefined), []);
+	const selectedMotion =
+		selectedVehicle && motions?.get(selectedVehicle.entityId);
 
 	// Véhicule sélectionné : seuls les arrêts de sa ligne restent affichés. Une ligne absente des
 	// horaires embarqués n'a pas d'arrêts connus : tous restent affichés.
@@ -181,6 +194,16 @@ export function TransitMap({
 					<TripPathLayer
 						vehicle={selectedVehicle}
 						tripUpdates={tripUpdates}
+					/>
+				)}
+				{selectedMotion && timeMarkersMinutes > 0 && (
+					<TripTimeMarkers
+						motion={selectedMotion}
+						// Sans simulation, le véhicule reste affiché à sa dernière position reçue : les repères en partent
+						fromSeconds={simulationSeconds ?? selectedMotion.waypoints[0].time}
+						isSimulated={simulationSeconds !== undefined}
+						intervalMinutes={timeMarkersMinutes}
+						color={selectedVehicle.route?.color}
 					/>
 				)}
 				<StopsLayer

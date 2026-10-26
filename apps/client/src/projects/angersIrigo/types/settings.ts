@@ -7,4 +7,9 @@ export type Settings = {
 	showStops: boolean;
 	/** Faire avancer les véhicules sur leur tracé entre deux positions reçues (voir utils/simulation.ts) */
 	simulateMovement: boolean;
+	/**
+	 * Intervalle des repères de temps posés sur le tracé du véhicule sélectionné, en minutes
+	 * (une valeur de TIME_MARKER_STEPS_MINUTES) ; 0 pour ne pas en afficher
+	 */
+	timeMarkersMinutes: number;
 };
