@@ -28,13 +28,14 @@ export function requestValidator(schemas: RequestSchemas) {
 		if (schemas.query) {
 			const result = schemas.query.safeParse(request.query);
 			if (result.success) {
-				Object.keys(request.query).forEach((key) => {
-					// Manière correcte de gérer les requêtes avec Express
-					// eslint-disable-next-line no-param-reassign
-					delete (request.query as Record<string, unknown>)[key];
+				// Express 5 relit la query à chaque accès (un getter sur le prototype) : la modifier ne sert à rien.
+				// Une propriété propre à la requête masque ce getter, et le contrôleur lit les valeurs validées
+				Object.defineProperty(request, "query", {
+					value: result.data,
+					writable: true,
+					enumerable: true,
+					configurable: true,
 				});
-
-				Object.assign(request.query, result.data);
 			} else {
 				combinedError.issues.push(...result.error.issues);
 			}

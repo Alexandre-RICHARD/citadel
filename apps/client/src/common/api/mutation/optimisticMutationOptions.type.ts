@@ -11,6 +11,11 @@ export type OptimisticMutationOptions<
 > = {
 	// Une clé par action et par entité, ex. ["gameDeathCounter", "addDeath", bossId] : une seule mutation à la fois par paire
 	mutationKey: MutationKey;
+	/**
+	 * Mutations qui dépendent l'une de l'autre (enregistrer un jeu, puis l'ajouter au backlog) : même scope, leurs requêtes
+	 * partent l'une après l'autre. La mise à jour optimiste, elle, s'applique tout de suite
+	 */
+	scope?: string;
 	// Complète « Impossible de … » dans le message d'échec, ex. « ajouter la mort »
 	actionLabel: string;
 	buildRequest: (variables: Variables) => Endpoint["request"];

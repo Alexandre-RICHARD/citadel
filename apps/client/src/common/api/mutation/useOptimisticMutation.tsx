@@ -40,6 +40,7 @@ export function useOptimisticMutation<
 
 	const mutation = useMutation({
 		mutationKey: options.mutationKey,
+		...(options.scope !== undefined && { scope: { id: options.scope } }),
 		mutationFn: async (variables: Variables) =>
 			(await fetchHandler<Endpoint>(options.buildRequest(variables))).data,
 		...buildOptimisticMutationCallbacks({

@@ -11,5 +11,6 @@ export enum HttpStatutCodeErrorEnum {
 	CONTENT_TOO_LARGE = 413, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/413
 	OUT_OF_RANGE = 416, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/416
 	SERVER_ERROR = 500, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500
+	BAD_GATEWAY = 502, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502
 	SERVICE_UNAVAILABLE = 503, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503
 }

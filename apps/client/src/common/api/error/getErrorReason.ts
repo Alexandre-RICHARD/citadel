@@ -3,6 +3,7 @@ import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatut
 
 import { ApiError } from "./ApiError";
 import type { ErrorReasons } from "./errorReasons.type";
+import { getIssueFieldName } from "./getIssueFieldName";
 import { getValidationIssuePhrase } from "./getValidationIssuePhrase";
 import { technicalErrorReasons } from "./technicalErrorReasons";
 
@@ -24,9 +25,10 @@ function getValidationReason(
 	fieldLabels: Dictionaries["fieldLabels"],
 ): string | null {
 	const [issue] = error.issues;
-	const fieldName = issue?.path[0];
+	const fieldName =
+		issue === undefined ? undefined : getIssueFieldName(issue.path);
 	const fieldLabel =
-		fieldName === undefined ? undefined : fieldLabels?.[String(fieldName)];
+		fieldName === undefined ? undefined : fieldLabels?.[fieldName];
 	if (issue === undefined || fieldLabel === undefined) return null;
 	return `${fieldLabel} ${getValidationIssuePhrase(issue)}`;
 }

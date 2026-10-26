@@ -23,6 +23,14 @@ describe("getValidationIssuePhrase.ts", () => {
 				phrase: "doit être un nombre entier",
 			},
 			{
+				code: ValidationIssueCodeEnum.DUPLICATE_VALUE,
+				phrase: "contient un doublon",
+			},
+			{
+				code: ValidationIssueCodeEnum.INCOMPATIBLE_VALUE,
+				phrase: "n'est pas compatible avec les autres choix",
+			},
+			{
 				code: ValidationIssueCodeEnum.FUTURE_DATE,
 				phrase: "ne peut pas être dans le futur",
 			},
@@ -72,6 +80,11 @@ describe("getValidationIssuePhrase.ts", () => {
 				code: ValidationIssueCodeEnum.TOO_BIG,
 				limit: 2_147_483_647,
 				phrase: "doit valoir au plus 2147483647",
+			},
+			{
+				code: ValidationIssueCodeEnum.TOO_MANY_DECIMALS,
+				limit: 3,
+				phrase: "doit avoir au plus 3 décimales",
 			},
 		])(
 			"SHOULD include the limit WHEN the code is $code with a limit of $limit",
