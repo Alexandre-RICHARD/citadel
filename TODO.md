@@ -119,8 +119,6 @@ Idées qui ne seront pas faites :
   - Si une requête ramène des données qui ne sont pas plus récentes que les précédentes (actualisation en retard), redemander toutes les 4 s jusqu'à en recevoir de neuves, puis reprendre le rythme de 60 s recalé sur elles.
   - Un calage par flux : positions des véhicules et mises à jour de trajet n'ont pas forcément la même heure d'actualisation.
   - Point d'attention : l'âge se compare à l'horloge du PC, qui peut être décalée de quelques secondes. Le mesurer plutôt avec l'heure du serveur (en-tête `Date` de la réponse, si le relais `/irigo` le transmet).
-- Bug : au clic sur un véhicule, son trajet n'est plus en surbrillance. Sans doute cassé à la copie du projet depuis `map`.
-- Bug : les arrêts ne s'affichent plus. Même cause probable.
 - Quand on a la petite modal d'un véhicule ouvert, on ne peut pas faire défiler la carte loin, l'emplacement de la modal nous empêche d'aller plus loin
 - En haut à gauche, on a bien le nombre de seconde depuis que les dernières données ont été reçues, mais quand je suis sur un véhicule, ça marque toujours "Position estimée (signal reçu maintenant)". Et si je désactive la simulation des déplacements, ça indique "Position il y a 1 s
 
