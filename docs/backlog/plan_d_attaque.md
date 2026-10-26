@@ -2,6 +2,8 @@
 
 Oct 21, 2026 · @Alex Perso
 
+> Terminé : le POC a laissé place à l'application, avec sa base et son serveur (cahier des charges, section 4). Ce plan reste comme trace de sa construction ; son annuler / rétablir et son footer de debug n'existent plus.
+
 Ce plan dit dans quel ordre construire le POC. Le **quoi** vient à 100 % du cahier des charges « Backlog Jeux Vidéo — Cahier des charges », fourni avec ce plan.
 
 ## Règles de travail
