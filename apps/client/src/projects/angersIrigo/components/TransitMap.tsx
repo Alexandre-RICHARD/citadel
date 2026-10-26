@@ -1,6 +1,13 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import { point, Popup, setOptions } from "leaflet";
-import { type JSX, type RefObject, useCallback, useRef, useState } from "react";
+import {
+	type JSX,
+	type RefObject,
+	useCallback,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	MapContainer,
 	TileLayer,
@@ -12,6 +19,7 @@ import { MAP_CENTER, MAP_ZOOM } from "../config";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { StopFocusRequest, StopGroup } from "../types/stop";
 import type { Vehicle } from "../types/vehicle";
+import { filterStopsByRoute } from "../utils/stops";
 import { FocusedStopMarker } from "./FocusedStopMarker";
 import { FollowStatus } from "./FollowStatus";
 import { StopsLayer } from "./StopsLayer";
@@ -29,6 +37,8 @@ type TransitMapProps = {
 	vehicles: Vehicle[];
 	/** Arrêts à afficher ; liste vide pour les masquer */
 	stops: StopGroup[];
+	/** Lignes de chaque arrêt (voir indexRoutesByStopGroup), une fois les tracés chargés */
+	routeIdsByStopGroup?: ReadonlyMap<string, ReadonlySet<string>> | undefined;
 	tripUpdates: ReadonlyMap<string, TripUpdate>;
 	/** Arrêt choisi hors de la carte, sur lequel se centrer */
 	stopFocus?: StopFocusRequest | undefined;
@@ -107,6 +117,7 @@ function PopupAutoPan({
 export function TransitMap({
 	vehicles,
 	stops,
+	routeIdsByStopGroup,
 	tripUpdates,
 	stopFocus,
 	onStopFocusEnd,
@@ -119,6 +130,21 @@ export function TransitMap({
 		(vehicle) => vehicle.entityId === selectedVehicleId,
 	);
 	const clearSelection = useCallback(() => setSelectedVehicleId(undefined), []);
+
+	// Véhicule sélectionné : seuls les arrêts de sa ligne restent affichés. Une ligne absente des
+	// horaires embarqués n'a pas d'arrêts connus : tous restent affichés.
+	const selectedRouteId = selectedVehicle?.route?.routeId;
+	const displayedStops = useMemo(
+		() =>
+			selectedRouteId !== undefined && routeIdsByStopGroup
+				? filterStopsByRoute(
+						stops,
+						routeIdsByStopGroup,
+						(routeId) => routeId === selectedRouteId,
+					)
+				: stops,
+		[stops, routeIdsByStopGroup, selectedRouteId],
+	);
 
 	// Véhicule suivi : la carte reste centrée dessus jusqu'à ce qu'on la déplace à la main
 	const [followedVehicleId, setFollowedVehicleId] = useState<string>();
@@ -158,7 +184,7 @@ export function TransitMap({
 					/>
 				)}
 				<StopsLayer
-					stops={stops}
+					stops={displayedStops}
 					tripUpdates={tripUpdates}
 				/>
 				{stopFocus && (

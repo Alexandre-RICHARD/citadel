@@ -12,7 +12,7 @@ import {
 	VEHICLE_POSITIONS_URL,
 } from "./config";
 import { GTFS_STATIC } from "./data/gtfs-static";
-import { STOP_GROUPS } from "./data/stop-groups";
+import { STOP_GROUP_BY_STOP_ID, STOP_GROUPS } from "./data/stop-groups";
 import { FavoritesContext } from "./hooks/useFavorites";
 import { useNow } from "./hooks/useNow";
 import { usePersistentState } from "./hooks/usePersistentState";
@@ -36,10 +36,12 @@ import {
 	VEHICLE_FILTER_STORAGE_KEY,
 } from "./utils/settings";
 import { planMotions, simulateVehicles } from "./utils/simulation";
+import { filterStopsByRoute, indexRoutesByStopGroup } from "./utils/stops";
 import { indexTripUpdates } from "./utils/trip-updates";
 import {
 	extractVehicles,
 	filterVehicles,
+	getRouteKind,
 	keepRoutesOfKind,
 } from "./utils/vehicles";
 
@@ -102,6 +104,31 @@ export function AngersIrigo() {
 		? currentVehicles
 		: currentVehicles.filter((vehicle) => !vehicle.isStale);
 
+	// Arrêts des lignes affichables (mode, lignes choisies), une fois les tracés chargés : ce sont
+	// eux qui disent quelles lignes desservent chaque arrêt. Liste stable, la couche des arrêts est mémoïsée.
+	const routeIdsByStopGroup = useMemo(
+		() =>
+			shapes &&
+			indexRoutesByStopGroup(shapes, GTFS_STATIC, STOP_GROUP_BY_STOP_ID),
+		[shapes],
+	);
+	const stops = useMemo(() => {
+		if (!settings.showStops) {
+			return NO_STOPS;
+		}
+		if (!routeIdsByStopGroup || (filter === "all" && lineFilter.length === 0)) {
+			return STOP_GROUPS;
+		}
+		return filterStopsByRoute(
+			STOP_GROUPS,
+			routeIdsByStopGroup,
+			(routeId) =>
+				(filter === "all" ||
+					getRouteKind(routeId, GTFS_STATIC.routes) === filter) &&
+				(lineFilter.length === 0 || lineFilter.includes(routeId)),
+		);
+	}, [settings.showStops, routeIdsByStopGroup, filter, lineFilter]);
+
 	// Stables entre deux changements de favoris : l'encadré et les popups ne se redessinent pas chaque seconde
 	const handleFavoriteToggle = useCallback(
 		(favorite: Favorite) => setFavorites(toggleFavorite(favorites, favorite)),
@@ -127,7 +154,8 @@ export function AngersIrigo() {
 			<div className="angers-irigo">
 				<TransitMap
 					vehicles={filterVehicles(displayableVehicles, filter, lineFilter)}
-					stops={settings.showStops ? STOP_GROUPS : NO_STOPS}
+					stops={stops}
+					routeIdsByStopGroup={routeIdsByStopGroup}
 					tripUpdates={tripUpdates}
 					stopFocus={stopFocus}
 					onStopFocusEnd={endStopFocus}
