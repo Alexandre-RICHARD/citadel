@@ -35,6 +35,9 @@ export const STALE_POSITION_SECONDS = 10 * 60;
 /** Intervalle entre deux positions estimées par la simulation (paramètre « Simulation ») */
 export const SIMULATION_TICK_MS = 1000;
 
+/** Choix du paramètre « Repères de temps », en minutes ; 0 les désactive */
+export const TIME_MARKER_STEPS_MINUTES = [0, 1, 2, 5, 10, 15, 20];
+
 /** En dessous de ce zoom, les arrêts sont masqués : ils noieraient la carte */
 export const STOPS_MIN_ZOOM = 15;
 

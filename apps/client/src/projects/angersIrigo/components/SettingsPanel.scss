@@ -15,4 +15,49 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
+
+  // Mêmes tailles de texte que ToggleSwitch
+  &__slider {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__slider-header {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing;
+    font-size: 14px;
+  }
+
+  &__slider-value {
+    font-weight: 600;
+  }
+
+  &__slider-description {
+    font-size: 12px;
+    color: $color-muted;
+  }
+
+  &__slider-input {
+    width: 100%;
+    margin: 8px 0 2px;
+    accent-color: $color-success;
+  }
+
+  // Une graduation par cran : chaque libellé, de largeur nulle, se centre sur la position du curseur
+  // (padding : demi-largeur du curseur, qui ne va pas jusqu'aux bords de la piste)
+  &__slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-size: 11px;
+    color: $color-muted;
+
+    > span {
+      display: flex;
+      justify-content: center;
+      width: 0;
+      white-space: nowrap;
+    }
+  }
 }
