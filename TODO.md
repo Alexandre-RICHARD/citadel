@@ -166,9 +166,8 @@ Numéros d'origine gardés.
 
 ## 6. Hébergement et mise en production
 
-- Phases 5 à 7 de la roadmap : bascule du NAS ; sauvegardes, pré-prod et alertes ; réseau, sécurité et ménage ([cahier des charges, §15](docs/ci_cd/cahier_des_charges.md#15-roadmap)).
+- Phases 6 et 7 de la roadmap : sauvegardes, pré-prod et alertes ; réseau, sécurité et ménage ([cahier des charges, §15](docs/ci_cd/cahier_des_charges.md#15-roadmap)).
 - Une barrette de RAM de plus, si c'est bien le goulot d'étranglement. À 16 Go : Jellyfin à 8 Go, qBittorrent à 6 Go, et son cache interne à 2 Go (options avancées).
-- Priorité CPU de Gluetun intermédiaire (entre 128 et 1024, vers 400).
 - [Docker Credentials Store](https://docs.docker.com/reference/cli/docker/login/#credential-stores) sur le NAS pour les mots de passe et les clés.
 
 Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
