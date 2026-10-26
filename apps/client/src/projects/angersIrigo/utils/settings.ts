@@ -6,6 +6,8 @@ import type { VehicleFilter } from "../types/vehicle";
 export const SETTINGS_STORAGE_KEY = "irigo-map:settings";
 export const VEHICLE_FILTER_STORAGE_KEY = "irigo-map:vehicle-filter";
 export const LINE_FILTER_STORAGE_KEY = "irigo-map:line-filter";
+export const INFO_PANEL_COLLAPSED_STORAGE_KEY =
+	"irigo-map:info-panel-collapsed";
 
 export const DEFAULT_SETTINGS: Settings = {
 	showStaleVehicles: false,
@@ -32,6 +34,11 @@ export function sanitizeSettings(stored: unknown): Settings {
 		showStops: readBoolean("showStops"),
 		simulateMovement: readBoolean("simulateMovement"),
 	};
+}
+
+/** Panneau d'infos replié ; déplié par défaut */
+export function sanitizeCollapsed(stored: unknown): boolean {
+	return stored === true;
 }
 
 export function sanitizeVehicleFilter(stored: unknown): VehicleFilter {

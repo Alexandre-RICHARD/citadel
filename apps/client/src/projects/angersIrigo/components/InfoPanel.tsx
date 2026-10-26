@@ -4,11 +4,16 @@ import "./InfoPanel.scss";
 import { type JSX, useId, useState } from "react";
 
 import { STALE_POSITION_SECONDS } from "../config";
+import { usePersistentState } from "../hooks/usePersistentState";
 import type { GtfsRoute } from "../types/gtfs-static";
 import type { LoadStatus } from "../types/load-status";
 import type { Settings } from "../types/settings";
 import type { StopGroup } from "../types/stop";
 import type { Vehicle, VehicleFilter } from "../types/vehicle";
+import {
+	INFO_PANEL_COLLAPSED_STORAGE_KEY,
+	sanitizeCollapsed,
+} from "../utils/settings";
 import { countVehicles, filterVehicles } from "../utils/vehicles";
 import { FeedStatusLine } from "./FeedStatusLine";
 import { LineBadge } from "./LineBadge";
@@ -53,6 +58,23 @@ function SettingsIcon(): JSX.Element {
 	);
 }
 
+/** Chevron vers le haut (replier) ; retourné par le CSS quand le panneau est replié */
+function ChevronIcon(): JSX.Element {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			width="20"
+			height="20"
+			aria-hidden="true"
+		>
+			<path
+				fill="currentColor"
+				d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z"
+			/>
+		</svg>
+	);
+}
+
 export function InfoPanel({
 	vehicles,
 	tramRoutes,
@@ -68,6 +90,27 @@ export function InfoPanel({
 }: InfoPanelProps): JSX.Element {
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const settingsPanelId = useId();
+	// Replié, le panneau laisse toute la carte visible (surtout sur téléphone) ; gardé d'une visite à l'autre
+	const [isCollapsed, setIsCollapsed] = usePersistentState(
+		INFO_PANEL_COLLAPSED_STORAGE_KEY,
+		sanitizeCollapsed,
+	);
+
+	if (isCollapsed) {
+		return (
+			<aside className="info-panel info-panel--collapsed">
+				<button
+					type="button"
+					className="info-panel__expand-button"
+					aria-expanded={false}
+					onClick={() => setIsCollapsed(false)}
+				>
+					<span className="info-panel__title">Irigo en direct</span>
+					<ChevronIcon />
+				</button>
+			</aside>
+		);
+	}
 
 	return (
 		<aside className="info-panel">
@@ -76,16 +119,27 @@ export function InfoPanel({
 					<h1 className="info-panel__title">Irigo en direct</h1>
 					<p className="info-panel__subtitle">Bus et trams d&apos;Angers</p>
 				</div>
-				<button
-					type="button"
-					className="info-panel__settings-button"
-					aria-label="Paramètres"
-					aria-expanded={isSettingsOpen}
-					aria-controls={settingsPanelId}
-					onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-				>
-					<SettingsIcon />
-				</button>
+				<div className="info-panel__header-buttons">
+					<button
+						type="button"
+						className="info-panel__icon-button"
+						aria-label="Paramètres"
+						aria-expanded={isSettingsOpen}
+						aria-controls={settingsPanelId}
+						onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+					>
+						<SettingsIcon />
+					</button>
+					<button
+						type="button"
+						className="info-panel__icon-button"
+						aria-label="Replier le panneau"
+						aria-expanded
+						onClick={() => setIsCollapsed(true)}
+					>
+						<ChevronIcon />
+					</button>
+				</div>
 			</header>
 
 			<StopSearch onSelect={onStopSelect} />

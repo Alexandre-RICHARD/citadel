@@ -23,7 +23,12 @@
     gap: $spacing;
   }
 
-  &__settings-button {
+  &__header-buttons {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__icon-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,6 +48,41 @@
     &[aria-expanded='true'] {
       background: $color-surface-alt;
       color: $color-text;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-focus;
+    }
+  }
+
+  // Replié : une simple pastille avec le titre, qui ne s'étire pas sur toute la largeur (mobile)
+  // Double classe : passe devant le padding du bloc mobile, plus bas
+  &#{&}--collapsed {
+    align-self: flex-start;
+    width: auto;
+    padding: 0;
+  }
+
+  &__expand-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px 8px 14px;
+    border: 0;
+    border-radius: $radius;
+    background: transparent;
+    color: $color-text;
+    font: inherit;
+    cursor: pointer;
+
+    // Chevron vers le bas : déplier
+    svg {
+      color: $color-muted;
+      transform: rotate(180deg);
+    }
+
+    &:hover {
+      background: $color-surface-alt;
     }
 
     &:focus-visible {

@@ -40,6 +40,12 @@
   @media (max-width: $breakpoint-mobile) {
     flex-direction: column;
     align-items: stretch;
+
+    // Panneau d'infos replié en pastille : la place se libère, les favoris remontent dans le coin haut droit
+    &:has(.info-panel--collapsed) {
+      flex-direction: row;
+      align-items: flex-start;
+    }
   }
 }
 
