@@ -1,40 +1,35 @@
 # Citadel
 
-## Lancer le projet en local
+Mon monorepo personnel : le site [alexandre-richard.fr](https://alexandre-richard.fr) et ses projets (front React, API Express et MariaDB), et la console d'administration du NAS qui les héberge.
+
+| Projet | Route | Ce que c'est |
+| --- | --- | --- |
+| [Game Death Counter](docs/gameDeathCounter/README.md) | `/game-death-counter` | Compteur de morts dans les jeux de type Souls |
+| [Backlog](docs/backlog/README.md) | `/backlog` | Suivi de mes jeux vidéo, sur les données d'IGDB |
+| [Angers Irigo](docs/angersIrigo/README.md) | `/angers-irigo` | Bus et trams d'Angers en temps réel |
+| Satisfactory | `/satisfactory` | Calculateur pour le jeu éponyme |
+| Test | `/test` | Bac à sable |
+
+Autres docs : [architecture et conventions](docs/architecture.md), [hébergement et mise en production](docs/ci_cd/README.md), [à faire](TODO.md).
+
+## Lancer en local
+
 ### Prérequis
+
 - Node 24, et pnpm par corepack : `corepack enable`
 - Docker Desktop, lancé : les bases MariaDB de dev et de test tournent dedans
 - Git Bash pour les scripts (`pnpm release`)
 - `.env` et `.env.test` à la racine, copiés de `.env.example` et remplis (les commentaires du modèle disent quoi mettre dans chacun)
 
 ### Démarrage
+
 - `pnpm install`
 - `pnpm db:up` : démarre la base de dev et applique les migrations
 - `pnpm dev-all` : le front sur http://localhost:3001, qui appelle l'API par `/api`
 
-### Tests et mise en prod
-- `pnpm validate-all` : types, lint, tests (la base de test est recréée à chaque lancement), builds
-- `pnpm prod:local` : les images de prod sur ton PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter)
-- `pnpm release` : la mise en prod ; tout est expliqué dans `docs/ci_cd/README.md`
+### Autres commandes
 
-## TODO
-- Ajouter des tests (unitaire uniquement)
-https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968 
-- On va enfin implémenter le front
-- On va faire des tests end to end
-- Faire le système de tous est en 1 rem = 10px. Mais il faut y appliquer un système pour que l'utilisateur puisse "zoomer"
-- Rendre précis le undefined. ? | undefined, ou les 2 mais le sens doit être différent
-  - Préféré des valeurs null pour les input
-  - En fait, c'est déjà activé. Préféré le fait de ne jamais avoir de type en undefined explicite. Une propriété optionnelle doit être marqué en ?. Une propriété qui peut être nulle doit être marqué en null.
-- Refaire entièrement le thème
-- Refonte du système de traduction
-- Virer lucide-react
-- Les media queries ne doivent jamais utilisées de rem, mais resté en taille d'écran abolsue à priori
-- Faire des data-portal avec tout les éléments de type : tooltip, modal, dropdown
-- Claude a répéré "Un bug repéré en passant dans DeathRow, non corrigé. Le champ de date est en datetime-local, mais toDateInputValue renvoie seulement AAAA-MM-JJ, une valeur que ce type de champ refuse. Le champ s'affiche donc vide, et enregistrer une mort sans toucher à la date remet son heure à minuit UTC. C'est à régler quand tu brancheras gameDeathCounter sur l'API."
-- + point bonus : avec les collègues on a vu que c'était bien que les tests d'intégration ne nettoie pas leurs données de tests avant ou après l'exécution individuelle. La base ne doit être clean qu'au tout début des tests. Cela permet de s'assurer d'une meilleure compatibilité des endpoints les uns par rapport aux autres. Aussi, pour renforcer ça, les tests d'intégration doivent être joué dans un ordre aléatoire à chaque fois. Si un test échoue une fois, soit il est mal conçu, soit il a révélé une faille entre plusieurs endpoints.
-- getSortStringValue classe les majuscules avant les minuscules et les accents après « z ». Il y a déjà un TODO sur le sujet ; les tests décrivent ce comportement actuel.
-- Rajouter un petit toast global à l'appli quand le client n'est plus connecté à internet. Avoir un toast de succès quand cela revient à la normale.
-- Tout convertir en REM
-- Gérer le preference mode dark or light
-- Avoir un mode qui désactive toutes les animations si l'utilisateur à émis cette préférence
+- `pnpm validate-all` : types, lint, tests (la base de test est recréée à chaque lancement), builds
+- `pnpm db:reset` : repart d'une base de dev vide
+- `pnpm prod:local` : les images de prod sur ton PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter)
+- `pnpm release` : la mise en prod ([hébergement](docs/ci_cd/README.md))
