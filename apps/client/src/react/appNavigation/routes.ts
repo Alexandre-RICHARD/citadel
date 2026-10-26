@@ -18,20 +18,6 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 			basePath: projects[ProjectsEnum.Homepage].path,
 		} satisfies RouteMeta,
 	},
-	[ProjectsEnum.Test]: {
-		path: `${projects[ProjectsEnum.Test].path}/*`,
-		lazy: async () => {
-			const { Test } = await import("../../projects/test");
-			return { Component: Test };
-		},
-		handle: {
-			project: ProjectsEnum.Test,
-			documentTitle: projects[ProjectsEnum.Test].documentTitle,
-			favicon: projects[ProjectsEnum.Test].favicon,
-			basePath: projects[ProjectsEnum.Test].path,
-		} satisfies RouteMeta,
-		index: true,
-	},
 	[ProjectsEnum.Satisfactory]: {
 		path: `${projects[ProjectsEnum.Satisfactory].path}/*`,
 		lazy: async () => {

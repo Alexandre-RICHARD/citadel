@@ -13,13 +13,13 @@ describe("setFavicon.ts", () => {
 				0,
 			);
 
-			setFavicon("/favicon/test.ico");
+			setFavicon("/favicon/home.ico");
 
 			const links = document.head.querySelectorAll("link[rel='icon']");
 			expect(links).toHaveLength(1);
 
 			const link = links[0] as HTMLLinkElement;
-			expect(link.getAttribute("href")).toBe("/favicon/test.ico");
+			expect(link.getAttribute("href")).toBe("/favicon/home.ico");
 			expect(link.getAttribute("rel")).toBe("icon");
 			expect(link.getAttribute("type")).toBe("image/x-icon");
 		});

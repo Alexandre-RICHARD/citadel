@@ -11,15 +11,6 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		favicon: "/favicon/home.ico",
 		illustration: "/favicon/home.ico",
 	},
-	[ProjectsEnum.Test]: {
-		id: "test",
-		path: "/test",
-		name: "Test",
-		description: "Un projet uniquement fait pour tester des features",
-		documentTitle: "Test",
-		favicon: "/favicon/test.ico",
-		illustration: "/favicon/test.ico",
-	},
 	[ProjectsEnum.Satisfactory]: {
 		id: "satisfactory",
 		path: "/satisfactory",

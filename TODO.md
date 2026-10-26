@@ -15,7 +15,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 
 ## 1. Général
 
-- Supprimer le projet Test : front (`projects/test`, sa fiche et sa route dans `react/appNavigation`), serveur (`projects/test`, sa route dans `globalRouter.ts`, `TestErrorCodeEnum` dans `errorCode.type.ts`), specs (`projects/test`, `ApiPrefixEnum.TEST`), et sa table `tests` (créée par V001, à supprimer dans une nouvelle migration).
 - Ajouter des tests (unitaire uniquement)
   https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968
 - On va enfin implémenter le front
