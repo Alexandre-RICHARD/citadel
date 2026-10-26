@@ -14,6 +14,12 @@ import { getDistanceAlongShape, getTripShape } from "./shapes";
 const AT_STOP_METERS = 30;
 
 /**
+ * Vitesse la plus lente à laquelle un véhicule quitte son terminus (m/s, soit 14 km/h). Les
+ * horaires d'Irigo prévoient 15 à 30 km/h entre deux arrêts.
+ */
+const MIN_TERMINUS_SPEED = 4;
+
+/**
  * Le cap ne sert qu'à orienter la flèche du marqueur : l'arrondir évite de recréer l'icône
  * (voir VehicleMarker) à chaque léger virage du tracé.
  */
@@ -33,6 +39,8 @@ export type VehicleMotion = {
 
 /** Passage prévu à un arrêt de la course, placé sur son tracé (heures en s depuis l'epoch) */
 type StopForecast = {
+	/** Rang de l'arrêt dans shape.stops */
+	shapeStopIndex: number;
 	distance: number;
 	arrival: number;
 	departure: number;
@@ -64,6 +72,7 @@ function getStopForecasts(
 		}
 		nextShapeStopIndex = shapeStopIndex + 1;
 		forecasts.push({
+			shapeStopIndex,
 			distance: shape.stops[shapeStopIndex].distance,
 			arrival,
 			departure,
@@ -101,6 +110,52 @@ function getForecastTimesAt(
 }
 
 /**
+ * Véhicule encore à son terminus de départ : son arrêt courant est le premier de la course (sur
+ * une ligne circulaire, c'est aussi le dernier : il faut en être plus près).
+ */
+function isAtTerminus(
+	vehicle: Vehicle,
+	shape: TripShape,
+	distance: number,
+): boolean {
+	const firstStop = shape.stops[0];
+	const lastStop = shape.stops[shape.stops.length - 1];
+	return (
+		vehicle.stopId === firstStop.stopId &&
+		(lastStop.stopId !== firstStop.stopId ||
+			distance - firstStop.distance < lastStop.distance - distance)
+	);
+}
+
+/**
+ * Au terminus, le véhicule reste à quai jusqu'à son départ. Les prévisions laissent parfois bien
+ * plus de temps qu'il n'en faut pour rejoindre l'arrêt suivant (départ annoncé dépassé, passages
+ * suivants repoussés) : plutôt que d'avancer au pas, il attend, puis part à une vitesse crédible.
+ */
+function waitAtTerminus(waypoints: Waypoint[], departure: number): void {
+	const start = waypoints[0];
+	const nextIndex = waypoints.findIndex(
+		(waypoint) => waypoint.distance > start.distance,
+	);
+	if (nextIndex === -1) {
+		return;
+	}
+	const next = waypoints[nextIndex];
+	const leaveTime = Math.max(
+		departure,
+		next.time - (next.distance - start.distance) / MIN_TERMINUS_SPEED,
+	);
+	// Remplace les étapes sur place (attente à l'arrêt) par une seule, jusqu'au départ
+	waypoints.splice(
+		1,
+		nextIndex - 1,
+		...(leaveTime > start.time
+			? [{ time: leaveTime, distance: start.distance }]
+			: []),
+	);
+}
+
+/**
  * Trajet prévu à partir de la dernière position reçue : rejoindre chaque arrêt à venir à son
  * heure d'arrivée prévue, y rester jusqu'à son heure de départ.
  *
@@ -120,9 +175,18 @@ export function planMotion(
 		distance: getDistanceAlongShape(shape, vehicle),
 	};
 	const forecasts = getStopForecasts(tripUpdate, shape);
+	// Au terminus, le flux omet parfois l'heure de départ (on le croit alors à l'heure)
+	const terminusDeparture = isAtTerminus(vehicle, shape, start.distance)
+		? (forecasts.find((forecast) => forecast.shapeStopIndex === 0)?.departure ??
+			start.time)
+		: undefined;
 
-	// Retard (positif) ou avance (négatif) sur les prévisions, nul si le véhicule est dans les temps
-	const forecastTimes = getForecastTimesAt(forecasts, start.distance);
+	// Retard (positif) ou avance (négatif) sur les prévisions, nul si le véhicule est dans les temps.
+	// Au terminus, un véhicule arrivé tôt n'est pas en avance : il attend son heure de départ.
+	const forecastTimes =
+		terminusDeparture !== undefined
+			? ([start.time, terminusDeparture] as const)
+			: getForecastTimesAt(forecasts, start.distance);
 	const delay = forecastTimes
 		? start.time -
 			Math.min(Math.max(start.time, forecastTimes[0]), forecastTimes[1])
@@ -156,6 +220,9 @@ export function planMotion(
 		}
 	}
 
+	if (terminusDeparture !== undefined) {
+		waitAtTerminus(waypoints, terminusDeparture + delay);
+	}
 	return waypoints.length > 1 ? { shape, waypoints } : undefined;
 }
 
