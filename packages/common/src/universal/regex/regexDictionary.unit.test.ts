@@ -77,7 +77,7 @@ describe("regexDictionary.ts", () => {
 
 		it("SHOULD capture the language and the extension of a translation file", () => {
 			const match = regexDictionary.clientTranslationFile.exec(
-				"/repo/apps/client/src/projects/test/translations/fr/home.translations.ts",
+				"/repo/apps/client/src/projects/backlog/translations/fr/home.translations.ts",
 			);
 
 			expect([match?.[1], match?.[2]]).toStrictEqual(["fr", "ts"]);

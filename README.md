@@ -8,7 +8,6 @@ Mon monorepo personnel : le site [alexandre-richard.fr](https://alexandre-richar
 | [Backlog](docs/backlog/README.md) | `/backlog` | Suivi de mes jeux vidéo, sur les données d'IGDB |
 | [Angers Irigo](docs/angersIrigo/README.md) | `/angers-irigo` | Bus et trams d'Angers en temps réel |
 | Satisfactory | `/satisfactory` | Calculateur pour le jeu éponyme |
-| Test | `/test` | Bac à sable |
 
 Autres docs : [architecture et conventions](docs/architecture.md), [hébergement et mise en production](docs/ci_cd/README.md), [à faire](TODO.md).
 
