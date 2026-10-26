@@ -4,7 +4,7 @@
 
 Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS `leodinas`, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de ton PC : GitHub construit les images, le NAS les télécharge et les déploie après ta confirmation.
 
-> La bascule du NAS (phase 5) n'est pas encore faite : tout se teste sur ton PC avec `pnpm prod:local`. La cible, les choix et la roadmap sont dans le [cahier des charges](cahier_des_charges.md).
+La cible, les choix et la roadmap sont dans le [cahier des charges](cahier_des_charges.md).
 
 ## Contraintes
 
