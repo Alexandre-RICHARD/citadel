@@ -44,7 +44,7 @@ Le suivi actuel tient dans un Google Sheet de 3 tableaux. Il est devenu difficil
   1. Le modèle de la base de données.
   2. La liste des endpoints, avec leur URL et à peu près ce qu'ils doivent contenir.
   3. Les éléments d'interface qui répondent aux user stories.
-- **Étape suivante** : un POC React sans base ni serveur applicatif, branché sur les vraies données IGDB (section 4).
+- **Réalisé** : un POC React branché sur IGDB, puis l'application avec sa base et son serveur (section 4).
 
 ## 3. Source de données : IGDB
 
@@ -69,7 +69,7 @@ Les données de référence viennent de l'API IGDB ([documentation](https://api-
 | Développeur, éditeur | Colonnes Développeur et Éditeur | `involved_companies` (rôles développeur / éditeur) → `companies` |
 | Logos des sociétés | Affichés au-dessus du nom de la société | `company_logos` |
 
-Le POC ne garde qu'une série, un développeur et un éditeur par jeu (section 11) ; pour chaque rôle, la première société.
+On ne garde qu'une série, un développeur et un éditeur par jeu (section 10) ; pour chaque rôle, la première société.
 
 - **Série proposée** : la collection la plus large, c'est-à-dire la première qui n'a pas de collection parente parmi celles du jeu (*Crisis Core* est dans *Compilation of Final Fantasy VII*, *Final Fantasy* et *Final Fantasy VII* : on garde *Final Fantasy*). Sans collection, la franchise principale (`franchise`), sinon la première de `franchises` (*Aperture Desk Job* → *Portal*). Sinon, pas de série : un jeu seul n'en a pas.
 - **Pas de franchise** : une collection IGDB est une suite de jeux, structurée (sous-séries, spin-offs) ; une franchise n'est qu'une étiquette d'univers, deux fois moins renseignée, qui reprend le plus souvent le nom de la série. Elle ne sert qu'à proposer une série à défaut de collection, et n'est pas stockée en tant que telle.
@@ -78,74 +78,61 @@ Le POC ne garde qu'une série, un développeur et un éditeur par jeu (section 1
 
 ## 4. Architecture des données
 
-Le POC simule la base dans l'état React mais interroge les vraies données IGDB ; ses types ont déjà la forme de la future base.
+### Application
 
-### POC
+Projet du monorepo Citadel, construit comme Game Death Counter (règles du front : `docs/frontArchitecture.md`).
 
-- Application React en TypeScript, sans base ni serveur applicatif.
-- Base simulée dans des `useState`, manipulée de façon synchrone : pas de simulation d'asynchrone.
-- Recherche et import sur les vraies données IGDB, pour corriger en direct les incompatibilités. Les appels passent par le proxy du serveur de développement (Vite), qui ajoute le Client-ID et le token ; ces identifiants restent dans un `.env` non versionné.
-- Saisie de recherche temporisée (*debounce*) pour rester sous 4 requêtes par seconde.
-- Pas de notion d'utilisateur.
+- **Specs** (`packages/specs/src/projects/backlog`) : schémas des requêtes, DTO, endpoints, et règles métier communes au serveur et au front (statuts, agrégats de la ligne, numéros dans une série, tri et filtres écrits dans l'URL).
+- **Serveur** (`apps/server/src/projects/backlog`) : Express et MariaDB, tables préfixées `backlog_` (celles de Game Death Counter : `gdc_`).
+- **Front** (`apps/client/src/projects/backlog`) : la couche `api/` (un hook par endpoint, modèles du front, cache), la page et ses composants (`pages/Homepage/`), `helper/` et `hooks/`. Les composants d'interface génériques (`components/`) et `variables.scss` (jetons des deux thèmes, mixins, injectés sous le nom `vars`) portent l'identité visuelle, en attendant leur fusion avec le design system ; `backlog.module.scss` reste la feuille partagée de la page.
+- **IGDB** : seul le serveur l'appelle, IGDB refusant les navigateurs. Il garde le Client-ID et le secret de l'application Twitch, en tire un token qu'il renouvelle quand il expire, espace ses appels pour rester sous 4 requêtes par seconde, et garde la fiche d'un jeu 10 minutes en mémoire, le temps de l'ajouter. La recherche part 300 ms après la dernière frappe.
+- **Écritures optimistes** : chaque action s'affiche tout de suite, grisée tant que le serveur n'a pas répondu, et se défait avec un message si le serveur la refuse.
+- Pas encore de notion d'utilisateur.
 
-### Organisation du code (6 fichiers)
+### Endpoints
 
-| Fichier | Contenu |
-| --- | --- |
-| `index.tsx` | Composant principal : états, tableau, modales, footer de debug |
-| `backlog.module.scss` | Styles (module SCSS) |
-| `types.ts` | Tous les types, exportés, calqués sur les futures tables, dont le type `AppState` de l'état complet |
-| `initialState.ts` | L'objet `initialState`, très fortement typé, qui regroupe les valeurs initiales de tous les `useState` |
-| `mappers.ts` | Tous les mappers : réponses IGDB → types de la base ; base → lignes du tableau |
-| `utils.ts` | Toutes les autres fonctions : appels IGDB, calculs, agrégats, tri, filtres, URL d'images |
+Sous `/api/backlog` :
 
-Les fichiers de configuration (`vite.config.ts`, `.env`) et le dossier d'icônes de plateformes ne comptent pas dans les 6. Deux exceptions voulues, pour l'identité visuelle :
+| Méthode | URL | Rôle |
+| --- | --- | --- |
+| GET | `/igdb/search?query=` | Recherche IGDB de la barre du haut |
+| GET | `/igdb/games/:igdbId` | Modale du jeu : sa fiche IGDB, ou le jeu en base complété d'IGDB |
+| GET | `/igdb/games/:igdbId/images` | Images proposées pour la miniature |
+| POST | `/games` | Enregistrer un jeu, ses versions et DLC cochés |
+| POST | `/games/:gameId/imports` | « Modifier le jeu », « Rechercher d'autres DLC » : versions et DLC en plus |
+| GET | `/games/:gameId` | Un jeu en base, avec sa personnalisation s'il est dans le backlog |
+| GET | `/games?query=&page=` | « Ma base » : les jeux hors backlog, par 50 |
+| GET | `/overview` | Compteurs de la page, plateformes jouées (filtre Plateforme) |
+| GET | `/user-games?page=&sort=&<colonne>=` | Le tableau, trié et filtré par le serveur, par 25 |
+| POST | `/user-games` | Ajouter au backlog : personnalisation et première version jouée |
+| PUT | `/user-games/:gameId` | « Personnaliser » |
+| DELETE | `/user-games/:gameId` | « Retirer le jeu du backlog » |
+| POST | `/user-games/:gameId/user-versions` | « Ajouter une version jouée » |
+| PATCH | `/user-versions/:id` | Une cellule du tableau : seuls les champs modifiés |
+| DELETE | `/user-versions/:id` | « Retirer la version jouée » |
+| PATCH | `/user-versions/:id/done-dlcs/:dlcId` | Case « fait » d'un DLC |
+| GET | `/series` | Toutes les séries |
+| GET | `/series/:seriesId/entries` | Les jeux du backlog d'une série |
+| PUT | `/series/:seriesId/entries` | « Réorganiser la série » |
 
-- **`components/`** : un sous-dossier par composant d'interface générique (bouton, info-bulle, popover, menu, liste déroulante, case à cocher, choix segmenté, modale, champ date et calendrier, champs nombre, durée et texte, encart, roue de chargement), avec son `index.tsx`, son `<nomDuComposant>.module.scss` et, si sa logique est longue, un `use<NomDuComposant>.tsx`. Les composants propres au backlog (tableau, cellules, modales métier) restent dans `index.tsx`.
-- **`variables.scss`** : les jetons de l'identité visuelle (couleurs des deux thèmes, ombres, rayons, typographie) et les mixins partagés. La config Vite l'injecte dans chaque `.scss` du dossier sous le nom `vars`.
+### Consignes
 
-### Consignes pour le code du POC
-
-- **Types calqués sur la base** : un type par future table (jeu, version, plateforme, DLC, série, société… ; jeu du backlog `user_games`, version jouée `user_versions`, DLC fait `done_dlcs`), avec les mêmes noms de champs.
-- **Données normalisées** : les relations passent par des identifiants (`gameId`, `platformId`…), sans objets imbriqués ni données copiées d'une entité à l'autre.
-- **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total.
-- **Reconstruction pour l'affichage** : les mappers transforment la base simulée en lignes de tableau (ligne du jeu + sous-lignes de versions jouées).
+- **Valeurs calculées jamais stockées** : tout ce qu'affiche la ligne du jeu (meilleur statut, sommes, dates, « faits / total » des DLC) et le temps total. Le serveur s'en sert pour trier et filtrer, le front pour afficher, avec la même règle (specs).
 - **Langue** : tout le code est en anglais (types, champs, variables, valeurs des listes fermées). Les libellés d'interface sont en français, écrits en dur dans le code, sans système de traduction.
 - **Pictos d'interface** : des icônes lucide-react (SVG), comme le projet Game Death Counter ; aucun emoji dans l'interface.
 
-### Export et réimport de l'état
+### Base
 
-Le bouton de debug permet de sauvegarder l'état malgré la perte au rechargement.
-
-- Il copie dans le presse-papiers le contenu complet de `initialState.ts` : un seul objet regroupant tous les états (données et interface) : tout ce que l'utilisateur voit ou choisit (recherche et résultats, modale ouverte avec ses données et ses choix en cours, mode édition, lignes dépliées, colonnes, tri, filtres, popover). Sont exclus l'historique d'annulation et les états passagers (chargement en cours, erreur réseau, minuteurs).
-- Cette copie se colle telle quelle dans `initialState.ts` ; chaque `useState` part ensuite de sa clé dans cet objet.
-- `initialState` est vérifié contre `AppState` (`satisfies AppState`) : aucun `any`, statuts, types de fin et autres listes fermées en unions de littéraux.
-- Tout l'état est sérialisable en JSON : dates en chaînes ISO (`"2026-10-21"`), `null` plutôt que `undefined`, ni `Date`, ni `Map`, ni `Set`. Sinon, la copie collée ne passe plus le typage.
-- Au départ, `initialState` ne contient que les consoles émulées et leurs émulateurs. Les autres plateformes s'ajoutent en base à l'import du premier jeu qui en a besoin.
-- Au démarrage, le tri et les filtres présents dans l'URL, et la disposition des colonnes sauvegardée dans le `localStorage`, priment sur `initialState`.
-
-### Footer de debug (POC)
-
-- Dernier jeu ajouté.
-- Nombre de jeux, de versions et de DLC en base.
-- Nombre de jeux et de versions jouées dans le backlog.
-- Nombre d'actions dans l'historique d'annulation, et à rétablir.
-- Tri et filtres actifs.
-- Le bouton d'export de l'état.
+- **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), dont la série proposée par IGDB, plus les séries créées à la main. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
+- **Base utilisateur** : toutes les données de l'utilisateur. Les jeux du backlog (`backlog_user_game`) portent sa personnalisation : miniature, type de fin, série et numéro dans la série. Les versions jouées (`backlog_user_version`) portent ses données de jeu ; c'est là seulement que la plateforme les distingue. Les DLC faits (`backlog_done_dlc`) les complètent.
 
 ### Plateformes et icônes
 
 - Chaque plateforme, émulateurs compris, est stockée avec un nom et un nom technique. Le nom est l'abréviation IGDB (`abbreviation`, ex. « PS2 »), ou le nom complet (`name`) quand elle manque. Le nom technique est le `slug` IGDB (ex. `ps2`, `win`, `ps4--1`) ; pour un émulateur, un slug choisi à la main (ex. `pcsx2`).
-- Émulateurs du POC : PCSX2 (PS2) et RPCS3 (PS3), chacun rattaché à une seule console (liste complète en section 11).
+- La base démarre avec deux consoles et leurs émulateurs : PCSX2 (PS2) et RPCS3 (PS3), chacun rattaché à une seule console (liste complète en section 10). Les autres plateformes s'ajoutent à l'import du premier jeu qui en a besoin.
 - Le front embarque les icônes en dur, chaque fichier nommé par le nom technique de sa plateforme (ex. `ps2.svg`).
 - Une plateforme sans icône affiche son nom.
 
-### Après le POC
-
-- **Une seule base**, découpée en deux groupes de tables :
-  - **Base globale (données IGDB)** : données de référence, partagées. Elle ne contient que ce qui sert à l'affichage (section 3), dont la série proposée par IGDB, plus les séries créées à la main. Chaque version y est stockée une seule fois, avec la liste de ses plateformes et de ses dates de sortie : aucune donnée n'y est dupliquée par plateforme.
-  - **Base utilisateur** : toutes les données de l'utilisateur. Les jeux du backlog (`user_games`) portent sa personnalisation : miniature, type de fin, série et numéro dans la série. Les versions jouées (`user_versions`) portent ses données de jeu ; c'est là seulement que la plateforme les distingue. Les DLC faits (`done_dlcs`) les complètent.
-- **Serveur obligatoire** entre le front et IGDB : IGDB refuse les appels depuis un navigateur, son token doit rester côté serveur et l'API est limitée à 4 requêtes par seconde.
 ### Images
 
 - On stocke seulement la référence de l'image : son `image_id` IGDB. Aucune image n'est stockée.
@@ -279,7 +266,7 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 
 ### Ajout depuis IGDB
 
-1. **Recherche** : une barre de recherche connectée à IGDB, y compris dans le POC.
+1. **Recherche** : une barre de recherche connectée à IGDB.
    - Chaque résultat s'affiche sous la forme `<Nom VF> <Nom VO> (année de sortie)`, avec son image et ses plateformes (3 au plus, puis le nombre de plateformes restantes) ; un seul nom si VF et VO sont identiques.
    - Chaque fiche trouvée mène à son jeu de base, seul proposé en résultat :
      - une version (édition, remaster, portage, version enrichie, bundle rattaché par `version_parent`) mène à son jeu original : chercher *Skyrim Special Edition* trouve *Skyrim* ;
@@ -297,7 +284,7 @@ Rien n'est enregistré avant « Valider ». Un ajout standard : clic sur un rés
 4. **Validation** : « Valider » enregistre le jeu, sa version originale, les versions cochées, les DLC cochés et la série proposée par IGDB, qui reste attachée au jeu pour le crayon et « Série IGDB ».
 5. **Ajout au backlog** : une case « Ajouter à mon backlog », cochée par défaut, à côté de « Valider ».
    - Cochée, « Valider » enregistre le jeu puis ouvre l'ajout au backlog (Gestion du backlog), avec les images déjà lues sur IGDB. La version originale y est pré-sélectionnée si c'est la seule version cochée ; sinon, aucune.
-   - Ce sont deux actions distinctes (section 10). Annuler l'ajout au backlog laisse le jeu en base, hors du backlog.
+   - Ce sont deux actions distinctes. Annuler l'ajout au backlog laisse le jeu en base, hors du backlog.
    - Décochée, le jeu entre en base seulement ; il reviendra dans le backlog par « Ma base ».
 6. **DLC comme jeu** : après « Valider », et après l'ajout au backlog s'il a lieu, la modale d'ajout de chaque DLC coché « Comme jeu » s'ouvre à son tour, dans l'ordre de la liste. Chacune a sa propre case « Ajouter à mon backlog », et ses propres DLC « comme jeu » passent avant les suivants. Annuler une modale de l'enchaînement, ou Échap, passe à la suivante. La case est grisée pour un DLC déjà en base comme jeu.
 
@@ -373,7 +360,7 @@ Les choix personnels d'un jeu du backlog, faits à l'ajout au backlog, puis modi
   - J'indique la version, parmi les versions en base, puis la plateforme parmi celles proposées (plateformes de la version, puis émulateurs de ces consoles). « Valider » reste inactif tant que les deux ne sont pas choisies.
   - La même fenêtre permet de pré-remplir toutes mes données de la version jouée : statut (liste filtrée par type de fin), à jouer bientôt, possédé, date de fin, fois fini (sûr et probable), temps relevé et estimé, note, commentaire et DLC faits. Par défaut : Pas commencé, cases décochées, compteurs et temps à 0, le reste vide. Le statut pré-rempli suit un changement du type de fin dans la personnalisation.
   - « Valider » applique les règles d'un changement de statut (section 6) : un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0, et la petite fenêtre propose la date de fin si elle est vide.
-- Retirer : entrées « Retirer la version jouée » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière version jouée retire le jeu du backlog, avec sa personnalisation (section 5). Les retraits se font sans confirmation : `Ctrl+Z` les annule (section 10).
+- Retirer : entrées « Retirer la version jouée » et « Retirer le jeu du backlog » du menu Actions. Retirer la dernière version jouée retire le jeu du backlog, avec sa personnalisation (section 5). Chaque retrait se confirme dans une petite fenêtre qui dit ce qu'il emporte : il n'y a pas d'annulation (section 10).
 
 ## 9. Vue Backlog (tableau principal)
 
@@ -388,7 +375,7 @@ Le backlog s'affiche dans un tableau : une ligne par jeu, dépliable selon les r
 ### Chargement
 
 - Défilement infini par pages de 25 jeux : la page suivante se charge à l'approche du bas de page, avant de l'atteindre.
-- Dans le POC, le tri et les filtres portent sur tout le backlog, en mémoire ; le défilement infini découpe ensuite le résultat par pages de 25. Après le POC, ils s'appliqueront page par page, côté serveur.
+- Le serveur trie et filtre tout le backlog, puis le découpe en pages de 25. Pendant qu'une nouvelle vue se lit (tri ou filtre changé), la précédente reste affichée, estompée.
 
 ### DLC
 
@@ -405,12 +392,11 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 
 | Ligne | Entrées du menu |
 | --- | --- |
-| Ligne du jeu | Personnaliser · Réorganiser la série (jeu avec une série) · Modifier le jeu · Ajouter une version jouée · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses versions jouées) · Logger cette ligne (POC) |
-| Sous-ligne de version jouée | Ouvrir la version sur IGDB · Retirer la version jouée · Logger cette ligne (POC) |
+| Ligne du jeu | Personnaliser · Réorganiser la série (jeu avec une série) · Modifier le jeu · Ajouter une version jouée · Ouvrir sur IGDB · Retirer le jeu du backlog (toutes ses versions jouées) |
+| Sous-ligne de version jouée | Ouvrir la version sur IGDB · Retirer la version jouée |
 | Ligne à version jouée unique | Le menu de la ligne du jeu ; « Retirer le jeu du backlog » y retire l'unique version jouée |
 
-- « Ouvrir sur IGDB » et « Logger cette ligne » restent disponibles en lecture seule ; les autres entrées ne sont actives qu'en mode édition.
-- « Logger cette ligne » affiche dans la console le jeu, sa personnalisation, ses versions et ses versions jouées tels qu'ils sont stockés ; sur une sous-ligne, seulement cette version jouée et sa version.
+- « Ouvrir sur IGDB » reste disponible en lecture seule ; les autres entrées ne sont actives qu'en mode édition.
 - Le menu, comme le popover des DLC, se ferme au clic à côté ou avec Échap.
 
 ### Header du tableau
@@ -419,7 +405,7 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - Un bouton qui ouvre une petite modale pour gérer la visibilité de chaque colonne.
 - Un bouton fixe (*sticky*) pour basculer en mode édition.
 - De petites bulles explicatives, par exemple sur Type de fin et Statut pour rappeler la signification des valeurs.
-- La barre du haut (titre, recherche IGDB, bouton « Ma base », boutons annuler / rétablir, bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
+- La barre du haut (titre, recherche IGDB, bouton « Ma base », bouton des colonnes, bouton du mode édition) reste fixe ; la page défile en largeur et les en-têtes du tableau restent visibles sous la barre.
 
 ### Lecture seule et édition
 
@@ -456,30 +442,20 @@ Un menu « 3 points verticaux » en fin de ligne regroupe les actions occasionne
 - **Défilement horizontal** : la colonne du chevron, la miniature (quand elle précède le nom) et le nom restent collés à gauche.
 - **Clavier** : « / » met le curseur dans la recherche ; ↓, ↑ et Entrée parcourent et choisissent les résultats (recherche IGDB, « Ma base ») ; une liste déroulante s'ouvre avec ↓, Entrée ou Espace, se parcourt aux flèches et à la frappe ; le menu Actions s'ouvre aussi avec ↓ et se parcourt aux flèches ; Alt+↓ ouvre le calendrier d'un champ date. Les modales gardent le focus (Tab boucle) et le rendent à l'élément d'origine à la fermeture.
 
-## 10. Annuler / rétablir
-
-- `Ctrl+Z` annule et `Ctrl+Y` rétablit, sur les 20 dernières actions.
-- À la souris, les boutons annuler et rétablir de la barre du haut font de même ; elles sont grisées quand il n'y a rien à annuler ou à rétablir.
-- Une action est une modification de la base : un champ enregistré, une case cochée, un statut changé (avec son « fois fini » automatique), un DLC coché, un ajout validé (jeu ; ajout au backlog avec sa première version jouée), un retrait, « Personnaliser », « Réorganiser la série » ou « Modifier le jeu » validé, des DLC ajoutés par « Rechercher d'autres DLC ». La date de fin validée dans la petite fenêtre est une action distincte.
-- Les changements d'interface ne sont pas des actions : tri, filtres, colonnes, lignes dépliées, mode édition.
-- Quand le curseur est dans un champ texte, `Ctrl+Z` reste l'annulation du navigateur dans ce champ.
-- L'annulation marche aussi en lecture seule ; pendant qu'une modale est ouverte, les raccourcis sont ignorés. Sur Mac, `⌘` vaut `Ctrl`.
-- L'historique vit en mémoire et se perd au rechargement de la page.
-- Après le POC, chaque annulation ou rétablissement relance une requête API ; dans le POC, il met simplement à jour l'état.
-
-## 11. Idées mises de côté et écartées
+## 10. Idées mises de côté et écartées
 
 ### Pour plus tard
 
 - Synchronisation des données globales avec IGDB (logo d'un studio modifié, date de sortie fixée pour un jeu à venir).
 - Jeux épisodiques (type Telltale), à traiter comme un jeu complet et unique.
-- Affichage du tableau : dans le POC, les lignes ne se recalculent que quand la base, le tri ou les filtres changent, mais toutes les lignes chargées se redessinent à chaque rendu (frappe dans la recherche, popover, modale). Ensuite, si besoin : ne redessiner que les lignes concernées (lignes mémorisées, actions stables, popover transmis à sa seule ligne), puis réutiliser les lignes inchangées pour qu'une modification ne redessine que la sienne. Tri et filtres côté serveur, page par page, réduiront déjà ce travail.
-- DLC choisis par utilisateur : dans le POC, les DLC choisis vont en base, rattachés au jeu, comme les versions. À plusieurs utilisateurs, un DLC ajouté par l'un compterait dans le « total » de l'autre ; il faudra une sélection des DLC suivis par utilisateur.
-- Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des versions jouées et un DLC des cases « fait ». Le POC ne permet que d'en ajouter.
-- Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Le POC n'embarque que PCSX2 (PS2) et RPCS3 (PS3).
-- Plusieurs développeurs et éditeurs par jeu : IGDB renvoie des listes (`involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (un logo au-dessus de chaque société). Le POC n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
+- Annuler / rétablir : `Ctrl+Z` et `Ctrl+Y` sur les 20 dernières actions, avec deux boutons dans la barre du haut. Une action est une modification de la base (champ enregistré, case cochée, statut changé avec son « fois fini » automatique, ajout, retrait, « Personnaliser », « Réorganiser la série », « Modifier le jeu » ou « Rechercher d'autres DLC » validé) ; ni le tri, ni les filtres, ni les colonnes. Dans un champ texte, `Ctrl+Z` reste celui du navigateur. Chaque annulation envoie l'opération inverse au serveur. À faire avec les comptes : l'historique est propre à chaque utilisateur. En attendant, un retrait se confirme.
+- Affichage du tableau : toutes les lignes chargées se redessinent à chaque rendu (frappe dans la recherche, popover, modale). Si besoin : ne redessiner que les lignes concernées (lignes mémorisées, actions stables, popover transmis à sa seule ligne).
+- DLC choisis par utilisateur : les DLC choisis vont en base, rattachés au jeu, comme les versions. À plusieurs utilisateurs, un DLC ajouté par l'un compterait dans le « total » de l'autre ; il faudra une sélection des DLC suivis par utilisateur.
+- Retirer des versions ou des DLC de la base par « Modifier le jeu » : à cadrer, car une version porte des versions jouées et un DLC des cases « fait ». On ne peut qu'en ajouter.
+- Émulateurs supplémentaires : DuckStation (PS1), PPSSPP (PSP), Vita3K (PS Vita), Dolphin (GameCube et Wii), Cemu (Wii U), Ryujinx (Switch), Azahar, ex-Citra (3DS), melonDS (DS), mGBA (GBA), Project64 (N64), xemu (Xbox), Xenia (Xbox 360), Flycast (Dreamcast). Un émulateur comme Dolphin émule plusieurs consoles : il faudra pouvoir le rattacher à chacune. Seuls PCSX2 (PS2) et RPCS3 (PS3) sont en base.
+- Plusieurs développeurs et éditeurs par jeu : IGDB renvoie des listes (`involved_companies`). Toutes les valeurs seront stockées et affichées dans leur cellule (un logo au-dessus de chaque société). On n'en garde qu'une par colonne (règle en section 3) : ce choix reste à corriger ou à préciser.
 - Séries créées par utilisateur : la série choisie est personnelle (jeu du backlog), mais une série créée à la main, comme *Souls*, est rangée en base globale avec les séries IGDB. À plusieurs utilisateurs, chacun devra avoir ses propres séries.
-- À surveiller : les éditions qu'IGDB classe en « Bundle ». Le POC prend comme version tout bundle rattaché à un jeu par `version_parent` (*Skyrim Legendary Edition*, éditions de *GTA V*) et ignore les autres, même quand ils ne contiennent qu'un jeu et ses DLC (*FF7 Remake Intergrade*, seulement listé dans `bundles` du jeu). Vérifier la règle sur plus de jeux et traiter ces cas.
+- À surveiller : les éditions qu'IGDB classe en « Bundle ». On prend comme version tout bundle rattaché à un jeu par `version_parent` (*Skyrim Legendary Edition*, éditions de *GTA V*) et ignore les autres, même quand ils ne contiennent qu'un jeu et ses DLC (*FF7 Remake Intergrade*, seulement listé dans `bundles` du jeu). Vérifier la règle sur plus de jeux et traiter ces cas.
 
 ### Écartées
 
