@@ -1,0 +1,25 @@
+// Colonnes du tableau du backlog (cahier des charges, §7), dans l'ordre par défaut.
+// Leur clé nomme aussi leur filtre dans l'URL de la page et dans la query de getUserGames
+export enum BacklogColumnEnum {
+	THUMBNAIL = "thumbnail",
+	NAME = "name",
+	SERIES = "series",
+	SERIES_NUMBER = "seriesNumber",
+	DEVELOPER = "developer",
+	PUBLISHER = "publisher",
+	RELEASE_DATE = "releaseDate",
+	ENDING_TYPE = "endingType",
+	PLATFORM = "platform",
+	STATUS = "status",
+	UP_NEXT = "upNext",
+	OWNED = "owned",
+	FINISH_DATE = "finishDate",
+	FINISH_COUNT = "finishCount",
+	DLC = "dlc",
+	TRACKED_PLAY_TIME = "trackedPlayTime",
+	ESTIMATED_PLAY_TIME = "estimatedPlayTime",
+	TOTAL_PLAY_TIME = "totalPlayTime",
+	RATING = "rating",
+	COMMENT = "comment",
+	ACTIONS = "actions",
+}
