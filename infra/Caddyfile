@@ -91,7 +91,7 @@
 		reverse_proxy site-prod-server:3000
 	}
 
-	# Tout le reste va au nginx du front : fichiers du site, /irigo, /igdb
+	# Tout le reste va au nginx du front : fichiers du site, /irigo
 	handle {
 		reverse_proxy site-prod-client:8080
 	}

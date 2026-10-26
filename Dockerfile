@@ -72,12 +72,9 @@ RUN pnpm --filter @citadel/client build \
 	&& printf '{"version":"%s"}\n' "$APP_VERSION" > apps/client/build/version.json
 
 FROM ${NGINX_IMAGE} AS client
-# La conf nginx est un modèle : au démarrage, l'image remplace ${INTERNET_GAME_DATA_BASE_…}
-# par les variables du conteneur (identifiants IGDB, depuis .env.prod) et écrit le résultat
-# dans /etc/nginx/conf.d/. Le filtre limite le remplacement à ces variables : les $uri…
-# de nginx restent intacts.
-ENV NGINX_ENVSUBST_FILTER=^INTERNET_GAME_DATA_BASE_
-COPY apps/client/nginx.conf.template /etc/nginx/templates/default.conf.template
+# La conf nginx, copiée telle quelle à la place de celle par défaut : plus de variable à
+# remplacer au démarrage depuis que le relais IGDB est parti côté serveur (backlog)
+COPY apps/client/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=client-build /repo/apps/client/build/ /usr/share/nginx/html/
 ARG APP_VERSION=local
 # Labels OCI : relient l'image au dépôt sur GHCR, et disent quelle version elle contient

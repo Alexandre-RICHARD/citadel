@@ -169,8 +169,13 @@ services:
       # Le compte qui ne peut que lire et écrire des lignes
       DB_USER_NAME: citadel_app
       DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+      # Application Twitch du Backlog : le serveur en tire lui-même un token pour IGDB, et le
+      # renouvelle quand il expire (plus rien à refaire à la main). Le navigateur ne les voit jamais
+      INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
     networks:
       - site
+      # edge : Caddy, qui lui envoie /api, et la sortie vers Internet (IGDB, Twitch)
       - edge
     depends_on:
       site-prod-db:
@@ -197,14 +202,10 @@ services:
     <<: [*defaults, *hardened]
     image: ghcr.io/alexandre-richard/citadel-client:${CITADEL_VERSION:?version manquante, passer par citadel}
     container_name: site-prod-client
-    environment:
-      # Ajoutés par nginx aux requêtes du relais /igdb/ (apps/client/nginx.conf.template)
-      INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
-      INTERNET_GAME_DATA_BASE_TOKEN: ${INTERNET_GAME_DATA_BASE_TOKEN:?manque dans .env.prod}
-    # Les seuls dossiers où nginx écrit, en mémoire, à son utilisateur (101) :
-    # sa conf générée au démarrage, et ses fichiers temporaires
+    # Aucune variable : la conf nginx est dans l'image, telle quelle (apps/client/nginx.conf),
+    # et se lit sans rien écrire. Le seul dossier où nginx écrit, en mémoire, à son
+    # utilisateur (101) : ses fichiers temporaires (pid, tampons des relais)
     tmpfs:
-      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
       - /tmp:uid=101,gid=101,mode=0700
     networks:
       - edge
@@ -219,7 +220,7 @@ services:
           memory: 64M
     labels:
       citadel.name: "Front du site"
-      citadel.description: "nginx : fichiers du site, relais /irigo et /igdb"
+      citadel.description: "nginx : fichiers du site, relais /irigo"
       citadel.group: "site-prod"
       citadel.mode: "always"
       citadel.controllable: "false"
@@ -416,8 +417,6 @@ services:
       # Les lectures en cours, avec une clé créée dans Jellyfin pour la console
       JELLYFIN_URL: http://media-jellyfin:8096
       JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:?manque dans .env.prod}
-      # Le token IGDB du site : la console demande à Twitch quand il expire
-      INTERNET_GAME_DATA_BASE_TOKEN: ${INTERNET_GAME_DATA_BASE_TOKEN:?manque dans .env.prod}
       # Caddy : ses logs d'accès (lus par le filtre Docker) et les dates de ses
       # certificats (lues en HTTPS, sans accès à ses fichiers ni à ses clés)
       CADDY_CONTAINER: infra-caddy
@@ -779,7 +778,7 @@ services:
 # --- Réseaux séparés (§10.4) : un conteneur ne joint que ceux de ses réseaux ---
 networks:
   # Caddy et ce qu'il sert, plus la console, qui lit Jellyfin et les certificats de Caddy.
-  # Sort sur Internet : certificats, relais du front, token IGDB vérifié par la console
+  # Sort sur Internet : certificats, relais du front (Irigo), appels du serveur à IGDB
   edge: {}
   # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la
   # base sur 127.0.0.1, dont DBeaver a besoin
