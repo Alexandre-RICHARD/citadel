@@ -17,8 +17,6 @@ const envSchema = z.object({
 	GLUETUN_API_KEY: z.string().min(1),
 	JELLYFIN_URL: z.url(),
 	JELLYFIN_API_KEY: z.string().min(1),
-	// Le token du relais /igdb/ du site : seulement sa date d'expiration est lue (Twitch)
-	INTERNET_GAME_DATA_BASE_TOKEN: z.string().min(1),
 
 	// Caddy : ses logs d'accès (par Docker) et ses certificats (par HTTPS), pour le
 	// domaine du site, son www. et jellyfin.

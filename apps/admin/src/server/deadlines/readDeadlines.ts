@@ -2,7 +2,6 @@ import type { DeadlineItem } from "../../shared/deadlineItem.type.ts";
 import { env } from "../configuration/env.ts";
 import { readTailscaleStateFile } from "../tailscale/readTailscaleStateFile.ts";
 import { readCertificateExpiry } from "./readCertificateExpiry.ts";
-import { readIgdbTokenExpiry } from "./readIgdbTokenExpiry.ts";
 
 // La clé du NAS dans ton tailnet : sans expiration (§12.4, P19). Une date ici veut dire
 // que le réglage a sauté, et que le NAS sortira du tailnet ce jour-là.
@@ -20,7 +19,6 @@ export function readDeadlines(): Promise<DeadlineItem[]> {
 		readCertificateExpiry(domain),
 		readCertificateExpiry(`www.${domain}`),
 		readCertificateExpiry(`jellyfin.${domain}`),
-		readIgdbTokenExpiry(),
 		readTailscaleKeyExpiry(),
 	]);
 }

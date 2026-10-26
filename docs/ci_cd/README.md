@@ -79,7 +79,7 @@ L'ancienne chaîne (tag → images `reunification-*` → runner du NAS) est cass
 | P2 | Workflows rangés hors de `.github/workflows/` à la racine : aucune CI ne tourne | Un seul workflow (§7) |
 | P3 | Dockerfiles d'avant le monorepo (lockfile et paquets `workspace:*` absents) : le build échoue | `Dockerfile` unique, contexte = racine (§6) |
 | P4 | Le Dockerfile du serveur lance `build.server.js`, esbuild produit `build.server.cjs` | Corrigé dans le nouveau `Dockerfile` |
-| P5 | Proxys `/igdb` et `/irigo` présents seulement dans le serveur de dev Vite : Backlog et Irigo cassés en prod | Reproduits dans le nginx du front (§6) |
+| P5 | Proxys `/igdb` et `/irigo` présents seulement dans le serveur de dev Vite : Backlog et Irigo cassés en prod | `/irigo` reproduit dans le nginx du front (§6) ; IGDB appelé par le serveur |
 | P6 | `VITE_API_ADRESS` est gravée dans le code au moment du build : une image par environnement, donc la pré-prod ne teste pas l'image de la prod | Le front appelle `/api`, une adresse relative : la même image partout (§5.3) |
 | P7 | `validate-all` lance `lint-fix` : une correction faite à la volée manquerait au commit tagué | `pnpm release` s'arrête si un fichier a changé (§8.1) |
 | P8 | Tests d'intégration sur une MariaDB installée sous Windows | Bases de dev et de test en conteneurs (§9) |
@@ -124,7 +124,7 @@ La mise en production :
 Le NAS en fonctionnement :
 
 ```
- Internet ─(box : 80/443 → 8001/4443)─▶ infra-caddy ─┬─▶ site-prod-client (front, /irigo, /igdb)
+ Internet ─(box : 80/443 → 8001/4443)─▶ infra-caddy ─┬─▶ site-prod-client (front, /irigo)
                                                      ├─▶ site-prod-server (/api) ──▶ site-prod-db
                                                      └─▶ media-jellyfin
  LAN, Tailscale ──▶ ports du NAS ────────────────────┬─▶ media-gluetun : qBittorrent et *arr, dans le VPN
@@ -157,7 +157,7 @@ citadel/
 ├── .gitattributes                 fins de ligne LF pour ce qui tourne sous Linux
 ├── compose.dev.yml                MariaDB de dev et de test sur ton PC
 ├── apps/
-│   ├── client/nginx.conf.template conf du conteneur front : SPA, /irigo, /igdb
+│   ├── client/nginx.conf          conf du conteneur front : SPA, /irigo
 │   └── admin/                     console d'administration (étapes 21 et 22)
 ├── infra/                         ce qui tourne sur le NAS (remplace docker/)
 │   ├── compose.yml                LE projet Compose : tous les services du NAS
@@ -213,7 +213,7 @@ Oui, avec `envDir` et `loadEnv` et un chemin absolu, pnpm lançant Vite depuis `
 | `VITE_API_ADRESS` | supprimée : le front appelle `/api` | adresse relative, la même partout (P6) ; Vite en dev, Caddy en prod la transmettent au serveur |
 | `CORS_ORIGIN` et le middleware `cors` | supprimés | même origine partout : plus de CORS ni de requêtes « preflight » |
 | `MYSQL_ROOT_PASSWORD`, `DB_ROOT_PASSWORD` | `DB_ROOT_PASSWORD` | un seul nom |
-| `INTERNET_GAME_DATA_BASE_*` | inchangées | le relais IGDB sera refait plus tard, côté serveur |
+| `INTERNET_GAME_DATA_BASE_TOKEN` | `INTERNET_GAME_DATA_BASE_CLIENT_SECRET` | le serveur appelle IGDB et renouvelle lui-même son token ; seul lui reçoit `CLIENT_ID` et `CLIENT_SECRET` |
 | `PROTON_VPN_OPENVPN_*` | supprimées | inutiles : Gluetun se connecte déjà à Proton en WireGuard (`VPN_TYPE=wireguard`) |
 | `PROTON_VPN_WIREGUARD_PRIVATE_KEY` | `WIREGUARD_PRIVATE_KEY` | le nom que Gluetun attend |
 | `DB_DRIVER`, `DOTENV_CONFIG_QUIET` | supprimées | le pilote `mariadb` est fixé dans le code ; `dotenv` laisse la place à l'option `--env-file` de Node |
@@ -233,16 +233,14 @@ Le modèle : `.env.example`. Les autres variables du NAS (console, healthchecks.
 | Image | Contenu |
 |---|---|
 | `server` | Node et le bundle esbuild, qui embarque déjà ses dépendances (à vérifier dans un conteneur vierge) : pas de `pnpm install`. `CMD ["node", "--enable-source-maps", "build/build.server.cjs"]` |
-| `client` | Le build Vite et `version.json`, servis par `nginx-unprivileged` : retour sur `index.html` pour les routes de la SPA, cache d'un an pour les fichiers hashés, aucun pour `index.html` ; proxys `/irigo` et `/igdb` |
+| `client` | Le build Vite et `version.json`, servis par `nginx-unprivileged` : retour sur `index.html` pour les routes de la SPA, cache d'un an pour les fichiers hashés, aucun pour `index.html` ; proxy `/irigo` |
 | `migrations` | `flyway/flyway:12` et les fichiers de `apps/server/src/sql/migrations` : les migrations suivent la version du serveur. Remplace le volume partagé de l'ancienne stack |
 | `ops` | Alpine avec bash, curl, jq, Docker CLI et Compose, client MariaDB, rclone, zstd, regctl, supercronic (un cron fait pour les conteneurs) ; plus `compose.yml`, `citadel`, `mariadb-init.sh` et `infra/ops/`. Elle déploie (§8.2) et exécute les tâches (§11) |
 | `caddy` | L'image officielle avec notre `Caddyfile` : une règle modifiée part en prod avec une version. Avec le module Cloudflare, pour obtenir les certificats par son API DNS (§12.3) |
 
 À ajouter au serveur : `GET /health` → `{ status, version, db }` (200 si la base répond, 503 sinon), et un arrêt propre sur `SIGTERM`, pour qu'un redémarrage ne coupe pas une requête en cours.
 
-Les proxys du front reproduisent ceux du serveur de dev Vite :
-- `/irigo/` → `https://ara-api.enroute.mobi` : aucun secret, il contourne seulement l'absence de CORS chez Irigo ;
-- `/igdb/` → `https://api.igdb.com/v4/`, avec `Client-ID` et `Authorization` tirés de `.env.prod`, **tel quel**. Quand le token expire, la recherche IGDB échoue jusqu'à ce que tu mettes le nouveau dans `.env.prod` et redémarres `site-prod-client`. Tout visiteur peut se servir de ce proxy : accepté pour un POC.
+Le proxy du front reproduit celui du serveur de dev Vite : `/irigo/` → `https://ara-api.enroute.mobi`, sans secret, il contourne seulement l'absence de CORS chez Irigo. IGDB n'a plus de proxy : le serveur l'appelle (Backlog) et renouvelle seul son token.
 
 Satisfactory appelle `http://localhost:8080`, le mod qui tourne chez le visiteur : c'est normal. Depuis sa version 142, Chrome demande alors l'autorisation d'accéder au réseau local : à accepter une fois.
 
@@ -536,7 +534,6 @@ Entre conteneurs, pour la console (étapes 21 et 22) : chaque identifiant est da
 | `infra-admin` | serveur de contrôle de Gluetun, `:8000` | IP publique, pays, port redirigé | `GLUETUN_API_KEY`, neuve |
 | `infra-admin` | `media-jellyfin:8096` | lectures en cours | `JELLYFIN_API_KEY`, créée dans Jellyfin |
 | `infra-admin` | logs d'accès de Caddy, par `infra-socket-proxy` ; certificats servis par `infra-caddy:443` | accès externes, échéances | aucun : jamais ses fichiers ni ses clés |
-| `infra-admin` | Twitch (`id.twitch.tv`) | expiration du token IGDB | `INTERNET_GAME_DATA_BASE_TOKEN`, celui du site |
 | `infra-admin` | `/proc` de l'hôte, disques | système | aucun : lecture seule |
 | `infra-ops` | Docker, dont `infra-tailscale` | tâches ; appareils Tailscale connectés (`tailscale status`), déposés dans `state/` pour la console | aucun |
 
@@ -664,7 +661,7 @@ pnpm release --dry-run                          # attendu (tout commité) : vali
 5. **Système** : CPU et RAM du NAS, espace libre et santé des disques, températures si lisibles.
 6. **Accès externes** : dernières requêtes sur le site, IP les plus actives, scans suspects (`/wp-login.php`, `/.env`…), lectures Jellyfin en cours, appareils Tailscale connectés.
 7. **VPN** : IP publique de Gluetun, pays, port redirigé.
-8. **Échéances** : certificats, token IGDB, quota du Drive.
+8. **Échéances** : certificats, clé Tailscale, quota du Drive.
 9. **Logs** d'un conteneur (200 dernières lignes).
 10. **Versions** : chaque outil, sa version en service et la dernière publiée (§10.7).
 11. **Arrêt automatique** : par exemple, les *arr arrêtés 3 h après leur démarrage manuel ; refus d'arrêter Jellyfin pendant une lecture.
@@ -763,7 +760,6 @@ Aucune pour l'instant.
 - Limitation de débit sur l'API ; CrowdSec devant le site et Jellyfin.
 - Double authentification sur TOS, pas trouvée dans TOS 7 : risque limité, son interface n'est jamais exposée sur Internet.
 - IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
-- Relais IGDB par le serveur, avec renouvellement du token, en même temps que l'authentification du site.
 - Node 26, MariaDB 12.3 et Flyway 13, testés en pré-prod.
 - Jellyfin 12, sortie en octobre 2026 : sa base migre sans retour possible, donc après une copie de `/Volume1/appdata/jellyfin`.
 

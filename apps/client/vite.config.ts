@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
 	// Racine du dépôt : pnpm lance Vite depuis apps/client, le .env est deux dossiers plus haut
 	const rootDir = path.resolve(dirname, "../..");
 
-	// .env de la racine, lu côté Node : port de dev, identifiants du proxy IGDB…
+	// .env de la racine, lu côté Node : ports de dev du client et du serveur
 	const env = loadEnv(mode, rootDir, "");
 
 	return {
@@ -31,16 +31,6 @@ export default defineConfig(({ mode }) => {
 				"/api": {
 					target: `http://localhost:${env.SERVER_PORT}`,
 					rewrite: (requestPath) => requestPath.slice("/api".length),
-				},
-				// POC Backlog : relais vers IGDB (pas de CORS chez IGDB, identifiants gardés côté serveur de dev)
-				"/igdb/": {
-					target: "https://api.igdb.com/v4",
-					changeOrigin: true,
-					rewrite: (requestPath) => requestPath.slice("/igdb".length),
-					headers: {
-						"Client-ID": env.INTERNET_GAME_DATA_BASE_CLIENT_ID,
-						"Authorization": `Bearer ${env.INTERNET_GAME_DATA_BASE_TOKEN}`,
-					},
 				},
 				"/irigo": {
 					target: "https://ara-api.enroute.mobi",
