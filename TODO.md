@@ -50,6 +50,8 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
   });
   ```
 - Stocker des images en base.
+- Faire un bilan des icônes et des SVG.
+- Réunification totale du design system.
 - Design system : recherche et filtre de liste insensibles aux accents et à la casse.
 - Design system : toasts avec un nombre maximum affichés et les autres en pile, barre de temps, clic pour les figer, croix pour fermer (voir l'ancien projet account).
 
@@ -114,7 +116,6 @@ Idées qui ne seront pas faites :
 ## 4. Angers Irigo
 
 - Reformater toute l'architecture du projet aux règles de Citadel ([architecture](docs/architecture.md)) : un export par fichier, suffixes `.type.ts` / `.enum.ts`, nommage des fichiers, un dossier par composant, puis retirer les `eslint-disable` de structure en tête des fichiers.
-- Quand on a la petite modal d'un véhicule ouvert, on ne peut pas faire défiler la carte loin, l'emplacement de la modal nous empêche d'aller plus loin
 
 ## 5. Satisfactory
 
@@ -169,5 +170,8 @@ Numéros d'origine gardés.
 - Phases 6 et 7 de la roadmap : sauvegardes, pré-prod et alertes ; réseau, sécurité et ménage ([cahier des charges, §15](docs/ci_cd/cahier_des_charges.md#15-roadmap)).
 - Une barrette de RAM de plus, si c'est bien le goulot d'étranglement. À 16 Go : Jellyfin à 8 Go, qBittorrent à 6 Go, et son cache interne à 2 Go (options avancées).
 - [Docker Credentials Store](https://docs.docker.com/reference/cli/docker/login/#credential-stores) sur le NAS pour les mots de passe et les clés.
+- Console : modifier `.env.prod`. Aujourd'hui elle n'a aucun accès en écriture aux secrets (§14.2) : passer par une demande à `infra-ops`, comme les jobs, suivie du redémarrage des services concernés.
+- Console : ajuster en direct la limite CPU, la priorité CPU et la limite RAM d'un conteneur (`docker update`, à autoriser dans `infra-socket-proxy`). Un déploiement remet les valeurs de `compose.yml` : proposer de les y reporter.
+- Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
 
 Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
