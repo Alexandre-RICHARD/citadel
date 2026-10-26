@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { type KeyboardEvent, type RefObject, useRef } from "react";
 
-import { joinClassNames } from "../../utils";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Popover } from "../Popover";
 import type { PopoverPlacement } from "../Popover/popoverPlacement.type";
 import { Tooltip } from "../Tooltip";

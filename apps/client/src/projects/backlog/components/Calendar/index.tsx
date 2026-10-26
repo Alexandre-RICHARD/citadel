@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import type { IsoDate } from "../../types";
-import { joinClassNames } from "../../utils";
+import type { IsoDate } from "../../helper/date/isoDate.type";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./calendar.module.scss";
 import { useCalendar } from "./useCalendar";
 

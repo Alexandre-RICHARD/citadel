@@ -7,7 +7,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { getFocusableElements, joinClassNames } from "../../utils";
+import { getFocusableElements } from "../../helper/dom/getFocusableElements";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./popover.module.scss";
 import type { PopoverPlacement } from "./popoverPlacement.type";
 import { usePopover } from "./usePopover";

@@ -1,8 +1,9 @@
 import { CalendarDays } from "lucide-react";
 import { useId, useRef } from "react";
 
-import type { IsoDate } from "../../types";
-import { blurOnEnter, joinClassNames } from "../../utils";
+import type { IsoDate } from "../../helper/date/isoDate.type";
+import { blurOnEnter } from "../../helper/dom/blurOnEnter";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Calendar } from "../Calendar";
 import { Popover } from "../Popover";
 import { Tooltip } from "../Tooltip";
@@ -10,7 +11,7 @@ import styles from "./dateField.module.scss";
 import { useDateField } from "./useDateField";
 
 type Props = {
-	value: IsoDate | null;
+	value: string | null;
 	onCommit: (value: IsoDate | null) => void;
 	/** « blur » : enregistrée en quittant le champ ; « change » : dès qu'une date complète est tapée ou choisie */
 	commitOn?: "blur" | "change";

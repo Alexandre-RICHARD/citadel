@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import type { IsoDate } from "../../types";
-import { formatIsoDate } from "../../utils";
+import { formatIsoDate } from "../../helper/date/formatIsoDate";
+import type { IsoDate } from "../../helper/date/isoDate.type";
 
 function pad(value: number): string {
 	return String(value).padStart(2, "0");
@@ -68,7 +68,7 @@ export function useDateField({
 	commitOn,
 	isNullable,
 }: {
-	value: IsoDate | null;
+	value: string | null;
 	onCommit: (value: IsoDate | null) => void;
 	commitOn: "blur" | "change";
 	isNullable: boolean;
@@ -138,7 +138,9 @@ export function useDateField({
 	return {
 		text,
 		/** La date tapée si elle est complète, sinon celle enregistrée : le calendrier s'ouvre dessus */
-		shownDate: parseTypedDate(text) ?? value,
+		// La valeur reçue est une date ISO : relue, elle devient une IsoDate pour le calendrier
+		shownDate:
+			parseTypedDate(text) ?? (value === null ? null : parseTypedDate(value)),
 		isCalendarOpen,
 		openCalendar: () => setIsCalendarOpen(true),
 		closeCalendar: () => setIsCalendarOpen(false),

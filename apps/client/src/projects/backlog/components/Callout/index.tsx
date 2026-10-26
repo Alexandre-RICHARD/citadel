@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { joinClassNames } from "../../utils";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Spinner } from "../Spinner";
 import styles from "./callout.module.scss";
 

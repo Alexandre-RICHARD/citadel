@@ -7,7 +7,8 @@ import {
 	useRef,
 } from "react";
 
-import { getFocusableElements, joinClassNames } from "../../utils";
+import { getFocusableElements } from "../../helper/dom/getFocusableElements";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Button } from "../Button";
 import styles from "./modal.module.scss";
 
@@ -45,6 +46,22 @@ export function Modal({
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const titleId = useId();
 	const subtitleId = useId();
+	const onCloseRef = useRef(onClose);
+
+	useEffect(() => {
+		onCloseRef.current = onClose;
+	});
+
+	/** Échap ferme la fenêtre comme « Annuler » ; une liste ou un calendrier ouvert dedans se ferme d'abord et arrête l'événement */
+	useEffect(() => {
+		function closeOnEscape(event: KeyboardEvent) {
+			if (event.key === "Escape") {
+				onCloseRef.current();
+			}
+		}
+		window.addEventListener("keydown", closeOnEscape);
+		return () => window.removeEventListener("keydown", closeOnEscape);
+	}, []);
 
 	useEffect(() => {
 		const dialog = dialogRef.current;

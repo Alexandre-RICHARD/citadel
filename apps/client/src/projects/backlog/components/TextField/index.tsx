@@ -1,4 +1,7 @@
-import { blurOnEnter, joinClassNames, trimToNull } from "../../utils";
+import { trimToNull } from "@citadel/common/src/universal/string/trimToNull";
+
+import { blurOnEnter } from "../../helper/dom/blurOnEnter";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./textField.module.scss";
 
 type Props = {
