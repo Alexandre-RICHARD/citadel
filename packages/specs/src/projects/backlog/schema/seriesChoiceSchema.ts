@@ -5,7 +5,7 @@ import { requiredStringSchema } from "../../../specUtils/schemaValidator/string/
 import { SqlColumnMaxLengthEnum } from "../../../specUtils/schemaValidator/string/sqlColumnMaxLength.enum.ts";
 import { SeriesChoiceKindEnum } from "../enum/seriesChoiceKind.enum.ts";
 
-// Série choisie pour un jeu du backlog (cahier des charges, §8)
+// Série choisie pour un jeu du backlog
 export const seriesChoiceSchema = z.discriminatedUnion(
 	"kind",
 	[

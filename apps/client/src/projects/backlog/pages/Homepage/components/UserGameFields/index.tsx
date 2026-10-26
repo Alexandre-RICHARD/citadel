@@ -71,7 +71,7 @@ function parseSeriesValue(value: string): SeriesChoice {
 }
 
 /**
- * Personnalisation d'un jeu du backlog (cahier des charges, §8), à l'ajout au backlog ou par « Personnaliser » :
+ * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser » :
  * miniature, type de fin, série et numéro dans la série. Les images sont relues sur IGDB à l'ouverture. Sans numéro,
  * le jeu passe après les autres jeux de la série
  */

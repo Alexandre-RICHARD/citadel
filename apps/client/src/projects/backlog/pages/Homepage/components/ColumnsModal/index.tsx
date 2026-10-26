@@ -16,7 +16,7 @@ type Props = {
 	onClose: () => void;
 };
 
-// Visibilité et ordre des colonnes (cahier des charges, §9) : appliqués tout de suite, gardés dans le navigateur
+// Visibilité et ordre des colonnes : appliqués tout de suite, gardés dans le navigateur
 export function ColumnsModal({
 	columns,
 	onToggleVisibility,

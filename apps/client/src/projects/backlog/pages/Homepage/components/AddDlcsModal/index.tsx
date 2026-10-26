@@ -17,7 +17,7 @@ type Props = {
 	onClose: () => void;
 };
 
-// « Rechercher d'autres DLC » (cahier des charges, §9) : tous les DLC IGDB du jeu, ceux en base cochés d'office
+// « Rechercher d'autres DLC » : tous les DLC IGDB du jeu, ceux en base cochés d'office
 export function AddDlcsModal({ gameId, gameName, onClose }: Props) {
 	const preview = useGamePreview(gameId);
 	const [dlcIds, setDlcIds] = useState<number[]>([]);

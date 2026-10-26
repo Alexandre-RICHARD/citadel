@@ -20,7 +20,7 @@ type StoredGames = {
 };
 
 /**
- * « Ma base » (cahier des charges, §8) : les jeux hors backlog, par pages de 50, filtrés par la saisie déjà temporisée.
+ * « Ma base » : les jeux hors backlog, par pages de 50, filtrés par la saisie déjà temporisée.
  * La liste précédente reste affichée pendant la lecture de la suivante
  */
 export function useStoredGames(query: string): StoredGames {

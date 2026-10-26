@@ -36,7 +36,7 @@ class SeriesService {
 	}
 
 	/**
-	 * « Réorganiser la série » (cahier des charges, §8) : les nouveaux numéros de tous ses jeux du backlog, en une action.
+	 * « Réorganiser la série » : les nouveaux numéros de tous ses jeux du backlog, en une action.
 	 * Un jeu ajouté ou retiré de la série entre l'ouverture et la validation rend la liste caduque
 	 */
 	async reorderSeries({

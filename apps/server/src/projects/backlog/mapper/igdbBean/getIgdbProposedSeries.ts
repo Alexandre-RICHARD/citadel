@@ -2,8 +2,10 @@ import type { ProposedSeriesBean } from "../../bean/proposedSeriesBean.type.ts";
 import type { IgdbOriginalGame } from "../../igdb/type/igdbOriginalGame.type.ts";
 
 /**
- * Série proposée par IGDB (cahier des charges, §3) : la collection la plus large, sans parente parmi celles du jeu ;
- * sinon la franchise principale, sinon la première ; sinon aucune
+ * Série proposée par IGDB : la collection la plus large, sans parente parmi celles du jeu (Crisis Core → Final Fantasy,
+ * pas Compilation of FF VII) ; sinon la franchise principale, sinon la première ; sinon aucune. Une franchise n'est
+ * qu'une étiquette d'univers, deux fois moins renseignée qu'une collection : elle ne sert qu'à défaut, et n'est pas
+ * stockée en tant que telle. IGDB ne donne aucun ordre dans une série : le numéro se choisit à la main
  */
 export function getIgdbProposedSeries(
 	original: IgdbOriginalGame,

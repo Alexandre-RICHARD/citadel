@@ -6,7 +6,7 @@ import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { toSeriesNumber } from "./toSeriesNumber.ts";
 
 /**
- * Numéro tapé (cahier des charges, §8) : un entier à partir de 1, ou un sous-jeu jusqu'à 3 décimales, virgule acceptée ;
+ * Numéro tapé : un entier à partir de 1, ou un sous-jeu jusqu'à 3 décimales, virgule acceptée ;
  * `null` s'il est refusé. Avec moins de décimales que sa famille, c'est un rang : « 3.1 » parmi 3.01 … 3.10 donne 3.01.
  * Avec plus, la famille en prend autant et ses sous-jeux gardent leur valeur : « 3.15 » parmi 3.1 et 3.2 se place entre les deux
  */

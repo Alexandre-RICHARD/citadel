@@ -13,7 +13,7 @@ type GameImages = {
 	error: ApiError | null;
 };
 
-// Images proposées pour la miniature (cahier des charges, §8), relues sur IGDB à l'ouverture
+// Images proposées pour la miniature, relues sur IGDB à l'ouverture
 export function useGameImages(igdbId: number): GameImages {
 	const images = useQuery({
 		queryKey: backlogQueryKeys.gameImages(igdbId),

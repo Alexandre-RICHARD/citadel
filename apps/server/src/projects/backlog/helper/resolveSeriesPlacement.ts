@@ -34,7 +34,7 @@ async function resolveSeriesId(
 }
 
 /**
- * Série et numéro d'un jeu du backlog (cahier des charges, §8). Sans numéro, il passe après les autres jeux de la série ;
+ * Série et numéro d'un jeu du backlog. Sans numéro, il passe après les autres jeux de la série ;
  * un numéro déjà pris est libéré vers le haut, et les jeux décalés sont rendus. Sans série, pas de numéro
  */
 export async function resolveSeriesPlacement(

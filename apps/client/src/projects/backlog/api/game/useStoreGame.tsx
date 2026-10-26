@@ -16,7 +16,7 @@ import { shiftOverviewCounts } from "../cache/shiftOverviewCounts";
 type Rollback = { isWritten: boolean };
 
 /**
- * « Valider » de la modale d'ajout (cahier des charges, §8). Le jeu en base est écrit tout de suite dans le cache, depuis
+ * « Valider » de la modale d'ajout. Le jeu en base est écrit tout de suite dans le cache, depuis
  * la prévisualisation : l'ajout au backlog qui suit s'ouvre sans attendre, et sa requête attend celle-ci (même scope).
  * Seule exception à « on ne crée jamais un cache de toutes pièces » : c'est le résultat attendu d'une création
  */

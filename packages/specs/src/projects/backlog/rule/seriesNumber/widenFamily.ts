@@ -6,7 +6,7 @@ import { SeriesNumberScaleEnum } from "./seriesNumberScale.enum.ts";
 import { toSeriesNumber } from "./toSeriesNumber.ts";
 
 /**
- * Un chiffre de plus pour les sous-jeux d'une famille, à rangs égaux (cahier des charges, §8) :
+ * Un chiffre de plus pour les sous-jeux d'une famille, à rangs égaux :
  * 3.1 … 3.9 deviennent 3.01 … 3.09 ; `null` quand la famille a déjà 3 chiffres
  */
 export function widenFamily(

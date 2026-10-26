@@ -32,7 +32,7 @@ type Props = {
 
 /**
  * Glisser un jeu par sa poignée sur le trait entre deux lignes, décalé à droite pour en faire un sous-jeu, ou taper son
- * numéro (cahier des charges, §8). Un jeu sorti avant un jeu placé plus haut est signalé. Rien ne part avant « Valider »
+ * numéro. Un jeu sorti avant un jeu placé plus haut est signalé. Rien ne part avant « Valider »
  */
 export function ReorderSeriesForm({
 	seriesId,

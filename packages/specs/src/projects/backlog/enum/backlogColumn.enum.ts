@@ -1,4 +1,4 @@
-// Colonnes du tableau du backlog (cahier des charges, §7), dans l'ordre par défaut.
+// Colonnes du tableau du backlog, dans l'ordre par défaut.
 // Leur clé nomme aussi leur filtre dans l'URL de la page et dans la query de getUserGames
 export enum BacklogColumnEnum {
 	THUMBNAIL = "thumbnail",

@@ -24,7 +24,7 @@ function igdbGameNotFound(igdbId: number): NotFoundError {
 }
 
 class IgdbService {
-	// Un résultat déjà en base est signalé (cahier des charges, §8) : il mène à l'ajout au backlog, pas à la modale d'ajout
+	// Un résultat déjà en base est signalé : il mène à l'ajout au backlog, pas à la modale d'ajout
 	async searchGames({
 		query,
 	}: SearchIgdbGamesBean): Promise<SearchResultBean[]> {

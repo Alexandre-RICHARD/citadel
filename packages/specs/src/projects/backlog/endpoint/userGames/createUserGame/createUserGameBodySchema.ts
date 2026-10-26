@@ -6,7 +6,7 @@ import { isStatusAllowed } from "../../../rule/status/isStatusAllowed.ts";
 import { customizationSchema } from "../../../schema/customizationSchema.ts";
 import { newUserVersionSchema } from "../../../schema/newUserVersionSchema.ts";
 
-// Le statut de la version jouée doit être proposé par le type de fin choisi (cahier des charges, §6)
+// Le statut de la version jouée doit être proposé par le type de fin choisi
 export const createUserGameBodySchema = z
 	.object({
 		gameId: bodyIdSchema("Game ID"),

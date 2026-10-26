@@ -40,7 +40,7 @@ function applyNumbers(
 		}));
 }
 
-// « Valider » de « Réorganiser la série » : tous les nouveaux numéros, en une seule action (cahier des charges, §8)
+// « Valider » de « Réorganiser la série » : tous les nouveaux numéros, en une seule action
 export function useReorderSeries(seriesId: number) {
 	return useOptimisticMutation<ReorderSeries, ReorderSeriesBodyDto, Rollback>({
 		mutationKey: backlogQueryKeys.mutation("reorderSeries", seriesId),

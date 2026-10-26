@@ -3,7 +3,7 @@ import { StatusEnum } from "../../enum/status.enum.ts";
 
 const ALL_ENDING_TYPES = Object.values(EndingTypeEnum);
 
-// Types de fin qui proposent chaque statut (cahier des charges, §6)
+// Types de fin qui proposent chaque statut
 export const statusEndingTypes: Readonly<
 	Record<StatusEnum, readonly EndingTypeEnum[]>
 > = {

@@ -33,7 +33,7 @@ function setDone(
 	}));
 }
 
-// Case « fait » d'un DLC du popover des DLC (cahier des charges, §9)
+// Case « fait » d'un DLC du popover des DLC
 export function useSetDlcDone(
 	gameId: number,
 	userVersionId: number,

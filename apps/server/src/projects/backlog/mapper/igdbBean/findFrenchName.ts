@@ -5,7 +5,7 @@ import type { IgdbAlternativeName } from "../../igdb/type/igdbAlternativeName.ty
 const FRENCH_COMMENT = "french";
 
 /**
- * Nom VF (cahier des charges, §3) : le premier nom alternatif dont le commentaire parle de français (« French title »,
+ * Nom VF : le premier nom alternatif dont le commentaire parle de français (« French title »,
  * « French alternative title »…), IGDB n'ayant pas de région France. null sans titre français, ou s'il égale le nom VO
  */
 export function findFrenchName(

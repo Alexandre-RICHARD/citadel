@@ -1,6 +1,6 @@
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 
-// Libellé et signification de chaque statut (cahier des charges, §6)
+// Libellé et signification de chaque statut
 export const statusLabels: Readonly<
 	Record<StatusEnum, { label: string; meaning: string }>
 > = {

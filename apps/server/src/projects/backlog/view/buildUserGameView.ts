@@ -5,7 +5,7 @@ import type { UserGameView } from "./userGameView.type.ts";
 import type { ViewRow } from "./viewRow.type.ts";
 
 /**
- * La ligne d'un jeu du backlog (cahier des charges, §5 et §7) : les données du jeu et les agrégats de ses versions jouées ;
+ * La ligne d'un jeu du backlog : les données du jeu et les agrégats de ses versions jouées ;
  * chaque sous-ligne : les données du jeu, et celles de sa version jouée à la place des agrégats
  */
 export function buildUserGameView(userGame: UserGameBean): UserGameView {

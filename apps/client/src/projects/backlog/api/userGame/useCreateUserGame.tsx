@@ -22,7 +22,7 @@ import { updateCachedUserGame } from "../cache/updateCachedUserGame";
 type Rollback = { isInserted: boolean };
 
 /**
- * Ajout au backlog : la personnalisation et la première version jouée (cahier des charges, §8). La ligne apparaît en
+ * Ajout au backlog : la personnalisation et la première version jouée. La ligne apparaît en
  * tête du tableau, grisée, construite depuis le jeu en cache ; le serveur range ensuite le numéro dans la série.
  * Même scope que l'enregistrement du jeu : si le jeu vient d'être ajouté, sa requête attend la sienne
  */

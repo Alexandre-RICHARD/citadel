@@ -57,7 +57,7 @@ function compareRows(
 	return 0;
 }
 
-// Tri multi-colonnes (cahier des charges, §9) sur ce qu'affichent les lignes des jeux ; sans tri, l'ordre d'ajout reste
+// Tri multi-colonnes sur ce qu'affichent les lignes des jeux ; sans tri, l'ordre d'ajout reste
 export function sortUserGameViews(
 	views: UserGameView[],
 	sort: SortCriterion[],

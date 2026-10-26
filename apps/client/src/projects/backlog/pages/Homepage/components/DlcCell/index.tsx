@@ -21,7 +21,7 @@ type Props = {
 };
 
 /**
- * « faits / total » ; un clic ouvre la liste des DLC du jeu, à cocher en mode édition (cahier des charges, §9). En mode
+ * « faits / total » ; un clic ouvre la liste des DLC du jeu, à cocher en mode édition. En mode
  * édition, elle mène aussi à « Rechercher d'autres DLC », même pour un jeu sans DLC (bouton « + »)
  */
 export function DlcCell({ gameId, gameName, userVersion, dlcs, table }: Props) {

@@ -8,6 +8,6 @@ export type TableControls = {
 	setPopover: (popover: TablePopover | null) => void;
 	openModal: (modal: BacklogModal) => void;
 	toggleExpanded: (gameId: number) => void;
-	// Un clic sur un nom de série filtre le tableau sur ses jeux (cahier des charges, §9)
+	// Un clic sur un nom de série filtre le tableau sur ses jeux
 	filterOnSeries: (seriesName: string) => void;
 };

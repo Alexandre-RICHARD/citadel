@@ -25,7 +25,7 @@ type Props = {
 	onChange: (draft: UserVersionDraft) => void;
 };
 
-// Données du joueur de la nouvelle version jouée, saisies comme dans le tableau (cahier des charges, §8)
+// Données du joueur de la nouvelle version jouée, saisies comme dans le tableau
 export function UserVersionDraftFields({
 	draft,
 	endingType,
@@ -38,7 +38,7 @@ export function UserVersionDraftFields({
 				<FormField label="Statut">
 					<Select
 						value={draft.status}
-						// Liste filtrée par type de fin (cahier des charges, §6)
+						// Liste filtrée par type de fin
 						options={Object.values(StatusEnum)
 							.filter((status) => isStatusAllowed(status, endingType))
 							.map((status) => ({

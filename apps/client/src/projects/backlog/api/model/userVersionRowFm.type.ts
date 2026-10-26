@@ -2,7 +2,7 @@ import type { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status
 
 import type { PlatformFm } from "./platformFm.type";
 
-// Sous-ligne du tableau : une version jouée, ses données et ses agrégats propres (cahier des charges, §7)
+// Sous-ligne du tableau : une version jouée, ses données et ses agrégats propres
 export type UserVersionRowFm = {
 	userVersionId: number;
 	versionId: number;

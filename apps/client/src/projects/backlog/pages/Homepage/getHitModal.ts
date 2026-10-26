@@ -3,7 +3,7 @@ import type { BacklogModal } from "./backlogModal.type";
 
 /**
  * Un jeu trouvé mène à la modale d'ajout ; déjà en base, à l'ajout au backlog (ou d'une version jouée), la version
- * trouvée pré-sélectionnée (cahier des charges, §8)
+ * trouvée pré-sélectionnée
  */
 export function getHitModal(hit: GameHitFm): BacklogModal {
 	return hit.storedGameId === null

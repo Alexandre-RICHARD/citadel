@@ -1,6 +1,6 @@
 /**
  * La modale ouverte, avec seulement ce qui l'identifie : chacune lit ses données et garde sa saisie.
- * `queuedIgdbIds` : DLC cochés « comme jeu », dont la modale d'ajout s'ouvrira l'un après l'autre (cahier des charges, §8).
+ * `queuedIgdbIds` : DLC cochés « comme jeu », dont la modale d'ajout s'ouvrira l'un après l'autre.
  * Fermer une modale de l'enchaînement, même par « Annuler », ouvre le DLC suivant
  */
 export type BacklogModal =
@@ -26,7 +26,7 @@ export type BacklogModal =
 	| { kind: "customizeGame"; gameId: number }
 	// `gameId` : le jeu d'où le menu a été ouvert, mis en valeur
 	| { kind: "reorderSeries"; seriesId: number; gameId: number }
-	// Proposée au passage d'une version jouée au rang 5 ou plus sans date de fin (§6)
+	// Proposée au passage d'une version jouée au rang 5 ou plus sans date de fin
 	| {
 			kind: "setFinishDate";
 			gameId: number;

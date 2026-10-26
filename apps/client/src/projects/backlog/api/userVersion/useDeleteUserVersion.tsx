@@ -26,7 +26,7 @@ type Rollback =
 	  }
 	| null;
 
-// « Retirer la version jouée » ; la dernière emporte le jeu du backlog (cahier des charges, §5)
+// « Retirer la version jouée » ; la dernière emporte le jeu du backlog
 export function useDeleteUserVersion(gameId: number, userVersionId: number) {
 	return useOptimisticMutation<DeleteUserVersion, void, Rollback>({
 		mutationKey: backlogQueryKeys.mutation("deleteUserVersion", userVersionId),

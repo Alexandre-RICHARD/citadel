@@ -2,7 +2,7 @@ import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum
 
 import type { UserVersionDraft } from "./userVersionDraft.type";
 
-// Valeurs par défaut d'une nouvelle version jouée (cahier des charges, §7)
+// Valeurs par défaut d'une nouvelle version jouée
 export const DEFAULT_USER_VERSION_DRAFT: UserVersionDraft = {
 	versionId: null,
 	platformId: null,

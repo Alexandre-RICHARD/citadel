@@ -1,6 +1,6 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 
-// Libellé complet de chaque colonne (cahier des charges, §7)
+// Libellé complet de chaque colonne
 export const columnLabels: Readonly<Record<BacklogColumnEnum, string>> = {
 	[BacklogColumnEnum.THUMBNAIL]: "Miniature",
 	[BacklogColumnEnum.NAME]: "Nom",

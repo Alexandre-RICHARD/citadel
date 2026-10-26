@@ -5,7 +5,7 @@ import type { SeriesDrop } from "./seriesDrop.type.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
 /**
- * Le trait de dépôt (cahier des charges, §8) : `gapIndex`, sa place entre deux lignes (0 : tout en haut), et `wantsSub`,
+ * Le trait de dépôt : `gapIndex`, sa place entre deux lignes (0 : tout en haut), et `wantsSub`,
  * le glisser décalé à droite. Tout en haut, le jeu est principal ; entre deux jeux d'une même famille, sous-jeu ; ailleurs,
  * selon `wantsSub`
  */

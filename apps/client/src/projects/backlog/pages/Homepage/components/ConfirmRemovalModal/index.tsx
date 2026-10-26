@@ -31,7 +31,7 @@ function describeRemoval({
 		: `${removal} C’est la dernière : « ${gameName} » quitte le backlog.`;
 }
 
-// « Retirer le jeu du backlog » et « Retirer la version jouée » (cahier des charges, §9)
+// « Retirer le jeu du backlog » et « Retirer la version jouée »
 export function ConfirmRemovalModal({
 	gameId,
 	userVersionId,

@@ -16,7 +16,7 @@ export enum BacklogErrorCodeEnum {
 	// En conflit avec l'état de la base
 	GAME_ALREADY_STORED = "GAME_ALREADY_STORED",
 	USER_GAME_ALREADY_EXISTS = "USER_GAME_ALREADY_EXISTS",
-	// Même version sur la même plateforme : une seule version jouée (cahier des charges, §5)
+	// Même version sur la même plateforme : une seule version jouée
 	USER_VERSION_ALREADY_EXISTS = "USER_VERSION_ALREADY_EXISTS",
 	// Ni une plateforme de la version, ni un émulateur de l'une d'elles
 	PLATFORM_NOT_ALLOWED = "PLATFORM_NOT_ALLOWED",

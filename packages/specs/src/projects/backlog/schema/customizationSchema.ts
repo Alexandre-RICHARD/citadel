@@ -6,7 +6,7 @@ import { seriesChoiceSchema } from "./seriesChoiceSchema.ts";
 import { seriesNumberSchema } from "./seriesNumberSchema.ts";
 
 /**
- * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser » (cahier des charges, §8).
+ * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser ».
  * `seriesNumber` est ignoré sans série ; avec une série et sans numéro, le jeu passe après les autres
  */
 export const customizationSchema = z.object({

@@ -2,7 +2,7 @@ import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum
 
 import type { ColumnSetting } from "./columnSetting.type";
 
-// Une colonne masquée sort du tri et des filtres (cahier des charges, §9)
+// Une colonne masquée sort du tri et des filtres
 export function keepVisibleColumns<Item extends { column: BacklogColumnEnum }>(
 	items: Item[],
 	columns: readonly ColumnSetting[],

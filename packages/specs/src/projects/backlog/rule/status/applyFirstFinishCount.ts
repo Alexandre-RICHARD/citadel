@@ -1,7 +1,7 @@
 import type { StatusEnum } from "../../enum/status.enum.ts";
 import { isFinishedStatus } from "./isFinishedStatus.ts";
 
-// Passer une version jouée au rang 5 ou plus passe « fois fini (sûr) » à 1 s'il était à 0 (cahier des charges, §6)
+// Passer une version jouée au rang 5 ou plus passe « fois fini (sûr) » à 1 s'il était à 0
 export function applyFirstFinishCount(
 	status: StatusEnum,
 	sureFinishCount: number,

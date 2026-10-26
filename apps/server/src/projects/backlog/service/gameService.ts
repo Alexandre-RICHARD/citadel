@@ -106,7 +106,7 @@ class GameService {
 	}
 
 	/**
-	 * « Valider » de la modale d'ajout (cahier des charges, §8) : le jeu, sa version originale, toujours, les versions et DLC
+	 * « Valider » de la modale d'ajout : le jeu, sa version originale, toujours, les versions et DLC
 	 * cochés, la série proposée par IGDB, les sociétés et plateformes qui manquent. L'ajout au backlog suit, à part
 	 */
 	async storeGame({
@@ -164,7 +164,7 @@ class GameService {
 	}
 
 	/**
-	 * « Modifier le jeu » et « Rechercher d'autres DLC » (cahier des charges, §8 et §9) : des versions et DLC IGDB rejoignent
+	 * « Modifier le jeu » et « Rechercher d'autres DLC » : des versions et DLC IGDB rejoignent
 	 * le jeu ; ceux déjà en base sont ignorés, et rien n'est retiré
 	 */
 	async importGameContent({

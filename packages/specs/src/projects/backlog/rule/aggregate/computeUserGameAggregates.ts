@@ -22,7 +22,7 @@ function getHighestValue(values: (number | null)[]): number | null {
 }
 
 /**
- * Agrégats de la ligne d'un jeu du backlog (cahier des charges, §7), à partir de ses versions jouées et des DLC du jeu.
+ * Agrégats de la ligne d'un jeu du backlog, à partir de ses versions jouées et des DLC du jeu.
  * Le serveur s'en sert pour trier et filtrer, le front pour afficher, y compris après une modification optimiste
  */
 export function computeUserGameAggregates(

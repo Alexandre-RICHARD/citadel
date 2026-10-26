@@ -8,7 +8,7 @@ import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { sortSeriesEntries } from "./sortSeriesEntries.ts";
 
 /**
- * Numéro tapé dans « Réorganiser la série », « Personnaliser » ou l'ajout au backlog (cahier des charges, §8) : un numéro pris
+ * Numéro tapé dans « Réorganiser la série », « Personnaliser » ou l'ajout au backlog : un numéro pris
  * est libéré vers le haut. Un principal emmène ses sous-jeux ; devenu sous-jeu, il les range à sa suite. Un jeu absent de
  * `entries` y entre. Les numéros des autres jeux qui bougent sont dans le résultat, trié par numéro
  */

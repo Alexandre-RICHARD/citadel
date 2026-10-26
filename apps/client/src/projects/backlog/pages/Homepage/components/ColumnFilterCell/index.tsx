@@ -51,7 +51,7 @@ function getValueOptions(
 	return platformNames.map((name) => ({ value: name, label: name }));
 }
 
-// Filtre d'une colonne, dans la ligne sous les en-têtes (cahier des charges, §9)
+// Filtre d'une colonne, dans la ligne sous les en-têtes
 export function ColumnFilterCell({
 	column,
 	filter,

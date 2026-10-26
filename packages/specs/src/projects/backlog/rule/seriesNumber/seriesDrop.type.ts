@@ -1,6 +1,6 @@
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
-// Glisser-déposer de « Réorganiser la série » (cahier des charges, §8), vu depuis la liste sans les jeux qui bougent
+// Glisser-déposer de « Réorganiser la série », vu depuis la liste sans les jeux qui bougent
 export type SeriesDrop = {
 	// Le jeu glissé, puis ses sous-jeux s'il est principal
 	block: SeriesEntry[];

@@ -3,7 +3,7 @@ import { getHighestStatus } from "./getHighestStatus.ts";
 import { isFinishedStatus } from "./isFinishedStatus.ts";
 
 /**
- * Statut de la ligne d'un jeu (cahier des charges, §6) : les « Pas commencé » sont ignorées tant qu'une autre version jouée
+ * Statut de la ligne d'un jeu : les « Pas commencé » sont ignorées tant qu'une autre version jouée
  * a un statut, puis la première situation qui correspond l'emporte. `null` : impossible de choisir.
  */
 export function getGameStatus(statuses: StatusEnum[]): StatusEnum | null {

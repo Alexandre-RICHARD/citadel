@@ -15,7 +15,7 @@ const versionTypeLabels: Partial<Record<string, string>> = {
 const EDITION_LABEL = "Édition";
 
 /**
- * Titre d'une version autre que l'originale (cahier des charges, §5) : `version_title`, sinon son nom s'il diffère de celui
+ * Titre d'une version autre que l'originale : `version_title`, sinon son nom s'il diffère de celui
  * du jeu, sinon son type et l'année de sa première sortie, pour la distinguer de l'originale (« Portage 1998 », « Édition 2015 »)
  */
 export function getIgdbVersionTitle(

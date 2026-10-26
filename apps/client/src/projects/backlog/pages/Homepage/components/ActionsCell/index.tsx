@@ -24,7 +24,7 @@ type Props = {
 	table: TableControls;
 };
 
-// Menu « 3 points verticaux » (cahier des charges, §9) : ouvrir sur IGDB reste disponible en lecture seule
+// Menu « 3 points verticaux » : ouvrir sur IGDB reste disponible en lecture seule
 export function ActionsCell({ row, userVersion, table }: Props) {
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const { isEditMode, popover, setPopover, openModal } = table;

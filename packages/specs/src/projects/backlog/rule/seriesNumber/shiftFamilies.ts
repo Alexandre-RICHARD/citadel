@@ -4,7 +4,7 @@ import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { toSeriesNumber } from "./toSeriesNumber.ts";
 
 /**
- * Libère la famille `family` (cahier des charges, §8) : elle avance (`direction` 1) ou recule (-1) d'un numéro avec ses sous-jeux,
+ * Libère la famille `family` : elle avance (`direction` 1) ou recule (-1) d'un numéro avec ses sous-jeux,
  * et les familles suivantes, ou précédentes, tant qu'elles se heurtent ; un numéro libre arrête le décalage
  */
 export function shiftFamilies(

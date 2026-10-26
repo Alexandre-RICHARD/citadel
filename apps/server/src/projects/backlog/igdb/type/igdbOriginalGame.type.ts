@@ -9,7 +9,7 @@ export type IgdbOriginalGame = {
 	first_release_date?: number;
 	game_status?: number;
 	artworks?: { image_id: string }[];
-	// `as_child_relations` : de quoi garder la plus large (cahier des charges, §3)
+	// `as_child_relations` : de quoi garder la plus large
 	collections?: {
 		id: number;
 		name: string;

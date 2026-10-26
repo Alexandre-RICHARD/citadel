@@ -1,4 +1,4 @@
-// Fiche IGDB rattachée au jeu comme version, mais d'un type qui n'en fait pas une : ignorée (cahier des charges, §5)
+// Fiche IGDB rattachée au jeu comme version, mais d'un type qui n'en fait pas une : ignorée
 export type GamePreviewWarningDto = {
 	igdbId: number;
 	name: string;

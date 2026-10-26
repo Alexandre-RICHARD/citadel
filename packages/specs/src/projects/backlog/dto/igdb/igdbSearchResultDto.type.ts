@@ -1,4 +1,4 @@
-// Un jeu de base trouvé par la recherche IGDB (cahier des charges, §8)
+// Un jeu de base trouvé par la recherche IGDB
 export type IgdbSearchResultDto = {
 	igdbId: number;
 	name: string;

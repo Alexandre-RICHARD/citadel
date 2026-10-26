@@ -28,7 +28,7 @@ type Rollback = {
 } | null;
 
 /**
- * « Personnaliser » (cahier des charges, §8) : la ligne change tout de suite, statuts convertis compris ; les numéros
+ * « Personnaliser » : la ligne change tout de suite, statuts convertis compris ; les numéros
  * des autres jeux de la série, que le serveur décale, se resynchronisent après
  */
 export function useCustomizeUserGame(gameId: number) {

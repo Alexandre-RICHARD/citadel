@@ -10,7 +10,7 @@ import { statusSchema } from "./statusSchema.ts";
 
 const MAX_RATING = 20;
 
-// Les données de jeu d'une version jouée (cahier des charges, §7), modifiables dans le tableau
+// Les données de jeu d'une version jouée, modifiables dans le tableau
 export const userVersionDataSchema = z.object({
 	status: statusSchema,
 	isOwned: booleanSchema("Is owned"),

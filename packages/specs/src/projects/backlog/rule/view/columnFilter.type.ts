@@ -1,7 +1,7 @@
 import type { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import type { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
 
-// Filtre d'une colonne (cahier des charges, §9), un seul par colonne
+// Filtre d'une colonne, un seul par colonne
 export type ColumnFilter =
 	// « contient », ou valeur exacte après un clic sur une série
 	| {

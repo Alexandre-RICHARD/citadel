@@ -5,7 +5,7 @@ import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { shiftFamilies } from "./shiftFamilies.ts";
 
 /**
- * Range un jeu principal et ses sous-jeux à la famille `family` (cahier des charges, §8). Un principal déjà là est décalé
+ * Range un jeu principal et ses sous-jeux à la famille `family`. Un principal déjà là est décalé
  * avec sa famille, vers le haut (`direction` 1) ou le bas (-1). Les sous-jeux gardent leur rang ; des sous-jeux orphelins
  * déjà là restent et l'accueillent
  */

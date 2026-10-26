@@ -1,4 +1,4 @@
-// Sorte de filtre d'une colonne (cahier des charges, §9)
+// Sorte de filtre d'une colonne
 export enum ColumnFilterKindEnum {
 	// « contient », ou valeur exacte après un clic sur une série
 	TEXT = "text",

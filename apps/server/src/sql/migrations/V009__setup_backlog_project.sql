@@ -1,4 +1,4 @@
--- Backlog (docs/backlog/cahier_des_charges.md, §4) : une seule base, deux groupes de tables.
+-- Backlog : une seule base, deux groupes de tables.
 -- Base globale (données IGDB) : jeux, versions, plateformes, DLC, séries, sociétés. Les id sont ceux d'IGDB,
 -- sauf pour les séries (une collection et une franchise IGDB peuvent avoir le même id) et les émulateurs (id négatifs).
 -- Base utilisateur : jeux du backlog, versions jouées, DLC faits. Pas encore d'utilisateurs : un seul backlog.
@@ -192,7 +192,7 @@ CREATE TABLE backlog_done_dlc (
 
 CREATE INDEX idx_backlog_done_dlc_dlc_id ON backlog_done_dlc (dlc_id);
 
--- Émulateurs de départ et leurs consoles (cahier des charges, §4) : les autres plateformes entrent en base
+-- Émulateurs de départ et leurs consoles : les autres plateformes entrent en base
 -- à l'enregistrement du premier jeu qui en a besoin. Ids et noms de PS2 et PS3 : ceux d'IGDB
 INSERT INTO backlog_platform (id, short_name, technical_name, emulated_platform_id)
 VALUES

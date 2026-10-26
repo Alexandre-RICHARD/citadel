@@ -1,4 +1,4 @@
-// Série choisie pour un jeu du backlog, à l'ajout au backlog ou par « Personnaliser » (cahier des charges, §8)
+// Série choisie pour un jeu du backlog, à l'ajout au backlog ou par « Personnaliser »
 export enum SeriesChoiceKindEnum {
 	// Celle proposée par IGDB, ou aucune s'il n'en propose pas
 	PROPOSED = "proposed",

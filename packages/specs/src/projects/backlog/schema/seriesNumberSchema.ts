@@ -11,7 +11,7 @@ function hasAtMostThreeDecimals(seriesNumber: number): boolean {
 	return Math.abs(thousandths - Math.round(thousandths)) < 1e-6;
 }
 
-// Numéro dans une série (cahier des charges, §8) : à partir de 1, 3 décimales au plus (sous-jeux)
+// Numéro dans une série : à partir de 1, 3 décimales au plus (sous-jeux)
 export function seriesNumberSchema(label: string) {
 	return z
 		.number({

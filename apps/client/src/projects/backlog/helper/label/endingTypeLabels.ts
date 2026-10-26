@@ -1,6 +1,6 @@
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 
-// Libellé et signification de chaque type de fin (cahier des charges, §6)
+// Libellé et signification de chaque type de fin
 export const endingTypeLabels: Readonly<
 	Record<EndingTypeEnum, { label: string; meaning: string }>
 > = {

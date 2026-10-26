@@ -1,6 +1,6 @@
 import { StatusEnum } from "../../enum/status.enum.ts";
 
-// Rang de chaque statut (cahier des charges, §6) : de 1 à 8, `null` pour « Abandonné », hors échelle
+// Rang de chaque statut : de 1 à 8, `null` pour « Abandonné », hors échelle
 export const statusRanks: Readonly<Record<StatusEnum, number | null>> = {
 	[StatusEnum.NOT_STARTED]: 1,
 	[StatusEnum.WATCHED]: 2,
