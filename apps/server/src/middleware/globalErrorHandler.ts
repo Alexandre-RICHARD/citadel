@@ -53,11 +53,22 @@ function getRejectedRequestCode(
 		: TechnicalErrorCodeEnum.INVALID_REQUEST;
 }
 
+// Une erreur serveur ne dévoile rien, sauf celle d'un service extérieur (502 IGDB_UNAVAILABLE…), connue et passagère
+function isHiddenServerError(error: unknown, statusCode: number): boolean {
+	return (
+		isServerError(statusCode) &&
+		!(
+			error instanceof AppError &&
+			error.statusCode !== HttpStatutCodeErrorEnum.SERVER_ERROR
+		)
+	);
+}
+
 function buildErrorResponse(
 	error: unknown,
 	statusCode: number,
 ): ErrorResponseDto<ErrorCode> | ValidationErrorResponseDto {
-	if (isServerError(statusCode))
+	if (isHiddenServerError(error, statusCode))
 		return {
 			code: TechnicalErrorCodeEnum.INTERNAL_ERROR,
 			message: "Internal server error",

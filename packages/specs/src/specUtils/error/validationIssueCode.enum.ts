@@ -15,11 +15,17 @@ export enum ValidationIssueCodeEnum {
 	// Nombre supérieur à `limit`
 	TOO_BIG = "TOO_BIG",
 	NOT_INTEGER = "NOT_INTEGER",
+	// Nombre avec plus de `limit` chiffres après la virgule
+	TOO_MANY_DECIMALS = "TOO_MANY_DECIMALS",
 	FUTURE_DATE = "FUTURE_DATE",
 	// Date antérieure à SqlDatetimeBoundEnum.MIN
 	DATE_TOO_OLD = "DATE_TOO_OLD",
 	// Aucun des champs optionnels d'un corps qui en exige au moins un
 	MISSING_FIELDS = "MISSING_FIELDS",
+	// Valeur présente plusieurs fois dans une liste qui les veut uniques
+	DUPLICATE_VALUE = "DUPLICATE_VALUE",
+	// Valeur valide seule, mais refusée avec un autre champ du corps (un statut que le type de fin ne propose pas…)
+	INCOMPATIBLE_VALUE = "INCOMPATIBLE_VALUE",
 	// Règle sans code dédié
 	INVALID_VALUE = "INVALID_VALUE",
 }

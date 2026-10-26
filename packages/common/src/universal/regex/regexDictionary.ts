@@ -8,6 +8,18 @@ export const regexDictionary = {
 	// Nombre entier écrit en chiffres, sans zéro en tête (sauf "0") : "7", "42", mais ni "007" ni "1e3"
 	decimalInteger: /^(0|[1-9][0-9]*)$/,
 
+	// Numéro dans une série tapé par l'utilisateur : partie entière, puis jusqu'à 3 décimales après un point ou une virgule, capturées
+	seriesNumberInput: /^(\d+)(?:[.,](\d{1,3}))?$/u,
+
+	// image_id d'une image IGDB : lettres minuscules et chiffres ("co1tnw")
+	igdbImageId: /^[a-z0-9]+$/,
+
+	// Signe diacritique (accent, cédille…) d'un texte décomposé par normalize("NFD")
+	diacritic: /\p{Diacritic}/gu,
+
+	// Caractère spécial d'un motif LIKE en SQL (%, _ et l'échappement \), à échapper pour le chercher tel quel
+	sqlLikeWildcard: /[\\%_]/g,
+
 	// Paramètre d'une URL d'endpoint : ":gameId" dans "/games/:gameId/bosses", nom capturé
 	urlPathParam: /:([A-Za-z0-9_]+)/g,
 

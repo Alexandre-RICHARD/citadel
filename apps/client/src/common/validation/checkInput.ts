@@ -1,6 +1,7 @@
 import { fromZodIssueToValidationIssueDto } from "@citadel/specs/src/specUtils/error/fromZodIssueToValidationIssueDto";
 import type { z } from "zod";
 
+import { getIssueFieldName } from "../api/error/getIssueFieldName";
 import { getValidationIssuePhrase } from "../api/error/getValidationIssuePhrase";
 import type { InputCheck } from "./inputCheck.type";
 
@@ -23,9 +24,9 @@ export function checkInput<Schema extends z.ZodType>(
 		return { isValid: false, message: "La saisie n'est pas valide." };
 
 	const issue = fromZodIssueToValidationIssueDto(firstIssue);
-	const fieldName = issue.path[0];
+	const fieldName = getIssueFieldName(issue.path);
 	const fieldLabel =
-		fieldName === undefined ? undefined : fieldLabels[String(fieldName)];
+		fieldName === undefined ? undefined : fieldLabels[fieldName];
 	const sentence = `${fieldLabel === undefined ? "" : `${fieldLabel} `}${getValidationIssuePhrase(issue)}`;
 
 	return {

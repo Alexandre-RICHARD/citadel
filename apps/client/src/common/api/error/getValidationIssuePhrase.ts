@@ -26,12 +26,17 @@ const phrases: Record<
 	[ValidationIssueCodeEnum.TOO_BIG]: (limit) =>
 		`doit valoir au plus ${limit ?? 0}`,
 	[ValidationIssueCodeEnum.NOT_INTEGER]: () => "doit être un nombre entier",
+	[ValidationIssueCodeEnum.TOO_MANY_DECIMALS]: (limit) =>
+		`doit avoir au plus ${pluralize(limit ?? 0, "décimale")}`,
 	[ValidationIssueCodeEnum.FUTURE_DATE]: () => "ne peut pas être dans le futur",
 	[ValidationIssueCodeEnum.DATE_TOO_OLD]: () =>
 		`ne peut pas précéder l'an ${OLDEST_YEAR}`,
 	// Porte sur le corps entier, pas sur un champ : la phrase se suffit à elle-même
 	[ValidationIssueCodeEnum.MISSING_FIELDS]: () =>
 		"au moins un champ doit être renseigné",
+	[ValidationIssueCodeEnum.DUPLICATE_VALUE]: () => "contient un doublon",
+	[ValidationIssueCodeEnum.INCOMPATIBLE_VALUE]: () =>
+		"n'est pas compatible avec les autres choix",
 	[ValidationIssueCodeEnum.INVALID_VALUE]: () => "n'est pas valide",
 };
 

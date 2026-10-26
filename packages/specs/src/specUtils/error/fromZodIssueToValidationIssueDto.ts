@@ -41,10 +41,13 @@ function getIssueRule(issue: z.core.$ZodIssue): IssueRule {
 			return { code: ValidationIssueCodeEnum.INVALID_FORMAT };
 		case "custom": {
 			const code: unknown = issue.params?.code;
+			// Une refine peut aussi donner sa borne (3 décimales au plus…)
+			const limit: unknown = issue.params?.limit;
 			return {
 				code: isValidationIssueCode(code)
 					? code
 					: ValidationIssueCodeEnum.INVALID_VALUE,
+				...(typeof limit === "number" && { limit }),
 			};
 		}
 		default:
