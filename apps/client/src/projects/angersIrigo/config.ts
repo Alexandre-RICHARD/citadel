@@ -12,7 +12,18 @@ export const VEHICLE_POSITIONS_URL = "/irigo/gtfs/vehicle-positions";
 /** Flux GTFS-RT des mises à jour de trajet : heures de passage prévues pour l'heure à venir */
 export const TRIP_UPDATES_URL = "/irigo/gtfs/trip-updates";
 
-export const REFRESH_INTERVAL_MS = 15_000;
+/**
+ * Irigo régénère chaque flux une fois par minute. Chaque flux est redemandé juste après sa
+ * prochaine génération, déduite de son heure (header.timestamp), avec une marge.
+ */
+export const FEED_UPDATE_PERIOD_MS = 60_000;
+export const FEED_UPDATE_MARGIN_MS = 2000;
+
+/** Génération en retard (flux pas plus récent que le précédent) : nouvel essai à ce rythme */
+export const STALE_FEED_RETRY_MS = 4000;
+
+/** Erreur réseau, ou flux sans heure de génération pour se caler */
+export const FEED_FALLBACK_REFRESH_MS = 15_000;
 
 /**
  * Au-delà, un véhicule est considéré comme immobile : masqué par défaut, estompé si le paramètre
