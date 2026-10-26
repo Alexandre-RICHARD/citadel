@@ -1,6 +1,6 @@
 # À faire
 
-[Citadel](README.md) › À faire
+[Citadel](../README.md) › À faire
 
 Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussées ou écartées.
 
