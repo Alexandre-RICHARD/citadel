@@ -11,6 +11,10 @@ const envSchema = z.object({
 	DB_USER_PASSWORD: z.string(),
 	DB_DATABASE_NAME: z.string().min(1),
 
+	// Application Twitch du Backlog (dev.twitch.tv) : le serveur en tire lui-même ses tokens IGDB, renouvelés au besoin
+	INTERNET_GAME_DATA_BASE_CLIENT_ID: z.string().min(1),
+	INTERNET_GAME_DATA_BASE_CLIENT_SECRET: z.string().min(1),
+
 	LOG_DB: z
 		.enum(["true", "false"])
 		.default("false")
