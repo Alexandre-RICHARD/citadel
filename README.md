@@ -9,7 +9,7 @@ Mon monorepo personnel : le site [alexandre-richard.fr](https://alexandre-richar
 | [Angers Irigo](docs/angersIrigo/README.md) | `/angers-irigo` | Bus et trams d'Angers en temps réel |
 | Satisfactory | `/satisfactory` | Calculateur pour le jeu éponyme |
 
-Autres docs : [architecture et conventions](docs/architecture.md), [hébergement et mise en production](docs/ci_cd/README.md), [à faire](TODO.md).
+Autres docs : [architecture et conventions](docs/architecture.md), [hébergement et mise en production](docs/ci_cd/README.md), [à faire](docs/TODO.md).
 
 ## Lancer en local
 
