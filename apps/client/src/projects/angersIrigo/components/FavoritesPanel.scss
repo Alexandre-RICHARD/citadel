@@ -34,10 +34,19 @@
   }
 
   &__header {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 4px;
+
+    // Tout le bandeau du haut replie l'encadré, jusqu'à ses bords : le bouton étend sa zone de clic dessus
+    .favorites-panel__icon-button::after {
+      content: '';
+      position: absolute;
+      inset: -12px -8px -4px -14px;
+      border-radius: $radius $radius 0 0;
+    }
   }
 
   &__title {
@@ -147,12 +156,13 @@
     }
   }
 
-  // Sous le panneau d'infos : l'encadré déplié prend toute la largeur, le bouton ★ reste à droite
+  // Sous le panneau d'infos : l'encadré déplié prend toute la largeur, le bouton ★ reste à droite,
+  // en haut quand il remonte à côté du panneau replié
   @media (max-width: $breakpoint-mobile) {
     flex-basis: auto;
 
     &--collapsed {
-      align-self: flex-end;
+      margin-left: auto;
     }
   }
 }

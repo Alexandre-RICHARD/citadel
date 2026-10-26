@@ -15,6 +15,7 @@ import type { StopGroup } from "../types/stop";
 import { formatDelay } from "../utils/format";
 import { getMainDestination } from "../utils/routes";
 import { getDepartures } from "../utils/stops";
+import { withViewTransition } from "../utils/viewTransition";
 import { LineBadge } from "./LineBadge";
 import { StarIcon } from "./StarIcon";
 
@@ -177,7 +178,7 @@ export const FavoritesPanel = memo(function FavoritesPanel({
 				className="favorites-panel favorites-panel--collapsed"
 				aria-label={`Favoris (${favorites.length})`}
 				aria-expanded={false}
-				onClick={() => setIsExpanded(true)}
+				onClick={() => withViewTransition(() => setIsExpanded(true))}
 			>
 				<StarIcon
 					filled
@@ -208,7 +209,7 @@ export const FavoritesPanel = memo(function FavoritesPanel({
 					className="favorites-panel__icon-button"
 					aria-label="Replier les favoris"
 					aria-expanded={true}
-					onClick={() => setIsExpanded(false)}
+					onClick={() => withViewTransition(() => setIsExpanded(false))}
 				>
 					<CollapseIcon />
 				</button>
@@ -231,7 +232,7 @@ export const FavoritesPanel = memo(function FavoritesPanel({
 									onSelect(stop);
 									// Sur mobile, l'encadré déplié cacherait la popup de l'arrêt
 									if (isMobile()) {
-										setIsExpanded(false);
+										withViewTransition(() => setIsExpanded(false));
 									}
 								}}
 								onRemove={() => onRemove(favorite)}
