@@ -20,9 +20,10 @@ type Props = {
 };
 
 /**
- * Tout ce qui est stocké en base globale, en lecture seule (cahier des charges, §8) ; seules les versions et les DLC se
+ * Tout ce qui est stocké en base globale, en lecture seule ; seules les versions et les DLC se
  * cochent, ce qui est déjà en base l'étant d'office. Un DLC peut aussi être coché « comme jeu », pour l'ajouter ensuite
- * comme jeu à part (§5)
+ * comme jeu à part : IGDB ne distingue pas une extension vendue seule (TLAD et TBOGT y sont des extensions de GTA IV,
+ * comme un season pass)
  */
 export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 	const { game, versions, dlcs, warnings } = preview;
@@ -156,7 +157,7 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 										})
 									}
 								/>
-								{/* Indépendante de la case DLC : un DLC peut être les deux (cahier des charges, §5) */}
+								{/* Indépendante de la case DLC : un DLC peut être les deux */}
 								<Checkbox
 									variant="chip"
 									icon={Puzzle}

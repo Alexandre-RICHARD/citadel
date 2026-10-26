@@ -42,7 +42,7 @@ function fromUserVersionEntityToUserVersionBean(
 	releaseDates: Map<string, string | null>,
 ): UserVersionBean {
 	const { version, platform } = userVersion;
-	// Un émulateur reprend la date de sortie de la version sur la console qu'il émule (§7)
+	// Un émulateur reprend la date de sortie de la version sur la console qu'il émule
 	const releasePlatformId = platform.emulatedPlatformId ?? platform.id;
 	return {
 		id: userVersion.id,

@@ -1,4 +1,4 @@
-// Une ligne de résultat : un jeu trouvé sur IGDB, ou un jeu de « Ma base » (cahier des charges, §8)
+// Une ligne de résultat : un jeu trouvé sur IGDB, ou un jeu de « Ma base »
 export type GameHitFm = {
 	// id IGDB de la fiche trouvée ; pour « Ma base », l'id du jeu
 	id: number;

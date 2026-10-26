@@ -17,7 +17,7 @@ type BacklogRows = BacklogRowsFm & {
 };
 
 /**
- * Le tableau (cahier des charges, §9) : la première page suspend, les suivantes se chargent au défilement. Le serveur
+ * Le tableau : la première page suspend, les suivantes se chargent au défilement. Le serveur
  * trie et filtre ; chaque vue (tri, filtres) a sa propre clé de cache
  */
 export function useBacklogRows(view: BacklogView): BacklogRows {

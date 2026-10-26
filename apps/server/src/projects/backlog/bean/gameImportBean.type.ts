@@ -4,7 +4,7 @@ import type { GameImportVersionBean } from "./gameImportVersionBean.type.ts";
 import type { ImportWarningBean } from "./importWarningBean.type.ts";
 import type { ProposedSeriesBean } from "./proposedSeriesBean.type.ts";
 
-// Un jeu tel qu'IGDB le décrit, rangé comme la base le stockera (cahier des charges, §3 et §5)
+// Un jeu tel qu'IGDB le décrit, rangé comme la base le stockera
 export type GameImportBean = {
 	game: {
 		id: number;

@@ -4,7 +4,7 @@ import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 
 /**
- * Une série qu'aucun jeu ne propose et qu'aucun jeu du backlog n'a choisie quitte la base (cahier des charges, §8) :
+ * Une série qu'aucun jeu ne propose et qu'aucun jeu du backlog n'a choisie quitte la base :
  * une série créée à la main part avec son dernier jeu
  */
 export async function deleteUnusedSeriesQuery(

@@ -6,7 +6,7 @@ import { getSubPartStep } from "./getSubPartStep.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
 /**
- * Numéro affiché (cahier des charges, §8) : les sous-jeux d'une famille avec le moins de décimales possible,
+ * Numéro affiché : les sous-jeux d'une famille avec le moins de décimales possible,
  * autant pour tous (3.10 parmi 3.01 … 3.10). `entries` : les jeux de la série, pour connaître la famille
  */
 export function formatSeriesNumber(

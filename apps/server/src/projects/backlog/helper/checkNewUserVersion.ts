@@ -10,7 +10,7 @@ import type { StoredGameBean } from "../bean/storedGameBean.type.ts";
 import { userVersionExistsQuery } from "../query/userVersion/userVersionExistsQuery.ts";
 
 /**
- * Une nouvelle version jouée du jeu (cahier des charges, §5 et §8) : une de ses versions en base, une plateforme proposée
+ * Une nouvelle version jouée du jeu : une de ses versions en base, une plateforme proposée
  * pour cette version, des DLC du jeu, un statut que le type de fin propose, et pas déjà jouée sur cette plateforme
  */
 export async function checkNewUserVersion(

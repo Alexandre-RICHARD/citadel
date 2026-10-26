@@ -12,7 +12,7 @@ type Props = {
 	isCancelled: boolean;
 };
 
-// Date de sortie (cahier des charges, §7) : la date, ou une pastille « à venir » ou « annulé »
+// Date de sortie : la date, ou une pastille « à venir » ou « annulé »
 export function ReleaseDateLabel({ date, isCancelled }: Props) {
 	const label = formatReleaseDate(date, isCancelled);
 	if (isCancelled)

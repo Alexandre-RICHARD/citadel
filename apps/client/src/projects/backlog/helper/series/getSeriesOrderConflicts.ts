@@ -1,7 +1,7 @@
 import type { SeriesEntryFm } from "../../api/model/seriesEntryFm.type";
 
 /**
- * Jeux sortis avant un jeu placé plus haut dans la série (cahier des charges, §8) : pour chacun, le jeu au-dessus qui
+ * Jeux sortis avant un jeu placé plus haut dans la série : pour chacun, le jeu au-dessus qui
  * sort après lui. `entries` : dans l'ordre affiché
  */
 export function getSeriesOrderConflicts(

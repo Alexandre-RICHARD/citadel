@@ -5,7 +5,7 @@ import type { GamePreviewVersionDto } from "./gamePreviewVersionDto.type.ts";
 import type { GamePreviewWarningDto } from "./gamePreviewWarningDto.type.ts";
 
 /**
- * Modale du jeu (cahier des charges, §8) : tout ce que l'enregistrement stockera, en lecture seule.
+ * Modale du jeu : tout ce que l'enregistrement stockera, en lecture seule.
  * Pour un jeu déjà en base, ses données de la base, complétées des versions et DLC IGDB qui n'y sont pas
  */
 export type GamePreviewDto = {

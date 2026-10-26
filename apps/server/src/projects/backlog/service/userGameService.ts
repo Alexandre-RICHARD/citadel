@@ -68,7 +68,7 @@ async function saveCustomization(
 
 class UserGameService {
 	/**
-	 * Le tableau (cahier des charges, §9) : tout le backlog est lu, chaque ligne calculée, filtrée et triée, puis découpée
+	 * Le tableau : tout le backlog est lu, chaque ligne calculée, filtrée et triée, puis découpée
 	 * en pages de 25. Quelques milliers de jeux tiennent largement en mémoire
 	 */
 	async getUserGames({
@@ -93,7 +93,7 @@ class UserGameService {
 	}
 
 	/**
-	 * Ajout au backlog (cahier des charges, §8) : la personnalisation et la première version jouée, en une seule action.
+	 * Ajout au backlog : la personnalisation et la première version jouée, en une seule action.
 	 * Un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0
 	 */
 	async createUserGame({
@@ -145,7 +145,7 @@ class UserGameService {
 	}
 
 	/**
-	 * « Personnaliser » (cahier des charges, §8) : image, type de fin, série et numéro. Les statuts que le nouveau type de fin
+	 * « Personnaliser » : image, type de fin, série et numéro. Les statuts que le nouveau type de fin
 	 * rend incompatibles sont convertis ; une série qui n'a plus de raison d'être quitte la base
 	 */
 	async customizeUserGame({

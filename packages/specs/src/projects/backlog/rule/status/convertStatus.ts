@@ -2,7 +2,7 @@ import type { EndingTypeEnum } from "../../enum/endingType.enum.ts";
 import { StatusEnum } from "../../enum/status.enum.ts";
 import { isStatusAllowed } from "./isStatusAllowed.ts";
 
-// Statuts qui remplacent un statut devenu incompatible avec le nouveau type de fin (cahier des charges, §8)
+// Statuts qui remplacent un statut devenu incompatible avec le nouveau type de fin
 const replacements: Partial<Record<StatusEnum, StatusEnum>> = {
 	[StatusEnum.FINISHED]: StatusEnum.DEEMED_FINISHED,
 	[StatusEnum.DEEMED_FINISHED]: StatusEnum.FINISHED,

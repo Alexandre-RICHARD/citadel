@@ -2,7 +2,7 @@ import { getFamily } from "./getFamily.ts";
 import { getSubPart } from "./getSubPart.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
-// Ce qui bouge avec un jeu (cahier des charges, §8) : un principal emmène les sous-jeux de sa famille ; un sous-jeu bouge seul
+// Ce qui bouge avec un jeu : un principal emmène les sous-jeux de sa famille ; un sous-jeu bouge seul
 export function getSeriesBlock(
 	entries: SeriesEntry[],
 	gameId: number,

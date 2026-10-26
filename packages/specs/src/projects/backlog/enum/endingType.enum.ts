@@ -1,4 +1,4 @@
-// Type de fin d'un jeu du backlog (cahier des charges, §6) : ce que « fini » veut dire
+// Type de fin d'un jeu du backlog : ce que « fini » veut dire
 export enum EndingTypeEnum {
 	// Une fin scénarisée : générique vu
 	STORY = "story",

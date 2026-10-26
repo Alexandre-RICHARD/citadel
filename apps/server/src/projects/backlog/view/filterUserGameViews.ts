@@ -60,8 +60,8 @@ function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
 }
 
 /**
- * Un jeu reste affiché si sa ligne, ou au moins une de ses versions jouées, correspond à tous les filtres (cahier des
- * charges, §9) : Plateforme = PS4 garde les jeux qui ont une version jouée sur PS4
+ * Un jeu reste affiché si sa ligne, ou au moins une de ses versions jouées, correspond à tous les filtres :
+ * Plateforme = PS4 garde les jeux qui ont une version jouée sur PS4
  */
 export function filterUserGameViews(
 	views: UserGameView[],

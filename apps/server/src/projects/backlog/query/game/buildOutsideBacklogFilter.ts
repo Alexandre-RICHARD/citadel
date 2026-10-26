@@ -1,7 +1,7 @@
 import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary.ts";
 
 /**
- * Condition SQL de « Ma base » (cahier des charges, §8), et son motif : les jeux hors backlog dont le nom VO, le nom VF ou
+ * Condition SQL de « Ma base », et son motif : les jeux hors backlog dont le nom VO, le nom VF ou
  * un titre de version contient la saisie. La collation ignore accents et majuscules ; les % et _ tapés restent du texte
  */
 export function buildOutsideBacklogFilter(query: string): {

@@ -16,7 +16,7 @@ type Props = {
 	onValidate: (finishDate: string) => void;
 };
 
-// Proposée au passage d'une version jouée au rang 5 ou plus sans date de fin, pré-remplie avec la date du jour (§6)
+// Proposée au passage d'une version jouée au rang 5 ou plus sans date de fin, pré-remplie avec la date du jour
 export function FinishDateModal({ subtitle, onCancel, onValidate }: Props) {
 	const [finishDate, setFinishDate] = useState<string>(getTodayIsoDate);
 

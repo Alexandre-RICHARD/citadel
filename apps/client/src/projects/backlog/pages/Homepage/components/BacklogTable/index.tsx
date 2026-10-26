@@ -32,7 +32,7 @@ type Props = {
 	table: TableControls;
 };
 
-// Le tableau du backlog (cahier des charges, §7 et §9) : en-têtes triables, ligne des filtres, lignes par pages de 25
+// Le tableau du backlog : en-têtes triables, ligne des filtres, lignes par pages de 25
 export function BacklogTable({
 	rows,
 	matchedCount,
@@ -159,7 +159,7 @@ export function BacklogTable({
 						key={filterRowKey}
 						className={styles.filterRow}
 					>
-						{/* Un filtre actif fait place au bouton qui les retire tous (cahier des charges, §9) */}
+						{/* Un filtre actif fait place au bouton qui les retire tous */}
 						<th
 							className={styles.expandCell}
 							aria-label="Filtres"

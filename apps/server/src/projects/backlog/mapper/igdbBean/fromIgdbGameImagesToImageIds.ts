@@ -1,6 +1,6 @@
 import type { IgdbGameImages } from "../../igdb/type/igdbGameImages.type.ts";
 
-// Images proposées pour la miniature (cahier des charges, §8) : la cover d'abord, puis les artworks
+// Images proposées pour la miniature : la cover d'abord, puis les artworks
 export function fromIgdbGameImagesToImageIds({
 	cover,
 	artworks = [],

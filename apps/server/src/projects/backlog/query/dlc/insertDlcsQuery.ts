@@ -4,7 +4,7 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import type { DlcBean } from "../../bean/dlcBean.type.ts";
 import { Dlc } from "../../models/Dlc.ts";
 
-// Les DLC d'un jeu ; un DLC déjà en base est ignoré (pas de doublon, §5)
+// Les DLC d'un jeu ; un DLC déjà en base est ignoré (pas de doublon)
 export async function insertDlcsQuery(
 	gameId: number,
 	dlcs: DlcBean[],

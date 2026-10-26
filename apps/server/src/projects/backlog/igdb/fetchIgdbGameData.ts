@@ -11,7 +11,8 @@ import type { IgdbReference } from "./type/igdbReference.type.ts";
 import type { IgdbSkippedEntry } from "./type/igdbSkippedEntry.type.ts";
 import type { IgdbVersionGame } from "./type/igdbVersionGame.type.ts";
 
-// Types d'une version, originale comprise (cahier des charges, §5) : jeu principal ou édition, remaster, portage, version enrichie
+// Types d'une version, originale comprise : jeu principal ou édition, remaster, portage, version enrichie. Le classement
+// d'IGDB fait foi, sans règle maison : un remake (FF7 Remake) est un jeu à part
 const VERSION_GAME_TYPES: string[] = [
 	IgdbGameTypeNameEnum.MAIN_GAME,
 	IgdbGameTypeNameEnum.REMASTER,
@@ -19,7 +20,7 @@ const VERSION_GAME_TYPES: string[] = [
 	IgdbGameTypeNameEnum.EXPANDED_GAME,
 ];
 
-// Seuls les DLC et les extensions comptent, ni packs ni mises à jour (cahier des charges, §5)
+// Seuls les DLC et les extensions comptent, ni packs ni mises à jour
 const DLC_GAME_TYPES: string[] = [
 	IgdbGameTypeNameEnum.DLC,
 	IgdbGameTypeNameEnum.EXPANSION,
@@ -87,7 +88,7 @@ async function findVersionNodes(
 			const typeName = getGameTypeName(reference, candidate.game_type);
 			const isNew =
 				!versionIds.has(candidate.id) && !skippedIds.has(candidate.id);
-			// Un bundle rattaché par `version_parent` est une édition vendue avec ses DLC : une version (§5)
+			// Un bundle rattaché par `version_parent` est une édition vendue avec ses DLC : une version
 			const isVersion =
 				VERSION_GAME_TYPES.includes(typeName) ||
 				(typeName === String(IgdbGameTypeNameEnum.BUNDLE) &&
@@ -105,7 +106,7 @@ async function findVersionNodes(
 }
 
 /**
- * Tout ce qu'il faut stocker pour la fiche demandée (cahier des charges, §3 et §5) : on remonte à son original, on parcourt
+ * Tout ce qu'il faut stocker pour la fiche demandée : on remonte à son original, on parcourt
  * l'arbre de ses versions, puis on lit leur détail et leurs DLC. null si la fiche ou son original n'existe pas sur IGDB
  */
 export async function fetchIgdbGameData(

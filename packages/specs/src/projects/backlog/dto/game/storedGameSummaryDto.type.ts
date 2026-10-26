@@ -1,4 +1,4 @@
-// Un jeu de « Ma base », au même format qu'un résultat de recherche (cahier des charges, §8)
+// Un jeu de « Ma base », au même format qu'un résultat de recherche
 export type StoredGameSummaryDto = {
 	id: number;
 	name: string;

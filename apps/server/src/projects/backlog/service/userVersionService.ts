@@ -47,7 +47,7 @@ async function lockUserVersion(
 }
 
 class UserVersionService {
-	// « Ajouter une version jouée » (cahier des charges, §8), à un jeu déjà dans le backlog
+	// « Ajouter une version jouée », à un jeu déjà dans le backlog
 	async createUserVersion({
 		gameId,
 		userVersion,
@@ -84,8 +84,9 @@ class UserVersionService {
 	}
 
 	/**
-	 * Une cellule du tableau (cahier des charges, §7). Un nouveau statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il
-	 * était à 0 (§6), sauf quand la même requête fixe ce compteur : la valeur envoyée l'emporte
+	 * Une cellule du tableau. Un nouveau statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il
+	 * était à 0, sauf quand la même requête fixe ce compteur : la valeur envoyée l'emporte. Repasser sous le rang 5
+	 * n'efface pas la date de fin
 	 */
 	async updateUserVersion({
 		id,
@@ -132,7 +133,7 @@ class UserVersionService {
 
 	/**
 	 * « Retirer la version jouée » : ses DLC faits partent avec elle. Retirer la dernière retire le jeu du backlog avec sa
-	 * personnalisation (cahier des charges, §5), et une série créée à la main qui n'a plus de jeu
+	 * personnalisation, et une série créée à la main qui n'a plus de jeu
 	 */
 	async deleteUserVersion({ id }: DeleteUserVersionBean): Promise<void> {
 		await runInTransaction(

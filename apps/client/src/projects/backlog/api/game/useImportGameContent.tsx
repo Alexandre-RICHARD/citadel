@@ -15,7 +15,7 @@ import { updateCachedUserGame } from "../cache/updateCachedUserGame";
 type Rollback = { dlcIds: number[]; versionIds: number[] };
 
 /**
- * « Modifier le jeu » et « Rechercher d'autres DLC » (cahier des charges, §8 et §9) : les DLC ajoutés comptent tout de
+ * « Modifier le jeu » et « Rechercher d'autres DLC » : les DLC ajoutés comptent tout de
  * suite dans « faits / total » de la ligne du jeu
  */
 export function useImportGameContent(gameId: number) {

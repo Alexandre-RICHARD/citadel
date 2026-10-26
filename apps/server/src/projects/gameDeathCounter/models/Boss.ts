@@ -19,6 +19,8 @@ export class Boss extends Model<
 	declare gameId: number;
 	declare name: string;
 	declare defeatedAt: CreationOptional<Date | null>;
+	// Dénormalisé : suit l'ajout et la suppression d'une mort, dans la même transaction. Le total d'un jeu, lui, n'est
+	// jamais stocké : c'est la somme de ces compteurs, sans lire la table des morts
 	declare totalDeath: CreationOptional<number>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;

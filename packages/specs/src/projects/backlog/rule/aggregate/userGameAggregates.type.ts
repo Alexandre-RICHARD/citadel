@@ -1,8 +1,8 @@
 import type { StatusEnum } from "../../enum/status.enum.ts";
 
-// Ce qu'affiche la ligne d'un jeu du backlog (cahier des charges, §7) : calculé, jamais stocké. `null` : impossible de choisir
+// Ce qu'affiche la ligne d'un jeu du backlog : calculé, jamais stocké. `null` : impossible de choisir
 export type UserGameAggregates = {
-	// Meilleur statut (§6)
+	// Meilleur statut
 	status: StatusEnum | null;
 	// Au moins une version jouée
 	isOwned: boolean;

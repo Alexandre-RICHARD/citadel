@@ -30,7 +30,7 @@ type Props = {
 };
 
 /**
- * Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « Ma base » (cahier des charges, §8).
+ * Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « Ma base ».
  * Le curseur reste dans le champ : ↓ et ↑ parcourent les résultats, Entrée choisit, Échap ferme la liste
  */
 export function SearchBar({ inputRef, onSelect }: Props) {

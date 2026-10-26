@@ -7,7 +7,7 @@ import type { IgdbReference } from "./type/igdbReference.type.ts";
 import type { IgdbSearchGame } from "./type/igdbSearchGame.type.ts";
 import type { IgdbSearchHit } from "./type/igdbSearchHit.type.ts";
 
-// Types jamais proposés par la recherche (cahier des charges, §8)
+// Types jamais proposés par la recherche
 const EXCLUDED_GAME_TYPES: string[] = [
 	IgdbGameTypeNameEnum.MOD,
 	IgdbGameTypeNameEnum.FORK,
@@ -119,7 +119,7 @@ async function fetchRelatedGames(
 }
 
 /**
- * Recherche IGDB (cahier des charges, §8). `search` ne se combine pas avec `sort` : les résultats restent dans l'ordre de
+ * Recherche IGDB. `search` ne se combine pas avec `sort` : les résultats restent dans l'ordre de
  * pertinence d'IGDB. Chaque fiche trouvée mène à son jeu de base, qui prend la place de la mieux classée
  */
 export async function searchIgdbGames(query: string): Promise<IgdbSearchHit[]> {

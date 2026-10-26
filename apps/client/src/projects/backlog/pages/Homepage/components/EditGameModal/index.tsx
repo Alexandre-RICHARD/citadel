@@ -20,7 +20,7 @@ type Props = {
 };
 
 /**
- * « Modifier le jeu » (cahier des charges, §8) : la même modale, données de la base en lecture seule, complétées à
+ * « Modifier le jeu » : la même modale, données de la base en lecture seule, complétées à
  * l'ouverture des versions et DLC IGDB qui n'y sont pas, à cocher pour les ajouter
  */
 export function EditGameModal({ gameId, onOpenModal, onClose }: Props) {

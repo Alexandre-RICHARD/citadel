@@ -1,4 +1,4 @@
-// Statut d'une version jouée (cahier des charges, §6), dans l'ordre de l'échelle : c'est aussi l'ordre de tri.
+// Statut d'une version jouée, dans l'ordre de l'échelle : c'est aussi l'ordre de tri.
 // Rangs et types de fin compatibles dans rule/status/
 export enum StatusEnum {
 	NOT_STARTED = "notStarted",

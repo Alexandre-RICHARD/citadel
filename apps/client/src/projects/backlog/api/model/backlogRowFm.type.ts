@@ -7,7 +7,7 @@ import type { PlatformFm } from "./platformFm.type";
 import type { SeriesFm } from "./seriesFm.type";
 import type { UserVersionRowFm } from "./userVersionRowFm.type";
 
-// Ligne d'un jeu du backlog : le jeu, sa personnalisation et les agrégats de ses versions jouées (cahier des charges, §7)
+// Ligne d'un jeu du backlog : le jeu, sa personnalisation et les agrégats de ses versions jouées
 export type BacklogRowFm = UserGameAggregates & {
 	gameId: number;
 	imageId: string | null;

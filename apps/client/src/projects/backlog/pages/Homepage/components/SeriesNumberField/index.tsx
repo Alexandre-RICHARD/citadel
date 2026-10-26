@@ -20,7 +20,7 @@ type Props = {
 };
 
 /**
- * Numéro dans la série, tapé « 3 » ou « 3.1 » (cahier des charges, §8). Un numéro refusé (sous 1, plus de 3 décimales)
+ * Numéro dans la série, tapé « 3 » ou « 3.1 ». Un numéro refusé (sous 1, plus de 3 décimales)
  * remet le champ au dernier numéro accepté
  */
 export function SeriesNumberField({

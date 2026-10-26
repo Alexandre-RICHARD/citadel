@@ -16,7 +16,7 @@ const ACTIVITY_EVENTS = [
 const CHECK_INTERVAL_MS = 1000;
 
 /**
- * Mode édition : retour en lecture seule après 1 minute d'inactivité (cahier des charges, §9). Une cellule en cours
+ * Mode édition : retour en lecture seule après 1 minute d'inactivité. Une cellule en cours
  * d'édition suspend le minuteur, une modale ouverte aussi (`isPaused`)
  */
 export function useEditModeTimeout(

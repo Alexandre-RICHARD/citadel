@@ -3,7 +3,7 @@ import type { GamePreviewDlcFm } from "./gamePreviewDlcFm.type";
 import type { GamePreviewVersionFm } from "./gamePreviewVersionFm.type";
 import type { GamePreviewWarningFm } from "./gamePreviewWarningFm.type";
 
-// La modale du jeu (cahier des charges, §8) : ce que l'enregistrement stockera, ou ce qui est déjà en base
+// La modale du jeu : ce que l'enregistrement stockera, ou ce qui est déjà en base
 export type GamePreviewFm = {
 	game: {
 		id: number;

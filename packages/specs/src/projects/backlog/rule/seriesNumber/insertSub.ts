@@ -10,7 +10,7 @@ import { toSeriesNumber } from "./toSeriesNumber.ts";
 import { widenFamily } from "./widenFamily.ts";
 
 /**
- * Range un sous-jeu au rang `subPart` de sa famille (cahier des charges, §8). Un rang pris est libéré : son sous-jeu avance
+ * Range un sous-jeu au rang `subPart` de sa famille. Un rang pris est libéré : son sous-jeu avance
  * (`direction` 1) ou recule (-1) d'un cran, avec les suivants, ou précédents, tant qu'ils se heurtent. Avancer au-delà du
  * dernier rang (3.9, 3.99) fait d'abord passer la famille à un chiffre de plus. `null` au-delà de 3.999
  */

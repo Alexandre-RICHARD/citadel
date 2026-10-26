@@ -1,7 +1,7 @@
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import type { UserGameAggregates } from "@citadel/specs/src/projects/backlog/rule/aggregate/userGameAggregates.type.ts";
 
-// Ce qu'une ligne affiche, colonne par colonne : ce sur quoi elle se trie et se filtre (cahier des charges, §9)
+// Ce qu'une ligne affiche, colonne par colonne : ce sur quoi elle se trie et se filtre
 export type ViewRow = UserGameAggregates & {
 	name: string;
 	frenchName: string | null;

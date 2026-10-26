@@ -22,7 +22,7 @@ type Props = {
 };
 
 /**
- * « Ma base » (cahier des charges, §8) : les jeux en base hors backlog, triés par nom, filtrés sans requête IGDB.
+ * « Ma base » : les jeux en base hors backlog, triés par nom, filtrés sans requête IGDB.
  * 50 jeux, puis la page suivante à l'approche du bas de la liste ; comme la recherche, elle se parcourt au clavier
  */
 export function AddFromDatabaseModal({ onSelect, onClose }: Props) {

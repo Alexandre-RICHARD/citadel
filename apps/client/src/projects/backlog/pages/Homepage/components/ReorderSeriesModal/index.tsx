@@ -15,7 +15,7 @@ type Props = {
 	onClose: () => void;
 };
 
-// « Réorganiser la série » (cahier des charges, §8) : ses jeux du backlog se lisent à l'ouverture
+// « Réorganiser la série » : ses jeux du backlog se lisent à l'ouverture
 export function ReorderSeriesModal({ seriesId, gameId, onClose }: Props) {
 	const { entries, error, isStale } = useSeriesEntries(seriesId);
 	const isFresh = useIsFreshOnce({ data: entries ?? undefined, isStale });

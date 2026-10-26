@@ -19,7 +19,7 @@ type Props = {
 	onOpenModal: (modal: BacklogModal) => void;
 };
 
-// Barre du haut : la recherche IGDB, « Ma base », les colonnes et le mode édition (cahier des charges, §9)
+// Barre du haut : la recherche IGDB, « Ma base », les colonnes et le mode édition
 export function Toolbar({
 	searchInputRef,
 	outsideBacklogGameCount,
@@ -65,7 +65,7 @@ export function Toolbar({
 				>
 					Colonnes
 				</Button>
-				{/* Bouton fixe du mode édition : le tableau est en lecture seule par défaut (cahier des charges, §9) */}
+				{/* Bouton fixe du mode édition : le tableau est en lecture seule par défaut */}
 				<Tooltip
 					content={
 						isEditMode

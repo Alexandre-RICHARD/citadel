@@ -1,7 +1,7 @@
 import type { CreateUserVersionBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodyDto.type.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
 
-// Corps d'une nouvelle version jouée aux valeurs par défaut du formulaire (cahier des charges, §8)
+// Corps d'une nouvelle version jouée aux valeurs par défaut du formulaire
 export function newUserVersionBody(
 	versionId: number,
 	platformId: number,

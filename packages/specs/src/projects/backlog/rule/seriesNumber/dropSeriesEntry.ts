@@ -13,7 +13,7 @@ import { SeriesNumberScaleEnum } from "./seriesNumberScale.enum.ts";
 import { sortSeriesEntries } from "./sortSeriesEntries.ts";
 
 /**
- * Glisser-déposer de « Réorganiser la série » (cahier des charges, §8). Le jeu prend le premier numéro libre juste après le jeu
+ * Glisser-déposer de « Réorganiser la série ». Le jeu prend le premier numéro libre juste après le jeu
  * du dessus (principal : l'entier suivant sa famille, 1 tout en haut ; sous-jeu : le rang suivant), et personne d'autre ne bouge.
  * Ce numéro pris : en descendant au même niveau, le jeu prend la place du jeu du dessus et les jeux dépassés reculent d'un cran ;
  * sinon, il prend ce numéro et celui qui l'avait avance d'un cran. Dans les deux cas, en cascade, jusqu'à un trou

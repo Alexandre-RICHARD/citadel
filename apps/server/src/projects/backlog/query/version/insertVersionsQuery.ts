@@ -6,7 +6,7 @@ import { Version } from "../../models/Version.ts";
 import { VersionPlatform } from "../../models/VersionPlatform.ts";
 
 /**
- * Les versions d'un jeu et leurs plateformes. Une version déjà en base est ignorée (pas de doublon, §5) ;
+ * Les versions d'un jeu et leurs plateformes. Une version déjà en base est ignorée (pas de doublon) ;
  * ses plateformes aussi : une version n'existe qu'une fois, avec ses plateformes de son premier enregistrement
  */
 export async function insertVersionsQuery(

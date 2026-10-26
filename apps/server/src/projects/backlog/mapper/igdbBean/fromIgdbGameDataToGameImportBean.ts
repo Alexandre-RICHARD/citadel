@@ -11,13 +11,13 @@ import { getIgdbVersionTitle } from "./getIgdbVersionTitle.ts";
 
 const CANCELLED_STATUS = "Cancelled";
 
-// Réponses IGDB → le jeu tel que la base le stockera (cahier des charges, §3 et §5)
+// Réponses IGDB → le jeu tel que la base le stockera
 export function fromIgdbGameDataToGameImportBean(
 	data: IgdbGameData,
 ): GameImportBean {
 	const { original } = data;
 	const gameId = original.id;
-	// Une seule société par rôle (§3) : la première
+	// Une seule société par rôle : la première
 	const developer =
 		original.involved_companies?.find((involved) => involved.developer)
 			?.company ?? null;
@@ -62,7 +62,7 @@ export function fromIgdbGameDataToGameImportBean(
 			platforms: fromIgdbVersionToVersionPlatformBeans(version),
 		})),
 		dlcs: data.dlcs.map(({ id, name }) => ({ id, name })),
-		// La cover de l'original d'abord, puis les artworks (§8)
+		// La cover de l'original d'abord, puis les artworks
 		imageIds: [
 			...(originalVersion?.cover === undefined
 				? []

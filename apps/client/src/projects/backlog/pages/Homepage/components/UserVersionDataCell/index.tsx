@@ -44,13 +44,13 @@ type Props = {
 	table: TableControls;
 };
 
-// Temps et compteurs : un zéro, valeur par défaut, s'affiche estompé pour laisser ressortir les valeurs saisies (§7)
+// Temps et compteurs : un zéro, valeur par défaut, s'affiche estompé pour laisser ressortir les valeurs saisies
 function renderAmount(amount: number, text: string): ReactNode {
 	return amount === 0 ? <span className={styles.zeroValue}>{text}</span> : text;
 }
 
 /**
- * Colonnes des données de l'utilisateur (cahier des charges, §7). Ligne du jeu à plusieurs versions jouées : agrégats en
+ * Colonnes des données de l'utilisateur. Ligne du jeu à plusieurs versions jouées : agrégats en
  * lecture seule. Sous-ligne ou ligne à version jouée unique : les valeurs de la version jouée, modifiables en mode
  * édition, enregistrées dès la saisie
  */
@@ -112,7 +112,7 @@ export function UserVersionDataCell({
 			return (
 				<Select
 					value={editableUserVersion.status}
-					// Liste filtrée par type de fin (cahier des charges, §6), le statut actuel compris
+					// Liste filtrée par type de fin, le statut actuel compris
 					options={Object.values(StatusEnum)
 						.filter(
 							(status) =>
@@ -129,7 +129,7 @@ export function UserVersionDataCell({
 					size="sm"
 					onChange={(status) => {
 						updateUserVersion.mutate({ status });
-						// Au rang 5 ou plus sans date de fin, une petite fenêtre la propose (cahier des charges, §6)
+						// Au rang 5 ou plus sans date de fin, une petite fenêtre la propose
 						if (
 							isFinishedStatus(status) &&
 							editableUserVersion.finishDate === null
@@ -214,7 +214,7 @@ export function UserVersionDataCell({
 						totalCount={values.dlcCount}
 					/>
 				);
-			// Sans DLC, la cellule reste vide, sauf en mode édition pour en rechercher (cahier des charges, §9)
+			// Sans DLC, la cellule reste vide, sauf en mode édition pour en rechercher
 			if (values.dlcCount === 0 && !table.isEditMode) return null;
 			return (
 				<DlcCell

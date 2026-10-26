@@ -12,7 +12,7 @@ type Props = {
 	onClose: () => void;
 };
 
-// « Personnaliser » (cahier des charges, §8) : la personnalisation actuelle se lit avec le jeu en base
+// « Personnaliser » : la personnalisation actuelle se lit avec le jeu en base
 export function CustomizeGameModal({ gameId, onClose }: Props) {
 	const storedGame = useStoredGame(gameId);
 	const isFresh = useIsFreshOnce(storedGame);

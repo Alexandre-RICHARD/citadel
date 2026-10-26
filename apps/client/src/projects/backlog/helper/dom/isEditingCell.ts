@@ -1,6 +1,6 @@
 import { isTextField } from "./isTextField";
 
-// Une cellule est en cours d'édition quand le focus est dans un de ses champs de saisie (cahier des charges, §9)
+// Une cellule est en cours d'édition quand le focus est dans un de ses champs de saisie
 export function isEditingCell(): boolean {
 	const element = document.activeElement;
 	return (

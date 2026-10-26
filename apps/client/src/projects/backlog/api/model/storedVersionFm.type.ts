@@ -8,6 +8,6 @@ export type StoredVersionFm = {
 	igdbUrl: string;
 	isOriginal: boolean;
 	platforms: VersionPlatformFm[];
-	// Celles de la version, puis les émulateurs de ces consoles (cahier des charges, §5)
+	// Celles de la version, puis les émulateurs de ces consoles
 	platformOptions: PlatformFm[];
 };

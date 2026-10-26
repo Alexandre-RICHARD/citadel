@@ -29,7 +29,7 @@ function mergeInIgdbOrder<Item extends { id: number }>(
 }
 
 /**
- * Modale du jeu (cahier des charges, §8). Un jeu en base garde ses données de la base, sa série proposée à l'ajout comprise ;
+ * Modale du jeu. Un jeu en base garde ses données de la base, sa série proposée à l'ajout comprise ;
  * IGDB ne lui apporte que les versions et DLC qui lui manquent (« Modifier le jeu », « Rechercher d'autres DLC »)
  */
 export function buildGamePreview({

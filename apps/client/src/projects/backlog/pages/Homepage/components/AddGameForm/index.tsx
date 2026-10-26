@@ -24,8 +24,8 @@ type Props = {
 };
 
 /**
- * « Valider » enregistre le jeu ; avec « Ajouter à mon backlog », l'ajout au backlog s'ouvre ensuite, action distincte
- * (cahier des charges, §8), avec les images déjà lues. Les DLC cochés « comme jeu » suivent, dans l'ordre
+ * « Valider » enregistre le jeu ; avec « Ajouter à mon backlog », l'ajout au backlog s'ouvre ensuite, action distincte,
+ * avec les images déjà lues. Les DLC cochés « comme jeu » suivent, dans l'ordre
  */
 export function AddGameForm({
 	igdbId,

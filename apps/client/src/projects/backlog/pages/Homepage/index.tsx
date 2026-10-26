@@ -70,7 +70,7 @@ function LoadedBacklogTable({
 	);
 }
 
-// Le tri et les filtres de l'URL, sans les colonnes masquées dans ce navigateur (cahier des charges, §4 et §9)
+// Le tri et les filtres de l'URL, sans les colonnes masquées dans ce navigateur
 function readInitialView(): BacklogView {
 	return keepVisibleView(
 		readViewFromUrl(window.location.search),
@@ -119,7 +119,7 @@ export function Homepage() {
 		}));
 	}
 
-	// Une colonne masquée sort du tri et des filtres (cahier des charges, §9)
+	// Une colonne masquée sort du tri et des filtres
 	function changeColumnVisibility(key: BacklogColumnEnum) {
 		const nextColumns = toggleColumnVisibility(columns, key);
 		setColumns(nextColumns);
@@ -129,12 +129,12 @@ export function Homepage() {
 	const leaveEditMode = useCallback(() => setIsEditMode(false), []);
 	useEditModeTimeout(isEditMode, isModalOpen, leaveEditMode);
 
-	// La disposition des colonnes se garde dans le navigateur (cahier des charges, §9)
+	// La disposition des colonnes se garde dans le navigateur
 	useEffect(() => {
 		saveColumns(columns);
 	}, [columns]);
 
-	// Le tri et les filtres se gardent dans l'URL (cahier des charges, §9), sans toucher à l'état du routeur
+	// Le tri et les filtres se gardent dans l'URL, sans toucher à l'état du routeur
 	useEffect(() => {
 		const routerState: unknown = window.history.state;
 		const search = new URLSearchParams(buildViewParams(view)).toString();

@@ -34,7 +34,7 @@ type Props = {
 };
 
 /**
- * Ajout au backlog (cahier des charges, §8) : la personnalisation si le jeu n'y est pas encore, puis version, plateforme
+ * Ajout au backlog : la personnalisation si le jeu n'y est pas encore, puis version, plateforme
  * et données du joueur. Pour un jeu déjà dans le backlog, « Ajouter une version jouée ». Au rang 5 ou plus sans date de
  * fin, la date est demandée avant l'envoi
  */
@@ -150,7 +150,7 @@ export function AddUserVersionForm({
 						currentSeriesNumber={null}
 						onChange={(nextCustomization) => {
 							setCustomization(nextCustomization);
-							// Le statut choisi suit le type de fin (cahier des charges, §6)
+							// Le statut choisi suit le type de fin
 							setDraft({
 								...draft,
 								status: convertStatus(

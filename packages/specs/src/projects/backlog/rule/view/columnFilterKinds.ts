@@ -1,7 +1,7 @@
 import { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
 
-// Sorte de filtre de chaque colonne (cahier des charges, §9) ; la miniature et les actions n'ont ni filtre ni tri
+// Sorte de filtre de chaque colonne ; la miniature et les actions n'ont ni filtre ni tri
 export const columnFilterKinds: Readonly<
 	Record<BacklogColumnEnum, ColumnFilterKindEnum | null>
 > = {

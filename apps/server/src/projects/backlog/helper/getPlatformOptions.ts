@@ -1,6 +1,6 @@
 import type { PlatformBean } from "../bean/platformBean.type.ts";
 
-// Plateformes proposées pour une version jouée (cahier des charges, §5) : celles de la version, puis les émulateurs de ces consoles
+// Plateformes proposées pour une version jouée : celles de la version, puis les émulateurs de ces consoles
 export function getPlatformOptions(
 	versionPlatforms: PlatformBean[],
 	emulators: PlatformBean[],
