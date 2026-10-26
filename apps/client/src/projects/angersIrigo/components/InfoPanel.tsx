@@ -15,6 +15,7 @@ import {
 	sanitizeCollapsed,
 } from "../utils/settings";
 import { countVehicles, filterVehicles } from "../utils/vehicles";
+import { withViewTransition } from "../utils/viewTransition";
 import { FeedStatusLine } from "./FeedStatusLine";
 import { LineBadge } from "./LineBadge";
 import { LineFilterControl } from "./LineFilterControl";
@@ -96,112 +97,115 @@ export function InfoPanel({
 		sanitizeCollapsed,
 	);
 
-	if (isCollapsed) {
-		return (
-			<aside className="info-panel info-panel--collapsed">
-				<button
-					type="button"
-					className="info-panel__expand-button"
-					aria-expanded={false}
-					onClick={() => setIsCollapsed(false)}
-				>
-					<span className="info-panel__title">Irigo en direct</span>
-					<ChevronIcon />
-				</button>
-			</aside>
-		);
-	}
-
+	// Replié ou déplié, l'en-tête reste le même : le titre ne bouge pas
 	return (
-		<aside className="info-panel">
+		<aside
+			className={
+				isCollapsed ? "info-panel info-panel--collapsed" : "info-panel"
+			}
+		>
 			<header className="info-panel__header">
 				<div>
 					<h1 className="info-panel__title">Irigo en direct</h1>
-					<p className="info-panel__subtitle">Bus et trams d&apos;Angers</p>
+					{!isCollapsed && (
+						<p className="info-panel__subtitle">Bus et trams d&apos;Angers</p>
+					)}
 				</div>
 				<div className="info-panel__header-buttons">
+					{!isCollapsed && (
+						<button
+							type="button"
+							className="info-panel__icon-button info-panel__settings-button"
+							aria-label="Paramètres"
+							aria-expanded={isSettingsOpen}
+							aria-controls={settingsPanelId}
+							onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+						>
+							<SettingsIcon />
+						</button>
+					)}
 					<button
 						type="button"
-						className="info-panel__icon-button"
-						aria-label="Paramètres"
-						aria-expanded={isSettingsOpen}
-						aria-controls={settingsPanelId}
-						onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-					>
-						<SettingsIcon />
-					</button>
-					<button
-						type="button"
-						className="info-panel__icon-button"
-						aria-label="Replier le panneau"
-						aria-expanded
-						onClick={() => setIsCollapsed(true)}
+						className="info-panel__icon-button info-panel__collapse-button"
+						aria-label={
+							isCollapsed ? "Déplier le panneau" : "Replier le panneau"
+						}
+						aria-expanded={!isCollapsed}
+						onClick={() =>
+							withViewTransition(() => setIsCollapsed(!isCollapsed))
+						}
 					>
 						<ChevronIcon />
 					</button>
 				</div>
 			</header>
 
-			<StopSearch onSelect={onStopSelect} />
+			{!isCollapsed && (
+				<>
+					<StopSearch onSelect={onStopSelect} />
 
-			<FeedStatusLine
-				status={status}
-				updatedAt={updatedAt}
-			/>
-
-			<VehicleFilterControl
-				value={filter}
-				counts={countVehicles(vehicles)}
-				onChange={onFilterChange}
-			/>
-			<LineFilterControl
-				vehicles={filterVehicles(vehicles, filter)}
-				selectedRouteIds={lineFilter}
-				onChange={onLineFilterChange}
-			/>
-
-			<ul
-				className="info-panel__legend"
-				aria-label="Légende"
-			>
-				{tramRoutes.map((route) => (
-					<li key={route.routeId}>
-						<LineBadge
-							label={route.shortName}
-							color={route.color}
-							textColor={route.textColor}
-						/>
-						<span className="info-panel__legend-label">{route.longName}</span>
-					</li>
-				))}
-				<li>
-					<span
-						className="info-panel__bus-dot"
-						aria-hidden="true"
+					<FeedStatusLine
+						status={status}
+						updatedAt={updatedAt}
 					/>
-					<span className="info-panel__legend-label">
-						Bus (numéro de ligne)
-					</span>
-				</li>
-				{settings.showStaleVehicles && (
-					<li>
-						<span
-							className="info-panel__bus-dot info-panel__bus-dot--stale"
-							aria-hidden="true"
-						/>
-						<span className="info-panel__legend-label">
-							Immobile depuis {STALE_POSITION_MINUTES} min
-						</span>
-					</li>
-				)}
-			</ul>
 
-			{isSettingsOpen && (
-				<SettingsPanel
-					id={settingsPanelId}
-					settings={settings}
-					onChange={onSettingsChange}
-				/>
+					<VehicleFilterControl
+						value={filter}
+						counts={countVehicles(vehicles)}
+						onChange={onFilterChange}
+					/>
+					<LineFilterControl
+						vehicles={filterVehicles(vehicles, filter)}
+						selectedRouteIds={lineFilter}
+						onChange={onLineFilterChange}
+					/>
+
+					<ul
+						className="info-panel__legend"
+						aria-label="Légende"
+					>
+						{tramRoutes.map((route) => (
+							<li key={route.routeId}>
+								<LineBadge
+									label={route.shortName}
+									color={route.color}
+									textColor={route.textColor}
+								/>
+								<span className="info-panel__legend-label">
+									{route.longName}
+								</span>
+							</li>
+						))}
+						<li>
+							<span
+								className="info-panel__bus-dot"
+								aria-hidden="true"
+							/>
+							<span className="info-panel__legend-label">
+								Bus (numéro de ligne)
+							</span>
+						</li>
+						{settings.showStaleVehicles && (
+							<li>
+								<span
+									className="info-panel__bus-dot info-panel__bus-dot--stale"
+									aria-hidden="true"
+								/>
+								<span className="info-panel__legend-label">
+									Immobile depuis {STALE_POSITION_MINUTES} min
+								</span>
+							</li>
+						)}
+					</ul>
+
+					{isSettingsOpen && (
+						<SettingsPanel
+							id={settingsPanelId}
+							settings={settings}
+							onChange={onSettingsChange}
+						/>
+					)}
+				</>
 			)}
 		</aside>
 	);

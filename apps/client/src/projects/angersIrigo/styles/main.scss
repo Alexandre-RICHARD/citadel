@@ -49,6 +49,60 @@
   }
 }
 
+// Pliage et dépliage des panneaux (utils/viewTransition.ts). Seuls les panneaux sont capturés :
+// sans nom, la page n'est pas figée pendant l'animation et la carte continue de vivre dessous.
+:root:has(.angers-irigo) {
+  view-transition-name: none;
+}
+
+.info-panel {
+  view-transition-name: irigo-info-panel;
+}
+
+.favorites-panel {
+  view-transition-name: irigo-favorites-panel;
+}
+
+::view-transition-group(irigo-info-panel),
+::view-transition-old(irigo-info-panel),
+::view-transition-new(irigo-info-panel),
+::view-transition-group(irigo-favorites-panel),
+::view-transition-old(irigo-favorites-panel),
+::view-transition-new(irigo-favorites-panel) {
+  animation-duration: 0.2s;
+}
+
+// Le cadre rogne le contenu qui se dévoile. Il porte lui-même l'ombre, que le rognage retire des
+// captures, et le fond : sans lui, le fondu entre les deux captures semi-transparentes laisserait voir la carte.
+::view-transition-group(irigo-info-panel),
+::view-transition-group(irigo-favorites-panel) {
+  overflow: clip;
+  border-radius: $radius;
+  background: $color-surface;
+  box-shadow: $shadow;
+  backdrop-filter: blur(8px);
+}
+
+// Ni étiré ni zoomé : le contenu reste à sa taille et se dévoile à mesure que le cadre grandit,
+// ancré sur le titre (en haut à gauche) ou sur l'étoile des favoris (en haut à droite)
+::view-transition-old(irigo-info-panel),
+::view-transition-new(irigo-info-panel),
+::view-transition-old(irigo-favorites-panel),
+::view-transition-new(irigo-favorites-panel) {
+  height: 100%;
+  object-fit: none;
+}
+
+::view-transition-old(irigo-info-panel),
+::view-transition-new(irigo-info-panel) {
+  object-position: left top;
+}
+
+::view-transition-old(irigo-favorites-panel),
+::view-transition-new(irigo-favorites-panel) {
+  object-position: right top;
+}
+
 // Masque un élément à l'écran tout en le laissant accessible (lecteurs d'écran, clavier)
 .visually-hidden {
   position: absolute;

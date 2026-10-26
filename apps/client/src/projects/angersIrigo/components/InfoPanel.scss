@@ -10,22 +10,28 @@
   gap: $spacing;
   flex-shrink: 0;
   width: 300px;
-  padding: 16px;
+  // Variable : la zone de clic du bandeau (plus bas) déborde jusqu'aux bords du panneau
+  --panel-padding: 16px;
+
+  padding: var(--panel-padding);
   border-radius: $radius;
   background: $color-surface;
   box-shadow: $shadow;
   backdrop-filter: blur(8px);
 
   &__header {
+    position: relative;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: $spacing;
   }
 
+  // Débordent un peu sur la marge : l'en-tête garde la hauteur du titre, et la pastille repliée reste basse
   &__header-buttons {
     display: flex;
     gap: 4px;
+    margin: -4px -6px -4px 0;
   }
 
   &__icon-button {
@@ -44,8 +50,7 @@
       background-color 0.15s,
       color 0.15s;
 
-    &:hover,
-    &[aria-expanded='true'] {
+    &:hover {
       background: $color-surface-alt;
       color: $color-text;
     }
@@ -55,38 +60,44 @@
     }
   }
 
-  // Replié : une simple pastille avec le titre, qui ne s'étire pas sur toute la largeur (mobile)
-  // Double classe : passe devant le padding du bloc mobile, plus bas
+  // Au-dessus de la zone de clic du bandeau : ouvre les paramètres sans replier le panneau
+  &__settings-button {
+    position: relative;
+    z-index: 1;
+
+    &[aria-expanded='true'] {
+      background: $color-surface-alt;
+      color: $color-text;
+    }
+  }
+
+  // Tout le bandeau du haut (titre compris, jusqu'aux bords du panneau) replie ou déplie : le
+  // bouton étend sa zone de clic dessus, et son survol se voit partout
+  &__collapse-button::after {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--panel-padding)) calc(-1 * var(--panel-padding))
+      calc(-1 * $spacing / 2);
+    border-radius: $radius $radius 0 0;
+  }
+
+  // Replié : l'en-tête seul, en pastille qui ne s'étire pas sur toute la largeur (mobile). Même
+  // marge intérieure que déplié : le titre ne bouge pas. Double classe : passe devant le bloc mobile, plus bas.
   &#{&}--collapsed {
     align-self: flex-start;
     width: auto;
-    padding: 0;
-  }
 
-  &__expand-button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 10px 8px 14px;
-    border: 0;
-    border-radius: $radius;
-    background: transparent;
-    color: $color-text;
-    font: inherit;
-    cursor: pointer;
+    .info-panel__collapse-button {
+      // La pastille entière
+      &::after {
+        inset: calc(-1 * var(--panel-padding));
+        border-radius: $radius;
+      }
 
-    // Chevron vers le bas : déplier
-    svg {
-      color: $color-muted;
-      transform: rotate(180deg);
-    }
-
-    &:hover {
-      background: $color-surface-alt;
-    }
-
-    &:focus-visible {
-      outline: 2px solid $color-focus;
+      // Chevron vers le bas : déplier
+      svg {
+        transform: rotate(180deg);
+      }
     }
   }
 
@@ -134,8 +145,9 @@
   }
 
   @media (max-width: $breakpoint-mobile) {
+    --panel-padding: #{$spacing};
+
     width: auto;
-    padding: $spacing;
 
     // La carte est petite : on garde l'essentiel (état et filtre)
     &__legend {
