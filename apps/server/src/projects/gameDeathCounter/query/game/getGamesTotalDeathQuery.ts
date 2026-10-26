@@ -15,7 +15,7 @@ export async function getGamesTotalDeathQuery(
 				SELECT
 					game_id AS gameId,
 					SUM(total_death) AS totalDeath
-				FROM boss
+				FROM gdc_boss
 				WHERE game_id IN (:gameIds)
 				GROUP BY game_id
 			`,

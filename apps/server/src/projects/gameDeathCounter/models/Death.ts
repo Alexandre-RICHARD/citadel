@@ -61,7 +61,7 @@ Death.init(
 	},
 	{
 		sequelize,
-		tableName: "death",
+		tableName: "gdc_death",
 		modelName: "Death",
 		timestamps: true,
 	},

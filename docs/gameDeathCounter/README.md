@@ -54,6 +54,7 @@ Fichiers réels (`apps/server/src/sql/migrations/`) :
 - `V004__setup_game_death_project.sql` : tables `game`/`boss`/`death`, cascades, `idx_boss_game_id`, `idx_death_boss_id`
 - `V005__add_boss_total_boss_death.sql` : `ALTER TABLE boss ADD COLUMN total_death INT NOT NULL DEFAULT 0;`
 - `V006__add_timestamps.sql` : ajoute `created_at`/`updated_at` sur les 3 tables ; sur `game`, migre les données de `started_at` vers `created_at` puis **supprime** `started_at`
+- `V008__prefix_game_death_counter_tables.sql` : tables renommées `gdc_game`/`gdc_boss`/`gdc_death` (préfixe du projet, comme `backlog_*`), clés étrangères et index renommés en conséquence (`idx_gdc_boss_game_id`, `idx_gdc_death_boss_id`)
 
 ## Décision 6 — Modèles Sequelize et stratégie ORM vs SQL brut
 

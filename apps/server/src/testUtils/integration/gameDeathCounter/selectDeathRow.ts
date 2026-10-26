@@ -7,7 +7,7 @@ import type { DeathRow } from "./deathRow.type.ts";
 export async function selectDeathRow(id: number): Promise<DeathRow | null> {
 	return sequelize.query<DeathRow>(
 		`SELECT id, boss_id AS bossId, date, comment, created_at AS createdAt, updated_at AS updatedAt
-		FROM death
+		FROM gdc_death
 		WHERE id = :id`,
 		{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
 	);

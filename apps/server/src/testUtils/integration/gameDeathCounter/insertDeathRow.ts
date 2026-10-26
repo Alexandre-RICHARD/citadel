@@ -18,7 +18,7 @@ export async function insertDeathRow({
 	comment = null,
 }: InsertDeathRowParams): Promise<number> {
 	const [insertedId] = await sequelize.query(
-		`INSERT INTO death (boss_id, date, comment)
+		`INSERT INTO gdc_death (boss_id, date, comment)
 		VALUES (:bossId, :date, :comment)`,
 		{
 			type: QueryTypes.INSERT,

@@ -200,7 +200,7 @@ describe("createBoss", () => {
 			async ({ name, issue }) => {
 				// Arrange
 				const gameId = await insertGameRow({ name: "Blasphemous" });
-				const bossCountBefore = await countTableRows("boss");
+				const bossCountBefore = await countTableRows("gdc_boss");
 
 				// Act
 				const response = await request(app)
@@ -209,7 +209,7 @@ describe("createBoss", () => {
 
 				// Assert
 				expectValidationError(response, [{ path: ["name"], ...issue }]);
-				expect(await countTableRows("boss")).toBe(bossCountBefore);
+				expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
 			},
 		);
 
@@ -255,7 +255,7 @@ describe("createBoss", () => {
 		it("SHOULD reject a malformed JSON without creating anything", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Shovel Knight" });
-			const bossCountBefore = await countTableRows("boss");
+			const bossCountBefore = await countTableRows("gdc_boss");
 
 			// Act
 			const response = await request(app)
@@ -265,14 +265,14 @@ describe("createBoss", () => {
 
 			// Assert
 			expectMalformedJsonError(response);
-			expect(await countTableRows("boss")).toBe(bossCountBefore);
+			expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
 		});
 	});
 
 	describe("404 Not Found", () => {
 		it("SHOULD answer that the game does not exist, creating nothing", async () => {
 			// Arrange
-			const bossCountBefore = await countTableRows("boss");
+			const bossCountBefore = await countTableRows("gdc_boss");
 
 			// Act
 			const response = await request(app)
@@ -285,7 +285,7 @@ describe("createBoss", () => {
 				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
 				`No game with id : ${NON_EXISTENT_ID}`,
 			);
-			expect(await countTableRows("boss")).toBe(bossCountBefore);
+			expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
 		});
 	});
 
@@ -293,7 +293,7 @@ describe("createBoss", () => {
 		it("SHOULD answer a generic error, log it and create nothing WHEN checking the game fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Nine Sols" });
-			const bossCountBefore = await countTableRows("boss");
+			const bossCountBefore = await countTableRows("gdc_boss");
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Game, "count").mockRejectedValueOnce(simulatedDatabaseFailure());
 
@@ -308,13 +308,13 @@ describe("createBoss", () => {
 				errorType: "DatabaseError",
 				message: `[POST ${createBossUrl(gameId)}] Failed to check game existence`,
 			});
-			expect(await countTableRows("boss")).toBe(bossCountBefore);
+			expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
 		});
 
 		it("SHOULD answer a generic error, log it and create nothing WHEN the insertion fails", async () => {
 			// Arrange
 			const gameId = await insertGameRow({ name: "Ender Magnolia" });
-			const bossCountBefore = await countTableRows("boss");
+			const bossCountBefore = await countTableRows("gdc_boss");
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Boss, "create").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),
@@ -331,7 +331,7 @@ describe("createBoss", () => {
 				errorType: "DatabaseError",
 				message: `[POST ${createBossUrl(gameId)}] Failed to insert new boss`,
 			});
-			expect(await countTableRows("boss")).toBe(bossCountBefore);
+			expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
 		});
 	});
 });

@@ -1,4 +1,4 @@
-// Ligne de la table death, lue en SQL brut (colonnes renommées en camelCase)
+// Ligne de la table gdc_death, lue en SQL brut (colonnes renommées en camelCase)
 export type DeathRow = {
 	id: number;
 	bossId: number;

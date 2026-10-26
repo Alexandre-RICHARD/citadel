@@ -20,7 +20,7 @@ export async function insertBossRow({
 	createdAt = new Date(),
 }: InsertBossRowParams): Promise<number> {
 	const [insertedId] = await sequelize.query(
-		`INSERT INTO boss (game_id, name, defeated_at, total_death, created_at, updated_at)
+		`INSERT INTO gdc_boss (game_id, name, defeated_at, total_death, created_at, updated_at)
 		VALUES (:gameId, :name, :defeatedAt, :totalDeath, :createdAt, :createdAt)`,
 		{
 			type: QueryTypes.INSERT,

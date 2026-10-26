@@ -1,4 +1,4 @@
-// Ligne de la table boss, lue en SQL brut (colonnes renommées en camelCase)
+// Ligne de la table gdc_boss, lue en SQL brut (colonnes renommées en camelCase)
 export type BossRow = {
 	id: number;
 	gameId: number;

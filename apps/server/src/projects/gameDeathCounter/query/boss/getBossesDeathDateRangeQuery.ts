@@ -16,7 +16,7 @@ export async function getBossesDeathDateRangeQuery(
 					boss_id AS bossId,
 					MIN(date) AS firstDeathDate,
 					MAX(date) AS lastDeathDate
-				FROM death
+				FROM gdc_death
 				WHERE boss_id IN (:bossIds)
 				GROUP BY boss_id
 			`,

@@ -7,7 +7,7 @@ import type { GameRow } from "./gameRow.type.ts";
 export async function selectGameRow(id: number): Promise<GameRow | null> {
 	return sequelize.query<GameRow>(
 		`SELECT id, name, ended_at AS endedAt, created_at AS createdAt, updated_at AS updatedAt
-		FROM game
+		FROM gdc_game
 		WHERE id = :id`,
 		{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
 	);

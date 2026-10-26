@@ -121,7 +121,7 @@ describe("getAllGames", () => {
 			const { games } = await getAllGames();
 
 			// Assert
-			expect(games).toHaveLength(await countTableRows("game"));
+			expect(games).toHaveLength(await countTableRows("gdc_game"));
 		});
 
 		it("SHOULD sort by name ignoring case and accents, then by id", async () => {

@@ -15,7 +15,7 @@ export async function insertGameRow({
 	createdAt = new Date(),
 }: InsertGameRowParams): Promise<number> {
 	const [insertedId] = await sequelize.query(
-		`INSERT INTO game (name, ended_at, created_at, updated_at)
+		`INSERT INTO gdc_game (name, ended_at, created_at, updated_at)
 		VALUES (:name, :endedAt, :createdAt, :createdAt)`,
 		{
 			type: QueryTypes.INSERT,
