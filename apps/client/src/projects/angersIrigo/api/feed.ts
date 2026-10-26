@@ -1,4 +1,4 @@
-/* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+/* eslint-disable citadel/max-one-export, no-restricted-syntax -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import { type IConversionOptions, parse } from "protobufjs";
 
 import type { FeedMessage } from "../types/gtfs-realtime";
@@ -30,15 +30,28 @@ export function decodeFeed(buffer: Uint8Array): FeedMessage {
 	) as FeedMessage;
 }
 
+export type FetchedFeed = {
+	feed: FeedMessage;
+	/**
+	 * Heure du serveur à la réponse (ms depuis l'epoch), d'après l'en-tête Date : l'horloge du
+	 * navigateur peut être décalée de plusieurs secondes. Celle du navigateur s'il manque.
+	 */
+	serverTime: number;
+};
+
 /** Télécharge et décode un flux GTFS-RT */
 export async function fetchFeed(
 	url: string,
 	signal?: AbortSignal,
-): Promise<FeedMessage> {
+): Promise<FetchedFeed> {
 	const response = await fetch(url, { signal: signal ?? null });
 	if (!response.ok) {
 		throw new Error(`HTTP ${response.status} sur ${url}`);
 	}
 	const buffer = new Uint8Array(await response.arrayBuffer());
-	return decodeFeed(buffer);
+	const dateHeader = Date.parse(response.headers.get("Date") ?? "");
+	return {
+		feed: decodeFeed(buffer),
+		serverTime: Number.isNaN(dateHeader) ? Date.now() : dateHeader,
+	};
 }

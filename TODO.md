@@ -114,11 +114,6 @@ Idées qui ne seront pas faites :
 ## 4. Angers Irigo
 
 - Reformater toute l'architecture du projet aux règles de Citadel ([architecture](docs/architecture.md)) : un export par fichier, suffixes `.type.ts` / `.enum.ts`, nommage des fichiers, un dossier par composant, puis retirer les `eslint-disable` de structure en tête des fichiers.
-- Se caler sur l'actualisation réelle d'Irigo au lieu de demander les flux toutes les 15 s (`REFRESH_INTERVAL_MS`). Irigo actualise ses données une fois par minute, et chaque flux dit de quand elles datent (`header.timestamp`). Le but : toujours recevoir des données neuves 1 à 3 s après leur publication, avec une requête par minute au lieu de quatre.
-  - À chaque réponse, calculer l'âge des données (ex. 24 s), puis programmer la requête suivante à l'actualisation attendue plus 2 s de marge : 60 − 24 + 2 = 38 s plus tard.
-  - Si une requête ramène des données qui ne sont pas plus récentes que les précédentes (actualisation en retard), redemander toutes les 4 s jusqu'à en recevoir de neuves, puis reprendre le rythme de 60 s recalé sur elles.
-  - Un calage par flux : positions des véhicules et mises à jour de trajet n'ont pas forcément la même heure d'actualisation.
-  - Point d'attention : l'âge se compare à l'horloge du PC, qui peut être décalée de quelques secondes. Le mesurer plutôt avec l'heure du serveur (en-tête `Date` de la réponse, si le relais `/irigo` le transmet).
 - Quand on a la petite modal d'un véhicule ouvert, on ne peut pas faire défiler la carte loin, l'emplacement de la modal nous empêche d'aller plus loin
 
 ## 5. Satisfactory
