@@ -9,8 +9,8 @@ import { formatAge, formatEta, STOP_STATUS_LABELS } from "../utils/format";
 import { getLineLabel } from "../utils/vehicles";
 import { LineBadge } from "./LineBadge";
 
-/** Les délais sont en minutes : les recalculer toutes les 30 s suffit */
-const ETA_REFRESH_INTERVAL_MS = 30_000;
+/** L'âge de la position est en secondes : la popup se met à jour chaque seconde */
+const POPUP_REFRESH_INTERVAL_MS = 1000;
 
 /** Terminus au-delà de l'horizon du flux (environ une heure) */
 const BEYOND_FORECAST_LABEL = "dans plus d'1 h";
@@ -28,7 +28,14 @@ export function VehiclePopup({
 	onFollowToggle,
 }: VehiclePopupProps): JSX.Element {
 	// Le composant n'existe que tant que la popup est ouverte : pas de minuterie pour les autres véhicules
-	const now = useNow(ETA_REFRESH_INTERVAL_MS);
+	const now = useNow(POPUP_REFRESH_INTERVAL_MS);
+	// Âge à l'instant présent, pas à la génération du flux (positionAgeSeconds) : sinon, une position
+	// reçue juste avant la génération resterait « maintenant » jusqu'au flux suivant.
+	// Plancher à 0 : l'horloge du navigateur peut être un peu en retard sur celle d'Irigo.
+	const positionAgeSeconds =
+		vehicle.timestamp !== undefined
+			? Math.max(0, now / 1000 - vehicle.timestamp)
+			: undefined;
 
 	const kindLabel = vehicle.kind === "tram" ? "Tram" : "Bus";
 	const vehicleNumber = vehicle.vehicle?.label ?? vehicle.vehicle?.id;
@@ -86,13 +93,13 @@ export function VehiclePopup({
 					</>
 				)}
 
-				{vehicle.positionAgeSeconds !== undefined && (
+				{positionAgeSeconds !== undefined && (
 					<>
 						<dt>Position</dt>
 						<dd>
 							{vehicle.simulatedDistance !== undefined
-								? `estimée (signal reçu ${formatAge(vehicle.positionAgeSeconds)})`
-								: formatAge(vehicle.positionAgeSeconds)}
+								? `estimée (signal reçu ${formatAge(positionAgeSeconds)})`
+								: formatAge(positionAgeSeconds)}
 						</dd>
 					</>
 				)}
