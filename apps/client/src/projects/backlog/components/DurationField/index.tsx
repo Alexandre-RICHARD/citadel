@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
-import { blurOnEnter, joinClassNames } from "../../utils";
+import { blurOnEnter } from "../../helper/dom/blurOnEnter";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./durationField.module.scss";
 
 type Props = {

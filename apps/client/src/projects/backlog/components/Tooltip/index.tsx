@@ -8,7 +8,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { joinClassNames } from "../../utils";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import type { PopoverPlacement } from "../Popover/popoverPlacement.type";
 import { usePopover } from "../Popover/usePopover";
 import styles from "./tooltip.module.scss";

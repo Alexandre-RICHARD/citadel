@@ -82,6 +82,7 @@ Toute mutation passe par `useOptimisticMutation` (`common/api/mutation`).
 
 - **Le hook est lié à son élément** : les ids sont ses arguments, les variables de `mutate` sont le corps de la requête. `useUpdateGame(game.id).mutate({ name })`.
 - **`mutationKey`** : une par action et par élément, `["gameDeathCounter", "updateGame", gameId]`. Une seule mutation à la fois par clé : tant qu'elle est en cours, `mutate` ne fait rien, et le bouton est désactivé avec `isPending`.
+- **`scope`** (optionnel) : des mutations qui dépendent l'une de l'autre partagent un scope, leurs requêtes partent dans l'ordre (enregistrer un jeu, puis l'ajouter au backlog). Leur mise à jour optimiste, elle, s'applique tout de suite.
 - **`actionLabel`** : infinitif en minuscule, il complète « Impossible de … » (« renommer le jeu »).
 - **`applyOptimistic`** : écrit le résultat attendu dans le cache et renvoie de quoi le défaire.
 - **`revertOptimistic`** : défait par l'**opération inverse**, jamais en restaurant un instantané, qui écraserait les autres mutations en cours. Remettre l'ancien nom, réinsérer l'élément supprimé à sa place, décrémenter ce qu'on a incrémenté. Si `applyOptimistic` n'a rien trouvé à modifier, il renvoie `null` et rien n'est défait.

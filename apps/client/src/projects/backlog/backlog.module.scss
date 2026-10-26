@@ -14,11 +14,11 @@
 
 .page {
   box-sizing: border-box;
-  // La page s'élargit avec le tableau et défile en largeur ; la barre du haut et le footer restent fixes
+  // La page s'élargit avec le tableau et défile en largeur ; la barre du haut reste fixe
   width: max-content;
   min-width: 100%;
   min-height: 100svh;
-  padding: vars.$toolbar-height 0 calc(vars.$footer-height + 2.4rem);
+  padding: vars.$toolbar-height 0 2.4rem;
   font-size: vars.$text-base;
   line-height: 1.45;
   color: vars.$text;
@@ -110,18 +110,6 @@
   gap: 0.8rem;
   align-items: center;
   margin-left: auto;
-}
-
-.historyButtons {
-  display: flex;
-  gap: 0.2rem;
-}
-
-.toolbarDivider {
-  width: 1px;
-  height: 2.4rem;
-  margin: 0 0.4rem;
-  background: vars.$border;
 }
 
 .countBadge {
@@ -2240,72 +2228,15 @@
   }
 }
 
-// ---------- Footer de debug : sombre dans les deux thèmes ----------
+// ---------- Lecture et écriture en attente ----------
 
-.debugFooter {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: vars.$z-toolbar;
-  box-sizing: border-box;
-  display: flex;
-  gap: 1.6rem;
-  align-items: center;
-  height: vars.$footer-height;
-  padding: 0 0.6rem 0 1.6rem;
-  font-family: vars.$font-mono;
-  font-size: 1.15rem;
-  color: #aeb6c4;
-  background: #0b0e13;
-  border-top: 1px solid #1f2530;
-
-  strong {
-    font-weight: 600;
-    color: #eef0f4;
-  }
+// Ligne ou sous-ligne créée de façon optimiste : visible tout de suite, grisée et inerte jusqu'à la réponse du serveur
+.temporaryRow {
+  opacity: 0.55;
 }
 
-.debugItems {
-  display: flex;
-  flex: 1;
-  gap: 2.4rem;
-  align-items: center;
-  min-width: 0;
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: none;
-}
-
-.debugTitle {
-  display: inline-flex;
-  gap: 0.6rem;
-  align-items: center;
-  font-weight: 700;
-  color: #fbbf24;
-
-  svg {
-    width: 1.4rem;
-    height: 1.4rem;
-  }
-}
-
-.debugSort {
-  display: inline-flex;
-  align-items: center;
-
-  span {
-    display: inline-flex;
-    gap: 0.2rem;
-    align-items: center;
-  }
-
-  svg {
-    width: 1.2rem;
-    height: 1.2rem;
-  }
-}
-
-.copyButton {
-  flex-shrink: 0;
+// Lignes de la vue précédente, affichées le temps de lire la nouvelle (tri ou filtre changé)
+.staleRows {
+  opacity: 0.6;
+  transition: opacity vars.$duration vars.$ease;
 }

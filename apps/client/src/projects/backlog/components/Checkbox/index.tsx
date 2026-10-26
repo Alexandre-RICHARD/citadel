@@ -1,7 +1,7 @@
 import { Check, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { joinClassNames } from "../../utils";
+import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Tooltip } from "../Tooltip";
 import styles from "./checkbox.module.scss";
 
