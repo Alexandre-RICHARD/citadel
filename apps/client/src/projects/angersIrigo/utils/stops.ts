@@ -58,6 +58,52 @@ export function groupStops(stops: Iterable<GtfsStop>): StopGroup[] {
 }
 
 /**
+ * Lignes desservant chaque arrêt affiché (indexé par StopGroup.id), d'après les tracés de leurs
+ * courses : un tracé liste ses arrêts, chaque course relie un tracé à une ligne.
+ */
+export function indexRoutesByStopGroup(
+	shapes: ReadonlyMap<string, TripShape>,
+	gtfs: GtfsStaticData,
+	stopGroupByStopId: ReadonlyMap<string, StopGroup>,
+): ReadonlyMap<string, ReadonlySet<string>> {
+	const routeIdsByShapeId = new Map<string, Set<string>>();
+	for (const trip of gtfs.trips.values()) {
+		if (trip.shapeId === undefined) {
+			continue;
+		}
+		const routeIds = routeIdsByShapeId.get(trip.shapeId) ?? new Set<string>();
+		routeIds.add(trip.routeId);
+		routeIdsByShapeId.set(trip.shapeId, routeIds);
+	}
+
+	const routeIdsByStopGroup = new Map<string, Set<string>>();
+	for (const [shapeId, routeIds] of routeIdsByShapeId) {
+		for (const { stopId } of shapes.get(shapeId)?.stops ?? []) {
+			const groupId = stopGroupByStopId.get(stopId)?.id;
+			if (groupId === undefined) {
+				continue;
+			}
+			const groupRouteIds =
+				routeIdsByStopGroup.get(groupId) ?? new Set<string>();
+			routeIds.forEach((routeId) => groupRouteIds.add(routeId));
+			routeIdsByStopGroup.set(groupId, groupRouteIds);
+		}
+	}
+	return routeIdsByStopGroup;
+}
+
+/** Arrêts desservis par au moins une ligne retenue (un arrêt sans ligne connue n'est jamais retenu) */
+export function filterStopsByRoute(
+	stops: StopGroup[],
+	routeIdsByStopGroup: ReadonlyMap<string, ReadonlySet<string>>,
+	isRouteKept: (routeId: string) => boolean,
+): StopGroup[] {
+	return stops.filter((stop) =>
+		[...(routeIdsByStopGroup.get(stop.id) ?? [])].some(isRouteKept),
+	);
+}
+
+/**
  * Prochains passages à un arrêt, triés par heure. Limités à l'heure à venir :
  * le flux des mises à jour de trajet ne prévoit pas plus loin.
  */

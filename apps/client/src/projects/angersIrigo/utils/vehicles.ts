@@ -150,7 +150,7 @@ export function filterVehicles(
 }
 
 /** Mode d'une ligne, déterminé comme celui de ses véhicules (voir extractVehicles) */
-function getRouteKind(
+export function getRouteKind(
 	routeId: string,
 	routes: ReadonlyMap<string, GtfsRoute>,
 ): VehicleKind {
