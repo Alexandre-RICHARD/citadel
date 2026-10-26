@@ -54,7 +54,7 @@ Game.init(
 	},
 	{
 		sequelize,
-		tableName: "game",
+		tableName: "gdc_game",
 		modelName: "Game",
 		timestamps: true,
 	},

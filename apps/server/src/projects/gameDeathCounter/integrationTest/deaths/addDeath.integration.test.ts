@@ -163,14 +163,14 @@ describe("addDeath", () => {
 			"SHOULD reject the request WHEN the boss id is $reason",
 			async ({ pathValue, issue }) => {
 				// Arrange
-				const deathCountBefore = await countTableRows("death");
+				const deathCountBefore = await countTableRows("gdc_death");
 
 				// Act
 				const response = await request(app).post(addDeathUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["bossId"], ...issue }]);
-				expect(await countTableRows("death")).toBe(deathCountBefore);
+				expect(await countTableRows("gdc_death")).toBe(deathCountBefore);
 			},
 		);
 	});
@@ -178,7 +178,7 @@ describe("addDeath", () => {
 	describe("404 Not Found", () => {
 		it("SHOULD answer that the boss does not exist, creating nothing", async () => {
 			// Arrange
-			const deathCountBefore = await countTableRows("death");
+			const deathCountBefore = await countTableRows("gdc_death");
 
 			// Act
 			const response = await request(app).post(addDeathUrl(NON_EXISTENT_ID));
@@ -189,7 +189,7 @@ describe("addDeath", () => {
 				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
 				`No boss with id : ${NON_EXISTENT_ID}`,
 			);
-			expect(await countTableRows("death")).toBe(deathCountBefore);
+			expect(await countTableRows("gdc_death")).toBe(deathCountBefore);
 		});
 	});
 

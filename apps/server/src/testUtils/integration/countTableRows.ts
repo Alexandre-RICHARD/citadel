@@ -8,7 +8,7 @@ type CountRow = {
 
 // Les tests s'exécutent un par un : comparer le nombre de lignes avant et après une requête est fiable
 export async function countTableRows(
-	tableName: "game" | "boss" | "death" | "error_log",
+	tableName: "gdc_game" | "gdc_boss" | "gdc_death" | "error_log",
 ): Promise<number> {
 	const countRow = await sequelize.query<CountRow>(
 		`SELECT COUNT(*) AS rowCount FROM \`${tableName}\``,

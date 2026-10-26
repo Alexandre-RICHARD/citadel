@@ -69,7 +69,7 @@ Boss.init(
 	},
 	{
 		sequelize,
-		tableName: "boss",
+		tableName: "gdc_boss",
 		modelName: "Boss",
 		timestamps: true,
 	},

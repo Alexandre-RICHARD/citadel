@@ -8,7 +8,7 @@ export async function selectDeathRowsByBossId(
 ): Promise<DeathRow[]> {
 	return sequelize.query<DeathRow>(
 		`SELECT id, boss_id AS bossId, date, comment, created_at AS createdAt, updated_at AS updatedAt
-		FROM death
+		FROM gdc_death
 		WHERE boss_id = :bossId
 		ORDER BY id`,
 		{ type: QueryTypes.SELECT, replacements: { bossId } },

@@ -170,7 +170,7 @@ describe("createGame", () => {
 			"SHOULD reject the request without creating anything WHEN $reason",
 			async ({ name, issue }) => {
 				// Arrange
-				const gameCountBefore = await countTableRows("game");
+				const gameCountBefore = await countTableRows("gdc_game");
 
 				// Act
 				const response = await request(app)
@@ -179,13 +179,13 @@ describe("createGame", () => {
 
 				// Assert
 				expectValidationError(response, [{ path: ["name"], ...issue }]);
-				expect(await countTableRows("game")).toBe(gameCountBefore);
+				expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 			},
 		);
 
 		it("SHOULD reject a missing body", async () => {
 			// Arrange
-			const gameCountBefore = await countTableRows("game");
+			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
 			const response = await request(app).post(CREATE_GAME_URL);
@@ -198,12 +198,12 @@ describe("createGame", () => {
 					message: "Invalid input: expected object, received undefined",
 				},
 			]);
-			expect(await countTableRows("game")).toBe(gameCountBefore);
+			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 		});
 
 		it("SHOULD reject the body WHEN it is an array", async () => {
 			// Arrange
-			const gameCountBefore = await countTableRows("game");
+			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
 			const response = await request(app)
@@ -218,12 +218,12 @@ describe("createGame", () => {
 					message: "Invalid input: expected object, received array",
 				},
 			]);
-			expect(await countTableRows("game")).toBe(gameCountBefore);
+			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 		});
 
 		it("SHOULD reject a malformed JSON", async () => {
 			// Arrange
-			const gameCountBefore = await countTableRows("game");
+			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
 			const response = await request(app)
@@ -233,7 +233,7 @@ describe("createGame", () => {
 
 			// Assert
 			expectMalformedJsonError(response);
-			expect(await countTableRows("game")).toBe(gameCountBefore);
+			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 		});
 	});
 
@@ -244,7 +244,7 @@ describe("createGame", () => {
 				simulatedDatabaseFailure(),
 			);
 			const errorLogWatcher = await watchErrorLogs();
-			const gameCountBefore = await countTableRows("game");
+			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
 			const response = await request(app)
@@ -257,7 +257,7 @@ describe("createGame", () => {
 				errorType: "DatabaseError",
 				message: `[POST ${CREATE_GAME_URL}] Failed to insert new game`,
 			});
-			expect(await countTableRows("game")).toBe(gameCountBefore);
+			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 		});
 	});
 });

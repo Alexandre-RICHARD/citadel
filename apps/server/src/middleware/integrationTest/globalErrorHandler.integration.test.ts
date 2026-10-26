@@ -16,7 +16,7 @@ describe("globalErrorHandler", () => {
 	describe("413 Content Too Large", () => {
 		it("SHOULD answer INVALID_REQUEST without changing anything WHEN express.json rejects the body before any validation", async () => {
 			// Arrange
-			const gameCountBefore = await countTableRows("game");
+			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
 			const response = await request(app)
@@ -29,7 +29,7 @@ describe("globalErrorHandler", () => {
 				code: TechnicalErrorCodeEnum.INVALID_REQUEST,
 				message: expect.any(String) as string,
 			});
-			expect(await countTableRows("game")).toBe(gameCountBefore);
+			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
 		});
 	});
 });
