@@ -59,6 +59,16 @@
 .leaflet-container {
   font-family: inherit;
   background: $color-map-background;
+
+  // Le reset du design system borne svg et canvas à la largeur de leur parent. Les calques de
+  // Leaflet débordent volontairement de la carte : bornés, ils sont écrasés et le dessin se
+  // décale ou disparaît (arrêts, tracé d'un véhicule). leaflet.css ne protège que le svg du
+  // calque par défaut, pas le canvas des arrêts ni les calques ajoutés (« trip-path »).
+  svg,
+  canvas {
+    max-width: none;
+    max-height: none;
+  }
 }
 
 // Classe posée par <Popup className="app-popup"> sur le conteneur Leaflet de chaque popup
