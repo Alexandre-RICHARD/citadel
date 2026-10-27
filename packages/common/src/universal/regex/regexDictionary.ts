@@ -18,6 +18,8 @@ export const regexDictionary = {
 	diacritic: /\p{Diacritic}/gu,
 	// Suite de caractères ni lettre minuscule sans accent ni chiffre : la ponctuation et les espaces d'un texte normalisé
 	nonAlphanumericRun: /[^a-z0-9]+/g,
+	// Mot qui commence par une voyelle, devant laquelle « de » s'élide en « d' »
+	frenchVowelStart: /^[aeiouyàâäéèêëîïôöûüù]/i,
 	// Date tapée jour en premier : « 17/09/2013 », « 1.9.2013 », « 17-09-2013 » ; jour, mois et année capturés
 	dayFirstDateInput: /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/,
 	// Date tapée au format ISO : « 2013-09-17 » ; année, mois et jour capturés
