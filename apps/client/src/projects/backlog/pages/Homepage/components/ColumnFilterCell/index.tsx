@@ -2,9 +2,9 @@ import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/back
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type";
-import { columnFilterKinds } from "@citadel/specs/src/projects/backlog/rule/view/columnFilterKinds";
-import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/rule/view/viewParamSyntax.enum";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
+import { columnFilterKinds } from "@citadel/specs/src/projects/backlog/helper/view/columnFilterKinds";
+import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
 import { Check, Minus, X } from "lucide-react";
 
 import styles from "../../../../backlog.module.scss";

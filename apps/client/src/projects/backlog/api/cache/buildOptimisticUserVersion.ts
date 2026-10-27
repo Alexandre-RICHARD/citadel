@@ -1,7 +1,7 @@
 import type { StoredGameDto } from "@citadel/specs/src/projects/backlog/dto/game/storedGameDto.type";
 import type { UserVersionDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userVersionDto.type";
 import type { CreateUserVersionBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodyDto.type";
-import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/rule/status/applyFirstFinishCount";
+import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount";
 
 /**
  * La version jouée telle que le serveur la créera, à partir du jeu en cache : sa version, sa plateforme et la date de

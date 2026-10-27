@@ -1,6 +1,6 @@
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/rule/status/isStatusAllowed";
+import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 
 import type { DlcFm } from "../../../../api/model/dlcFm.type";
 import styles from "../../../../backlog.module.scss";

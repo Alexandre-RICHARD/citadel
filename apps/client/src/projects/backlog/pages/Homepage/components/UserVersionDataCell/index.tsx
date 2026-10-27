@@ -1,8 +1,8 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/rule/status/isFinishedStatus";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/rule/status/isStatusAllowed";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
+import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 import { Bookmark, type LucideIcon, PackageCheck } from "lucide-react";
 import type { ReactNode } from "react";
 

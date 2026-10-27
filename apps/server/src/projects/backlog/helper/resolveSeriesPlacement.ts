@@ -1,7 +1,7 @@
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { getNextSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/getNextSeriesNumber.ts";
-import { placeSeriesEntry } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/placeSeriesEntry.ts";
+import { getNextSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/getNextSeriesNumber.ts";
+import { placeSeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/placeSeriesEntry.ts";
 import type { Transaction } from "sequelize";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";

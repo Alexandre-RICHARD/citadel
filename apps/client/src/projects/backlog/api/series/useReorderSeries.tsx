@@ -1,6 +1,6 @@
 import type { ReorderSeriesBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/series/reorderSeries/reorderSeriesBodyDto.type";
 import type { ReorderSeries } from "@citadel/specs/src/projects/backlog/endpoint/series/reorderSeries/reorderSeriesEndpoint.interface";
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 

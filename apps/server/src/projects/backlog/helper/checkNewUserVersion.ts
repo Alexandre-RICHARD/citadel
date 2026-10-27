@@ -1,6 +1,6 @@
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/rule/status/isStatusAllowed.ts";
+import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed.ts";
 import type { Transaction } from "sequelize";
 
 import { ConflictError } from "../../../error/ConflictError.ts";

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseSortParam } from "../rule/view/parseSortParam.ts";
+import { parseSortParam } from "../helper/view/parseSortParam.ts";
 
 // Tri dans la query, écrit comme dans l'URL de la page (`releaseDate:desc,name:asc`) ; il reste du texte, lu par le serveur
 export const sortParamSchema = z

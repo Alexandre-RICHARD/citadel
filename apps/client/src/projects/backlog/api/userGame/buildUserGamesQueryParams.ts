@@ -1,6 +1,6 @@
 import type { GetUserGamesQueryParamDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/getUserGames/getUserGamesQueryParamDto.type";
-import { formatFilterParam } from "@citadel/specs/src/projects/backlog/rule/view/formatFilterParam";
-import { formatSortParam } from "@citadel/specs/src/projects/backlog/rule/view/formatSortParam";
+import { formatFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/formatFilterParam";
+import { formatSortParam } from "@citadel/specs/src/projects/backlog/helper/view/formatSortParam";
 
 import type { BacklogView } from "../../helper/view/backlogView.type";
 

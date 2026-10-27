@@ -1,9 +1,9 @@
-import { dropSeriesEntry } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/dropSeriesEntry";
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber";
-import { getSeriesDrop } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/getSeriesDrop";
-import { isSeriesSubNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/isSeriesSubNumber";
-import { placeSeriesEntry } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/placeSeriesEntry";
-import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/seriesEntry.type";
+import { dropSeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/dropSeriesEntry";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
+import { getSeriesDrop } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/getSeriesDrop";
+import { isSeriesSubNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/isSeriesSubNumber";
+import { placeSeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/placeSeriesEntry";
+import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/seriesEntry.type";
 import { GripVertical, ListOrdered, TriangleAlert } from "lucide-react";
 import { useRef, useState } from "react";
 

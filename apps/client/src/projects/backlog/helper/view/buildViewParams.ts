@@ -1,6 +1,6 @@
-import { formatFilterParam } from "@citadel/specs/src/projects/backlog/rule/view/formatFilterParam";
-import { formatSortParam } from "@citadel/specs/src/projects/backlog/rule/view/formatSortParam";
-import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/rule/view/viewParamSyntax.enum";
+import { formatFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/formatFilterParam";
+import { formatSortParam } from "@citadel/specs/src/projects/backlog/helper/view/formatSortParam";
+import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
 
 import type { BacklogView } from "./backlogView.type";
 

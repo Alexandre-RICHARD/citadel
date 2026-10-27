@@ -1,7 +1,7 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
-import { parseFilterParam } from "@citadel/specs/src/projects/backlog/rule/view/parseFilterParam";
-import { parseSortParam } from "@citadel/specs/src/projects/backlog/rule/view/parseSortParam";
-import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/rule/view/viewParamSyntax.enum";
+import { parseFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/parseFilterParam";
+import { parseSortParam } from "@citadel/specs/src/projects/backlog/helper/view/parseSortParam";
+import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
 
 import type { BacklogView } from "./backlogView.type";
 

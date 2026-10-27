@@ -80,7 +80,7 @@ src/
 │   │   └── <action>BodyDto.type.ts          z.infer du schéma
 │   ├── error/<projet>ErrorCode.enum.ts      codes métier du projet
 │   ├── enum/, schema/                       listes fermées, schémas réutilisés (Backlog)
-│   └── rule/                                règles métier communes au front et au serveur (Backlog)
+│   └── helper/                              fonctions métier communes au front et au serveur (Backlog)
 └── specUtils/                               préfixes d'API, statuts HTTP, codes techniques, schémas génériques
 ```
 
@@ -247,7 +247,7 @@ L'implémentation de référence de tout ce qui précède : en cas de doute, s'e
 
 ### Backlog
 
-- **Specs** : en plus des endpoints, `rule/` porte les règles que le front et le serveur appliquent à l'identique : statuts et leur conversion, agrégats d'une ligne, numéros dans une série, tri et filtres écrits dans l'URL.
+- **Specs** : en plus des endpoints, `helper/` porte les règles que le front et le serveur appliquent à l'identique : statuts et leur conversion, agrégats d'une ligne, numéros dans une série, tri et filtres écrits dans l'URL.
 - **Serveur** :
   - `igdb/` est le seul accès à IGDB : token Twitch tiré et renouvelé par `igdbClient`, appels espacés sous 4 par seconde, fiche gardée 10 minutes ;
   - `view/` calcule chaque ligne du tableau, puis la filtre, la trie et la découpe en pages : les valeurs calculées ne sont jamais stockées ;

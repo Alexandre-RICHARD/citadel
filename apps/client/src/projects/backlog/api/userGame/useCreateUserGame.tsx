@@ -1,6 +1,6 @@
 import type { CreateUserGameBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/createUserGame/createUserGameBodyDto.type";
 import type { CreateUserGame } from "@citadel/specs/src/projects/backlog/endpoint/userGames/createUserGame/createUserGameEndpoint.interface";
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 

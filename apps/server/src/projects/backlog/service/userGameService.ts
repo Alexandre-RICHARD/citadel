@@ -1,7 +1,7 @@
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/rule/status/applyFirstFinishCount.ts";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/rule/status/convertStatus.ts";
-import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/rule/view/backlogPageSize.enum.ts";
+import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount.ts";
+import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus.ts";
+import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 import type { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";

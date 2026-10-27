@@ -1,8 +1,8 @@
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type";
 import type { CustomizeUserGameBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/customizeUserGame/customizeUserGameBodyDto.type";
 import type { CustomizeUserGame } from "@citadel/specs/src/projects/backlog/endpoint/userGames/customizeUserGame/customizeUserGameEndpoint.interface";
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/rule/status/convertStatus";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
+import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 

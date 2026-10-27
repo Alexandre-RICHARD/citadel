@@ -2,8 +2,8 @@ import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/back
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SortDirectionEnum } from "@citadel/specs/src/projects/backlog/enum/sortDirection.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import { statusRanks } from "@citadel/specs/src/projects/backlog/rule/status/statusRanks";
-import type { SortCriterion } from "@citadel/specs/src/projects/backlog/rule/view/sortCriterion.type";
+import { statusRanks } from "@citadel/specs/src/projects/backlog/helper/status/statusRanks";
+import type { SortCriterion } from "@citadel/specs/src/projects/backlog/helper/view/sortCriterion.type";
 import {
 	ArrowDown,
 	ArrowUp,

@@ -1,7 +1,7 @@
 import { Skeleton } from "@citadel/design-system/src/atoms/Skeleton";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 import {
 	Suspense,
 	useCallback,

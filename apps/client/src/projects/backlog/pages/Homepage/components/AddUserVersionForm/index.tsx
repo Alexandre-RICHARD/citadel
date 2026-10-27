@@ -2,8 +2,8 @@ import { createUserGameBodySchema } from "@citadel/specs/src/projects/backlog/en
 import { createUserVersionBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodySchema";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/rule/status/convertStatus";
-import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/rule/status/isFinishedStatus";
+import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
 import { CopyPlus, LibraryBig } from "lucide-react";
 import { useState } from "react";
 

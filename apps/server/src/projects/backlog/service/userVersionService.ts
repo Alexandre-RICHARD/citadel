@@ -1,6 +1,6 @@
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/rule/status/applyFirstFinishCount.ts";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/rule/status/isStatusAllowed.ts";
+import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount.ts";
+import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed.ts";
 import type { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";

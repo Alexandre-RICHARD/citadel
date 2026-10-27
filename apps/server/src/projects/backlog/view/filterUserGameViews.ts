@@ -1,7 +1,7 @@
 import { normalizeText } from "@citadel/common/src/universal/string/normalizeText.ts";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum.ts";
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type.ts";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
 
 import { getColumnValue } from "./getColumnValue.ts";
 import type { UserGameView } from "./userGameView.type.ts";

@@ -2,7 +2,7 @@ import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/back
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { SortDirectionEnum } from "@citadel/specs/src/projects/backlog/enum/sortDirection.enum.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
-import type { SortCriterion } from "@citadel/specs/src/projects/backlog/rule/view/sortCriterion.type.ts";
+import type { SortCriterion } from "@citadel/specs/src/projects/backlog/helper/view/sortCriterion.type.ts";
 
 import { getColumnValue } from "./getColumnValue.ts";
 import type { UserGameView } from "./userGameView.type.ts";

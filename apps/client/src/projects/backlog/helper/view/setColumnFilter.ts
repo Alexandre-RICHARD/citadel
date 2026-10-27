@@ -1,5 +1,5 @@
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
 // Remplace le filtre d'une colonne, à sa place ; null le retire
 export function setColumnFilter(

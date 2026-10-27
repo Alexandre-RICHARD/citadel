@@ -1,5 +1,5 @@
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
 import type { BacklogOverviewFm } from "../../api/model/backlogOverviewFm.type";
 import type { BacklogView } from "../../helper/view/backlogView.type";

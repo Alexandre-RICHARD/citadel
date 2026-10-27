@@ -1,7 +1,7 @@
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber";
-import { getNextSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/getNextSeriesNumber";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
+import { getNextSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/getNextSeriesNumber";
 import { Check, Plus, Undo2 } from "lucide-react";
 
 import { buildFailureMessage } from "../../../../../../common/api/error/buildFailureMessage";

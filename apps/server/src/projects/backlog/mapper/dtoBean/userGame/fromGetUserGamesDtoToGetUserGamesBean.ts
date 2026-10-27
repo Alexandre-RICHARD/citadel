@@ -1,7 +1,7 @@
 import type { GetUserGamesQueryParamDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/getUserGames/getUserGamesQueryParamDto.type.ts";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
-import { parseFilterParam } from "@citadel/specs/src/projects/backlog/rule/view/parseFilterParam.ts";
-import { parseSortParam } from "@citadel/specs/src/projects/backlog/rule/view/parseSortParam.ts";
+import { parseFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/parseFilterParam.ts";
+import { parseSortParam } from "@citadel/specs/src/projects/backlog/helper/view/parseSortParam.ts";
 
 import type { GetUserGamesBean } from "../../../bean/getUserGamesBean.type.ts";
 

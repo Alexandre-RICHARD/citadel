@@ -1,4 +1,4 @@
-import { computeUserGameAggregates } from "@citadel/specs/src/projects/backlog/rule/aggregate/computeUserGameAggregates.ts";
+import { computeUserGameAggregates } from "@citadel/specs/src/projects/backlog/helper/aggregate/computeUserGameAggregates.ts";
 
 import type { UserGameBean } from "../bean/userGameBean.type.ts";
 import type { UserGameView } from "./userGameView.type.ts";

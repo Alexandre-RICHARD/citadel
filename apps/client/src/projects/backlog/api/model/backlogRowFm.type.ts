@@ -1,5 +1,5 @@
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
-import type { UserGameAggregates } from "@citadel/specs/src/projects/backlog/rule/aggregate/userGameAggregates.type";
+import type { UserGameAggregates } from "@citadel/specs/src/projects/backlog/helper/aggregate/userGameAggregates.type";
 
 import type { CompanyFm } from "./companyFm.type";
 import type { DlcFm } from "./dlcFm.type";

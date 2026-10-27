@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { ValidationIssueCodeEnum } from "../../../specUtils/error/validationIssueCode.enum.ts";
-import { SeriesNumberScaleEnum } from "../rule/seriesNumber/seriesNumberScale.enum.ts";
+import { SeriesNumberScaleEnum } from "../helper/seriesNumber/seriesNumberScale.enum.ts";
 
 const MIN_SERIES_NUMBER = 1;
 

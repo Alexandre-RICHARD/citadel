@@ -1,5 +1,5 @@
-import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/rule/view/columnFilter.type.ts";
-import type { SortCriterion } from "@citadel/specs/src/projects/backlog/rule/view/sortCriterion.type.ts";
+import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
+import type { SortCriterion } from "@citadel/specs/src/projects/backlog/helper/view/sortCriterion.type.ts";
 
 export type GetUserGamesBean = {
 	page: number;

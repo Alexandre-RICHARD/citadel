@@ -1,6 +1,6 @@
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type";
-import { computeUserGameAggregates } from "@citadel/specs/src/projects/backlog/rule/aggregate/computeUserGameAggregates";
-import { countDoneDlcs } from "@citadel/specs/src/projects/backlog/rule/aggregate/countDoneDlcs";
+import { computeUserGameAggregates } from "@citadel/specs/src/projects/backlog/helper/aggregate/computeUserGameAggregates";
+import { countDoneDlcs } from "@citadel/specs/src/projects/backlog/helper/aggregate/countDoneDlcs";
 
 import { isTemporaryId } from "../../../../common/api/mutation/isTemporaryId";
 import type { BacklogRowFm } from "./backlogRowFm.type";

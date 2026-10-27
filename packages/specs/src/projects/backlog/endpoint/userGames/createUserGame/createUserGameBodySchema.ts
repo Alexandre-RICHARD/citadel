@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { ValidationIssueCodeEnum } from "../../../../../specUtils/error/validationIssueCode.enum.ts";
 import { bodyIdSchema } from "../../../../../specUtils/schemaValidator/id/bodyIdSchema.ts";
-import { isStatusAllowed } from "../../../rule/status/isStatusAllowed.ts";
+import { isStatusAllowed } from "../../../helper/status/isStatusAllowed.ts";
 import { customizationSchema } from "../../../schema/customizationSchema.ts";
 import { newUserVersionSchema } from "../../../schema/newUserVersionSchema.ts";
 

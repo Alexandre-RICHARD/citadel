@@ -1,5 +1,5 @@
 import type { GetStoredGames } from "@citadel/specs/src/projects/backlog/endpoint/games/getStoredGames/getStoredGamesEndpoint.interface";
-import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/rule/view/backlogPageSize.enum";
+import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";

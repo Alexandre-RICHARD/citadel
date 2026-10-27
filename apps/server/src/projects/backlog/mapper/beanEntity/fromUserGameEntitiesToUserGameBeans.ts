@@ -1,5 +1,5 @@
-import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/formatSeriesNumber.ts";
-import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/rule/seriesNumber/seriesEntry.type.ts";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber.ts";
+import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/seriesEntry.type.ts";
 
 import type { UserGameBean } from "../../bean/userGameBean.type.ts";
 import type { UserVersionBean } from "../../bean/userVersionBean.type.ts";

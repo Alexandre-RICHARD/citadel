@@ -1,5 +1,5 @@
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/rule/view/backlogPageSize.enum.ts";
+import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import { ConflictError } from "../../../error/ConflictError.ts";
