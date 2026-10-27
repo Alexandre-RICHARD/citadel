@@ -1,17 +1,10 @@
+import { normalizeText } from "@citadel/common/src/universal/string/normalizeText";
 import { type KeyboardEvent, useRef, useState } from "react";
 
 import type { SelectOption } from "./selectOption.type";
 
 /** Frappe rapide : les lettres tapées à moins de ce délai d'écart s'enchaînent */
 const typeaheadResetMs = 600;
-
-/** Sans accents ni majuscules : « e » trouve « Édition » */
-function normalize(text: string): string {
-	return text
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
-		.toLowerCase();
-}
 
 /**
  * Liste déroulante au clavier (motif « combobox » à sélection seule) : le focus reste sur le déclencheur, la valeur active
@@ -80,7 +73,7 @@ export function useSelect<V extends string>({
 				? character
 				: typeahead.current.text + character;
 		typeahead.current = { text, resetAt: now + typeaheadResetMs };
-		const searched = normalize(text);
+		const searched = normalizeText(text);
 		const start = text.length === 1 ? activeIndex + 1 : activeIndex;
 		const ordered = [
 			...options.slice(Math.max(start, 0)),
@@ -89,7 +82,7 @@ export function useSelect<V extends string>({
 		const match = ordered.find(
 			(option) =>
 				option.disabled !== true &&
-				normalize(option.label).startsWith(searched),
+				normalizeText(option.label).startsWith(searched),
 		);
 		if (match !== undefined) {
 			setActiveIndex(options.indexOf(match));
