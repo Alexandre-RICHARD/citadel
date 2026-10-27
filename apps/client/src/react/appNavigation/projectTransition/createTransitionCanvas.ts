@@ -1,3 +1,5 @@
+import { getCappedPixelRatio } from "@citadel/common/src/browser/canvas/getCappedPixelRatio";
+import { setCanvasResolution } from "@citadel/common/src/browser/canvas/setCanvasResolution";
 import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { clamp } from "@citadel/common/src/universal/number/clamp";
 
@@ -35,17 +37,10 @@ export function createTransitionCanvas(canvas: HTMLCanvasElement) {
 	let lastFrameAt = 0;
 
 	function resize(): void {
-		pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+		pixelRatio = getCappedPixelRatio(MAX_PIXEL_RATIO);
 		width = canvas.clientWidth;
 		height = canvas.clientHeight;
-		canvas.setAttribute(
-			"width",
-			String(Math.max(1, Math.round(width * pixelRatio))),
-		);
-		canvas.setAttribute(
-			"height",
-			String(Math.max(1, Math.round(height * pixelRatio))),
-		);
+		setCanvasResolution(canvas, width * pixelRatio, height * pixelRatio);
 	}
 
 	function drawFrame(now: number): void {

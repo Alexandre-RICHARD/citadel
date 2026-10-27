@@ -1,3 +1,5 @@
+import { getCappedPixelRatio } from "@citadel/common/src/browser/canvas/getCappedPixelRatio";
+import { setCanvasResolution } from "@citadel/common/src/browser/canvas/setCanvasResolution";
 import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 
 import { BackgroundEffectEnum } from "../../../../react/appNavigation/showcase/backgroundEffect.enum";
@@ -37,13 +39,11 @@ export function createBackgroundEffects(
 	let frameId = 0;
 
 	function resize(): void {
-		pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+		pixelRatio = getCappedPixelRatio(MAX_PIXEL_RATIO);
 		width = backCanvas.clientWidth;
 		height = backCanvas.clientHeight;
-		for (const canvas of [backCanvas, frontCanvas]) {
-			canvas.width = Math.max(1, Math.round(width * pixelRatio));
-			canvas.height = Math.max(1, Math.round(height * pixelRatio));
-		}
+		for (const canvas of [backCanvas, frontCanvas])
+			setCanvasResolution(canvas, width * pixelRatio, height * pixelRatio);
 		layers.forEach((layer) => layer.effect.resize?.(width, height));
 	}
 

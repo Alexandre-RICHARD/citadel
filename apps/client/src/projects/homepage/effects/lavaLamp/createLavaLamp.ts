@@ -1,3 +1,4 @@
+import { setCanvasResolution } from "@citadel/common/src/browser/canvas/setCanvasResolution";
 import { easeInOutSine } from "@citadel/common/src/universal/animation/easeInOutSine";
 import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { hexToRgb } from "@citadel/common/src/universal/color/hexToRgb";
@@ -118,16 +119,11 @@ export function createLavaLamp(canvas: HTMLCanvasElement) {
 	let frameId = 0;
 
 	function resize(): void {
-		const width = Math.max(
-			1,
-			Math.round(canvas.clientWidth * RESOLUTION_SCALE),
+		setCanvasResolution(
+			canvas,
+			canvas.clientWidth * RESOLUTION_SCALE,
+			canvas.clientHeight * RESOLUTION_SCALE,
 		);
-		const height = Math.max(
-			1,
-			Math.round(canvas.clientHeight * RESOLUTION_SCALE),
-		);
-		canvas.setAttribute("width", String(width));
-		canvas.setAttribute("height", String(height));
 		gl.viewport(0, 0, canvas.width, canvas.height);
 		needsDraw = true;
 	}
