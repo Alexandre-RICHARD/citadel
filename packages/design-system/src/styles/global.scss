@@ -4,6 +4,8 @@ html {
   font-size: 62.5%;
   font-family: "Roboto", sans-serif;
   font-optical-sizing: auto;
+  // Thème du projet affiché, posé sur <html> (useDocumentTheme) : le fond suit jusque dans les débordements du défilement
+  background-color: var(--theme-colorBackground);
 }
 
 body {

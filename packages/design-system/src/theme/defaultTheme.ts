@@ -1,6 +1,7 @@
 import type { ThemeType } from "./theme.type";
 
-// Valeurs reprises du thème de la réserve (todo_folder/theme.scss). Tailles en rem : 1rem = 10px
+// Valeurs reprises du thème de la réserve (todo_folder/theme.scss). Tailles en rem : 1rem = 10px.
+// C'est aussi la base, en clair, des thèmes des projets (resolveTheme)
 export const defaultTheme: ThemeType = {
 	// Fonds et surfaces
 	colorBackground: "#fefefe",
@@ -36,10 +37,19 @@ export const defaultTheme: ThemeType = {
 	colorConstructiveStrong: "#2e5412",
 	colorConstructiveSubtle: "#e3f6d5",
 	colorConstructiveContent: "#fefefe",
+	// Décoration
+	colorDecoration1: "#327fdc",
+	colorDecoration2: "#8f5bd6",
+	colorDecoration3: "#2bb5a5",
+	colorDecoration4: "#f08a3c",
 	// Polices
 	fontFamilyPrimary: '"Roboto", sans-serif',
 	fontFamilySecondary: '"Roboto", sans-serif',
 	fontFamilyMono: "monospace",
+	// Titres
+	fontWeightDisplay: "700",
+	letterSpacingDisplay: "0em",
+	textTransformDisplay: "none",
 	// Tailles de police
 	fontSizeXXS: "1rem",
 	fontSizeXS: "1.2rem",
@@ -60,4 +70,5 @@ export const defaultTheme: ThemeType = {
 	radiusM: "0.8rem",
 	radiusL: "1.2rem",
 	radiusFull: "999px",
+	cornerCut: "0rem",
 };

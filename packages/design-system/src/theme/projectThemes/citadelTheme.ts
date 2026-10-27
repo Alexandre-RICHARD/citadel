@@ -1,0 +1,56 @@
+import type { ThemeDefinitionType } from "../themeDefinition.type";
+
+// La Citadel : la homepage, et le pilote du futur thème global
+export const citadelTheme: ThemeDefinitionType = {
+	fontStylesheet:
+		"https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Unbounded:wght@400..900&display=swap",
+	shared: {
+		fontFamilyPrimary: '"Outfit", system-ui, sans-serif',
+		fontFamilySecondary: '"Unbounded", system-ui, sans-serif',
+		fontWeightDisplay: "700",
+		letterSpacingDisplay: "0.04em",
+		textTransformDisplay: "none",
+		radiusL: "1.2rem",
+		cornerCut: "0rem",
+	},
+	colors: {
+		light: {
+			colorBackground: "#f5f1ea",
+			colorSurface: "#ffffff",
+			colorSurfaceRaised: "#ffffff",
+			colorSurfaceSunken: "#ece6dc",
+			colorBorder: "#d9d1e6",
+			colorBorderSoft: "#e8e2ef",
+			colorText: "#18142b",
+			colorTextMuted: "#5a5476",
+			colorTextSubtle: "#7d779a",
+			colorPrimaryHue: "#c0137f",
+			colorPrimaryStrong: "#8f0d5e",
+			colorPrimarySubtle: "#c0137f1f",
+			colorPrimaryContent: "#ffffff",
+			colorDecoration1: "#9b6bff",
+			colorDecoration2: "#ff4fb5",
+			colorDecoration3: "#3fd2ff",
+			colorDecoration4: "#ffa06b",
+		},
+		dark: {
+			colorBackground: "#100d1c",
+			colorSurface: "#1d1933",
+			colorSurfaceRaised: "#262042",
+			colorSurfaceSunken: "#0b0915",
+			colorBorder: "#3b3560",
+			colorBorderSoft: "#2a2547",
+			colorText: "#f6f3ff",
+			colorTextMuted: "#b9b2d9",
+			colorTextSubtle: "#8a83ad",
+			colorPrimaryHue: "#ff5bd1",
+			colorPrimaryStrong: "#ff8fe0",
+			colorPrimarySubtle: "#ff5bd129",
+			colorPrimaryContent: "#1a0016",
+			colorDecoration1: "#7b2ff7",
+			colorDecoration2: "#f107a3",
+			colorDecoration3: "#00b8f0",
+			colorDecoration4: "#ff7a45",
+		},
+	},
+};
