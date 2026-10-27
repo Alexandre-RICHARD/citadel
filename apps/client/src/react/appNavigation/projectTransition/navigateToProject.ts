@@ -8,33 +8,38 @@ import { projectLoaders } from "../projectLoaders";
 import { navigateWithTransition } from "./navigateWithTransition";
 import { toTransitionPalette } from "./toTransitionPalette";
 import { TransitionEffectEnum } from "./transitionEffect.enum";
+import type { TransitionPoint } from "./transitionPoint.type";
 
 type Options = {
 	project: ProjectDictionary;
-	// Le bouton cliqué : la transition part de lui
-	originElement: Element;
+	fromProject: ProjectDictionary | undefined;
+	origin: TransitionPoint;
 	reducedMotion: boolean;
+	navigate: () => void;
 };
 
-// Mène à un projet avec sa transition, dans ses couleurs et dans le mode où il s'ouvrira (son propre choix de thème)
+// Mène à un projet avec une transition, dans le mode où il s'ouvrira (son propre choix de thème). La transition est
+// celle du projet présenté : celui où l'on va, ou, au retour vers la homepage qui n'en a pas, celui que l'on quitte
+// (la homepage rouvre sa présentation, dans son ambiance)
 export function navigateToProject({
 	project,
-	originElement,
+	fromProject,
+	origin,
 	reducedMotion,
+	navigate,
 }: Options): Promise<void> {
+	const featuredProject =
+		!project.showcase && fromProject?.showcase ? fromProject : project;
 	const colorScheme = readColorScheme(getColorSchemeStorageKey(project.id));
-	const theme = resolveAmbianceTheme(project.theme, colorScheme);
-	const originRect = originElement.getBoundingClientRect();
+	const theme = resolveAmbianceTheme(featuredProject.theme, colorScheme);
 
 	return navigateWithTransition({
-		path: project.path,
-		effect: project.showcase?.transitionEffect ?? TransitionEffectEnum.Hex,
+		navigate,
+		effect:
+			featuredProject.showcase?.transitionEffect ?? TransitionEffectEnum.Hex,
 		palette: toTransitionPalette(theme),
 		isDark: colorScheme === ColorSchemeEnum.Dark,
-		origin: {
-			x: originRect.left + originRect.width / 2,
-			y: originRect.top + originRect.height / 2,
-		},
+		origin,
 		load: projectLoaders[project.id],
 		tip: project.showcase && {
 			title: project.name,
