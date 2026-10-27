@@ -2,8 +2,6 @@ import type { ThemeDefinitionType } from "../themeDefinition.type";
 
 // Angers Irigo : la carte et les couleurs des lignes, titres de signalétique, formes en pastille
 export const angersIrigoTheme: ThemeDefinitionType = {
-	fontStylesheet:
-		"https://fonts.googleapis.com/css2?family=Overpass:wght@300..900&display=swap",
 	shared: {
 		fontFamilyPrimary:
 			'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',

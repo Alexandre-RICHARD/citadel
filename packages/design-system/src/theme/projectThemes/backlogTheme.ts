@@ -3,8 +3,6 @@ import type { ThemeDefinitionType } from "../themeDefinition.type";
 // Backlog : indigo, titres ronds, grands arrondis. Ses variables (--bl-*, variables.scss du projet)
 // reprennent ces couleurs, et ajoutent les nuances qui lui sont propres
 export const backlogTheme: ThemeDefinitionType = {
-	fontStylesheet:
-		"https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..900;1,14..32,400..900&family=Nunito:wght@400..1000&display=swap",
 	shared: {
 		fontFamilyPrimary:
 			'"Inter", system-ui, -apple-system, "Segoe UI", sans-serif',

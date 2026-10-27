@@ -12,7 +12,7 @@ type Props = {
 	children: ReactNode;
 };
 
-// Le thème du projet, dans le mode choisi : sur ses composants, sur <html> (portails, fond de la page), et ses polices
+// Le thème du projet, dans le mode choisi : sur ses composants et sur <html> (portails, fond de la page)
 export function ProjectThemeProvider({ project, children }: Props) {
 	const { colorScheme } = useProjectColorScheme(project);
 	const definition = projects[project].theme;
@@ -23,20 +23,5 @@ export function ProjectThemeProvider({ project, children }: Props) {
 
 	useDocumentTheme(theme, colorScheme);
 
-	return (
-		<ThemeProvider theme={theme}>
-			{/* React les place dans <head>, une seule fois même si plusieurs composants les demandent */}
-			<link
-				rel="preconnect"
-				href="https://fonts.gstatic.com"
-				crossOrigin=""
-			/>
-			<link
-				rel="stylesheet"
-				href={definition.fontStylesheet}
-				precedence="default"
-			/>
-			{children}
-		</ThemeProvider>
-	);
+	return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 }

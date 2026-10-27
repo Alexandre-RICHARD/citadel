@@ -1,0 +1,137 @@
+// Les polices de tous les thèmes, hébergées sur le site (fichiers de Fontsource, sous-ensemble latin : il couvre le
+// français). Les déclarer toutes ne coûte rien : le navigateur ne télécharge un fichier que quand un texte s'affiche
+// dans cette police. Fichiers variables quand la police en a un : une plage de graisses par fichier
+
+// Défaut du design system
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./roboto/roboto-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./roboto/roboto-latin-wght-italic.woff2") format("woff2");
+}
+
+// La Citadel
+@font-face {
+  font-family: "Outfit";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./outfit/outfit-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Unbounded";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("./unbounded/unbounded-latin-wght-normal.woff2") format("woff2");
+}
+
+// Game Death Counter, et Inter pour le Backlog : avec l'axe de taille optique
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("./cinzel/cinzel-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("./eb-garamond/eb-garamond-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("./eb-garamond/eb-garamond-latin-wght-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./inter/inter-latin-opsz-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./inter/inter-latin-opsz-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("./jetbrains-mono/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+}
+
+// Backlog
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("./nunito/nunito-latin-wght-normal.woff2") format("woff2");
+}
+
+// Angers Irigo
+@font-face {
+  font-family: "Overpass";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./overpass/overpass-latin-wght-normal.woff2") format("woff2");
+}
+
+// Satisfactory : pas de fichier variable, une graisse par fichier
+@font-face {
+  font-family: "Chakra Petch";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./chakra-petch/chakra-petch-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./chakra-petch/chakra-petch-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./chakra-petch/chakra-petch-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./chakra-petch/chakra-petch-latin-700-normal.woff2") format("woff2");
+}

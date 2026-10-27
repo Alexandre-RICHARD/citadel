@@ -2,8 +2,6 @@ import type { ThemeDefinitionType } from "../themeDefinition.type";
 
 // Satisfactory : cyan et orange industriels, police technique, angles coupés
 export const satisfactoryTheme: ThemeDefinitionType = {
-	fontStylesheet:
-		"https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap",
 	shared: {
 		fontFamilyPrimary: '"Chakra Petch", system-ui, sans-serif',
 		fontFamilySecondary: '"Chakra Petch", system-ui, sans-serif',
