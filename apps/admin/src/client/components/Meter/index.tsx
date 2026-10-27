@@ -1,3 +1,5 @@
+import { clamp } from "@citadel/common/src/universal/number/clamp";
+
 import { meterTone } from "../../status/meterTone";
 import styles from "./meter.module.scss";
 
@@ -10,7 +12,7 @@ type Props = {
 };
 
 export function Meter({ label, ratio, valueText, compact = false }: Props) {
-	const clamped = ratio === null ? 0 : Math.min(1, Math.max(0, ratio));
+	const clamped = ratio === null ? 0 : clamp(ratio, 0, 1);
 	return (
 		<div
 			className={styles.meter}
