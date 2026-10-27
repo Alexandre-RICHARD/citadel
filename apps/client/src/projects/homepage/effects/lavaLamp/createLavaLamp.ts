@@ -70,6 +70,9 @@ function createProgram(gl: WebGLRenderingContext): WebGLProgram | null {
 	gl.attachShader(program, vertexShader);
 	gl.attachShader(program, fragmentShader);
 	gl.linkProgram(program);
+	// Liés au programme, les shaders partiront avec lui
+	gl.deleteShader(vertexShader);
+	gl.deleteShader(fragmentShader);
 	return gl.getProgramParameter(program, gl.LINK_STATUS) ? program : null;
 }
 
@@ -220,8 +223,13 @@ export function createLavaLamp(canvas: HTMLCanvasElement) {
 		destroy() {
 			cancelAnimationFrame(frameId);
 			resizeObserver.disconnect();
-			// Libère le contexte tout de suite : le navigateur en limite le nombre
-			gl.getExtension("WEBGL_lose_context")?.loseContext();
+			gl.deleteBuffer(vertexBuffer);
+			gl.deleteProgram(program);
+			// Le canvas a quitté la page : son contexte est libéré tout de suite, le navigateur en limite le nombre.
+			// Encore affiché (double montage du StrictMode), il le garde : le canvas rendrait ce même contexte, perdu
+			if (!canvas.isConnected) {
+				gl.getExtension("WEBGL_lose_context")?.loseContext();
+			}
 		},
 	};
 }
