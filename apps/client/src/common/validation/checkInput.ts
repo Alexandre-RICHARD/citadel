@@ -1,3 +1,4 @@
+import { capitalizeFirstLetter } from "@citadel/common/src/universal/string/capitalizeFirstLetter";
 import { fromZodIssueToValidationIssueDto } from "@citadel/specs/src/specUtils/error/fromZodIssueToValidationIssueDto";
 import type { z } from "zod";
 
@@ -31,6 +32,6 @@ export function checkInput<Schema extends z.ZodType>(
 
 	return {
 		isValid: false,
-		message: `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`,
+		message: `${capitalizeFirstLetter(sentence)}.`,
 	};
 }
