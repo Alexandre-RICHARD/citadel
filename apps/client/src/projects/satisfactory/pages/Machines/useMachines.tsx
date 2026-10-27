@@ -1,9 +1,13 @@
+import { average } from "@citadel/common/src/universal/number/average";
 import { useState } from "react";
 
 import type { ExtractorFm } from "../../api/useGetAllMachines/useGetAllExtractors/extractorFm.type";
 import type { GeneratorFm } from "../../api/useGetAllMachines/useGetAllGenerators/generatorFm.type";
 import { GameClassNamesEnum } from "../../enums/gameClassNames.enum";
+import { fromMachineFmToDisplayableMachine } from "../../helper/machine/fromMachineFmToDisplayableMachine";
 import type { DisplayableMachines } from "./displayableMachines.type";
+
+const FULL_EFFICIENCY = 100;
 
 type Args = {
 	allMachines: (ExtractorFm | GeneratorFm)[];
@@ -11,99 +15,41 @@ type Args = {
 
 type Return = {
 	machines: DisplayableMachines[];
-	averageEfficiency: number | undefined;
+	// null sans machine
+	averageEfficiency: number | null;
 	onlyNonFullEfficent: boolean;
 	setOnlyNonFullEfficent: (newValue: boolean) => void;
 	removedHubBiomassGenerators: boolean;
 	setRemovedHubBiomassGenerators: (newValue: boolean) => void;
 };
 
-function getMachineEfficiency(machine: ExtractorFm | GeneratorFm): number {
-	if ("powerProduction" in machine) {
-		return machine.isAtFullSpeed ? 100 : 0;
-	}
-	return machine.efficiency;
-}
-
-function getMachinePowerConsumption(
-	machine: ExtractorFm | GeneratorFm,
-): number | undefined {
-	if ("powerProduction" in machine) return machine.powerProduction;
-	return undefined;
-}
-
-function getMachinePowerProduction(
-	machine: ExtractorFm | GeneratorFm,
-): number | undefined {
-	if ("powerConsumption" in machine) return machine.powerConsumption;
-	return undefined;
-}
-
-function getAverageEfficiency(
-	machines: DisplayableMachines[],
-): number | undefined {
-	const totalMachinesEfficencies = machines.reduce<number>(
-		(acc, machine) => acc + machine.efficiency,
-		0,
-	);
-
-	return machines.length
-		? totalMachinesEfficencies / machines.length
-		: undefined;
-}
-
 export function useMachines({ allMachines }: Args): Return {
 	const [onlyNonFullEfficent, setOnlyNonFullEfficent] = useState(false);
 	const [removedHubBiomassGenerators, setRemovedHubBiomassGenerators] =
 		useState(false);
 
-	const machinesArranged: DisplayableMachines[] = allMachines.map(
-		(machine) => ({
-			id: machine.id,
-			name: machine.name,
-			className: machine.className,
-			overclocking: machine.overclocking,
-			efficiency: getMachineEfficiency(machine),
-			powerConsumption: getMachinePowerConsumption(machine),
-			powerProduction: getMachinePowerProduction(machine),
-			location: machine.location,
-		}),
-	);
-
-	const firstfilterMachines = machinesArranged.filter((machine) => {
-		if (
-			removedHubBiomassGenerators &&
-			machine.className ===
-				GameClassNamesEnum.Build_GeneratorIntegratedBiomass_C
-		)
-			return false;
-		return true;
-	});
-
-	const finalfilteredMachines: DisplayableMachines[] = machinesArranged.filter(
-		(machine) => {
-			if (
-				removedHubBiomassGenerators &&
-				machine.className ===
-					GameClassNamesEnum.Build_GeneratorIntegratedBiomass_C
+	// Les brûleurs de biomasse du HUB, ignorés, ne comptent pas non plus dans la moyenne
+	const countedMachines = allMachines
+		.map(fromMachineFmToDisplayableMachine)
+		.filter(
+			(machine) =>
+				!removedHubBiomassGenerators ||
+				machine.className !==
+					GameClassNamesEnum.Build_GeneratorIntegratedBiomass_C,
+		);
+	const shownMachines = onlyNonFullEfficent
+		? countedMachines.filter(
+				(machine) => machine.efficiency !== FULL_EFFICIENCY,
 			)
-				return false;
-
-			if (onlyNonFullEfficent) return machine.efficiency !== 100;
-
-			return true;
-		},
-	);
-
-	const sortedMachines = finalfilteredMachines.sort(
-		(a, b) => a.efficiency - b.efficiency,
-	);
-
-	const averageEfficiency = getAverageEfficiency(firstfilterMachines);
+		: countedMachines;
 
 	return {
-		machines: sortedMachines,
-		averageEfficiency,
+		machines: shownMachines.toSorted(
+			(first, second) => first.efficiency - second.efficiency,
+		),
+		averageEfficiency: average(
+			countedMachines.map((machine) => machine.efficiency),
+		),
 		onlyNonFullEfficent,
 		setOnlyNonFullEfficent,
 		removedHubBiomassGenerators,
