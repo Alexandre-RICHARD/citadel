@@ -31,7 +31,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 - getSortStringValue classe les majuscules avant les minuscules et les accents après « z ». Il y a déjà un TODO sur le sujet ; les tests décrivent ce comportement actuel.
 - Rajouter un petit toast global à l'appli quand le client n'est plus connecté à internet. Avoir un toast de succès quand cela revient à la normale.
 - Tout convertir en REM
-- Gérer le preference mode dark or light
 - Avoir un mode qui désactive toutes les animations si l'utilisateur à émis cette préférence
 - PWA.
 - Accessibilité (textes au survol, etc.).
@@ -53,6 +52,7 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 - Réunification totale du design system.
 - Design system : recherche et filtre de liste insensibles aux accents et à la casse.
 - Design system : toasts avec un nombre maximum affichés et les autres en pile, barre de temps, clic pour les figer, croix pour fermer (voir l'ancien projet account).
+- Est ce que le "©" a une quelconque utilisé dans le footer ou c'est juste stylé ? Voir même, est-ce illégal d'avoir ça sans avoir déposé de brevet ?
 
 ## 2. Connexions
 
