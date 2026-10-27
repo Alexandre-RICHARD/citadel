@@ -2,6 +2,8 @@ import { setCanvasResolution } from "@citadel/common/src/browser/canvas/setCanva
 import { easeInOutSine } from "@citadel/common/src/universal/animation/easeInOutSine";
 import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { hexToRgb } from "@citadel/common/src/universal/color/hexToRgb";
+import { mixRgb } from "@citadel/common/src/universal/color/mixRgb";
+import type { Rgb } from "@citadel/common/src/universal/color/rgb.type";
 
 import { buildLavaFragmentShader } from "./buildLavaFragmentShader";
 import { createLavaBalls } from "./createLavaBalls";
@@ -16,8 +18,6 @@ const RESOLUTION_SCALE = 0.5;
 // Sur grand écran, les blobs restent surtout du côté de la présentation, à droite de la roue
 const WIDE_MIN_X = 0.36;
 
-type Rgb = [number, number, number];
-
 type PaletteTransition = {
 	from: Rgb[];
 	to: Rgb[];
@@ -25,17 +25,10 @@ type PaletteTransition = {
 	durationMs: number;
 };
 
+// Le shader attend chaque canal entre 0 et 1
 function toUnitRgb(hex: string): Rgb {
 	const [red, green, blue] = hexToRgb(hex);
 	return [red / 255, green / 255, blue / 255];
-}
-
-function mixRgb(from: Rgb, to: Rgb, ratio: number): Rgb {
-	return [
-		from[0] + (to[0] - from[0]) * ratio,
-		from[1] + (to[1] - from[1]) * ratio,
-		from[2] + (to[2] - from[2]) * ratio,
-	];
 }
 
 function compileShader(

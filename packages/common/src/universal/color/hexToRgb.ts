@@ -1,5 +1,7 @@
+import type { Rgb } from "./rgb.type.ts";
+
 // "#e30613" → [227, 6, 19]. Accepte #rgb, #rrggbb et #rrggbbaa (l'opacité est ignorée)
-export function hexToRgb(hex: string): [number, number, number] {
+export function hexToRgb(hex: string): Rgb {
 	const digits = hex.replace("#", "");
 	const fullDigits =
 		digits.length === 3
