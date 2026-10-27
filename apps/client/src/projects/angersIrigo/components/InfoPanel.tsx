@@ -1,6 +1,7 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./InfoPanel.scss";
 
+import { useLocalStorage } from "@citadel/common/src/react/hooks/useLocalStorage";
 import { Castle } from "lucide-react";
 import { type JSX, useId, useState } from "react";
 import { Link } from "react-router";
@@ -8,7 +9,6 @@ import { Link } from "react-router";
 import { buildReturnToHomepagePath } from "../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../react/appNavigation/projects.enum";
 import { STALE_POSITION_SECONDS } from "../config";
-import { usePersistentState } from "../hooks/usePersistentState";
 import type { GtfsRoute } from "../types/gtfs-static";
 import type { LoadStatus } from "../types/load-status";
 import type { Settings } from "../types/settings";
@@ -96,7 +96,7 @@ export function InfoPanel({
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const settingsPanelId = useId();
 	// Replié, le panneau laisse toute la carte visible (surtout sur téléphone) ; gardé d'une visite à l'autre
-	const [isCollapsed, setIsCollapsed] = usePersistentState(
+	const [isCollapsed, setIsCollapsed] = useLocalStorage(
 		INFO_PANEL_COLLAPSED_STORAGE_KEY,
 		sanitizeCollapsed,
 	);

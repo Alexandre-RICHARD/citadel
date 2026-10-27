@@ -17,9 +17,9 @@ export const useAutoRefetch = <Dto, Fm>(
 	const mapper = endPoint
 		? (endPointDictionnary[endPoint] as MapperFunction<Dto, Fm>)
 		: undefined;
-	const { value: settings } = useLocalStorage<FrmSettingsData>(
+	const [settings] = useLocalStorage<FrmSettingsData>(
 		"rmd_settings",
-		defaultFrmSettingsData,
+		(stored) => (stored ?? defaultFrmSettingsData) as FrmSettingsData,
 	);
 
 	const [responseState, setResponseState] = useState<FetchResponse<Fm>>({

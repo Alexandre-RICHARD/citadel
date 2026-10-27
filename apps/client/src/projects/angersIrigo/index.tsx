@@ -1,6 +1,7 @@
 import "leaflet/dist/leaflet.css";
 import "./styles/main.scss";
 
+import { useLocalStorage } from "@citadel/common/src/react/hooks/useLocalStorage";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { AppContainer } from "../../react/AppContainer";
@@ -18,7 +19,6 @@ import { GTFS_STATIC } from "./data/gtfs-static";
 import { STOP_GROUP_BY_STOP_ID, STOP_GROUPS } from "./data/stop-groups";
 import { FavoritesContext } from "./hooks/useFavorites";
 import { useNow } from "./hooks/useNow";
-import { usePersistentState } from "./hooks/usePersistentState";
 import { useRealtimeFeed } from "./hooks/useRealtimeFeed";
 import { useShapes } from "./hooks/useShapes";
 import type { Favorite } from "./types/favorite";
@@ -58,19 +58,19 @@ export function AngersIrigo() {
 	const tripUpdatesFeed = useRealtimeFeed(TRIP_UPDATES_URL);
 	// Chargés en arrière-plan, sans retarder l'affichage de la carte
 	const shapes = useShapes();
-	const [filter, setFilter] = usePersistentState(
+	const [filter, setFilter] = useLocalStorage(
 		VEHICLE_FILTER_STORAGE_KEY,
 		sanitizeVehicleFilter,
 	);
-	const [lineFilter, setLineFilter] = usePersistentState(
+	const [lineFilter, setLineFilter] = useLocalStorage(
 		LINE_FILTER_STORAGE_KEY,
 		sanitizeLineFilter,
 	);
-	const [settings, setSettings] = usePersistentState(
+	const [settings, setSettings] = useLocalStorage(
 		SETTINGS_STORAGE_KEY,
 		sanitizeSettings,
 	);
-	const [favorites, setFavorites] = usePersistentState(
+	const [favorites, setFavorites] = useLocalStorage(
 		FAVORITES_STORAGE_KEY,
 		sanitizeFavorites,
 	);

@@ -3,7 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useLocalStorage } from "./useLocalStorage.tsx";
 
-const KEY = "autoRefetch";
+const KEY = "citadel:test";
+
+function sanitizeDelay(stored: unknown): number {
+	return typeof stored === "number" ? stored : 30;
+}
 
 describe("useLocalStorage.tsx", () => {
 	beforeEach(() => {
@@ -15,53 +19,47 @@ describe("useLocalStorage.tsx", () => {
 	});
 
 	describe("initial value", () => {
-		it("SHOULD return the default value and save it WHEN nothing is stored", () => {
-			const { result } = renderHook(() =>
-				useLocalStorage(KEY, { enabled: true }),
-			);
+		it("SHOULD give undefined to sanitize and save its result WHEN nothing is stored", () => {
+			const sanitize = vi.fn(sanitizeDelay);
 
-			expect(result.current.value).toStrictEqual({ enabled: true });
-			expect(localStorage.getItem(KEY)).toBe('{"enabled":true}');
+			const { result } = renderHook(() => useLocalStorage(KEY, sanitize));
+
+			expect(sanitize).toHaveBeenCalledWith(undefined);
+			expect(result.current[0]).toBe(30);
+			expect(localStorage.getItem(KEY)).toBe("30");
 		});
 
-		it("SHOULD return the stored value WHEN one exists", () => {
-			localStorage.setItem(KEY, '{"enabled":false}');
-
-			const { result } = renderHook(() =>
-				useLocalStorage(KEY, { enabled: true }),
-			);
-
-			expect(result.current.value).toStrictEqual({ enabled: false });
-		});
-
-		it("SHOULD keep a stored falsy value WHEN it is not null", () => {
+		it("SHOULD return the stored value WHEN sanitize accepts it", () => {
 			localStorage.setItem(KEY, "0");
 
-			const { result } = renderHook(() => useLocalStorage(KEY, 30));
+			const { result } = renderHook(() => useLocalStorage(KEY, sanitizeDelay));
 
-			expect(result.current.value).toBe(0);
+			expect(result.current[0]).toBe(0);
 		});
 
-		it("SHOULD return the default value WHEN the stored value is null", () => {
-			localStorage.setItem(KEY, "null");
+		it("SHOULD return the sanitized value WHEN the stored value is invalid", () => {
+			localStorage.setItem(KEY, '"soon"');
 
-			const { result } = renderHook(() => useLocalStorage(KEY, 30));
+			const { result } = renderHook(() => useLocalStorage(KEY, sanitizeDelay));
 
-			expect(result.current.value).toBe(30);
-		});
-
-		it("SHOULD return the default value instead of crashing WHEN the stored value is not valid JSON", () => {
-			localStorage.setItem(KEY, "{not json");
-
-			const { result } = renderHook(() => useLocalStorage(KEY, 30));
-
-			expect(result.current.value).toBe(30);
+			expect(result.current[0]).toBe(30);
 			expect(localStorage.getItem(KEY)).toBe("30");
+		});
+
+		it("SHOULD give undefined to sanitize WHEN the stored value is not valid JSON", () => {
+			localStorage.setItem(KEY, "{not json");
+			const sanitize = vi.fn(sanitizeDelay);
+
+			renderHook(() => useLocalStorage(KEY, sanitize));
+
+			expect(sanitize).toHaveBeenCalledWith(undefined);
 		});
 
 		it("SHOULD read the storage only once WHEN the component renders again", () => {
 			const getItem = vi.spyOn(Storage.prototype, "getItem");
-			const { rerender } = renderHook(() => useLocalStorage(KEY, 30));
+			const { rerender } = renderHook(() =>
+				useLocalStorage(KEY, sanitizeDelay),
+			);
 
 			rerender();
 			rerender();
@@ -72,14 +70,27 @@ describe("useLocalStorage.tsx", () => {
 
 	describe("update", () => {
 		it("SHOULD update the state and the storage WHEN a new value is set", () => {
-			const { result } = renderHook(() => useLocalStorage(KEY, 30));
+			const { result } = renderHook(() => useLocalStorage(KEY, sanitizeDelay));
 
 			act(() => {
-				result.current.setValue(60);
+				result.current[1](60);
 			});
 
-			expect(result.current.value).toBe(60);
+			expect(result.current[0]).toBe(60);
 			expect(localStorage.getItem(KEY)).toBe("60");
+		});
+
+		it("SHOULD keep the value in memory WHEN the storage refuses it", () => {
+			vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+				throw new Error("QuotaExceededError");
+			});
+			const { result } = renderHook(() => useLocalStorage(KEY, sanitizeDelay));
+
+			act(() => {
+				result.current[1](60);
+			});
+
+			expect(result.current[0]).toBe(60);
 		});
 	});
 });

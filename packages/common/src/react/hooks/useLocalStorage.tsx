@@ -1,28 +1,22 @@
 import { useEffect, useState } from "react";
 
-function readStoredValue<T>(storageKey: string, defaultValue: T): T {
-	try {
-		const storedValue = localStorage.getItem(storageKey);
-		if (storedValue === null) return defaultValue;
-		return (JSON.parse(storedValue) as T | null) ?? defaultValue;
-	} catch {
-		// Valeur corrompue ou stockage inaccessible : on repart de la valeur par défaut
-		return defaultValue;
-	}
-}
+import { readLocalStorage } from "../../browser/storage/readLocalStorage.ts";
+import { writeLocalStorage } from "../../browser/storage/writeLocalStorage.ts";
 
-// TODO Refléchir si ça vaut mieux de laisser en Hook ou de passer en helper
-export function useLocalStorage<T>(storageKey: string, defaultValue: T) {
-	const [value, setValue] = useState<T>(() =>
-		readStoredValue(storageKey, defaultValue),
+/**
+ * Comme useState, mais la valeur est gardée dans le localStorage du navigateur.
+ * `sanitize` reçoit la valeur relue (undefined s'il n'y en a pas) et rend une valeur valide : le stockage peut contenir
+ * une ancienne version ou avoir été modifié à la main
+ */
+export function useLocalStorage<Value>(
+	key: string,
+	sanitize: (stored: unknown) => Value,
+): [Value, (value: Value) => void] {
+	const [value, setValue] = useState<Value>(() =>
+		sanitize(readLocalStorage(key)),
 	);
-
 	useEffect(() => {
-		localStorage.setItem(storageKey, JSON.stringify(value));
-	}, [value, storageKey]);
-
-	return {
-		value,
-		setValue,
-	};
+		writeLocalStorage(key, value);
+	}, [key, value]);
+	return [value, setValue];
 }
