@@ -168,6 +168,7 @@ export function Layout() {
 							logoRef={headerLogoRef}
 							colorScheme={colorScheme}
 							onToggleColorScheme={toggleColorScheme}
+							reducedMotion={reducedMotion}
 						/>
 						<main
 							ref={mainRef}
