@@ -234,11 +234,6 @@ export const ProjectThemes: Story = {
 						key={`${name}-${colorScheme}`}
 						theme={resolveTheme(definition, colorScheme)}
 					>
-						<link
-							rel="stylesheet"
-							href={definition.fontStylesheet}
-							precedence="default"
-						/>
 						<ProjectThemeCard
 							name={`${name} · ${colorScheme === ColorSchemeEnum.Dark ? "sombre" : "clair"}`}
 						/>

@@ -2,8 +2,6 @@ import type { ThemeDefinitionType } from "../themeDefinition.type";
 
 // La Citadel : la homepage, et le pilote du futur thème global
 export const citadelTheme: ThemeDefinitionType = {
-	fontStylesheet:
-		"https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Unbounded:wght@400..900&display=swap",
 	shared: {
 		fontFamilyPrimary: '"Outfit", system-ui, sans-serif',
 		fontFamilySecondary: '"Unbounded", system-ui, sans-serif',

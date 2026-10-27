@@ -144,15 +144,6 @@ export function Layout() {
 
 	return (
 		<ProjectThemeProvider project={ProjectsEnum.Homepage}>
-			{/* Les polices de toutes les ambiances, prêtes avant qu'on sélectionne un projet */}
-			{showcaseProjects.map((project) => (
-				<link
-					key={project.id}
-					rel="stylesheet"
-					href={project.theme.fontStylesheet}
-					precedence="default"
-				/>
-			))}
 			{/* Les composants du design system (toasts) prennent l'ambiance */}
 			<ThemeProvider theme={ambianceTheme}>
 				<div

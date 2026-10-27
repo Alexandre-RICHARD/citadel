@@ -154,7 +154,8 @@ src/
 ### Thème
 
 - Le thème de chaque projet, en clair et en sombre, est rangé dans le design system (`theme/projectThemes/`) ; sa fiche y renvoie. Le projet l'applique, la homepage en tire ses ambiances : le thème, plus ce que son bloc `ambiance` force par-dessus (`resolveAmbianceTheme`).
-- Le Layout passe par `ProjectThemeProvider` : jetons sur ses composants et sur `<html>` (portails, fond), polices du thème, `data-color-scheme` sur `<html>` pour les styles propres au projet.
+- Le Layout passe par `ProjectThemeProvider` : jetons sur ses composants et sur `<html>` (portails, fond), `data-color-scheme` sur `<html>` pour les styles propres au projet.
+- Polices hébergées sur le site, dans le design system (`fonts/`) : un woff2 latin par style, toutes déclarées dans `fonts.scss`. Le navigateur ne télécharge que celles qui s'affichent. Une nouvelle police s'y ajoute, avec sa licence.
 - Clair ou sombre : la préférence du système, sauf choix fait dans le projet (`useProjectColorScheme`, depuis n'importe quel composant). Le choix n'est gardé (`citadel:<projet>:theme`, localStorage) que s'il diffère du système.
 
 ### Couche `api/` d'un projet
