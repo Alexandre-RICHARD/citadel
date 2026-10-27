@@ -7,30 +7,10 @@ import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
 import { useGetAllMachines } from "../../api/useGetAllMachines/useGetAllMachines";
 import type { AwesomeSinkFm } from "../../api/useGetAwesomeSink/awesomeSinkFm.type";
 import { useGetAwesomeSink } from "../../api/useGetAwesomeSink/useGetAwesomeSink";
+import { getCouponLevelsCost } from "../../helper/awesomeSink/getCouponLevelsCost";
 import { MachineLine } from "./MachineLine";
 import styles from "./machines.module.scss";
 import { useMachines } from "./useMachines";
-
-function getCouponLevelCost(level: number): number {
-	const ceil = Math.ceil(level / 3) - 1;
-
-	if (ceil === 0) return 500;
-
-	const calculatorIndex = Math.min(ceil, 999);
-
-	const base = calculatorIndex ** 2;
-	return 250 * base + 1000;
-}
-
-function getSumOfCouponLevelCost(startIndex: number, endIndex: number): number {
-	let total = 0;
-
-	for (let i = startIndex; i <= endIndex; i += 1) {
-		total += getCouponLevelCost(i);
-	}
-
-	return total;
-}
 
 function getGoldenNutInfo(awesomeSink: AwesomeSinkFm): {
 	totalCostRemainingToGetGoldenNut: string;
@@ -52,7 +32,7 @@ function getGoldenNutInfo(awesomeSink: AwesomeSinkFm): {
 
 	const goalLevel = currentLevel + couponRemainingNeeded;
 	const totalCostRemainingToGetGoldenNut =
-		getSumOfCouponLevelCost(currentLevel, goalLevel) -
+		getCouponLevelsCost(currentLevel, goalLevel) -
 		(currentLevelCost - remainingPointsToNextCoupon);
 
 	return {
