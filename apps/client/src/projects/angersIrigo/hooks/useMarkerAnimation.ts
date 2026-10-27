@@ -1,6 +1,7 @@
 /* eslint-disable citadel/max-one-export, no-restricted-syntax -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
 import { easeInOutQuad } from "@citadel/common/src/universal/animation/easeInOutQuad";
+import { interpolate } from "@citadel/common/src/universal/number/interpolate";
 import { latLng, type Marker } from "leaflet";
 import { type RefObject, useEffect } from "react";
 
@@ -48,8 +49,8 @@ export function useMarkerAnimation(
 			const elapsed = Math.min(1, (now - startTime) / durationMs);
 			const progress = easing(elapsed);
 			marker.setLatLng([
-				from.lat + (to.lat - from.lat) * progress,
-				from.lng + (to.lng - from.lng) * progress,
+				interpolate(from.lat, to.lat, progress),
+				interpolate(from.lng, to.lng, progress),
 			]);
 			if (elapsed < 1) {
 				frameId = requestAnimationFrame(step);
