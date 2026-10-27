@@ -153,7 +153,7 @@ src/
 
 ### Thème
 
-- Le thème de chaque projet, en clair et en sombre, est rangé dans le design system (`theme/projectThemes/`) ; sa fiche y renvoie. Le projet l'applique, la homepage en tire ses ambiances.
+- Le thème de chaque projet, en clair et en sombre, est rangé dans le design system (`theme/projectThemes/`) ; sa fiche y renvoie. Le projet l'applique, la homepage en tire ses ambiances : le thème, plus ce que son bloc `ambiance` force par-dessus (`resolveAmbianceTheme`).
 - Le Layout passe par `ProjectThemeProvider` : jetons sur ses composants et sur `<html>` (portails, fond), polices du thème, `data-color-scheme` sur `<html>` pour les styles propres au projet.
 - Clair ou sombre : la préférence du système, sauf choix fait dans le projet (`useProjectColorScheme`, depuis n'importe quel composant). Le choix n'est gardé (`citadel:<projet>:theme`, localStorage) que s'il diffère du système.
 
@@ -286,7 +286,7 @@ projects/homepage/
 ```
 
 - Un effet est une fonction `create…` qui reçoit un canvas ou un élément, et rend de quoi le piloter et le détruire. Le composant le crée dans un `useEffect` et lui transmet ses props.
-- Les transitions entre projets sont hors de la homepage (`react/appNavigation/projectTransition`) : montées hors du routeur, elles survivent au changement de page. `navigateToProject` en lance une ; l'`AppContainer` de la page qui arrive prévient qu'elle est affichée.
+- Les transitions entre projets sont hors de la homepage (`react/appNavigation/projectTransition`) : montées hors du routeur, elles survivent au changement de page. Tout changement de projet en lance une, sans rien à faire de plus qu'un lien ou un `navigate` : l'`AppContainer` retient la navigation (`useBlocker`) le temps que l'écran se couvre, et celui de la page qui arrive prévient qu'elle est affichée.
 
 ## 10. Checklists
 

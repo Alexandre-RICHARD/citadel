@@ -42,15 +42,16 @@ La page tient dans l'écran, sans défilement global :
 - Changer de projet rejoue la même séquence. Un clic pendant une transition l'interrompt et lance la suivante.
 - La sélection est dans l'adresse (`/homepage/backlog`) : le bouton retour du navigateur ramène à la présentation précédente, et on peut partager un lien vers un projet. Les pages du footer aussi (`/homepage/mentions-legales`), affichées dans le conteneur principal ; `Échap` les ferme et revient à la présentation d'où l'on venait.
 - **Vers le projet** : le bouton lance une transition dans le style du projet (rideau sombre bordé de braises, tuiles, tram aux couleurs des lignes, hexagones ; par défaut, l'hexagone du logo). Le projet commence à se charger dès le clic ; l'écran se couvre, la page du projet s'affiche dessous, puis l'écran se découvre sur la page déjà prête, en 1,5 s environ. Si le chargement traîne encore 0,3 s après que l'écran est couvert, une astuce sur le projet s'affiche, et reste au moins 1,4 s pour être lue.
+- **Retour** : chaque projet a un bouton (un château) qui ramène à sa présentation sur la homepage, avec la transition de la Citadel. Précédent et suivant du navigateur, d'un projet à l'autre, ont aussi leur transition.
 
 ## 4. Ambiances
 
 - **Clair et sombre**, au choix dans le header ; par défaut, la préférence du système. Chaque application qui propose ce choix l'enregistre dans le localStorage, seulement quand il diffère de la préférence du système : revenir au thème du système efface l'entrée.
 - **Par défaut** : une lampe à lave, des blobs colorés à bord net qui se déforment et se mêlent lentement (couleurs saturées, dans l'esprit de l'image Domestika). En WebGL ; des halos flous en CSS si WebGL manque.
-- **Projet sélectionné** : toute la page change d'ambiance en quelques secondes. Les blobs prennent les couleurs du projet, les jetons de style changent (couleurs, police, graisse, arrondis : ceux du thème du projet, le même que dans le projet), et un fond animé propre au projet s'ajoute, derrière les blobs ; seules les braises de Game Death Counter passent devant :
+- **Projet sélectionné** : toute la page change d'ambiance en quelques secondes. Les blobs prennent les couleurs du projet, les jetons de style changent (couleurs, police, graisse, arrondis : ceux du thème du projet, que son ambiance peut forcer, avec une police de texte ou une couleur plus vive), et un fond animé propre au projet s'ajoute, derrière les blobs ; seules les braises de Game Death Counter passent devant :
   - Game Death Counter : noir et braise, police à empattements gravée, aucun arrondi, des braises qui montent ;
-  - Backlog : violet et turquoise de son icône, police ronde, grands arrondis ;
-  - Angers Irigo : anthracite et couleurs des lignes, police de signalétique, des bandes colorées qui glissent ;
+  - Backlog : violet et turquoise de son icône, boutons verts, police ronde, grands arrondis ;
+  - Angers Irigo : anthracite et couleurs des lignes, boutons jaunes en sombre, police de signalétique, des bandes colorées qui glissent ;
   - Satisfactory : cyan et orange industriels, police technique, angles coupés, une grille hexagonale.
 - Chaque ambiance existe en clair et en sombre.
 - Intensité des effets : 2,5 sur 5. `prefers-reduced-motion` coupe tout mouvement (lampe à lave figée, pas de fond animé de projet, simples fondus) : pour le confort et pour les téléphones.
@@ -85,7 +86,7 @@ La page tient dans l'écran, sans défilement global :
 12. [toi] Relire les textes légaux, remplacer le lorem ipsum.
 13. [moi] Transitions vers les projets, avec l'astuce quand le chargement traîne. Fait.
 14. [nous] Héberger les polices sur le site, à la place de Google Fonts : tu les télécharges, je les branche.
-15. [moi] Dans chaque projet, un bouton de retour à la homepage adapté à son interface, qui lance la transition de retour ; il remplace le bouton 🏠.
+15. [moi] Dans chaque projet, un bouton de retour à la homepage adapté à son interface, qui lance la transition de retour ; il remplace le bouton 🏠. Fait.
 16. [moi] Reporter le « Pour plus tard » dans le TODO, supprimer ce fichier, le wireframe et la maquette.
 
 ## 8. Pour plus tard
