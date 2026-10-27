@@ -1,5 +1,6 @@
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import {
+	Castle,
 	Columns3,
 	Gamepad2,
 	LibraryBig,
@@ -9,7 +10,9 @@ import {
 	Sun,
 } from "lucide-react";
 import type { RefObject } from "react";
+import { useNavigate } from "react-router";
 
+import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
 import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
 import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
@@ -30,7 +33,7 @@ type Props = {
 	onOpenModal: (modal: BacklogModal) => void;
 };
 
-// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition et le thème
+// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition, le thème et le retour à la Citadel
 export function Toolbar({
 	searchInputRef,
 	outsideBacklogGameCount,
@@ -39,6 +42,7 @@ export function Toolbar({
 	onSelectHit,
 	onOpenModal,
 }: Props) {
+	const navigate = useNavigate();
 	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
 		ProjectsEnum.Backlog,
 	);
@@ -115,6 +119,16 @@ export function Toolbar({
 					tooltip={colorSchemeLabel}
 					tooltipPlacement="bottom"
 					onClick={toggleColorScheme}
+				/>
+				<Button
+					icon={Castle}
+					variant="ghost"
+					ariaLabel="Retour à la Citadel"
+					tooltip="Retour à la Citadel"
+					tooltipPlacement="bottom"
+					onClick={() => {
+						void navigate(buildReturnToHomepagePath(ProjectsEnum.Backlog));
+					}}
 				/>
 			</div>
 		</header>

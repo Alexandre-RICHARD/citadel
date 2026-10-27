@@ -34,11 +34,6 @@ export const navigationGroups: NavigationItems = [
 				link: "/satisfactory/settings",
 				icon: IconTokenEnum.TriangleArrow,
 			},
-			{
-				label: "Retour en page d'accueil",
-				link: "/",
-				icon: IconTokenEnum.TriangleArrow,
-			},
 		],
 	},
 ] as const;

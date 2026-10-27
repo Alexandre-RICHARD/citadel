@@ -1,9 +1,10 @@
 import { Icon } from "@citadel/design-system/src/atoms/Icon";
 import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
-import { Moon, Sun } from "lucide-react";
-import { NavLink } from "react-router";
+import { Castle, Moon, Sun } from "lucide-react";
+import { Link, NavLink } from "react-router";
 
+import { buildReturnToHomepagePath } from "../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
 import { useProjectColorScheme } from "../../../../react/projectTheme/useProjectColorScheme";
 import styles from "./navigation.module.scss";
@@ -73,6 +74,19 @@ export function Navigation() {
 							{isDark ? "thème clair" : "thème sombre"}
 						</span>
 					</button>
+				</li>
+				<li className={`${styles.navbarItem} ${styles.flexboxLeft}`}>
+					<Link
+						to={buildReturnToHomepagePath(ProjectsEnum.Satisfactory)}
+						className={`${styles.navbarItemInner} ${styles.flexboxLeft}`}
+					>
+						<div
+							className={`${styles.navbarItemInnerIconWrapper} ${styles.flexbox}`}
+						>
+							<Castle size={20} />
+						</div>
+						<span className={styles.linkText}>la citadel</span>
+					</Link>
 				</li>
 			</ul>
 		</nav>

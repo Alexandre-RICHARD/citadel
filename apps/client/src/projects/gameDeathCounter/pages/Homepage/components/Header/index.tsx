@@ -2,10 +2,12 @@ import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodySchema";
-import { Flame, Moon, Plus, Save, Sun, X } from "lucide-react";
+import { Castle, Flame, Moon, Plus, Save, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { checkInput } from "../../../../../../common/validation/checkInput";
+import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
 import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
 import { useCreateGame } from "../../../../api/game/useCreateGame";
@@ -15,6 +17,7 @@ import globalStyles from "../../../../globalStyles.module.scss";
 import styles from "./header.module.scss";
 
 export function Header() {
+	const navigate = useNavigate();
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const [addingGame, setAddingGame] = useState(false);
@@ -79,6 +82,15 @@ export function Header() {
 						icon={colorScheme === ColorSchemeEnum.Dark ? Moon : Sun}
 						label={`Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`}
 						onClick={toggleColorScheme}
+					/>
+					<IconButton
+						icon={Castle}
+						label="Retour à la Citadel"
+						onClick={() => {
+							void navigate(
+								buildReturnToHomepagePath(ProjectsEnum.GameDeathCount),
+							);
+						}}
 					/>
 				</div>
 			</header>
