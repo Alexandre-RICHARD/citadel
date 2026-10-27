@@ -1,5 +1,6 @@
 /* eslint-disable citadel/max-one-export, no-restricted-syntax -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
+import { easeInOutQuad } from "@citadel/common/src/universal/animation/easeInOutQuad";
 import { latLng, type Marker } from "leaflet";
 import { type RefObject, useEffect } from "react";
 
@@ -15,11 +16,6 @@ export function linear(t: number): number {
 	return t;
 }
 
-/** Démarrage et arrivée en douceur */
-export function easeInOut(t: number): number {
-	return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-}
-
 /**
  * Fait glisser le marqueur jusqu'à `position` en `durationMs`, au lieu de l'y téléporter.
  * Leaflet n'anime pas les déplacements : on recalcule la position à chaque image. Une nouvelle
@@ -29,7 +25,7 @@ export function useMarkerAnimation(
 	markerRef: RefObject<Marker | null>,
 	[latitude, longitude]: Point,
 	durationMs: number,
-	easing: Easing = easeInOut,
+	easing: Easing = easeInOutQuad,
 ): void {
 	useEffect(() => {
 		const marker = markerRef.current;

@@ -1,16 +1,13 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./VehicleMarker.scss";
 
+import { easeInOutQuad } from "@citadel/common/src/universal/animation/easeInOutQuad";
 import { type DivIcon, divIcon, type Marker as LeafletMarker } from "leaflet";
 import { type JSX, useMemo, useRef, useState } from "react";
 import { Marker, Popup } from "react-leaflet";
 
 import { SIMULATION_TICK_MS } from "../config";
-import {
-	easeInOut,
-	linear,
-	useMarkerAnimation,
-} from "../hooks/useMarkerAnimation";
+import { linear, useMarkerAnimation } from "../hooks/useMarkerAnimation";
 import type { Point } from "../types/geo";
 import type { Vehicle, VehicleKind } from "../types/vehicle";
 import { getLineLabel } from "../utils/vehicles";
@@ -99,7 +96,7 @@ export function VehicleMarker({
 		markerRef,
 		[latitude, longitude],
 		isSimulated ? SIMULATION_TICK_MS : MOVE_DURATION_MS,
-		isSimulated ? linear : easeInOut,
+		isSimulated ? linear : easeInOutQuad,
 	);
 
 	// Recréer l'icône remplace l'élément DOM du marqueur : on ne le fait que si son apparence change

@@ -1,16 +1,13 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./TripTimeMarkers.scss";
 
+import { easeInOutQuad } from "@citadel/common/src/universal/animation/easeInOutQuad";
 import { type DivIcon, divIcon, type Marker as LeafletMarker } from "leaflet";
 import { type JSX, useMemo, useRef, useState } from "react";
 import { Marker, Pane } from "react-leaflet";
 
 import { SIMULATION_TICK_MS } from "../config";
-import {
-	easeInOut,
-	linear,
-	useMarkerAnimation,
-} from "../hooks/useMarkerAnimation";
+import { linear, useMarkerAnimation } from "../hooks/useMarkerAnimation";
 import type { Point } from "../types/geo";
 import { getTimeMarkers, type VehicleMotion } from "../utils/simulation";
 
@@ -60,7 +57,7 @@ function TimeMarker({
 		markerRef,
 		point,
 		isSimulated ? SIMULATION_TICK_MS : MOVE_DURATION_MS,
-		isSimulated ? linear : easeInOut,
+		isSimulated ? linear : easeInOutQuad,
 	);
 	const icon = useMemo(
 		() => createTimeMarkerIcon(minutes, color),
