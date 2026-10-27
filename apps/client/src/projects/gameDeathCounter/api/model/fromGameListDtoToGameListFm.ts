@@ -1,3 +1,4 @@
+import { sum } from "@citadel/common/src/universal/number/sum";
 import type { GameListDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameListDto.type";
 
 import { fromGameSummaryDtoToGameSummaryFm } from "./fromGameSummaryDtoToGameSummaryFm";
@@ -18,6 +19,6 @@ export function fromGameListDtoToGameListFm(
 
 	return {
 		games,
-		totalDeath: games.reduce((total, game) => total + game.totalDeath, 0),
+		totalDeath: sum(games.map((game) => game.totalDeath)),
 	};
 }

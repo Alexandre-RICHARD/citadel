@@ -1,11 +1,9 @@
+import { sum } from "@citadel/common/src/universal/number/sum.ts";
+
 import { getGameStatus } from "../status/getGameStatus.ts";
 import type { AggregatedUserVersion } from "./aggregatedUserVersion.type.ts";
 import { countDoneDlcs } from "./countDoneDlcs.ts";
 import type { UserGameAggregates } from "./userGameAggregates.type.ts";
-
-function sum(values: number[]): number {
-	return values.reduce((total, value) => total + value, 0);
-}
 
 // Dates ISO : l'ordre du texte est celui du calendrier
 function getEarliestIsoDate(dates: (string | null)[]): string | null {

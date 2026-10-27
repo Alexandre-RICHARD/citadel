@@ -1,3 +1,5 @@
+import { sum } from "@citadel/common/src/universal/number/sum.ts";
+
 import type { CpuSample } from "../docker/cpuSample.type.ts";
 
 // Première ligne de /proc/stat : « cpu  user nice system idle iowait irq softirq steal … »,
@@ -7,7 +9,7 @@ export function parseProcStat(content: string): CpuSample | null {
 	const fields = content.split("\n")[0]?.trim().split(" ").filter(Boolean);
 	if (fields?.[0] !== "cpu") return null;
 	const times = fields.slice(1, 9).map(Number);
-	const total = times.reduce((sum, time) => sum + time, 0);
+	const total = sum(times);
 	const idle = (times[3] ?? 0) + (times[4] ?? 0);
 	return { used: total - idle, total };
 }
