@@ -1,5 +1,6 @@
 import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 
+import { projectLoaders } from "./projectLoaders";
 import { ProjectsEnum } from "./projects.enum";
 import { projects } from "./projectsDictionary";
 import type { RouteMeta } from "./routeMeta.type";
@@ -8,7 +9,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Homepage]: {
 		path: `${projects[ProjectsEnum.Homepage].path}/*`,
 		lazy: async () => {
-			const { Homepage } = await import("../../projects/homepage");
+			const { Homepage } = await projectLoaders[ProjectsEnum.Homepage]();
 			return { Component: Homepage };
 		},
 		handle: {
@@ -21,7 +22,8 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Satisfactory]: {
 		path: `${projects[ProjectsEnum.Satisfactory].path}/*`,
 		lazy: async () => {
-			const { Satisfactory } = await import("../../projects/satisfactory");
+			const { Satisfactory } =
+				await projectLoaders[ProjectsEnum.Satisfactory]();
 			return { Component: Satisfactory };
 		},
 		handle: {
@@ -36,7 +38,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		path: `${projects[ProjectsEnum.GameDeathCount].path}/*`,
 		lazy: async () => {
 			const { GameDeathCounter } =
-				await import("../../projects/gameDeathCounter");
+				await projectLoaders[ProjectsEnum.GameDeathCount]();
 			return { Component: GameDeathCounter };
 		},
 		handle: {
@@ -50,7 +52,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.Backlog]: {
 		path: `${projects[ProjectsEnum.Backlog].path}/*`,
 		lazy: async () => {
-			const { Backlog } = await import("../../projects/backlog");
+			const { Backlog } = await projectLoaders[ProjectsEnum.Backlog]();
 			return { Component: Backlog };
 		},
 		handle: {
@@ -64,7 +66,7 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	[ProjectsEnum.AngersIrigo]: {
 		path: `${projects[ProjectsEnum.AngersIrigo].path}/*`,
 		lazy: async () => {
-			const { AngersIrigo } = await import("../../projects/angersIrigo");
+			const { AngersIrigo } = await projectLoaders[ProjectsEnum.AngersIrigo]();
 			return { Component: AngersIrigo };
 		},
 		handle: {
