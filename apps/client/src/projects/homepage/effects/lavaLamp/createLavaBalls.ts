@@ -1,15 +1,9 @@
+import { createSeededRandom } from "@citadel/common/src/universal/random/createSeededRandom";
+
 import type { LavaBall } from "./lavaBall.type";
 
-const SEED = 11;
-
 // Aléatoire reproductible : les blobs partent du même endroit à chaque visite
-function createSeededRandom(seed: number): () => number {
-	let state = seed;
-	return () => {
-		state = (state * 16807) % 2147483647;
-		return (state - 1) / 2147483646;
-	};
-}
+const SEED = 11;
 
 export function createLavaBalls(count: number): LavaBall[] {
 	const random = createSeededRandom(SEED);
