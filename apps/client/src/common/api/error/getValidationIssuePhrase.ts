@@ -1,12 +1,9 @@
+import { pluralize } from "@citadel/common/src/universal/string/pluralize";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum";
 import type { ValidationIssueDto } from "@citadel/specs/src/specUtils/error/validationIssueDto.type";
 import { SqlDatetimeBoundEnum } from "@citadel/specs/src/specUtils/schemaValidator/date/sqlDatetimeBound.enum";
 
 const OLDEST_YEAR = new Date(SqlDatetimeBoundEnum.MIN).getUTCFullYear();
-
-function pluralize(count: number, word: string): string {
-	return `${count} ${word}${count > 1 ? "s" : ""}`;
-}
 
 // `limit` n'est présent que pour les règles de longueur et de borne
 const phrases: Record<
