@@ -16,6 +16,8 @@ export const regexDictionary = {
 
 	// Signe diacritique (accent, cédille…) d'un texte décomposé par normalize("NFD")
 	diacritic: /\p{Diacritic}/gu,
+	// Suite de caractères ni lettre minuscule sans accent ni chiffre : la ponctuation et les espaces d'un texte normalisé
+	nonAlphanumericRun: /[^a-z0-9]+/g,
 
 	// Caractère spécial d'un motif LIKE en SQL (%, _ et l'échappement \), à échapper pour le chercher tel quel
 	sqlLikeWildcard: /[\\%_]/g,

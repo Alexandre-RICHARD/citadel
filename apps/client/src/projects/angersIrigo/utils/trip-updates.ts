@@ -1,4 +1,6 @@
 /* eslint-disable citadel/max-one-export, citadel/file-name-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { normalizeForSearch } from "@citadel/common/src/universal/string/normalizeForSearch";
+
 import type {
 	FeedMessage,
 	StopTimeUpdate,
@@ -48,16 +50,6 @@ export function findStopTime(
 	return getStopTime(stopTimeUpdate);
 }
 
-/** "Avrillé-Ardenne" → "avrille ardenne" */
-function normalizeName(name: string): string {
-	return name
-		.normalize("NFD")
-		.replace(/[̀-ͯ]/g, "") // accents
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, " ")
-		.trim();
-}
-
 /**
  * Passage prévu au terminus de la course, si le flux va jusque-là.
  *
@@ -79,7 +71,9 @@ export function findTerminusUpdate(
 	if (!lastUpdate || !lastStopName) {
 		return undefined;
 	}
-	return normalizeName(destination).includes(normalizeName(lastStopName))
+	return normalizeForSearch(destination).includes(
+		normalizeForSearch(lastStopName),
+	)
 		? lastUpdate
 		: undefined;
 }

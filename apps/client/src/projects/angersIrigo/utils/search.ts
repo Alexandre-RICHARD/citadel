@@ -1,15 +1,6 @@
-/* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
-import type { StopGroup } from "../types/stop";
+import { normalizeForSearch } from "@citadel/common/src/universal/string/normalizeForSearch";
 
-/** Minuscules sans accents ni ponctuation : « Foch-Maison Bleue » → « foch maison bleue » */
-export function normalizeForSearch(text: string): string {
-	return text
-		.normalize("NFD")
-		.replace(/\p{Diacritic}/gu, "")
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, " ")
-		.trim();
-}
+import type { StopGroup } from "../types/stop";
 
 type IndexedStop = {
 	stop: StopGroup;
