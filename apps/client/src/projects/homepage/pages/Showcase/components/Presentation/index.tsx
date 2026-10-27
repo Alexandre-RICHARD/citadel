@@ -44,10 +44,7 @@ export function Presentation({
 						onGhostDone={removePanel}
 					>
 						{panel.project ? (
-							<ProjectPanel
-								project={panel.project}
-								reducedMotion={reducedMotion}
-							/>
+							<ProjectPanel project={panel.project} />
 						) : (
 							<WelcomePanel />
 						)}

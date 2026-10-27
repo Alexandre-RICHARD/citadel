@@ -1,7 +1,7 @@
 import type { TransitionOverlay } from "./transitionOverlay.type";
 
 let overlay: TransitionOverlay | null = null;
-let isRunning = false;
+let isTransitionRunning = false;
 const pageReadyListeners = new Set<() => void>();
 
 // Relie les trois acteurs d'une transition, qui ne se connaissent pas : le composant qui dessine (monté hors du
@@ -21,13 +21,18 @@ export const projectTransitionStore = {
 
 	// Une seule transition à la fois : un second clic pendant la première est ignoré
 	tryStart(): boolean {
-		if (isRunning) return false;
-		isRunning = true;
+		if (isTransitionRunning) return false;
+		isTransitionRunning = true;
 		return true;
 	},
 
 	finish(): void {
-		isRunning = false;
+		isTransitionRunning = false;
+	},
+
+	// La page qui arrive sait qu'elle se dévoile sous une transition (la homepage n'y joue pas son intro)
+	isRunning(): boolean {
+		return isTransitionRunning;
 	},
 
 	// Appelé par l'AppContainer de chaque projet, une fois sa page affichée

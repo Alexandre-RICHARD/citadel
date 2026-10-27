@@ -1,38 +1,17 @@
 import { ArrowRight, Lock } from "lucide-react";
-import type { MouseEvent } from "react";
 import { Link } from "react-router";
 
-import { navigateToProject } from "../../../../../../react/appNavigation/projectTransition/navigateToProject";
 import type { ShowcaseProject } from "../../../../routing/showcaseProject.type";
 import presentationStyles from "../Presentation/presentation.module.scss";
 import styles from "./projectPanel.module.scss";
 
 type Props = {
 	project: ShowcaseProject;
-	reducedMotion: boolean;
 };
 
 // La présentation d'un projet : ce qu'il fait, à quoi il sert, et le bouton qui y mène
-export function ProjectPanel({ project, reducedMotion }: Props) {
+export function ProjectPanel({ project }: Props) {
 	const { showcase } = project;
-
-	// Un clic simple lance la transition ; ouvrir dans un nouvel onglet reste possible
-	function handleOpenClick(event: MouseEvent<HTMLAnchorElement>) {
-		if (
-			event.button !== 0 ||
-			event.metaKey ||
-			event.ctrlKey ||
-			event.shiftKey ||
-			event.altKey
-		)
-			return;
-		event.preventDefault();
-		void navigateToProject({
-			project,
-			originElement: event.currentTarget,
-			reducedMotion,
-		});
-	}
 
 	return (
 		<article>
@@ -82,10 +61,10 @@ export function ProjectPanel({ project, reducedMotion }: Props) {
 				className={styles.actions}
 				data-anim
 			>
+				{/* La transition vers le projet part de là : AppContainer la lance à chaque changement de projet */}
 				<Link
 					to={project.path}
 					className={styles.openButton}
-					onClick={handleOpenClick}
 				>
 					Y accéder
 					<ArrowRight aria-hidden />

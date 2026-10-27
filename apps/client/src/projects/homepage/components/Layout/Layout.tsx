@@ -10,6 +10,7 @@ import { Navigate, useNavigate, useParams } from "react-router";
 
 import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
 import { projects } from "../../../../react/appNavigation/projectsDictionary";
+import { projectTransitionStore } from "../../../../react/appNavigation/projectTransition/projectTransitionStore";
 import { AppToaster } from "../../../../react/AppToaster";
 import { ProjectThemeProvider } from "../../../../react/projectTheme/ProjectThemeProvider";
 import { useProjectColorScheme } from "../../../../react/projectTheme/useProjectColorScheme";
@@ -89,8 +90,12 @@ export function Layout() {
 
 	const { value: hasSeenIntro, set: setHasSeenIntro } =
 		useSessionStorage<boolean>(INTRO_SEEN_KEY, false);
-	// Décidé à l'arrivée : marquer l'intro comme vue ne l'interrompt pas
-	const [isIntroPlaying] = useState(() => !hasSeenIntro && !reducedMotion);
+	// Décidé à l'arrivée : marquer l'intro comme vue ne l'interrompt pas. Revenu d'un projet, sous sa transition,
+	// on la saute
+	const [isIntroPlaying] = useState(
+		() =>
+			!hasSeenIntro && !reducedMotion && !projectTransitionStore.isRunning(),
+	);
 	const [isRevealed, setIsRevealed] = useState(!isIntroPlaying);
 	const handleIntroReveal = useCallback(() => setIsRevealed(true), []);
 	const handleIntroDone = useCallback(

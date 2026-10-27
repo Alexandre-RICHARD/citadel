@@ -1,4 +1,3 @@
-import { router } from "../routes";
 import { projectTransitionStore } from "./projectTransitionStore";
 import type { TransitionEffectEnum } from "./transitionEffect.enum";
 import type { TransitionPalette } from "./transitionPalette.type";
@@ -15,7 +14,8 @@ const TIP_MIN_MS = 1400;
 const PAGE_READY_TIMEOUT_MS = 2000;
 
 type Options = {
-	path: string;
+	// Change de page : la navigation que le routeur a retenue le temps que l'écran se couvre
+	navigate: () => void;
 	effect: TransitionEffectEnum;
 	palette: TransitionPalette;
 	isDark: boolean;
@@ -30,7 +30,7 @@ type Options = {
 // L'écran se couvre, la page de destination s'affiche dessous, puis l'écran se découvre sur la page déjà prête.
 // En 1,5 s environ ; plus long seulement si le chargement traîne, avec une astuce
 export async function navigateWithTransition({
-	path,
+	navigate,
 	effect,
 	palette,
 	isDark,
@@ -51,7 +51,7 @@ export async function navigateWithTransition({
 	try {
 		if (!overlay || reducedMotion) {
 			await loading;
-			await router.navigate(path);
+			navigate();
 			return;
 		}
 
@@ -74,7 +74,7 @@ export async function navigateWithTransition({
 		const pageReady = projectTransitionStore.waitForPageReady(
 			PAGE_READY_TIMEOUT_MS,
 		);
-		await router.navigate(path);
+		navigate();
 		await pageReady;
 		await waitForNextPaint();
 	} finally {
