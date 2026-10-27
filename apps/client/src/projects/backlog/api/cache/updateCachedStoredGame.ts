@@ -1,6 +1,7 @@
 import type { StoredGameDto } from "@citadel/specs/src/projects/backlog/dto/game/storedGameDto.type";
 import type { QueryClient } from "@tanstack/react-query";
 
+import { updateCachedQueryData } from "../../../../common/api/cache/updateCachedQueryData";
 import { backlogQueryKeys } from "../backlogQueryKeys";
 
 // Sans effet si le jeu n'a pas été lu
@@ -9,8 +10,9 @@ export function updateCachedStoredGame(
 	gameId: number,
 	update: (game: StoredGameDto) => StoredGameDto,
 ): void {
-	queryClient.setQueryData<StoredGameDto>(
+	updateCachedQueryData(
+		queryClient,
 		backlogQueryKeys.storedGame(gameId),
-		(game) => (game === undefined ? undefined : update(game)),
+		update,
 	);
 }

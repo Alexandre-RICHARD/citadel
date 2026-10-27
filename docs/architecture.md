@@ -191,7 +191,7 @@ Toute mutation passe par `useOptimisticMutation` (`common/api/mutation`).
 - **`mutationKey`** par action et par élément : une seule mutation à la fois par clé, le bouton désactivé avec `isPending`. **`scope`** : des mutations dépendantes partagent un scope, leurs requêtes partent dans l'ordre, leur optimistic s'applique tout de suite.
 - **`applyOptimistic`** écrit le résultat attendu ; **`revertOptimistic`** le défait par l'opération inverse, jamais en restaurant un instantané, qui écraserait les autres mutations en cours ; **`applyServerResponse`** remplace la valeur optimiste par la réponse ; **`getAffectedQueryKeys`** liste les lectures à invalider quand la dernière mutation en cours se termine ; **`removeGoneResource`** retire la ressource des caches sur un 404 métier.
 - PATCH : n'envoyer que les champs modifiés. Une suppression en cascade se confirme (`ConfirmDialog`) en disant ce qu'elle emporte.
-- Les fonctions de cache passent par les helpers de `common/api/cache` (`replaceById`, `removeById`, `locateById`, `insertAt`). Un cache absent ne se crée jamais de toutes pièces.
+- Les fonctions de cache passent par `updateCachedQueryData` (`common/api/cache`) et par les fonctions de liste du package `common` (`replaceById`, `removeById`, `locateById`, `insertAt`). Un cache absent ne se crée jamais de toutes pièces.
 
 ### Erreurs et saisie
 
