@@ -3,7 +3,7 @@ import "../../ambiance/ambianceProperties.scss";
 import { usePrefersReducedMotion } from "@citadel/common/src/react/hooks/usePrefersReducedMotion";
 import { useSessionStorage } from "@citadel/common/src/react/hooks/useSessionStorage";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
-import { resolveTheme } from "@citadel/design-system/src/theme/resolveTheme";
+import { resolveAmbianceTheme } from "@citadel/design-system/src/theme/resolveAmbianceTheme";
 import { ThemeProvider } from "@citadel/design-system/src/theme/ThemeProvider";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
@@ -62,7 +62,7 @@ export function Layout() {
 	// L'ambiance : celle du projet sélectionné, sinon celle de la Citadel (accueil et pages du footer)
 	const ambianceProject = selectedProject ?? homepage;
 	const ambianceTheme = useMemo(
-		() => resolveTheme(ambianceProject.theme, colorScheme),
+		() => resolveAmbianceTheme(ambianceProject.theme, colorScheme),
 		[ambianceProject, colorScheme],
 	);
 	const ambianceFonts = useMemo(

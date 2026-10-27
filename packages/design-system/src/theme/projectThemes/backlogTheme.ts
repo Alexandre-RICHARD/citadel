@@ -69,4 +69,20 @@ export const backlogTheme: ThemeDefinitionType = {
 			colorDecoration4: "#c026d3",
 		},
 	},
+	// Son ambiance : tout en Nunito, et un vert vif à la place de l'indigo
+	ambiance: {
+		shared: {
+			fontFamilyPrimary: '"Nunito", system-ui, sans-serif',
+		},
+		colors: {
+			light: {
+				colorPrimaryHue: "#0f9d58",
+				colorPrimaryContent: "#ffffff",
+			},
+			dark: {
+				colorPrimaryHue: "#3ddc84",
+				colorPrimaryContent: "#04210f",
+			},
+		},
+	},
 };

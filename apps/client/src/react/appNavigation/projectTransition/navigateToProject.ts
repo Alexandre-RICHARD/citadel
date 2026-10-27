@@ -1,6 +1,6 @@
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { readColorScheme } from "@citadel/design-system/src/theme/colorScheme/readColorScheme";
-import { resolveTheme } from "@citadel/design-system/src/theme/resolveTheme";
+import { resolveAmbianceTheme } from "@citadel/design-system/src/theme/resolveAmbianceTheme";
 
 import { getColorSchemeStorageKey } from "../../projectTheme/getColorSchemeStorageKey";
 import type { ProjectDictionary } from "../projectDictionary.type";
@@ -23,7 +23,7 @@ export function navigateToProject({
 	reducedMotion,
 }: Options): Promise<void> {
 	const colorScheme = readColorScheme(getColorSchemeStorageKey(project.id));
-	const theme = resolveTheme(project.theme, colorScheme);
+	const theme = resolveAmbianceTheme(project.theme, colorScheme);
 	const originRect = originElement.getBoundingClientRect();
 
 	return navigateWithTransition({

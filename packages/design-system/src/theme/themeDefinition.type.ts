@@ -10,4 +10,10 @@ export type ThemeDefinitionType = {
 	shared: Partial<Omit<ThemeType, keyof ThemeColorsType>>;
 	// Couleurs de chaque mode, par-dessus la base du design system (defaultTheme en clair, defaultDarkColors en sombre)
 	colors: Record<ColorSchemeEnum, Partial<ThemeColorsType>>;
+	// L'ambiance du projet (sa vitrine sur la homepage, sa transition) peut forcer le trait par-dessus le thème :
+	// une police de texte plus expressive, une couleur plus vive. Elle se lit avec resolveAmbianceTheme
+	ambiance?: {
+		shared?: Partial<Omit<ThemeType, keyof ThemeColorsType>>;
+		colors?: Partial<Record<ColorSchemeEnum, Partial<ThemeColorsType>>>;
+	};
 };
