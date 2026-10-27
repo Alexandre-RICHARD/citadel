@@ -1,3 +1,4 @@
+import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
 import { rollChance } from "@citadel/common/src/universal/random/rollChance";
 import { gsap } from "gsap";
 
@@ -36,14 +37,14 @@ export function ghostOut(
 	}
 
 	blocks.forEach((block, index) => {
-		const duration = 1.2 + Math.random() * 0.6;
-		const startAt = index * 0.08 + Math.random() * 0.06;
+		const duration = randomBetween(1.2, 1.8);
+		const startAt = index * 0.08 + randomBetween(0, 0.06);
 		const direction = rollChance(0.5) ? -1 : 1;
-		const sway = 10 + Math.random() * 14;
+		const sway = randomBetween(10, 24);
 		timeline.to(
 			block,
 			{
-				y: `+=${60 + Math.random() * 70}`,
+				y: `+=${randomBetween(60, 130)}`,
 				opacity: 0,
 				duration,
 				ease: "sine.in",

@@ -1,4 +1,5 @@
 import { easeInOutCubic } from "@citadel/common/src/universal/animation/easeInOutCubic";
+import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
 
 import { TransitionPhaseEnum } from "../transitionPhase.enum";
 import type { TransitionPainter } from "./transitionPainter.type";
@@ -80,15 +81,15 @@ export function createFirePainter({
 			// Des braises naissent sur le bord tant qu'il est à l'écran
 			if (base > -60 && base < height + 60) {
 				for (let index = 0; index < EMBERS_PER_FRAME; index++) {
-					const x = Math.random() * width;
+					const x = randomBetween(0, width);
 					embers.push({
 						x,
 						y: getEdgeY(x, base, time),
-						speedX: (Math.random() - 0.5) * 30,
-						speedY: 40 + Math.random() * 90,
-						life: 0.8 + Math.random(),
+						speedX: randomBetween(-15, 15),
+						speedY: randomBetween(40, 130),
+						life: randomBetween(0.8, 1.8),
 						age: 0,
-						size: 1 + Math.random() * 2,
+						size: randomBetween(1, 3),
 					});
 				}
 			}
