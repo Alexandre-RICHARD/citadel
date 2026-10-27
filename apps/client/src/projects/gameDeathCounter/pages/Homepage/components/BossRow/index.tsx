@@ -15,6 +15,7 @@ import { useAddDeath } from "../../../../api/death/useAddDeath";
 import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
 import type { BossSummaryFm } from "../../../../api/model/bossSummaryFm.type";
 import globalStyles from "../../../../globalStyles.module.scss";
+import { describeBossDeletion } from "../../../../helper/describeBossDeletion";
 import { BlockTitle } from "../BlockTitle";
 import { BossBody } from "../BossBody";
 import styles from "./bossRow.module.scss";
@@ -23,13 +24,6 @@ type Props = {
 	gameId: number;
 	boss: BossSummaryFm;
 };
-
-// Annonce ce que la suppression emporte avec le boss
-function describeDeletion(totalDeath: number): string {
-	if (totalDeath === 0) return "Cette action est définitive.";
-	if (totalDeath === 1) return "Sa mort sera supprimée définitivement.";
-	return `Ses ${totalDeath} morts seront supprimées définitivement.`;
-}
 
 export function BossRow({ gameId, boss }: Props) {
 	const ids = { gameId, bossId: boss.id };
@@ -191,7 +185,7 @@ export function BossRow({ gameId, boss }: Props) {
 			<ConfirmDialog
 				open={confirmingDeletion}
 				title={`Supprimer « ${boss.name} » ?`}
-				description={describeDeletion(boss.totalDeath)}
+				description={describeBossDeletion(boss.totalDeath)}
 				confirmLabel="Supprimer"
 				destructive
 				onConfirm={confirmDeletion}

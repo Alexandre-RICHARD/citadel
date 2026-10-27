@@ -14,6 +14,7 @@ import { useUpdateGame } from "../../../../api/game/useUpdateGame";
 import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
 import type { GameSummaryFm } from "../../../../api/model/gameSummaryFm.type";
 import globalStyles from "../../../../globalStyles.module.scss";
+import { describeGameDeletion } from "../../../../helper/describeGameDeletion";
 import { BlockTitle } from "../BlockTitle";
 import { GameBody } from "../GameBody";
 import styles from "./gameCard.module.scss";
@@ -21,13 +22,6 @@ import styles from "./gameCard.module.scss";
 type Props = {
 	game: GameSummaryFm;
 };
-
-// Annonce ce que la suppression emporte avec le jeu
-function describeDeletion(totalDeath: number): string {
-	if (totalDeath === 0) return "Ses boss seront supprimés définitivement.";
-	const deaths = totalDeath === 1 ? "sa mort" : `ses ${totalDeath} morts`;
-	return `Ses boss et ${deaths} seront supprimés définitivement.`;
-}
 
 export function GameCard({ game }: Props) {
 	// Déplié en mémoire seulement : le détail du jeu se charge à la première ouverture
@@ -167,7 +161,7 @@ export function GameCard({ game }: Props) {
 			<ConfirmDialog
 				open={confirmingDeletion}
 				title={`Supprimer « ${game.name} » ?`}
-				description={describeDeletion(game.totalDeath)}
+				description={describeGameDeletion(game.totalDeath)}
 				confirmLabel="Supprimer"
 				destructive
 				onConfirm={confirmDeletion}
