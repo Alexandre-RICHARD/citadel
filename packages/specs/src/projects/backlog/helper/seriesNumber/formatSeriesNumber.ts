@@ -1,3 +1,5 @@
+import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros.ts";
+
 import { countSubPartDigits } from "./countSubPartDigits.ts";
 import { getFamily } from "./getFamily.ts";
 import { getFamilyDigits } from "./getFamilyDigits.ts";
@@ -21,5 +23,5 @@ export function formatSeriesNumber(
 		countSubPartDigits(subPart),
 		getFamilyDigits(entries, family),
 	);
-	return `${family}.${String(subPart / getSubPartStep(digits)).padStart(digits, "0")}`;
+	return `${family}.${padWithZeros(subPart / getSubPartStep(digits), digits)}`;
 }
