@@ -1,6 +1,7 @@
+import { REDUCED_MOTION_QUERY } from "../../browser/dom/reducedMotionQuery.ts";
 import { useMediaQuery } from "./useMediaQuery.tsx";
 
-// L'utilisateur a demandé à son système de réduire les animations
+// Suit le réglage : le composant se rafraîchit quand l'utilisateur le change
 export function usePrefersReducedMotion(): boolean {
-	return useMediaQuery("(prefers-reduced-motion: reduce)");
+	return useMediaQuery(REDUCED_MOTION_QUERY);
 }

@@ -1,4 +1,5 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
 import type { CircleMarker as LeafletCircleMarker, PathOptions } from "leaflet";
 import { type JSX, useEffect, useMemo, useRef } from "react";
 import { CircleMarker, Pane, useMap } from "react-leaflet";
@@ -50,7 +51,7 @@ function FocusedStopCircle({
 			[request.stop.latitude, request.stop.longitude],
 			Math.max(map.getZoom(), FOCUSED_STOP_ZOOM),
 			{
-				animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+				animate: !getPrefersReducedMotion(),
 			},
 		);
 		return () => {

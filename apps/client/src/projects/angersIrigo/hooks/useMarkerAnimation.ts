@@ -1,4 +1,5 @@
 /* eslint-disable citadel/max-one-export, no-restricted-syntax -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
 import { latLng, type Marker } from "leaflet";
 import { type RefObject, useEffect } from "react";
 
@@ -19,10 +20,6 @@ export function easeInOut(t: number): number {
 	return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
 }
 
-const prefersReducedMotion = window.matchMedia(
-	"(prefers-reduced-motion: reduce)",
-);
-
 /**
  * Fait glisser le marqueur jusqu'à `position` en `durationMs`, au lieu de l'y téléporter.
  * Leaflet n'anime pas les déplacements : on recalcule la position à chaque image. Une nouvelle
@@ -42,7 +39,7 @@ export function useMarkerAnimation(
 			return undefined;
 		}
 		if (
-			prefersReducedMotion.matches ||
+			getPrefersReducedMotion() ||
 			from.distanceTo(to) > MAX_ANIMATED_DISTANCE_METERS
 		) {
 			marker.setLatLng(to);

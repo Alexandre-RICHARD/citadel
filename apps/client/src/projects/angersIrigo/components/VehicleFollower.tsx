@@ -1,4 +1,5 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
 import {
 	type LatLng,
 	type Map as LeafletMap,
@@ -21,10 +22,6 @@ const ZOOM_OPTIONS = [
 	"touchZoom",
 	"doubleClickZoom",
 ] as const;
-
-const prefersReducedMotion = window.matchMedia(
-	"(prefers-reduced-motion: reduce)",
-);
 
 /**
  * Centre à donner à la carte pour que le véhicule soit au milieu de sa partie visible : sous les
@@ -126,7 +123,7 @@ export function VehicleFollower({
 		) {
 			return;
 		}
-		const animate = !prefersReducedMotion.matches;
+		const animate = !getPrefersReducedMotion();
 
 		// Début du suivi : la carte rejoint le véhicule en se rapprochant au besoin
 		if (!hasReachedVehicleRef.current) {

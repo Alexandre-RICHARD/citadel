@@ -1,6 +1,5 @@
+import { getPrefersReducedMotion } from "@citadel/common/src/browser/dom/getPrefersReducedMotion";
 import { flushSync } from "react-dom";
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
  * Applique un changement d'affichage (pliage d'un panneau) avec une transition animée
@@ -9,10 +8,7 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
  */
 export function withViewTransition(update: () => void): void {
 	// Absente des navigateurs anciens, malgré ce que disent les types du DOM
-	if (
-		!document.startViewTransition ||
-		matchMedia(REDUCED_MOTION_QUERY).matches
-	) {
+	if (!document.startViewTransition || getPrefersReducedMotion()) {
 		update();
 		return;
 	}
