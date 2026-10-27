@@ -1,0 +1,31 @@
+.progressRing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: vars.$font-body;
+  font-size: 1.1rem;
+  letter-spacing: 0;
+  opacity: 0.85;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  b {
+    font-weight: 600;
+  }
+}
+
+.track {
+  fill: none;
+  stroke: color-mix(in srgb, currentColor 22%, transparent);
+  stroke-width: 3.5;
+}
+
+.value {
+  fill: none;
+  stroke: vars.$accent;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}

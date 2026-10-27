@@ -1,0 +1,11 @@
+// Les panneaux sont empilés dans la même case : le fantôme tombe pendant que le suivant entre
+.panel {
+  grid-area: 1 / 1;
+  align-self: center;
+  max-width: 66rem;
+  font-family: vars.$font-body;
+
+  &[inert] {
+    pointer-events: none;
+  }
+}

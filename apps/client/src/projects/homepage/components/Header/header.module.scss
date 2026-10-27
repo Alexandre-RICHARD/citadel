@@ -1,0 +1,87 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.8rem 2.8rem;
+
+  @include vars.phone {
+    padding: 1.2rem 1.4rem;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 0;
+  color: vars.$text;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid vars.$accent;
+    outline-offset: 4px;
+  }
+
+  @include vars.phone {
+    gap: 0.8rem;
+  }
+}
+
+.logo {
+  width: 4.6rem;
+  height: 4.6rem;
+
+  @include vars.phone {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+}
+
+.brandName {
+  @include vars.display-font;
+
+  font-size: 1.7rem;
+  white-space: nowrap;
+
+  @include vars.phone {
+    font-size: 1.3rem;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconButton {
+  @include vars.button;
+
+  width: 4.2rem;
+  height: 4.2rem;
+
+  @include vars.phone {
+    width: 3.6rem;
+    height: 3.6rem;
+  }
+}
+
+.loginButton {
+  @include vars.button;
+  @include vars.display-font;
+
+  padding: 1.2rem 2rem;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+
+  &[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @include vars.phone {
+    padding: 0.9rem 1.2rem;
+    font-size: 1.1rem;
+  }
+}
