@@ -1,3 +1,4 @@
+import { useDebouncedCallback } from "@citadel/common/src/react/hooks/useDebouncedCallback";
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
@@ -7,7 +8,6 @@ import styles from "../../../../backlog.module.scss";
 import { formatRangeSummary } from "../../../../helper/format/formatRangeSummary";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
 import { isDurationColumn } from "../../../../helper/view/isDurationColumn";
-import { useDebouncedCallback } from "../../../../hooks/useDebouncedCallback";
 import { RangeFilter } from "../RangeFilter";
 
 const MINUTES_PER_HOUR = 60;

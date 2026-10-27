@@ -1,5 +1,6 @@
 import { navigateResults } from "@citadel/common/src/browser/keyboard/navigateResults";
 import { useActiveIndex } from "@citadel/common/src/react/hooks/useActiveIndex";
+import { useDebouncedValue } from "@citadel/common/src/react/hooks/useDebouncedValue";
 import { useScrollIntoView } from "@citadel/common/src/react/hooks/useScrollIntoView";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { LibraryBig, Search, SearchX } from "lucide-react";
@@ -12,7 +13,6 @@ import { Button } from "../../../../components/Button";
 import { Modal } from "../../../../components/Modal";
 import { Spinner } from "../../../../components/Spinner";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
-import { useDebouncedValue } from "../../../../hooks/useDebouncedValue";
 import { LoadingState } from "../LoadingState";
 import { SearchResultOption } from "../SearchResultOption";
 

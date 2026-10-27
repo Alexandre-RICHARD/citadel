@@ -1,3 +1,4 @@
+import { useDebouncedCallback } from "@citadel/common/src/react/hooks/useDebouncedCallback";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
@@ -7,7 +8,6 @@ import { useState } from "react";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
-import { useDebouncedCallback } from "../../../../hooks/useDebouncedCallback";
 
 type Props = {
 	column: BacklogColumnEnum;
