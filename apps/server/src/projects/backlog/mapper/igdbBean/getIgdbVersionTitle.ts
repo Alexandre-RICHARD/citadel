@@ -1,10 +1,9 @@
+import { fromUnixSecondsToDate } from "@citadel/common/src/universal/date/fromUnixSecondsToDate.ts";
 import { trimToNull } from "@citadel/common/src/universal/string/trimToNull.ts";
 
 import { IgdbGameTypeNameEnum } from "../../igdb/igdbGameTypeName.enum.ts";
 import type { IgdbVersionGame } from "../../igdb/type/igdbVersionGame.type.ts";
 import { getIgdbFirstReleaseTime } from "./getIgdbFirstReleaseTime.ts";
-
-const SECOND_MS = 1000;
 
 // Types IGDB des versions, en français ; une édition (« Main Game » ou « Bundle » rattachés par `version_parent`) n'y est pas
 const versionTypeLabels: Partial<Record<string, string>> = {
@@ -31,5 +30,5 @@ export function getIgdbVersionTitle(
 	const firstReleaseTime = getIgdbFirstReleaseTime(version);
 	return firstReleaseTime === Number.MAX_SAFE_INTEGER
 		? typeLabel
-		: `${typeLabel} ${new Date(firstReleaseTime * SECOND_MS).getUTCFullYear()}`;
+		: `${typeLabel} ${fromUnixSecondsToDate(firstReleaseTime).getUTCFullYear()}`;
 }
