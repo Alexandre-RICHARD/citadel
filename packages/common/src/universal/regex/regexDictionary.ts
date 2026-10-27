@@ -18,6 +18,16 @@ export const regexDictionary = {
 	diacritic: /\p{Diacritic}/gu,
 	// Suite de caractères ni lettre minuscule sans accent ni chiffre : la ponctuation et les espaces d'un texte normalisé
 	nonAlphanumericRun: /[^a-z0-9]+/g,
+	// Date tapée jour en premier : « 17/09/2013 », « 1.9.2013 », « 17-09-2013 » ; jour, mois et année capturés
+	dayFirstDateInput: /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/,
+	// Date tapée au format ISO : « 2013-09-17 » ; année, mois et jour capturés
+	yearFirstDateInput: /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
+	// Date tapée en chiffres seuls : « 17092013 » ; jour, mois et année capturés
+	digitsOnlyDateInput: /^(\d{2})(\d{2})(\d{4})$/,
+	// Saisie de date faite seulement de chiffres et de barres
+	digitsAndSlashes: /^[\d/]*$/,
+	// Barre oblique, à retirer d'une saisie
+	slash: /\//g,
 
 	// Caractère spécial d'un motif LIKE en SQL (%, _ et l'échappement \), à échapper pour le chercher tel quel
 	sqlLikeWildcard: /[\\%_]/g,

@@ -2,58 +2,8 @@ import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatSho
 import type { IsoDate } from "@citadel/common/src/universal/date/isoDate.type";
 import { useState } from "react";
 
-function pad(value: number): string {
-	return String(value).padStart(2, "0");
-}
-
-/** Date tapée : « 17/09/2013 », « 1/9/2013 », « 17.09.2013 », « 17092013 » ou « 2013-09-17 » ; `null` si incomplète ou impossible (31/02) */
-function parseTypedDate(text: string): IsoDate | null {
-	const trimmed = text.trim();
-	const dayFirst = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(trimmed);
-	const yearFirst = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(trimmed);
-	const digitsOnly = /^(\d{2})(\d{2})(\d{4})$/.exec(trimmed);
-	let parts: [number, number, number] | null = null;
-	if (dayFirst !== null) {
-		parts = [Number(dayFirst[3]), Number(dayFirst[2]), Number(dayFirst[1])];
-	} else if (yearFirst !== null) {
-		parts = [Number(yearFirst[1]), Number(yearFirst[2]), Number(yearFirst[3])];
-	} else if (digitsOnly !== null) {
-		parts = [
-			Number(digitsOnly[3]),
-			Number(digitsOnly[2]),
-			Number(digitsOnly[1]),
-		];
-	}
-	if (parts === null) {
-		return null;
-	}
-	const [year, month, day] = parts;
-	const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-	if (year < 1000 || month < 1 || month > 12 || day < 1 || day > lastDay) {
-		return null;
-	}
-	return `${year}-${pad(month)}-${pad(day)}` as IsoDate;
-}
-
-/**
- * En tapant des chiffres, les barres s'ajoutent toutes seules : « 17092013 » s'écrit « 17/09/2013 ».
- * Une saisie qui pose ses propres barres ailleurs (« 1/9/2013 ») reste telle quelle.
- */
-function insertSlashes(text: string): string {
-	const isOwnFormat =
-		/^[\d/]*$/.test(text) &&
-		!text.endsWith("/") &&
-		[...text].every(
-			(character, index) => character !== "/" || index === 2 || index === 5,
-		);
-	if (!isOwnFormat) {
-		return text;
-	}
-	const digits = text.replace(/\//g, "").slice(0, 8);
-	return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)]
-		.filter((part) => part !== "")
-		.join("/");
-}
+import { insertDateSlashes } from "../../helper/date/insertDateSlashes";
+import { parseTypedDate } from "../../helper/date/parseTypedDate";
 
 /**
  * Saisie d'une date au format jj/mm/aaaa, ou au calendrier.
@@ -91,7 +41,7 @@ export function useDateField({
 	function changeText(nextText: string) {
 		// En effaçant, la saisie reste telle quelle ; en tapant, les barres s'ajoutent
 		const shownText =
-			nextText.length > text.length ? insertSlashes(nextText) : nextText;
+			nextText.length > text.length ? insertDateSlashes(nextText) : nextText;
 		setText(shownText);
 		if (commitOn === "change") {
 			if (shownText.trim() === "") {
