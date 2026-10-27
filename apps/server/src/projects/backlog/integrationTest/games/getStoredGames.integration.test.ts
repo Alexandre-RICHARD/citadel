@@ -9,20 +9,16 @@ import { app } from "../../../../app.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
+import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWord.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 
 const STORED_GAMES_URL = `${ApiPrefixEnum.BACKLOG}/games`;
-
-// Un mot que seul ce test emploie : les jeux des autres tests ne le contiennent pas
-function uniqueWord(): string {
-	return `Zq${Math.random().toString(36).slice(2, 10)}`;
-}
 
 describe("getStoredGames", () => {
 	describe("200 OK", () => {
 		it("SHOULD find games outside the backlog by name, French name or version title, without accents or case", async () => {
 			// Arrange
-			const word = uniqueWord();
+			const word = buildUniqueWord();
 			const byName = await seedStoredGame({
 				name: `Pokémon ${word} Rouge`,
 				platformIds: [SEEDED_PLATFORMS.PS2, SEEDED_PLATFORMS.PS3],
@@ -72,7 +68,7 @@ describe("getStoredGames", () => {
 
 		it("SHOULD give pages of 50 games and the total count", async () => {
 			// Arrange
-			const word = uniqueWord();
+			const word = buildUniqueWord();
 			for (let index = 0; index < 51; index += 1)
 				// eslint-disable-next-line no-await-in-loop -- les jeux s'ajoutent un par un
 				await seedStoredGame({
@@ -93,7 +89,7 @@ describe("getStoredGames", () => {
 
 		it("SHOULD treat % and _ as plain text", async () => {
 			// Arrange
-			const word = uniqueWord();
+			const word = buildUniqueWord();
 			await seedStoredGame({ name: `${word} 100% Orange Juice` });
 			await seedStoredGame({ name: `${word} 1000 Orange Juice` });
 
@@ -114,7 +110,7 @@ describe("getStoredGames", () => {
 			// Act
 			const response = await request(app)
 				.get(STORED_GAMES_URL)
-				.query({ query: uniqueWord() });
+				.query({ query: buildUniqueWord() });
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
