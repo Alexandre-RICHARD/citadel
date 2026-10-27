@@ -1,4 +1,6 @@
 /* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { average } from "@citadel/common/src/universal/number/average";
+
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { GtfsRoute, GtfsStaticData, GtfsStop } from "../types/gtfs-static";
 import type { TripShape } from "../types/shape";
@@ -21,17 +23,17 @@ const MAX_GROUP_RADIUS_METERS = 300;
 /** Un passage annoncé reste affiché un court instant après son heure prévue */
 const DEPARTURE_GRACE_SECONDS = 30;
 
-function average(values: number[]): number {
-	return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
+// Un groupe a toujours au moins un quai : le premier donne son id, son nom, et sa place à défaut de moyenne
 function toStopGroup(members: GtfsStop[]): StopGroup {
+	const [firstMember] = members;
 	return {
-		id: members[0].stopId,
-		name: members[0].name,
+		id: firstMember.stopId,
+		name: firstMember.name,
 		stopIds: new Set(members.map((stop) => stop.stopId)),
-		latitude: average(members.map((stop) => stop.latitude)),
-		longitude: average(members.map((stop) => stop.longitude)),
+		latitude:
+			average(members.map((stop) => stop.latitude)) ?? firstMember.latitude,
+		longitude:
+			average(members.map((stop) => stop.longitude)) ?? firstMember.longitude,
 	};
 }
 

@@ -1,4 +1,5 @@
 import { writeCountdown } from "@citadel/common/src/universal/date/writeCountdown";
+import { average } from "@citadel/common/src/universal/number/average";
 import { formatNumberWithSpaces } from "@citadel/common/src/universal/number/formatNumberWithSpaces";
 import { roundNumber } from "@citadel/common/src/universal/number/roundNumber";
 import { CheckboxInput } from "@citadel/design-system/src/atoms/CheckboxInput";
@@ -38,12 +39,8 @@ function getGoldenNutInfo(awesomeSink: AwesomeSinkFm): {
 	const goldenNutPrice = 1000;
 	const couponRemainingNeeded = goldenNutPrice - awesomeSink.availableCoupons;
 
-	const resourceGraphValues = awesomeSink.Resource?.graphValues ?? [];
 	const resourceAverageSpeedPerMinute =
-		resourceGraphValues.length > 0
-			? resourceGraphValues.reduce((acc, value) => acc + value, 0) /
-				resourceGraphValues.length
-			: 0;
+		average(awesomeSink.Resource?.graphValues ?? []) ?? 0;
 
 	const progressionPurcent = awesomeSink.Resource?.progressionPurcent ?? 0;
 	const remainingPointsToNextCoupon =
