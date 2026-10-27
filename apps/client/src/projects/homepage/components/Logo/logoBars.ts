@@ -24,11 +24,15 @@ const barPoints = [
 	.map((point) => point.map(format).join(","))
 	.join(" ");
 
+// L'ordre des barres suit le sens des aiguilles d'une montre : la suivante est la voisine de droite
 export const logoBars = corners.map(([x, y], index) => {
 	const [nextX, nextY] = corners[(index + 1) % 6];
 	const angle = (Math.atan2(nextY - y, nextX - x) * 180) / Math.PI;
+	// Vers l'extérieur, perpendiculaire au côté : la direction où la barre s'écarte au survol
+	const outward = (Math.PI / 3) * index + Math.PI / 6;
 	return {
 		transform: `translate(${format(x)} ${format(y)}) rotate(${angle.toFixed(2)})`,
 		points: barPoints,
+		outward: { x: Math.cos(outward), y: Math.sin(outward) },
 	};
 });

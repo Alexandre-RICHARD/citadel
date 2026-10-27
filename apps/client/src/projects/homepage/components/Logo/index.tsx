@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import { type Ref, useId } from "react";
 
 import styles from "./logo.module.scss";
 import { logoBars } from "./logoBars";
@@ -9,8 +9,13 @@ type Props = {
 };
 
 // Le logo hexagonal et son A, dessiné pour tomber au centre de l'hexagone. Barres (data-logo-bar) et lettre
-// (data-logo-letter) sont repérées par l'animation de l'intro
+// (data-logo-letter) sont repérées par l'animation de l'intro ; chaque barre est prise dans deux groupes, l'un
+// pour tourner autour du centre (data-logo-orbit), l'autre pour s'en écarter (data-logo-drift), qui servent au
+// survol du logo
 export function Logo({ ref, className }: Props) {
+	// Un dégradé par logo : celui de l'intro et celui du header sont affichés ensemble
+	const gradientId = `logo-${useId().replace(/[^\w-]/g, "")}`;
+
 	return (
 		<svg
 			ref={ref}
@@ -18,15 +23,32 @@ export function Logo({ ref, className }: Props) {
 			viewBox="-10.5 -10.5 21 21"
 			aria-hidden
 		>
+			<defs>
+				<linearGradient id={gradientId}>
+					<stop
+						offset="0"
+						className={styles.barBase}
+					/>
+					<stop
+						offset="1"
+						className={styles.barTip}
+					/>
+				</linearGradient>
+			</defs>
 			{logoBars.map((bar) => (
 				<g
 					key={bar.transform}
-					transform={bar.transform}
+					data-logo-orbit
 				>
-					<polygon
-						points={bar.points}
-						data-logo-bar
-					/>
+					<g data-logo-drift>
+						<g transform={bar.transform}>
+							<polygon
+								points={bar.points}
+								fill={`url(#${gradientId})`}
+								data-logo-bar
+							/>
+						</g>
+					</g>
 				</g>
 			))}
 			<path

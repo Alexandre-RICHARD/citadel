@@ -3,3 +3,12 @@
   overflow: visible;
   fill: currentColor;
 }
+
+// Les barres prennent un peu de la couleur de l'ambiance, franche à leur pointe ; le A garde celle du texte
+.barBase {
+  stop-color: color-mix(in oklab, #{vars.$accent} 35%, currentColor);
+}
+
+.barTip {
+  stop-color: vars.$accent;
+}

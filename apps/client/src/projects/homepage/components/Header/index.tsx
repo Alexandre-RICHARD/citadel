@@ -1,23 +1,32 @@
 import { ToastVariantEnum } from "@citadel/design-system/src/organisms/Toaster/toastVariant.enum";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { Moon, Sun } from "lucide-react";
-import type { Ref } from "react";
+import type { RefObject } from "react";
 import { Link } from "react-router";
 
 import { toastStore } from "../../../../common/toast/toastStore";
+import { useLogoOrbit } from "../../hooks/useLogoOrbit";
 import { buildHomepagePath } from "../../routing/buildHomepagePath";
 import { Logo } from "../Logo";
 import styles from "./header.module.scss";
 
 type Props = {
 	// Le logo du header : l'intro y fait atterrir le sien
-	logoRef: Ref<SVGSVGElement>;
+	logoRef: RefObject<SVGSVGElement | null>;
 	colorScheme: ColorSchemeEnum;
 	onToggleColorScheme: () => void;
+	reducedMotion: boolean;
 };
 
 // Transparent : le logo et le nom du site à gauche, le choix clair ou sombre puis la connexion à droite
-export function Header({ logoRef, colorScheme, onToggleColorScheme }: Props) {
+export function Header({
+	logoRef,
+	colorScheme,
+	onToggleColorScheme,
+	reducedMotion,
+}: Props) {
+	useLogoOrbit(logoRef, reducedMotion);
+
 	const colorSchemeLabel = `Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`;
 
 	// Les comptes n'existent pas encore : le bouton est là, inactif
