@@ -1,3 +1,4 @@
+import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { clamp } from "@citadel/common/src/universal/number/clamp";
 
 import type { TransitionPainter } from "./painters/transitionPainter.type";
@@ -49,7 +50,7 @@ export function createTransitionCanvas(canvas: HTMLCanvasElement) {
 
 	function drawFrame(now: number): void {
 		frameId = requestAnimationFrame(drawFrame);
-		const deltaTime = Math.min(0.05, (now - lastFrameAt) / 1000);
+		const deltaTime = getFrameDeltaSeconds(now, lastFrameAt);
 		lastFrameAt = now;
 		time += deltaTime;
 

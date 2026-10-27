@@ -1,4 +1,5 @@
 import { easeInOutSine } from "@citadel/common/src/universal/animation/easeInOutSine";
+import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { hexToRgb } from "@citadel/common/src/universal/color/hexToRgb";
 
 import { buildLavaFragmentShader } from "./buildLavaFragmentShader";
@@ -174,7 +175,7 @@ export function createLavaLamp(canvas: HTMLCanvasElement) {
 
 	function frame(now: number): void {
 		frameId = requestAnimationFrame(frame);
-		const deltaTime = Math.min(0.05, (now - lastFrameAt) / 1000);
+		const deltaTime = getFrameDeltaSeconds(now, lastFrameAt);
 		lastFrameAt = now;
 		if (document.hidden) return;
 		// Animations réduites : image figée, redessinée seulement quand les couleurs changent

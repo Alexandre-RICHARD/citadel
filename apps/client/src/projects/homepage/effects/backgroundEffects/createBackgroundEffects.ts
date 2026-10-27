@@ -1,3 +1,5 @@
+import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
+
 import { BackgroundEffectEnum } from "../../../../react/appNavigation/showcase/backgroundEffect.enum";
 import type { BackgroundEffect } from "./backgroundEffect.type";
 import { backgroundEffectFactories } from "./backgroundEffectFactories";
@@ -47,7 +49,7 @@ export function createBackgroundEffects(
 
 	function frame(now: number): void {
 		frameId = requestAnimationFrame(frame);
-		const deltaTime = Math.min(0.05, (now - lastFrameAt) / 1000);
+		const deltaTime = getFrameDeltaSeconds(now, lastFrameAt);
 		lastFrameAt = now;
 		if (document.hidden) return;
 		time += deltaTime;

@@ -1,3 +1,4 @@
+import { getFrameDeltaSeconds } from "@citadel/common/src/universal/animation/getFrameDeltaSeconds";
 import { clamp } from "@citadel/common/src/universal/number/clamp";
 
 import { buildWheelArcPaths } from "./buildWheelArcPaths";
@@ -107,7 +108,7 @@ export function createWheelMotion({
 
 	function frame(now: number): void {
 		frameId = requestAnimationFrame(frame);
-		const deltaTime = Math.min(0.05, (now - lastFrameAt) / 1000);
+		const deltaTime = getFrameDeltaSeconds(now, lastFrameAt);
 		lastFrameAt = now;
 		if (!geometry) relayout();
 		if (!geometry) return;
