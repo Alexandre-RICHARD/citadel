@@ -31,7 +31,7 @@
     &:focus {
       border-color: $color-focus;
       outline: none;
-      background: #fff;
+      background: $color-surface-solid;
     }
   }
 
@@ -72,7 +72,7 @@
     z-index: 1;
     margin: 0;
     border-radius: $radius-small;
-    background: #fff;
+    background: $color-surface-solid;
     box-shadow: $shadow;
   }
 

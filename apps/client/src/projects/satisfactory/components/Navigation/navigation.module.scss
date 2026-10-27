@@ -3,15 +3,14 @@
 $navSideBarWitdthSmall: 50px;
 $navSideBarWitdthLarge: 180px;
 
+// Couleurs : le thème du projet, en clair ou en sombre
 .navigationMenuContainer {
-  --primary: 237, 94%, 81%;
-  --background: 266, 16%, 92%;
-  --background-secondary: 256, 12%, 12%;
-  --background-secondary-dark: 256, 10%, 10%;
-  --background-secondary-light: 257, 11%, 16%;
-  --black: 0, 0%, 0%;
-  --white: 0, 0%, 100%;
-  --quite-gray: 0, 0%, 50%;
+  --primary: var(--theme-colorPrimaryHue);
+  --background-secondary: var(--theme-colorSurface);
+  --background-secondary-dark: var(--theme-colorSurfaceSunken);
+  --background-secondary-light: var(--theme-colorSurfaceRaised);
+  --text: var(--theme-colorText);
+  --text-muted: var(--theme-colorTextMuted);
   --navbar-buttons: 2.4rem;
 
   top: 0;
@@ -19,10 +18,11 @@ $navSideBarWitdthLarge: 180px;
   width: $navSideBarWitdthSmall;
   height: 100vh;
   position: fixed;
-  background-color: hsl(var(--background-secondary));
+  background-color: var(--background-secondary);
   transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
   overflow-y: auto;
   overflow-x: hidden;
+  border-right: 1px solid var(--theme-colorBorder);
   z-index: zIndex.$navigationBarZIndex;
 
   &:hover {
@@ -30,14 +30,14 @@ $navSideBarWitdthLarge: 180px;
   }
 
   &::-webkit-scrollbar-track {
-    background-color: hsl(var(--background-secondary));
+    background-color: var(--background-secondary);
   }
   &::-webkit-scrollbar {
     width: 8px;
-    background-color: hsl(var(--background-secondary));
+    background-color: var(--background-secondary);
   }
   &::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--primary));
+    background-color: var(--primary);
   }
 }
 
@@ -57,7 +57,7 @@ $navSideBarWitdthLarge: 180px;
   margin: 0 0 2em 0;
   width: 100%;
   height: 5em;
-  background: hsl(var(--background-secondary-dark));
+  background: var(--background-secondary-dark);
 
   > .navbarItemInner {
     width: calc(#{$navSideBarWitdthSmall} - 8px);
@@ -67,7 +67,7 @@ $navSideBarWitdthLarge: 180px;
   }
   > .navbarItemInner > svg {
     height: 2em;
-    fill: hsl(var(--white));
+    fill: var(--text);
   }
 }
 
@@ -81,15 +81,15 @@ $navSideBarWitdthLarge: 180px;
   padding: 1em 0;
   width: 100%;
   position: relative;
-  color: hsl(var(--quite-gray));
+  color: var(--text-muted);
   border-radius: 0.25em;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.175, 0.685, 0.32, 1);
 
   &:hover {
-    color: hsl(var(--white));
-    background: hsl(var(--background-secondary-light));
-    box-shadow: 0 17px 30px -10px hsla(var(--black), 0.25);
+    color: var(--text);
+    background: var(--background-secondary-light);
+    box-shadow: 0 17px 30px -10px rgb(0 0 0 / 25%);
   }
 }
 

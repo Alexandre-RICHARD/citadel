@@ -1,6 +1,17 @@
-import { Columns3, Gamepad2, LibraryBig, Lock, PencilLine } from "lucide-react";
+import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
+import {
+	Columns3,
+	Gamepad2,
+	LibraryBig,
+	Lock,
+	Moon,
+	PencilLine,
+	Sun,
+} from "lucide-react";
 import type { RefObject } from "react";
 
+import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
+import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
 import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
@@ -19,7 +30,7 @@ type Props = {
 	onOpenModal: (modal: BacklogModal) => void;
 };
 
-// Barre du haut : la recherche IGDB, « Ma base », les colonnes et le mode édition
+// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition et le thème
 export function Toolbar({
 	searchInputRef,
 	outsideBacklogGameCount,
@@ -28,6 +39,11 @@ export function Toolbar({
 	onSelectHit,
 	onOpenModal,
 }: Props) {
+	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
+		ProjectsEnum.Backlog,
+	);
+	const colorSchemeLabel = `Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`;
+
 	return (
 		<header className={styles.toolbar}>
 			<div className={styles.brand}>
@@ -92,6 +108,14 @@ export function Toolbar({
 						/>
 					</button>
 				</Tooltip>
+				<Button
+					icon={colorScheme === ColorSchemeEnum.Dark ? Moon : Sun}
+					variant="ghost"
+					ariaLabel={colorSchemeLabel}
+					tooltip={colorSchemeLabel}
+					tooltipPlacement="bottom"
+					onClick={toggleColorScheme}
+				/>
 			</div>
 		</header>
 	);

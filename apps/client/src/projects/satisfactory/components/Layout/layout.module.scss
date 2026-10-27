@@ -1,3 +1,8 @@
+// Couleurs et police : le thème du projet (design system, projectThemes/satisfactoryTheme.ts), en clair ou en sombre
 .satisfctoryLayoutContent {
+  min-height: 100vh;
   padding-left: 50px;
+  background-color: var(--theme-colorBackground);
+  color: var(--theme-colorText);
+  font-family: var(--theme-fontFamilyPrimary);
 }

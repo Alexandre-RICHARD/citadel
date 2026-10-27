@@ -7,7 +7,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 14px 18px;
-  background: rgba(11, 11, 14, 0.92);
+  background: color-mix(in srgb, vars.$void 92%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid vars.$line;
 
@@ -57,7 +57,7 @@
       min-height: 40px;
 
       &:hover {
-        background: #c1531f47;
+        background: color-mix(in srgb, vars.$ember 28%, transparent);
       }
 
       &:active {

@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Angers Irigo
 
-Carte des bus et trams du réseau Irigo (Angers), sur la route `/angers-irigo`. Une fois par minute, juste après leur actualisation chez Irigo, la page lit les positions des véhicules et leurs prochains passages, puis les complète avec les horaires théoriques embarqués : ligne, destination, arrêts, tracés. Arrêts favoris, recherche d'arrêt, filtres, suivi d'un véhicule et repères de temps sur son tracé ; réglages gardés dans le navigateur.
+Carte des bus et trams du réseau Irigo (Angers), sur la route `/angers-irigo`. Une fois par minute, juste après leur actualisation chez Irigo, la page lit les positions des véhicules et leurs prochains passages, puis les complète avec les horaires théoriques embarqués : ligne, destination, arrêts, tracés. Arrêts favoris, recherche d'arrêt, filtres, suivi d'un véhicule, repères de temps sur son tracé et thème sombre ; réglages gardés dans le navigateur.
 
 Importé d'un autre dépôt (`map`) en gardant sa structure : les règles ESLint de structure de Citadel sont désactivées en tête des fichiers concernés.
 

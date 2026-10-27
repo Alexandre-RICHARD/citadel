@@ -9,7 +9,7 @@
     .tableHeader {
       position: sticky;
       top: 0;
-      background-color: white;
+      background-color: var(--theme-colorSurface);
     }
 
     .tableBody {
@@ -17,7 +17,7 @@
       overflow-y: auto;
 
       .locationPingButton {
-        color: blue;
+        color: var(--theme-colorPrimaryHue);
         text-decoration: underline;
         cursor: pointer;
       }

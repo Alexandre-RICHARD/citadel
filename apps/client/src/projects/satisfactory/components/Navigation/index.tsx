@@ -1,11 +1,20 @@
 import { Icon } from "@citadel/design-system/src/atoms/Icon";
 import { IconTokenEnum } from "@citadel/design-system/src/atoms/Icon/iconToken.enum";
+import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
+import { Moon, Sun } from "lucide-react";
 import { NavLink } from "react-router";
 
+import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
+import { useProjectColorScheme } from "../../../../react/projectTheme/useProjectColorScheme";
 import styles from "./navigation.module.scss";
 import { navigationGroups } from "./navigationGroups";
 
 export function Navigation() {
+	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
+		ProjectsEnum.Satisfactory,
+	);
+	const isDark = colorScheme === ColorSchemeEnum.Dark;
+
 	return (
 		<nav className={styles.navigationMenuContainer}>
 			<ul className={`${styles.navbarItems} ${styles.flexboxCol}`}>
@@ -41,7 +50,7 @@ export function Navigation() {
 									<Icon
 										iconToken={IconTokenEnum[navItem.icon]}
 										size={20}
-										color="#fefefe"
+										color="currentColor"
 									/>
 								</div>
 								<span className={styles.linkText}>{navItem.label}</span>
@@ -49,6 +58,22 @@ export function Navigation() {
 						</li>
 					));
 				})}
+				<li className={`${styles.navbarItem} ${styles.flexboxLeft}`}>
+					<button
+						type="button"
+						className={`${styles.navbarItemInner} ${styles.flexboxLeft}`}
+						onClick={toggleColorScheme}
+					>
+						<div
+							className={`${styles.navbarItemInnerIconWrapper} ${styles.flexbox}`}
+						>
+							{isDark ? <Moon size={20} /> : <Sun size={20} />}
+						</div>
+						<span className={styles.linkText}>
+							{isDark ? "thème clair" : "thème sombre"}
+						</span>
+					</button>
+				</li>
 			</ul>
 		</nav>
 	);
