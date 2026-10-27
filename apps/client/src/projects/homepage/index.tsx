@@ -1,20 +1,28 @@
+import { Navigate, Route, Routes } from "react-router";
+
 import { AppContainer } from "../../react/AppContainer";
-import { projects } from "../../react/appNavigation/projectsDictionary";
-import { Footer } from "./Footer";
-import { Header } from "./Header";
-import styles from "./homepage.module.scss";
-import { ProjectsShowcase } from "./ProjectsShowcase";
+import { Layout } from "./components/Layout/Layout";
+import { buildHomepagePath } from "./routing/buildHomepagePath";
 
+// /homepage, /homepage/<projet> (projet sélectionné), /homepage/<page du footer>
 export function Homepage() {
-	const projectsInList = Object.values(projects);
-
 	return (
 		<AppContainer>
-			<div className={styles.homepage}>
-				<Header />
-				<ProjectsShowcase projects={projectsInList} />
-				<Footer />
-			</div>
+			<Routes>
+				<Route
+					path=":slug?"
+					element={<Layout />}
+				/>
+				<Route
+					path="*"
+					element={
+						<Navigate
+							to={buildHomepagePath()}
+							replace
+						/>
+					}
+				/>
+			</Routes>
 		</AppContainer>
 	);
 }

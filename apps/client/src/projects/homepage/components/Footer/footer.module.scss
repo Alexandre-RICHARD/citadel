@@ -1,0 +1,85 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 1.2rem 2.8rem 1.8rem;
+  font-size: 1.3rem;
+  color: vars.$muted;
+
+  @include vars.phone {
+    justify-content: center;
+    padding: 0.8rem 1.2rem 1.4rem;
+    font-size: 1.15rem;
+  }
+}
+
+.copyright {
+  @include vars.glass;
+
+  padding: 0.6rem 1.2rem;
+
+  // Sur téléphone, la place va aux liens
+  @include vars.phone {
+    display: none;
+  }
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  @include vars.phone {
+    gap: 0.4rem;
+  }
+}
+
+.link {
+  @include vars.glass;
+
+  padding: 0.6rem 1.2rem;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible,
+  &[aria-current="page"] {
+    @include vars.glass-active;
+  }
+
+  &:focus-visible {
+    outline: 2px solid vars.$accent;
+    outline-offset: 2px;
+  }
+
+  @include vars.phone {
+    padding: 0.5rem 0.8rem;
+  }
+}
+
+.gitHub {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: min(#{vars.$radius}, 0.9rem);
+  clip-path: vars.$cut-shape;
+  background: vars.$text;
+  color: vars.$background;
+
+  svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid vars.$accent;
+    outline-offset: 2px;
+  }
+
+  @include vars.phone {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+}

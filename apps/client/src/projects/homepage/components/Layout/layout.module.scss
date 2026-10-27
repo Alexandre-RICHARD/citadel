@@ -1,0 +1,50 @@
+// La page tient dans l'écran : header, conteneur principal qui défile lui-même, footer toujours en bas
+.homepage {
+  container: homepage / size;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: vars.$background;
+  color: vars.$text;
+  font-family: vars.$font-body;
+  // Les couleurs glissent d'une ambiance à l'autre en --ambiance-duration ; les formes, plus vite
+  transition:
+    --ambiance-background var(--ambiance-duration) ease-in-out,
+    --ambiance-surface var(--ambiance-duration) ease-in-out,
+    --ambiance-border var(--ambiance-duration) ease-in-out,
+    --ambiance-text var(--ambiance-duration) ease-in-out,
+    --ambiance-textMuted var(--ambiance-duration) ease-in-out,
+    --ambiance-accent var(--ambiance-duration) ease-in-out,
+    --ambiance-accentContent var(--ambiance-duration) ease-in-out,
+    --ambiance-decoration1 var(--ambiance-duration) ease-in-out,
+    --ambiance-decoration2 var(--ambiance-duration) ease-in-out,
+    --ambiance-decoration3 var(--ambiance-duration) ease-in-out,
+    --ambiance-decoration4 var(--ambiance-duration) ease-in-out,
+    --ambiance-radius 0.9s ease-in-out,
+    --ambiance-cut 0.9s ease-in-out,
+    --ambiance-fontWeight 0.9s ease-in-out,
+    --ambiance-letterSpacing 0.9s ease-in-out;
+}
+
+.interface {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+}
+
+.main {
+  container: main / size;
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: vars.$border transparent;
+}
+
+// La vue masquée par useViewSwitch, quel que soit son affichage
+.view[hidden] {
+  display: none !important;
+}

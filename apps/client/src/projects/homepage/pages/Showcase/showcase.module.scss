@@ -1,0 +1,11 @@
+.showcase {
+  display: grid;
+  grid-template-columns: 30% minmax(0, 1fr);
+  min-height: 100%;
+
+  @include vars.phone {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 17.2rem auto;
+    min-height: 0;
+  }
+}

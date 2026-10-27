@@ -1,0 +1,93 @@
+.background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.canvas,
+.lava {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Les halos ne servent que sans WebGL
+.halos {
+  position: absolute;
+  inset: 0;
+  display: none;
+  filter: blur(70px);
+
+  .background[data-lava="css"] & {
+    display: block;
+  }
+
+  i {
+    position: absolute;
+    width: 46cqmax;
+    height: 46cqmax;
+    border-radius: 50%;
+    opacity: 0.8;
+
+    &:nth-child(1) {
+      left: 38%;
+      top: -12%;
+      background: var(--ambiance-decoration1);
+      animation: drift-1 34s ease-in-out infinite alternate;
+    }
+
+    &:nth-child(2) {
+      left: 62%;
+      top: 38%;
+      background: var(--ambiance-decoration2);
+      animation: drift-2 41s ease-in-out infinite alternate;
+    }
+
+    &:nth-child(3) {
+      left: 30%;
+      top: 58%;
+      width: 36cqmax;
+      height: 36cqmax;
+      background: var(--ambiance-decoration3);
+      animation: drift-3 47s ease-in-out infinite alternate;
+    }
+
+    &:nth-child(4) {
+      left: 78%;
+      top: -18%;
+      width: 30cqmax;
+      height: 30cqmax;
+      background: var(--ambiance-decoration4);
+      animation: drift-4 38s ease-in-out infinite alternate;
+    }
+  }
+}
+
+.background[data-lava="css"] .lava {
+  display: none;
+}
+
+@keyframes drift-1 {
+  to {
+    transform: translate(-14cqw, 34cqh) scale(1.15);
+  }
+}
+
+@keyframes drift-2 {
+  to {
+    transform: translate(-22cqw, -30cqh) scale(0.85);
+  }
+}
+
+@keyframes drift-3 {
+  to {
+    transform: translate(30cqw, -40cqh) scale(1.2);
+  }
+}
+
+@keyframes drift-4 {
+  to {
+    transform: translate(-10cqw, 60cqh) scale(1.1);
+  }
+}

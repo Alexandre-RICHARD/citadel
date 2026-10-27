@@ -1,0 +1,94 @@
+// Les jetons de l'ambiance sont des propriétés enregistrées : une fois typées, elles s'animent d'une ambiance à
+// l'autre (le Layout déclare leurs transitions). Les polices, elles, ne s'animent pas : elles changent pendant un
+// bref fondu (useReskin). Valeurs initiales : celles de la Citadel en sombre
+
+@property --ambiance-background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #100d1c;
+}
+
+@property --ambiance-surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1d1933;
+}
+
+@property --ambiance-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3b3560;
+}
+
+@property --ambiance-text {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f6f3ff;
+}
+
+@property --ambiance-textMuted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #b9b2d9;
+}
+
+@property --ambiance-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff5bd1;
+}
+
+@property --ambiance-accentContent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1a0016;
+}
+
+@property --ambiance-decoration1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7b2ff7;
+}
+
+@property --ambiance-decoration2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f107a3;
+}
+
+@property --ambiance-decoration3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #00b8f0;
+}
+
+@property --ambiance-decoration4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff7a45;
+}
+
+@property --ambiance-radius {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 12px;
+}
+
+@property --ambiance-cut {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --ambiance-fontWeight {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 700;
+}
+
+// Un nombre, multiplié par 1em là où il sert : en longueur, il serait calculé une fois pour toutes sur le Layout
+@property --ambiance-letterSpacing {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.04;
+}

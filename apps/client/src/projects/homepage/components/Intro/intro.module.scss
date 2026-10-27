@@ -1,0 +1,25 @@
+.intro {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background: vars.$background;
+}
+
+.logo {
+  position: relative;
+  width: 22rem;
+  height: 22rem;
+  color: vars.$text;
+
+  @include vars.phone {
+    width: 16rem;
+    height: 16rem;
+  }
+}

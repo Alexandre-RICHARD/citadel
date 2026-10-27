@@ -1,0 +1,87 @@
+// La présentation et la typographie de ses panneaux (accueil et projet, qui l'importent)
+
+.presentation {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: 100cqh;
+  padding: 2.4rem clamp(2.4rem, 5cqw, 8rem) 2.4rem clamp(6.4rem, 5cqw, 8.8rem);
+
+  @include vars.phone {
+    align-items: start;
+    min-height: 0;
+    padding: 0.4rem 1.8rem 3.2rem;
+  }
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 62% 58% at 36% 50%,
+    color-mix(in srgb, vars.$background 74%, transparent) 0%,
+    color-mix(in srgb, vars.$background 42%, transparent) 50%,
+    transparent 78%
+  );
+  // Le voile s'estompe vers la roue, au lieu de s'arrêter net au bord de la colonne
+  mask-image: linear-gradient(to right, transparent, #000 18%);
+
+  @include vars.phone {
+    mask-image: none;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, vars.$background 55%, transparent) 12%,
+      color-mix(in srgb, vars.$background 55%, transparent)
+    );
+  }
+}
+
+.panels {
+  position: relative;
+  display: grid;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: vars.$muted;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 3rem;
+    height: 2px;
+    background: vars.$accent;
+  }
+}
+
+.title {
+  @include vars.display-font(0.5);
+
+  margin: 1.4rem 0 1.8rem;
+  font-size: clamp(3.4rem, 4.2cqw, 6.2rem);
+  line-height: 1.04;
+  text-transform: var(--ambiance-textTransform, none);
+  text-wrap: balance;
+
+  @include vars.phone {
+    margin: 1rem 0 1.4rem;
+    font-size: clamp(2.8rem, 9cqw, 4rem);
+  }
+}
+
+.lead {
+  max-width: 34em;
+  font-size: 1.9rem;
+  line-height: 1.5;
+
+  @include vars.phone {
+    font-size: 1.6rem;
+  }
+}

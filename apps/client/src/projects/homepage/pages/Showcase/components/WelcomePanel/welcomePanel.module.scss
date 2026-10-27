@@ -1,0 +1,30 @@
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 3rem;
+  font-size: 1.5rem;
+  color: vars.$muted;
+}
+
+// La flèche montre la roue : à gauche, ou au-dessus sur téléphone
+.hintArrow {
+  display: inline-grid;
+  color: vars.$accent;
+  animation: nudge 1.8s ease-in-out infinite;
+
+  svg {
+    width: 2.2rem;
+    height: 2.2rem;
+
+    @include vars.phone {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(-0.6rem);
+  }
+}
