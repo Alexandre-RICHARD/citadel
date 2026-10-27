@@ -1,3 +1,4 @@
+import { getIsRecord } from "@citadel/common/src/universal/value/getIsRecord";
 import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type";
 import type { ValidationIssueDto } from "@citadel/specs/src/specUtils/error/validationIssueDto.type";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
@@ -19,15 +20,11 @@ type Options = {
 
 type ErrorBody = Pick<ApiError, "code" | "issues">;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
 // Corps au format ErrorResponseDto ; sinon (page HTML d'un proxy…), ni code ni issues
 async function readErrorBody(response: Response): Promise<ErrorBody> {
 	try {
 		const body: unknown = await response.json();
-		if (isRecord(body) && typeof body.code === "string")
+		if (getIsRecord(body) && typeof body.code === "string")
 			return {
 				code: body.code,
 				issues: Array.isArray(body.issues)

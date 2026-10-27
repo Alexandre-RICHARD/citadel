@@ -1,4 +1,6 @@
 /* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { getIsRecord } from "@citadel/common/src/universal/value/getIsRecord";
+
 import { MAX_FAVORITES } from "../config";
 import { STOP_GROUP_BY_STOP_ID } from "../data/stop-groups";
 import type { Favorite } from "../types/favorite";
@@ -28,10 +30,10 @@ export function toggleFavorite(
 }
 
 function readFavorite(stored: unknown): Favorite | undefined {
-	if (typeof stored !== "object" || stored === null) {
+	if (!getIsRecord(stored)) {
 		return undefined;
 	}
-	const { stopId, routeId, directionId } = stored as Record<string, unknown>;
+	const { stopId, routeId, directionId } = stored;
 	if (
 		typeof stopId !== "string" ||
 		typeof routeId !== "string" ||

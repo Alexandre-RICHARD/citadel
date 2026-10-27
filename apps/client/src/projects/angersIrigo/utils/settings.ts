@@ -1,4 +1,6 @@
 /* eslint-disable citadel/max-one-export -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { getIsRecord } from "@citadel/common/src/universal/value/getIsRecord";
+
 import { TIME_MARKER_STEPS_MINUTES } from "../config";
 import type { Settings } from "../types/settings";
 import type { VehicleFilter } from "../types/vehicle";
@@ -22,10 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
  * Réglage par réglage : ajouter une option ne réinitialise pas les autres.
  */
 export function sanitizeSettings(stored: unknown): Settings {
-	const candidate =
-		typeof stored === "object" && stored !== null
-			? (stored as Record<string, unknown>)
-			: {};
+	const candidate = getIsRecord(stored) ? stored : {};
 	function readBoolean(
 		key: Exclude<keyof Settings, "timeMarkersMinutes">,
 	): boolean {
