@@ -80,12 +80,13 @@ export default defineConfig([
 			"no-alert": "error",
 			"no-console": ["warn", { allow: ["error"] }],
 			"func-style": ["error", "declaration"],
-			// We allow to reassign acc in reduce
+			// We allow to reassign acc in reduce, and context : un contexte de dessin (canvas) se règle par ses
+			// propriétés (fillStyle, lineWidth…)
 			"no-param-reassign": [
 				"error",
 				{
 					props: true,
-					ignorePropertyModificationsFor: ["acc"],
+					ignorePropertyModificationsFor: ["acc", "context"],
 				},
 			],
 			"no-constant-condition": ["error", { checkLoops: "all" }],
