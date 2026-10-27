@@ -1,6 +1,6 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { LoaderCircle } from "lucide-react";
 
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./spinner.module.scss";
 
 /** Roue de chargement, décorative : le texte qui l'accompagne dit ce qui charge */

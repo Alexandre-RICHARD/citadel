@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { Ban, CalendarClock } from "lucide-react";
 
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { formatReleaseDate } from "../../../../helper/format/formatReleaseDate";
 
 // Libellé de `formatReleaseDate` sans date : « à venir »

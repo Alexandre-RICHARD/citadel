@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { dropSeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/dropSeriesEntry";
 import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
 import { getSeriesDrop } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/getSeriesDrop";
@@ -13,7 +14,6 @@ import styles from "../../../../backlog.module.scss";
 import { Callout } from "../../../../components/Callout";
 import { Modal } from "../../../../components/Modal";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { getSeriesOrderConflicts } from "../../../../helper/series/getSeriesOrderConflicts";
 import { ModalActions } from "../ModalActions";
 import { ReleaseDateLabel } from "../ReleaseDateLabel";

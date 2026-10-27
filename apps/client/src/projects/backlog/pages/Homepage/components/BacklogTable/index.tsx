@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import {
 	FunnelX,
 	Gamepad2,
@@ -12,7 +13,6 @@ import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Spinner } from "../../../../components/Spinner";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { getColumnClassNames } from "../../getColumnClassNames";
 import type { TableControls } from "../../tableControls.type";
 import type { TableSettings } from "../../tableSettings.type";

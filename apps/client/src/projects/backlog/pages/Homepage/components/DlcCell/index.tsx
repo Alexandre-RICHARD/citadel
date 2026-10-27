@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { Check, Lock, Plus, Search } from "lucide-react";
 import { useRef } from "react";
 
@@ -6,7 +7,6 @@ import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.ty
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Popover } from "../../../../components/Popover";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { formatDlcProgress } from "../../../../helper/format/formatDlcProgress";
 import type { TableControls } from "../../tableControls.type";
 import { DlcDoneCheckbox } from "../DlcDoneCheckbox";

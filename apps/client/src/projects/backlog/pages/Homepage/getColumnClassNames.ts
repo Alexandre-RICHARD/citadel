@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 
 import styles from "../../backlog.module.scss";
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 
 // Alignement des colonnes : les nombres à droite, les cases et les petites valeurs au centre
 const columnAlignments: Partial<Record<BacklogColumnEnum, string | undefined>> =

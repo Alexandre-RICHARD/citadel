@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { CircleAlert, Database, Search, SearchX, X } from "lucide-react";
 import {
 	type ReactNode,
@@ -15,7 +16,6 @@ import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Spinner } from "../../../../components/Spinner";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { navigateResults } from "../../../../helper/list/navigateResults";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
 import { useActiveIndex } from "../../../../hooks/useActiveIndex";

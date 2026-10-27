@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import type { LucideIcon } from "lucide-react";
 import { useId } from "react";
 
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./segmentedControl.module.scss";
 
 type Props<V extends string> = {

@@ -1,9 +1,9 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { Cpu } from "lucide-react";
 
 import type { PlatformFm } from "../../../../api/model/platformFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 
 // Icônes embarquées dans `icons/` du projet, nommées par le nom technique de leur plateforme (ex. `ps2.svg`)
 const platformIconUrls = import.meta.glob<string>("../../../../icons/*.svg", {

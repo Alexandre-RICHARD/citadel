@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import type { ReactNode } from "react";
 
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 
 type Props = {
 	label: string;

@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronDown, ChevronUp, Columns3 } from "lucide-react";
 
@@ -5,7 +6,6 @@ import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Checkbox } from "../../../../components/Checkbox";
 import { Modal } from "../../../../components/Modal";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { columnLabels } from "../../../../helper/label/columnLabels";
 import type { ColumnSetting } from "../../../../helper/view/columnSetting.type";
 

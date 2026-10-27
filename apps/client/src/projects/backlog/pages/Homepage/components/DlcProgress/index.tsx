@@ -1,5 +1,6 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
+
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { formatDlcProgress } from "../../../../helper/format/formatDlcProgress";
 
 type Props = {

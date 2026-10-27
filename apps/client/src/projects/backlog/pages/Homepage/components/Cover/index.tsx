@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { ImageOff } from "lucide-react";
 
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { getIgdbImageUrl } from "../../../../helper/image/getIgdbImageUrl";
 import { IgdbImageSizeEnum } from "../../../../helper/image/igdbImageSize.enum";
 

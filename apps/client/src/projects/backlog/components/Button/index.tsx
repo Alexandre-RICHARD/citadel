@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import type { LucideIcon } from "lucide-react";
 import type {
 	KeyboardEvent,
@@ -7,7 +8,6 @@ import type {
 	Ref,
 } from "react";
 
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import type { PopoverPlacement } from "../Popover/popoverPlacement.type";
 import { Spinner } from "../Spinner";
 import { Tooltip } from "../Tooltip";

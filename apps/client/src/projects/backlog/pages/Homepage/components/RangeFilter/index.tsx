@@ -1,10 +1,10 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { ChevronDown } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 
 import styles from "../../../../backlog.module.scss";
 import { Popover } from "../../../../components/Popover";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 
 type Props = {
 	label: string;

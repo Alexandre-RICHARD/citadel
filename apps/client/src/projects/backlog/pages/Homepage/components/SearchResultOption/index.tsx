@@ -1,9 +1,9 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { CornerDownRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { Thumbnail } from "../Thumbnail";
 
 // La liste n'affiche que les 3 premières plateformes, puis le nombre restant

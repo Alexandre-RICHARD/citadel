@@ -1,4 +1,5 @@
 import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
@@ -19,7 +20,6 @@ import { NumberField } from "../../../../components/NumberField";
 import { Select } from "../../../../components/Select";
 import { TextField } from "../../../../components/TextField";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { formatDuration } from "../../../../helper/format/formatDuration";
 import { formatFinishCount } from "../../../../helper/format/formatFinishCount";
 import { statusLabels } from "../../../../helper/label/statusLabels";

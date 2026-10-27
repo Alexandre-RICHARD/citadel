@@ -1,5 +1,6 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
+
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 
 // Teinte de la note : vert à partir de 16, sarcelle à 12, ambre à 8, rouge en dessous
 function getRatingTone(rating: number): string | undefined {

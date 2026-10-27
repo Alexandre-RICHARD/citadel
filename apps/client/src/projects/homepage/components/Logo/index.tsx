@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { type Ref, useId } from "react";
 
 import styles from "./logo.module.scss";
@@ -19,7 +20,7 @@ export function Logo({ ref, className }: Props) {
 	return (
 		<svg
 			ref={ref}
-			className={[styles.logo, className].filter(Boolean).join(" ")}
+			className={joinClassNames(styles.logo, className)}
 			viewBox="-10.5 -10.5 21 21"
 			aria-hidden
 		>

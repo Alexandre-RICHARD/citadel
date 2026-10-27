@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import {
 	BadgeCheck,
@@ -14,7 +15,6 @@ import {
 } from "lucide-react";
 
 import styles from "../../../../backlog.module.scss";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { statusLabels } from "../../../../helper/label/statusLabels";
 
 // Icône et teinte de chaque statut : du gris (pas commencé) à l'or (complété et platiné), rouge pour abandonné

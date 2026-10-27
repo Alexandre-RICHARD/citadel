@@ -1,11 +1,11 @@
 import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { CalendarDays, ExternalLink, Puzzle } from "lucide-react";
 
 import type { GamePreviewFm } from "../../../../api/model/gamePreviewFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Callout } from "../../../../components/Callout";
 import { Checkbox } from "../../../../components/Checkbox";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import type { ImportSelection } from "../../importSelection.type";
 import { CompanyLabel } from "../CompanyLabel";
 import { Cover } from "../Cover";

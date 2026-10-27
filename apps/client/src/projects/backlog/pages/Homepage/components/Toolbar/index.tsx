@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import {
 	Castle,
@@ -19,7 +20,6 @@ import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import type { BacklogModal } from "../../backlogModal.type";
 import { SearchBar } from "../SearchBar";
 

@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import {
 	type KeyboardEvent,
 	type ReactNode,
@@ -8,7 +9,6 @@ import {
 import { createPortal } from "react-dom";
 
 import { getFocusableElements } from "../../helper/dom/getFocusableElements";
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./popover.module.scss";
 import type { PopoverPlacement } from "./popoverPlacement.type";
 import { usePopover } from "./usePopover";

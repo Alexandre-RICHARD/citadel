@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
@@ -5,7 +6,6 @@ import { useState } from "react";
 
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
 import { useDebouncedCallback } from "../../../../hooks/useDebouncedCallback";
 

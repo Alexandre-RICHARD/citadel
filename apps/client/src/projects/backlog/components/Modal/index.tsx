@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { type LucideIcon, X } from "lucide-react";
 import {
 	type ReactNode,
@@ -8,7 +9,6 @@ import {
 } from "react";
 
 import { getFocusableElements } from "../../helper/dom/getFocusableElements";
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Button } from "../Button";
 import styles from "./modal.module.scss";
 

@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
 import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
@@ -18,7 +19,6 @@ import { SegmentedControl } from "../../../../components/SegmentedControl";
 import { Select } from "../../../../components/Select";
 import type { SelectOption } from "../../../../components/Select/selectOption.type";
 import { Spinner } from "../../../../components/Spinner";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { endingTypeIcons } from "../../../../helper/label/endingTypeIcons";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
 import type { CustomizationDraft } from "../../../../helper/series/customizationDraft.type";

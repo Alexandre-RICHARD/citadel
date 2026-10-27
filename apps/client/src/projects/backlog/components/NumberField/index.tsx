@@ -1,5 +1,6 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
+
 import { blurOnEnter } from "../../helper/dom/blurOnEnter";
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./numberField.module.scss";
 
 type Props = {

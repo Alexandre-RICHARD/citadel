@@ -1,10 +1,10 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
 import { parseSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/parseSeriesNumber";
 import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/seriesEntry.type";
 
 import styles from "../../../../backlog.module.scss";
 import { blurOnEnter } from "../../../../helper/dom/blurOnEnter";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 
 type Props = {
 	value: number | null;

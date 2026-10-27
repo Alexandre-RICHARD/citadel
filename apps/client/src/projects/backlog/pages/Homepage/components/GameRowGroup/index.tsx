@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronRight, CornerDownRight, Layers, Pencil } from "lucide-react";
 import type { ReactNode } from "react";
@@ -6,7 +7,6 @@ import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import type { TableControls } from "../../tableControls.type";
 import { ActionsCell } from "../ActionsCell";
 import { CompanyLabel } from "../CompanyLabel";

@@ -1,3 +1,4 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SortDirectionEnum } from "@citadel/specs/src/projects/backlog/enum/sortDirection.enum";
@@ -18,7 +19,6 @@ import type { ReactNode } from "react";
 
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
-import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { columnLabels } from "../../../../helper/label/columnLabels";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
 import { statusLabels } from "../../../../helper/label/statusLabels";

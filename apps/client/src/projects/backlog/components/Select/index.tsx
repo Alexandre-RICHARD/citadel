@@ -1,7 +1,7 @@
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { Check, ChevronDown } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
 
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Popover } from "../Popover";
 import styles from "./select.module.scss";
 import type { SelectOption } from "./selectOption.type";

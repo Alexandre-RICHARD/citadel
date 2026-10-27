@@ -1,9 +1,9 @@
 import { splitMinutesIntoHours } from "@citadel/common/src/universal/date/splitMinutesIntoHours";
 import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros";
+import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { useRef } from "react";
 
 import { blurOnEnter } from "../../helper/dom/blurOnEnter";
-import { joinClassNames } from "../../helper/dom/joinClassNames";
 import styles from "./durationField.module.scss";
 
 type Props = {
