@@ -1,3 +1,4 @@
+import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
@@ -18,7 +19,6 @@ import { NumberField } from "../../../../components/NumberField";
 import { Select } from "../../../../components/Select";
 import { TextField } from "../../../../components/TextField";
 import { Tooltip } from "../../../../components/Tooltip";
-import { formatIsoDate } from "../../../../helper/date/formatIsoDate";
 import { joinClassNames } from "../../../../helper/dom/joinClassNames";
 import { formatDuration } from "../../../../helper/format/formatDuration";
 import { formatFinishCount } from "../../../../helper/format/formatFinishCount";
@@ -158,7 +158,7 @@ export function UserVersionDataCell({
 			if (editableUserVersion === null)
 				return values.finishDate === null ? null : (
 					<span className={styles.number}>
-						{formatIsoDate(values.finishDate)}
+						{formatShortIsoDate(values.finishDate)}
 					</span>
 				);
 			return (

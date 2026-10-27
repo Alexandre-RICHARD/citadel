@@ -1,6 +1,7 @@
+import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
+
 import type { VersionPlatformFm } from "../../../../api/model/versionPlatformFm.type";
 import styles from "../../../../backlog.module.scss";
-import { formatIsoDate } from "../../../../helper/date/formatIsoDate";
 
 // Plateformes d'une version avec leur date de sortie, ex. « PS3 11/11/2011 · PC 11/11/2011 »
 export function VersionPlatformDates({
@@ -19,7 +20,7 @@ export function VersionPlatformDates({
 					<span className={styles.number}>
 						{releaseDate === null
 							? "date inconnue"
-							: formatIsoDate(releaseDate)}
+							: formatShortIsoDate(releaseDate)}
 					</span>
 				</span>
 			))}

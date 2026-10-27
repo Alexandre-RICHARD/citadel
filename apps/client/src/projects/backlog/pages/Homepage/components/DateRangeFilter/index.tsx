@@ -1,10 +1,10 @@
+import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
 import styles from "../../../../backlog.module.scss";
 import { DateField } from "../../../../components/DateField";
-import { formatIsoDate } from "../../../../helper/date/formatIsoDate";
 import { formatRangeSummary } from "../../../../helper/format/formatRangeSummary";
 import { FormField } from "../FormField";
 import { RangeFilter } from "../RangeFilter";
@@ -41,8 +41,8 @@ export function DateRangeFilter({ column, filter, label, onChange }: Props) {
 		<RangeFilter
 			label={label}
 			summary={formatRangeSummary(
-				from === null ? null : formatIsoDate(from),
-				to === null ? null : formatIsoDate(to),
+				from === null ? null : formatShortIsoDate(from),
+				to === null ? null : formatShortIsoDate(to),
 			)}
 		>
 			<FormField label="Depuis">

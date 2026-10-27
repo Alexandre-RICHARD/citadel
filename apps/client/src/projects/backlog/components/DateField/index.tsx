@@ -1,7 +1,7 @@
+import type { IsoDate } from "@citadel/common/src/universal/date/isoDate.type";
 import { CalendarDays } from "lucide-react";
 import { useId, useRef } from "react";
 
-import type { IsoDate } from "../../helper/date/isoDate.type";
 import { blurOnEnter } from "../../helper/dom/blurOnEnter";
 import { joinClassNames } from "../../helper/dom/joinClassNames";
 import { Calendar } from "../Calendar";

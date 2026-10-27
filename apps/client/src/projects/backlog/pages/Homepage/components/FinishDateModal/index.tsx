@@ -1,10 +1,10 @@
+import { getTodayIsoDate } from "@citadel/common/src/universal/date/getTodayIsoDate";
 import { Flag } from "lucide-react";
 import { useState } from "react";
 
 import styles from "../../../../backlog.module.scss";
 import { DateField } from "../../../../components/DateField";
 import { Modal } from "../../../../components/Modal";
-import { getTodayIsoDate } from "../../../../helper/date/getTodayIsoDate";
 import { FormField } from "../FormField";
 import { ModalActions } from "../ModalActions";
 

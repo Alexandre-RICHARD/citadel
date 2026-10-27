@@ -1,11 +1,9 @@
-function pad(n: number, length = 2): string {
-	return String(n).padStart(length, "0");
-}
+import { padWithZeros } from "../number/padWithZeros.ts";
+import { formatLocalIsoDate } from "./formatLocalIsoDate.ts";
 
 // Valeur d'un <input type="datetime-local"> (AAAA-MM-JJTHH:MM, heure locale). Chaîne vide, qui vide le champ, si la date est invalide
 export function toDateTimeInputValue(iso: string | Date): string {
-	const d = new Date(iso);
-	if (Number.isNaN(d.getTime())) return "";
-
-	return `${pad(d.getFullYear(), 4)}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+	const date = new Date(iso);
+	if (Number.isNaN(date.getTime())) return "";
+	return `${formatLocalIsoDate(date)}T${padWithZeros(date.getHours())}:${padWithZeros(date.getMinutes())}`;
 }

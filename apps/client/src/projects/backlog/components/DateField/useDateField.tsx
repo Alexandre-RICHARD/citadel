@@ -1,7 +1,6 @@
+import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
+import type { IsoDate } from "@citadel/common/src/universal/date/isoDate.type";
 import { useState } from "react";
-
-import { formatIsoDate } from "../../helper/date/formatIsoDate";
-import type { IsoDate } from "../../helper/date/isoDate.type";
 
 function pad(value: number): string {
 	return String(value).padStart(2, "0");
@@ -73,7 +72,7 @@ export function useDateField({
 	commitOn: "blur" | "change";
 	isNullable: boolean;
 }) {
-	const formattedValue = value === null ? "" : formatIsoDate(value);
+	const formattedValue = value === null ? "" : formatShortIsoDate(value);
 	const [text, setText] = useState(formattedValue);
 	const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 	// Une nouvelle valeur venue d'ailleurs (annulation, autre champ) remplace la saisie
@@ -123,14 +122,14 @@ export function useDateField({
 			setText(formattedValue);
 			return;
 		}
-		setText(formatIsoDate(date));
+		setText(formatShortIsoDate(date));
 		if (commitOn === "blur") {
 			commit(date);
 		}
 	}
 
 	function selectDate(date: IsoDate) {
-		setText(formatIsoDate(date));
+		setText(formatShortIsoDate(date));
 		setIsCalendarOpen(false);
 		commit(date);
 	}
