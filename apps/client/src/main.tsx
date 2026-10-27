@@ -9,6 +9,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 
 import { tanStackQueryClient } from "./configuration/tanStackQueryClient";
+import { ProjectTransition } from "./react/appNavigation/projectTransition/ProjectTransition";
 import { router } from "./react/appNavigation/routes";
 
 createRoot(document.getElementById("root")!).render(
@@ -16,6 +17,8 @@ createRoot(document.getElementById("root")!).render(
 		<ThemeProvider theme={defaultTheme}>
 			<QueryClientProvider client={tanStackQueryClient}>
 				<RouterProvider router={router} />
+				{/* Hors du routeur : le rideau des transitions survit au changement de page */}
+				<ProjectTransition />
 			</QueryClientProvider>
 		</ThemeProvider>
 	</StrictMode>,

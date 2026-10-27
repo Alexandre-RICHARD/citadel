@@ -1,0 +1,57 @@
+@use "../../../../styles/zIndex.scss";
+
+// Par-dessus tout, cartes et barres collantes des projets comprises
+.canvas {
+  position: fixed;
+  inset: 0;
+  z-index: zIndex.$projectTransitionZIndex;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.tip {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: zIndex.$projectTransitionZIndex + 1;
+  width: min(52rem, calc(100% - 4.8rem));
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--theme-colorText);
+  font-family: var(--theme-fontFamilyPrimary);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tipLabel {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--theme-colorTextMuted);
+}
+
+.tipTitle {
+  display: block;
+  margin-bottom: 1.4rem;
+  font-family: var(--theme-fontFamilySecondary);
+  font-weight: var(--theme-fontWeightDisplay);
+  font-size: 2.8rem;
+  letter-spacing: var(--theme-letterSpacingDisplay);
+  text-transform: var(--theme-textTransformDisplay);
+}
+
+.tipText {
+  font-size: 1.6rem;
+  line-height: 1.5;
+
+  b {
+    color: var(--theme-colorPrimaryHue);
+  }
+}
