@@ -1,3 +1,4 @@
+import { readCookieValue } from "@citadel/common/src/universal/cookie/readCookieValue.ts";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
@@ -6,7 +7,6 @@ import { env } from "../configuration/env.ts";
 import { HttpError } from "../http/HttpError.ts";
 import { writeAuditLog } from "../http/writeAuditLog.ts";
 import { loginThrottle } from "./loginThrottle.ts";
-import { readCookie } from "./readCookie.ts";
 import { requireSession } from "./requireSession.ts";
 import { SESSION_COOKIE_NAME } from "./sessionCookieName.ts";
 import { sessionStore } from "./sessionStore.ts";
@@ -54,7 +54,9 @@ authRouter.post("/api/login", (request, response) => {
 });
 
 authRouter.post("/api/logout", (request, response) => {
-	sessionStore.delete(readCookie(request.headers.cookie, SESSION_COOKIE_NAME));
+	sessionStore.delete(
+		readCookieValue(request.headers.cookie, SESSION_COOKIE_NAME),
+	);
 	response.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
 	response.status(204).end();
 });

@@ -1,7 +1,7 @@
+import { readCookieValue } from "@citadel/common/src/universal/cookie/readCookieValue.ts";
 import type { NextFunction, Request, Response } from "express";
 
 import { HttpError } from "../http/HttpError.ts";
-import { readCookie } from "./readCookie.ts";
 import { SESSION_COOKIE_NAME } from "./sessionCookieName.ts";
 import { sessionStore } from "./sessionStore.ts";
 
@@ -12,7 +12,7 @@ export function requireSession(
 	_response: Response,
 	next: NextFunction,
 ): void {
-	const token = readCookie(request.headers.cookie, SESSION_COOKIE_NAME);
+	const token = readCookieValue(request.headers.cookie, SESSION_COOKIE_NAME);
 	if (!sessionStore.isValid(token))
 		throw new HttpError(401, "Connexion requise");
 	next();
