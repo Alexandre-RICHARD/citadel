@@ -1,6 +1,6 @@
 import { getFamily } from "./getFamily.ts";
 import { getSeriesBlock } from "./getSeriesBlock.ts";
-import { getSubPart } from "./getSubPart.ts";
+import { isSeriesSubNumber } from "./isSeriesSubNumber.ts";
 import type { SeriesDrop } from "./seriesDrop.type.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
@@ -27,7 +27,7 @@ export function getSeriesDrop(
 		above !== null &&
 		below !== null &&
 		getFamily(above.seriesNumber) === getFamily(below.seriesNumber) &&
-		getSubPart(below.seriesNumber) > 0;
+		isSeriesSubNumber(below.seriesNumber);
 
 	return {
 		block,

@@ -1,5 +1,5 @@
 import { getFamily } from "./getFamily.ts";
-import { getSubPart } from "./getSubPart.ts";
+import { isSeriesSubNumber } from "./isSeriesSubNumber.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 
 // Ce qui bouge avec un jeu : un principal emmène les sous-jeux de sa famille ; un sous-jeu bouge seul
@@ -11,12 +11,13 @@ export function getSeriesBlock(
 	if (moved === undefined) return [];
 
 	const family = getFamily(moved.seriesNumber);
-	return getSubPart(moved.seriesNumber) === 0
+	return !isSeriesSubNumber(moved.seriesNumber)
 		? [
 				moved,
 				...entries.filter(
 					({ seriesNumber }) =>
-						getFamily(seriesNumber) === family && getSubPart(seriesNumber) > 0,
+						getFamily(seriesNumber) === family &&
+						isSeriesSubNumber(seriesNumber),
 				),
 			]
 		: [moved];

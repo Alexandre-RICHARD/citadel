@@ -7,6 +7,7 @@ import { hasMain } from "./hasMain.ts";
 import { insertFamily } from "./insertFamily.ts";
 import { insertSub } from "./insertSub.ts";
 import { insertSubsAfter } from "./insertSubsAfter.ts";
+import { isSeriesSubNumber } from "./isSeriesSubNumber.ts";
 import { isSubPartUsed } from "./isSubPartUsed.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { SeriesNumberScaleEnum } from "./seriesNumberScale.enum.ts";
@@ -33,7 +34,7 @@ export function dropSeriesEntry(
 	const [head, ...subs] = block;
 	if (head === undefined) return entries;
 
-	const isMain = getSubPart(head.seriesNumber) === 0;
+	const isMain = !isSeriesSubNumber(head.seriesNumber);
 	let placed: SeriesEntry[] | null;
 	if (above === null || !isSub) {
 		const aboveFamily = above === null ? 0 : getFamily(above.seriesNumber);

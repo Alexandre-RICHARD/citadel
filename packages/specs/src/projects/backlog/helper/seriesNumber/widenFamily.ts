@@ -1,6 +1,7 @@
 import { getFamily } from "./getFamily.ts";
 import { getFamilyDigits } from "./getFamilyDigits.ts";
 import { getSubPart } from "./getSubPart.ts";
+import { isSeriesSubNumber } from "./isSeriesSubNumber.ts";
 import type { SeriesEntry } from "./seriesEntry.type.ts";
 import { SeriesNumberScaleEnum } from "./seriesNumberScale.enum.ts";
 import { toSeriesNumber } from "./toSeriesNumber.ts";
@@ -21,7 +22,7 @@ export function widenFamily(
 
 	return entries.map((entry) =>
 		getFamily(entry.seriesNumber) === family &&
-		getSubPart(entry.seriesNumber) > 0
+		isSeriesSubNumber(entry.seriesNumber)
 			? {
 					...entry,
 					seriesNumber: toSeriesNumber(
