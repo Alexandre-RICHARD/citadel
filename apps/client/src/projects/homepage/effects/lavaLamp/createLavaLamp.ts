@@ -1,3 +1,4 @@
+import { easeInOutSine } from "@citadel/common/src/universal/animation/easeInOutSine";
 import { hexToRgb } from "@citadel/common/src/universal/color/hexToRgb";
 
 import { buildLavaFragmentShader } from "./buildLavaFragmentShader";
@@ -33,13 +34,6 @@ function mixRgb(from: Rgb, to: Rgb, ratio: number): Rgb {
 		from[1] + (to[1] - from[1]) * ratio,
 		from[2] + (to[2] - from[2]) * ratio,
 	];
-}
-
-// Départ et arrivée en douceur
-function easeInOutSine(progress: number): number {
-	if (progress <= 0) return 0;
-	if (progress >= 1) return 1;
-	return 0.5 - 0.5 * Math.cos(Math.PI * progress);
 }
 
 function compileShader(
