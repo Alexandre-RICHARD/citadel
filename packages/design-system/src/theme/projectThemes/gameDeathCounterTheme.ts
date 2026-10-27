@@ -2,8 +2,9 @@ import type { ThemeDefinitionType } from "../themeDefinition.type";
 
 // Game Death Counter : noir et braise, or des Souls, titres gravés, aucun arrondi
 export const gameDeathCounterTheme: ThemeDefinitionType = {
+	// EB Garamond ne sert qu'à son ambiance : le navigateur ne télécharge une police que si elle s'affiche
 	fontStylesheet:
-		"https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@400..700&family=JetBrains+Mono:wght@500;600&display=swap",
+		"https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Inter:wght@400..700&family=JetBrains+Mono:wght@500;600&display=swap",
 	shared: {
 		fontFamilyPrimary: '"Inter", system-ui, sans-serif',
 		fontFamilySecondary: '"Cinzel", serif',
@@ -63,6 +64,22 @@ export const gameDeathCounterTheme: ThemeDefinitionType = {
 			colorDecoration2: "#f59e0b",
 			colorDecoration3: "#9f1d0b",
 			colorDecoration4: "#ffbe55",
+		},
+	},
+	// Son ambiance : un texte en Garamond, et l'orange de la braise à la place de l'or
+	ambiance: {
+		shared: {
+			fontFamilyPrimary: '"EB Garamond", serif',
+		},
+		colors: {
+			light: {
+				colorPrimaryHue: "#c2410c",
+				colorPrimaryContent: "#ffffff",
+			},
+			dark: {
+				colorPrimaryHue: "#ff7a1a",
+				colorPrimaryContent: "#1a0b02",
+			},
 		},
 	},
 };

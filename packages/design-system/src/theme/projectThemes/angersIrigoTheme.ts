@@ -59,4 +59,20 @@ export const angersIrigoTheme: ThemeDefinitionType = {
 			colorDecoration4: "#94499a",
 		},
 	},
+	// Son ambiance : tout en Overpass ; en sombre, le jaune vif à la place du bleu, en clair l'indigo de la ligne A
+	ambiance: {
+		shared: {
+			fontFamilyPrimary: '"Overpass", system-ui, sans-serif',
+		},
+		colors: {
+			light: {
+				colorPrimaryHue: "#312783",
+				colorPrimaryContent: "#ffffff",
+			},
+			dark: {
+				colorPrimaryHue: "#ffe600",
+				colorPrimaryContent: "#1d1d1b",
+			},
+		},
+	},
 };
