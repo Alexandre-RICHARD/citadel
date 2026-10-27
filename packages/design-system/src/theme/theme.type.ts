@@ -34,10 +34,19 @@ export type ThemeType = {
 	colorConstructiveStrong: string;
 	colorConstructiveSubtle: string;
 	colorConstructiveContent: string;
-	// Polices
+	// Décoration : les couleurs d'identité, pour les illustrations et les fonds animés
+	colorDecoration1: string;
+	colorDecoration2: string;
+	colorDecoration3: string;
+	colorDecoration4: string;
+	// Polices : Primary pour le texte courant, Secondary pour les titres, Mono pour les chiffres et le code
 	fontFamilyPrimary: string;
 	fontFamilySecondary: string;
 	fontFamilyMono: string;
+	// Titres : graisse, approche et casse
+	fontWeightDisplay: string;
+	letterSpacingDisplay: string;
+	textTransformDisplay: string;
 	// Tailles de police
 	fontSizeXXS: string;
 	fontSizeXS: string;
@@ -58,4 +67,6 @@ export type ThemeType = {
 	radiusM: string;
 	radiusL: string;
 	radiusFull: string;
+	// Coins coupés en biseau : 0 pour des coins droits
+	cornerCut: string;
 };
