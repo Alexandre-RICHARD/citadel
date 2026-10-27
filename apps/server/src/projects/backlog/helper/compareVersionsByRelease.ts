@@ -1,3 +1,5 @@
+import { getEarliestIsoDate } from "@citadel/common/src/universal/date/getEarliestIsoDate.ts";
+
 import type { VersionPlatformBean } from "../bean/versionPlatformBean.type.ts";
 
 type SortableVersion = {
@@ -7,12 +9,8 @@ type SortableVersion = {
 
 // Plus ancienne sortie de la version, toutes plateformes confondues ; null sans date connue
 function getFirstReleaseDate(version: SortableVersion): string | null {
-	return version.platforms.reduce<string | null>(
-		(earliest, { releaseDate }) =>
-			releaseDate !== null && (earliest === null || releaseDate < earliest)
-				? releaseDate
-				: earliest,
-		null,
+	return getEarliestIsoDate(
+		version.platforms.map(({ releaseDate }) => releaseDate),
 	);
 }
 

@@ -1,18 +1,10 @@
+import { getEarliestIsoDate } from "@citadel/common/src/universal/date/getEarliestIsoDate.ts";
 import { sum } from "@citadel/common/src/universal/number/sum.ts";
 
 import { getGameStatus } from "../status/getGameStatus.ts";
 import type { AggregatedUserVersion } from "./aggregatedUserVersion.type.ts";
 import { countDoneDlcs } from "./countDoneDlcs.ts";
 import type { UserGameAggregates } from "./userGameAggregates.type.ts";
-
-// Dates ISO : l'ordre du texte est celui du calendrier
-function getEarliestIsoDate(dates: (string | null)[]): string | null {
-	return dates.reduce<string | null>(
-		(earliest, date) =>
-			date !== null && (earliest === null || date < earliest) ? date : earliest,
-		null,
-	);
-}
 
 function getHighestValue(values: (number | null)[]): number | null {
 	const knownValues = values.filter((value) => value !== null);
