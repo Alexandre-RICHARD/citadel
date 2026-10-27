@@ -1,5 +1,7 @@
 .confirmDialog {
   width: min(420px, calc(100vw - 32px));
+  // Le navigateur centre une modale par ses marges automatiques, que le reset (margin: 0 sur *) retire
+  margin: auto;
   padding: 20px;
   border-radius: var(--theme-radiusL);
   border: 1px solid var(--theme-colorBorder);
