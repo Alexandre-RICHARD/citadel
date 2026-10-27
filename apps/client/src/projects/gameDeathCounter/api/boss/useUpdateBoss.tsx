@@ -1,8 +1,8 @@
+import { locateById } from "@citadel/common/src/universal/array/locateById";
 import type { UpdateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { locateById } from "../../../../common/api/cache/locateById";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
 import { forgetGoneResource } from "../cache/forgetGoneResource";
 import { getCachedBosses } from "../cache/getCachedBosses";

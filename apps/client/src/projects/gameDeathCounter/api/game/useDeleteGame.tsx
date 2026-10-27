@@ -1,12 +1,12 @@
+import { insertAt } from "@citadel/common/src/universal/array/insertAt";
+import { locateById } from "@citadel/common/src/universal/array/locateById";
+import type { LocatedItem } from "@citadel/common/src/universal/array/locatedItem.type";
+import { removeById } from "@citadel/common/src/universal/array/removeById";
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummaryDto.type";
 import type { DeleteGame } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/deleteGame/deleteGameEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { insertAt } from "../../../../common/api/cache/insertAt";
-import { locateById } from "../../../../common/api/cache/locateById";
-import type { LocatedItem } from "../../../../common/api/cache/locatedItem.type";
-import { removeById } from "../../../../common/api/cache/removeById";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
 import { forgetGame } from "../cache/forgetGame";
 import { forgetGoneResource } from "../cache/forgetGoneResource";

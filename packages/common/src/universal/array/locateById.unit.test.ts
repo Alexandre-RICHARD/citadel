@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { locateById } from "./locateById";
+import { locateById } from "./locateById.ts";
 
 describe("locateById.ts", () => {
 	describe("found item", () => {

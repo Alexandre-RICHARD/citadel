@@ -1,6 +1,6 @@
+import { removeById } from "@citadel/common/src/universal/array/removeById";
 import type { QueryClient } from "@tanstack/react-query";
 
-import { removeById } from "../../../../common/api/cache/removeById";
 import { gameDeathCounterQueryKeys } from "../gameDeathCounterQueryKeys";
 import { getCachedBosses } from "./getCachedBosses";
 import { updateCachedGames } from "./updateCachedGames";

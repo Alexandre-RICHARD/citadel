@@ -1,11 +1,11 @@
+import { removeById } from "@citadel/common/src/universal/array/removeById";
+import { replaceById } from "@citadel/common/src/universal/array/replaceById";
 import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/bossSummaryDto.type";
 import type { CreateBossBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossBodyDto.type";
 import type { CreateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/createBoss/createBossEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { removeById } from "../../../../common/api/cache/removeById";
-import { replaceById } from "../../../../common/api/cache/replaceById";
 import { createTemporaryId } from "../../../../common/api/mutation/createTemporaryId";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
 import { forgetGoneResource } from "../cache/forgetGoneResource";

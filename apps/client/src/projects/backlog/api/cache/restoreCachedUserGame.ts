@@ -1,7 +1,7 @@
+import { insertAt } from "@citadel/common/src/universal/array/insertAt";
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type";
 import type { QueryClient } from "@tanstack/react-query";
 
-import { insertAt } from "../../../../common/api/cache/insertAt";
 import type { RemovedUserGamePosition } from "./removedUserGamePosition.type";
 import type { UserGameListData } from "./userGameListData.type";
 

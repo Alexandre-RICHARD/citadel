@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { replaceById } from "./replaceById";
+import { replaceById } from "./replaceById.ts";
 
 const ITEMS = [
 	{ id: 1, name: "Hades" },

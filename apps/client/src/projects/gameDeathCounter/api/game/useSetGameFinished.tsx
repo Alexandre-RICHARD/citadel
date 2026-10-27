@@ -1,9 +1,9 @@
+import { locateById } from "@citadel/common/src/universal/array/locateById";
 import type { SetGameFinishedBodyDto } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedBodyDto.type";
 import type { SetGameFinished } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/setGameFinished/setGameFinishedEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { locateById } from "../../../../common/api/cache/locateById";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
 import { forgetGoneResource } from "../cache/forgetGoneResource";
 import { getCachedGames } from "../cache/getCachedGames";

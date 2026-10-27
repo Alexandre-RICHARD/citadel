@@ -1,10 +1,10 @@
+import { insertAt } from "@citadel/common/src/universal/array/insertAt";
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type";
 import type { UserVersionDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userVersionDto.type";
 import type { DeleteUserVersion } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/deleteUserVersion/deleteUserVersionEndpoint.interface";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
-import { insertAt } from "../../../../common/api/cache/insertAt";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
 import { backlogErrorReasons } from "../backlogErrorReasons";
 import { backlogQueryKeys } from "../backlogQueryKeys";

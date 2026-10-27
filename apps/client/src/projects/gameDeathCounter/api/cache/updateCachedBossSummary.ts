@@ -1,7 +1,7 @@
+import { replaceById } from "@citadel/common/src/universal/array/replaceById";
 import type { BossSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/boss/bossSummaryDto.type";
 import type { QueryClient } from "@tanstack/react-query";
 
-import { replaceById } from "../../../../common/api/cache/replaceById";
 import { updateCachedGame } from "./updateCachedGame";
 
 type Ids = { gameId: number; bossId: number };

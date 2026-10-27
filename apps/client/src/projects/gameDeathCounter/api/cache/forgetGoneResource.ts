@@ -1,7 +1,7 @@
+import { removeById } from "@citadel/common/src/universal/array/removeById";
 import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum";
 import type { QueryClient } from "@tanstack/react-query";
 
-import { removeById } from "../../../../common/api/cache/removeById";
 import type { ApiError } from "../../../../common/api/error/ApiError";
 import { forgetBoss } from "./forgetBoss";
 import { forgetGame } from "./forgetGame";

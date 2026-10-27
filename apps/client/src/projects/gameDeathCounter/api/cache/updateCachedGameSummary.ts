@@ -1,7 +1,7 @@
+import { replaceById } from "@citadel/common/src/universal/array/replaceById";
 import type { GameSummaryDto } from "@citadel/specs/src/projects/gameDeathCounter/dto/game/gameSummaryDto.type";
 import type { QueryClient } from "@tanstack/react-query";
 
-import { replaceById } from "../../../../common/api/cache/replaceById";
 import { updateCachedGames } from "./updateCachedGames";
 
 // Un jeu de la liste

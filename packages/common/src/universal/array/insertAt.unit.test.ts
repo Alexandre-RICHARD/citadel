@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { insertAt } from "./insertAt";
+import { insertAt } from "./insertAt.ts";
 
 describe("insertAt.ts", () => {
 	describe("insertion", () => {

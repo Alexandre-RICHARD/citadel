@@ -1,4 +1,4 @@
-import type { LocatedItem } from "./locatedItem.type";
+import type { LocatedItem } from "./locatedItem.type.ts";
 
 export function locateById<Item extends { id: number }>(
 	items: readonly Item[] | undefined,

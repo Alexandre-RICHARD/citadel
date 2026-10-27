@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { removeById } from "./removeById";
+import { removeById } from "./removeById.ts";
 
 describe("removeById.ts", () => {
 	describe("removal", () => {
