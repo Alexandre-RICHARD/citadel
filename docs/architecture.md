@@ -136,10 +136,10 @@ src/
 │   │   ├── index.tsx
 │   │   └── components/<Composant>/index.tsx
 │   ├── helper/, hooks/
-│   ├── theme.ts            jetons du design system propres au projet
 │   └── variables.scss, *.module.scss   variables et feuille partagée du projet
 ├── common/                 api/ (fetch, cache, mutation, erreurs), validation, toast
-├── react/                  AppContainer, ErrorBoundary, QueryErrorBoundary, AppToaster, appNavigation (routes, fiche de chaque projet)
+├── react/                  AppContainer, ErrorBoundary, QueryErrorBoundary, AppToaster, appNavigation (routes, fiche de
+│                           chaque projet, transitions entre projets), projectTheme (thème clair ou sombre de chaque projet)
 ├── configuration/          tanStackQueryClient.ts
 └── styles/
 ```
@@ -150,6 +150,12 @@ src/
 - Son `.module.scss` porte le nom du dossier en camelCase (`citadel/scss-module-name`). Une feuille partagée importée via `../` est libre.
 - Pas de props étalées (`react/jsx-props-no-spreading`) ; pas d'index comme clé.
 - Icônes lucide-react ; aucun emoji dans l'interface.
+
+### Thème
+
+- Le thème de chaque projet, en clair et en sombre, est rangé dans le design system (`theme/projectThemes/`) ; sa fiche y renvoie. Le projet l'applique, la homepage en tire ses ambiances.
+- Le Layout passe par `ProjectThemeProvider` : jetons sur ses composants et sur `<html>` (portails, fond), polices du thème, `data-color-scheme` sur `<html>` pour les styles propres au projet.
+- Clair ou sombre : la préférence du système, sauf choix fait dans le projet (`useProjectColorScheme`, depuis n'importe quel composant). Le choix n'est gardé (`citadel:<projet>:theme`, localStorage) que s'il diffère du système.
 
 ### Couche `api/` d'un projet
 
@@ -199,7 +205,7 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 ## 6. Paquets partagés
 
 - **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
-- **`design-system`** : `atoms/`, `molecules/`, `organisms/`, thème et styles. Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
+- **`design-system`** : `atoms/`, `molecules/`, `organisms/`, thème (dont celui de chaque projet) et styles. Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 
 ## 7. Console d'administration
 
@@ -264,6 +270,24 @@ projects/angersIrigo/
 └── types/          flux décodé, GTFS théorique, véhicules, arrêts, favoris, paramètres
 ```
 
+### Homepage
+
+La vitrine des projets, animée : le modèle à suivre pour des effets visuels.
+
+```
+projects/homepage/
+├── index.tsx        /homepage, /homepage/<projet sélectionné>, /homepage/<page du footer>
+├── components/      Layout (ambiance, vues, intro, titre de l'onglet), Header, Footer, Background, Intro, Logo
+├── pages/           Showcase (roue des projets et présentation), FooterPage
+├── ambiance/        variables --ambiance-*, tirées du thème du projet sélectionné et animées d'un projet à l'autre
+├── effects/         un effet par fichier, sans React : lampe à lave (WebGL), fonds animés (canvas), animations GSAP
+├── routing/, content/, hooks/
+└── variables.scss   jetons et mixins de l'ambiance
+```
+
+- Un effet est une fonction `create…` qui reçoit un canvas ou un élément, et rend de quoi le piloter et le détruire. Le composant le crée dans un `useEffect` et lui transmet ses props.
+- Les transitions entre projets sont hors de la homepage (`react/appNavigation/projectTransition`) : montées hors du routeur, elles survivent au changement de page. `navigateToProject` en lance une ; l'`AppContainer` de la page qui arrive prévient qu'elle est affichée.
+
 ## 10. Checklists
 
 ### Brancher un nouvel endpoint
@@ -277,4 +301,4 @@ projects/angersIrigo/
 
 1. Specs : préfixe dans `ApiPrefixEnum`, enum des codes métier, registre des endpoints.
 2. Serveur : `router.ts` branché dans `globalRouter.ts`, enum des codes dans `errorCode.type.ts`, tables préfixées dans une migration.
-3. Front : fiche et route dans `react/appNavigation`, `<projet>QueryKeys.ts`, `<projet>ErrorReasons.ts` exhaustif, `<projet>FieldLabels.ts` ; Layout avec `ThemeProvider`, `QueryErrorBoundary` global autour de l'`<Outlet />` et `AppToaster`.
+3. Front : fiche et route dans `react/appNavigation`, `<projet>QueryKeys.ts`, `<projet>ErrorReasons.ts` exhaustif, `<projet>FieldLabels.ts` ; thème dans `projectThemes` du design system, présentation (`showcase`) dans la fiche ; Layout avec `ProjectThemeProvider`, `QueryErrorBoundary` global autour de l'`<Outlet />` et `AppToaster`, et un bouton qui bascule entre clair et sombre.

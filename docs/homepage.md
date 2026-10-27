@@ -47,14 +47,14 @@ La page tient dans l'écran, sans défilement global :
 
 - **Clair et sombre**, au choix dans le header ; par défaut, la préférence du système. Chaque application qui propose ce choix l'enregistre dans le localStorage, seulement quand il diffère de la préférence du système : revenir au thème du système efface l'entrée.
 - **Par défaut** : une lampe à lave, des blobs colorés à bord net qui se déforment et se mêlent lentement (couleurs saturées, dans l'esprit de l'image Domestika). En WebGL ; des halos flous en CSS si WebGL manque.
-- **Projet sélectionné** : toute la page change d'ambiance en quelques secondes. Les blobs prennent les couleurs du projet, les jetons de style changent (couleurs, police, graisse, arrondis), et un fond animé propre au projet s'ajoute, derrière les blobs ; seules les braises de Game Death Counter passent devant :
+- **Projet sélectionné** : toute la page change d'ambiance en quelques secondes. Les blobs prennent les couleurs du projet, les jetons de style changent (couleurs, police, graisse, arrondis : ceux du thème du projet, le même que dans le projet), et un fond animé propre au projet s'ajoute, derrière les blobs ; seules les braises de Game Death Counter passent devant :
   - Game Death Counter : noir et braise, police à empattements gravée, aucun arrondi, des braises qui montent ;
   - Backlog : violet et turquoise de son icône, police ronde, grands arrondis ;
   - Angers Irigo : anthracite et couleurs des lignes, police de signalétique, des bandes colorées qui glissent ;
   - Satisfactory : cyan et orange industriels, police technique, angles coupés, une grille hexagonale.
 - Chaque ambiance existe en clair et en sombre.
 - Intensité des effets : 2,5 sur 5. `prefers-reduced-motion` coupe tout mouvement (lampe à lave figée, pas de fond animé de projet, simples fondus) : pour le confort et pour les téléphones.
-- Cette refonte sert de pilote au nouveau thème global (« Refaire entièrement le thème », dans le TODO). Les jetons (clair, sombre, nouveaux jetons comme la graisse ou les polices par rôle) vont dans le design system ; les autres projets n'y migrent pas maintenant.
+- Cette refonte sert de pilote au nouveau thème global (« Refaire entièrement le thème », dans le TODO). Les jetons (clair, sombre, nouveaux jetons comme la graisse ou les polices par rôle) vont dans le design system, avec le thème de chaque projet : chaque projet a désormais son mode clair et son mode sombre, avec un bouton pour choisir.
 
 ## 5. Header, intro et footer
 
@@ -73,19 +73,20 @@ La page tient dans l'écran, sans défilement global :
 
 1. [toi] Valider ce récap et répondre aux questions ouvertes. Fait.
 2. [moi] Une maquette HTML jetable et cliquable dans `docs/homepage-maquette/`, avec des variantes à basculer (rendu des blobs, ambiances, clair/sombre, téléphone), plutôt que trois pages séparées. Fait.
-3. [nous] Choisir sur la maquette et ajuster.
-4. [moi] Jetons du thème : clair, sombre et ambiances des projets, avec les polices hébergées sur le site.
-5. [moi] Structure : header, conteneur principal qui défile, footer, routes.
-6. [moi] Roue des projets.
-7. [moi] Fond lampe à lave et transitions d'ambiance.
-8. [moi] Zone de présentation : accueil, sortie fantôme, présentation, badge.
-9. [moi] Intro qu'on peut passer, adaptée au thème sombre.
-10. [moi] Pages du footer, avec des textes par défaut.
-11. [moi] Téléphone et `prefers-reduced-motion`.
+3. [nous] Choisir sur la maquette et ajuster. Fait.
+4. [moi] Jetons du thème : clair, sombre et ambiances des projets. Fait ; les polices viennent encore de Google Fonts.
+5. [moi] Structure : header, conteneur principal qui défile, footer, routes. Fait.
+6. [moi] Roue des projets. Fait.
+7. [moi] Fond lampe à lave et transitions d'ambiance. Fait.
+8. [moi] Zone de présentation : accueil, sortie fantôme, présentation, badge. Fait.
+9. [moi] Intro qu'on peut passer, adaptée au thème sombre. Fait.
+10. [moi] Pages du footer, avec des textes par défaut. Fait.
+11. [moi] Téléphone et `prefers-reduced-motion`. Fait.
 12. [toi] Relire les textes légaux, remplacer le lorem ipsum.
-13. [moi] Transitions vers les projets, avec l'astuce quand le chargement traîne.
-14. [moi] Dans chaque projet, un bouton de retour à la homepage adapté à son interface, qui lance la transition de retour ; il remplace le bouton 🏠.
-15. [moi] Reporter le « Pour plus tard » dans le TODO, supprimer ce fichier, le wireframe et la maquette.
+13. [moi] Transitions vers les projets, avec l'astuce quand le chargement traîne. Fait.
+14. [nous] Héberger les polices sur le site, à la place de Google Fonts : tu les télécharges, je les branche.
+15. [moi] Dans chaque projet, un bouton de retour à la homepage adapté à son interface, qui lance la transition de retour ; il remplace le bouton 🏠.
+16. [moi] Reporter le « Pour plus tard » dans le TODO, supprimer ce fichier, le wireframe et la maquette.
 
 ## 8. Pour plus tard
 
