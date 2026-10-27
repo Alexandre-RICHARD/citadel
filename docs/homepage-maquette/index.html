@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>La Citadel d'Alex</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- Maquette seulement : le site hébergera ses polices lui-même -->
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Cinzel:wght@400..900&family=EB+Garamond:wght@400..800&family=Nunito:wght@400..1000&family=Outfit:wght@300..800&family=Overpass:wght@300..900&family=Unbounded:wght@400..900&display=swap"
+		/>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="stage" id="stage">
+			<div class="app" id="app" data-theme="dark">
+				<div class="bg" aria-hidden="true">
+					<canvas class="bg-overlay" id="overlayBack"></canvas>
+					<canvas class="bg-lava" id="lava"></canvas>
+					<div class="bg-halos"><i></i><i></i><i></i><i></i></div>
+					<canvas class="bg-overlay" id="overlayFront"></canvas>
+				</div>
+
+				<div class="ui">
+					<header class="header">
+						<div class="brand">
+							<svg class="logo" id="headerLogo" aria-hidden="true"></svg>
+							<span class="brand-name" data-reskin>La Citadel d’Alex</span>
+						</div>
+						<div class="header-actions">
+							<button class="icon-btn" id="themeToggle" type="button"></button>
+							<div class="account" id="account"></div>
+						</div>
+					</header>
+
+					<main class="main" id="main">
+						<div class="view view-showcase" id="showcase">
+							<nav class="wheel" id="wheel" aria-label="Projets">
+								<svg class="wheel-arc" aria-hidden="true"></svg>
+								<button class="wheel-clear" type="button" aria-label="Revenir à l’accueil" title="Revenir à l’accueil">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+								</button>
+								<div class="wheel-items"></div>
+							</nav>
+							<section class="present" id="present" aria-live="polite">
+								<div class="present-scrim" aria-hidden="true"></div>
+								<div class="present-host" id="presentHost"></div>
+							</section>
+						</div>
+						<div class="view view-page" id="page" hidden></div>
+					</main>
+
+					<footer class="footer">
+						<span class="footer-copy glass" data-reskin>© 2026 Alexandre Richard</span>
+						<nav class="footer-links" aria-label="Liens du site">
+							<a class="gh" href="https://github.com/Alexandre-RICHARD/citadel" target="_blank" rel="noopener" aria-label="Code source sur GitHub" title="Code source sur GitHub">
+								<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" /></svg>
+							</a>
+							<a class="glass" href="#/a-propos" data-reskin>À propos</a>
+							<a class="glass" href="#/mentions-legales" data-reskin>Mentions légales</a>
+							<a class="glass" href="#/donnees-personnelles" data-reskin>Données personnelles</a>
+						</nav>
+					</footer>
+				</div>
+
+				<div class="toast" id="toast" role="status"></div>
+
+				<!-- Maquette seulement : une fausse page de projet, pour voir la transition se terminer dessus -->
+				<div class="fake-project" id="fakeProject" hidden></div>
+				<canvas class="transition-canvas" id="transition" hidden></canvas>
+				<div class="loading-tip" id="loadingTip" aria-live="polite"></div>
+
+				<div class="intro" id="intro" hidden>
+					<div class="intro-bg"></div>
+					<svg class="logo intro-logo" id="introLogo" aria-hidden="true"></svg>
+				</div>
+			</div>
+		</div>
+
+		<aside class="variants" id="variants">
+			<div class="variants-body" id="variantsBody" hidden></div>
+			<button class="variants-toggle" id="variantsToggle" type="button" aria-expanded="false">Maquette · variantes</button>
+		</aside>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+		<script src="data.js"></script>
+		<script src="lava.js"></script>
+		<script src="overlays.js"></script>
+		<script src="wheel.js"></script>
+		<script src="transitions.js"></script>
+		<script src="app.js"></script>
+	</body>
+</html>
