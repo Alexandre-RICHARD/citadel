@@ -1,3 +1,4 @@
+import { getFocusableElements } from "@citadel/common/src/browser/dom/getFocusableElements";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { type LucideIcon, X } from "lucide-react";
 import {
@@ -8,7 +9,6 @@ import {
 	useRef,
 } from "react";
 
-import { getFocusableElements } from "../../helper/dom/getFocusableElements";
 import { Button } from "../Button";
 import styles from "./modal.module.scss";
 

@@ -1,3 +1,4 @@
+import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import { Skeleton } from "@citadel/design-system/src/atoms/Skeleton";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
@@ -18,7 +19,6 @@ import type { BacklogOverviewFm } from "../../api/model/backlogOverviewFm.type";
 import { useBacklogOverview } from "../../api/overview/useBacklogOverview";
 import { useBacklogRows } from "../../api/userGame/useBacklogRows";
 import styles from "../../backlog.module.scss";
-import { isTextField } from "../../helper/dom/isTextField";
 import type { BacklogView } from "../../helper/view/backlogView.type";
 import { buildViewParams } from "../../helper/view/buildViewParams";
 import type { ColumnSetting } from "../../helper/view/columnSetting.type";

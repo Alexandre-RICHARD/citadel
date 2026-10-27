@@ -1,4 +1,4 @@
-import { isTextField } from "./isTextField";
+import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 
 // Une cellule est en cours d'édition quand le focus est dans un de ses champs de saisie
 export function isEditingCell(): boolean {
