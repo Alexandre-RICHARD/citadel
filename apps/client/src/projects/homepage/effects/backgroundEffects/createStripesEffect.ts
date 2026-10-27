@@ -1,8 +1,8 @@
 import { hexToRgba } from "@citadel/common/src/universal/color/hexToRgba";
+import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
 
 import { irigoLineColors } from "../../../../react/appNavigation/showcase/irigoLineColors";
 import type { BackgroundEffect } from "./backgroundEffect.type";
-import { randomBetween } from "./randomBetween";
 
 type Train = {
 	color: string;
