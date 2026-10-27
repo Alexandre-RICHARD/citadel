@@ -1,3 +1,4 @@
+import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { type Ref, useId } from "react";
 
@@ -15,7 +16,7 @@ type Props = {
 // survol du logo
 export function Logo({ ref, className }: Props) {
 	// Un dégradé par logo : celui de l'intro et celui du header sont affichés ensemble
-	const gradientId = `logo-${useId().replace(/[^\w-]/g, "")}`;
+	const gradientId = `logo-${useId().replace(regexDictionary.nonIdCharacter, "")}`;
 
 	return (
 		<svg

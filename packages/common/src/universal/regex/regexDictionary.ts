@@ -30,6 +30,8 @@ export const regexDictionary = {
 	digitsAndSlashes: /^[\d/]*$/,
 	// Barre oblique, à retirer d'une saisie
 	slash: /\//g,
+	// Caractère interdit dans un id HTML généré : useId() de React rend des « : »
+	nonIdCharacter: /[^\w-]/g,
 
 	// Caractère spécial d'un motif LIKE en SQL (%, _ et l'échappement \), à échapper pour le chercher tel quel
 	sqlLikeWildcard: /[\\%_]/g,
