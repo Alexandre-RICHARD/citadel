@@ -1,9 +1,9 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./VehiclePopup.scss";
 
+import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import type { JSX } from "react";
 
-import { useNow } from "../hooks/useNow";
 import type { Vehicle } from "../types/vehicle";
 import { formatAge, formatEta, STOP_STATUS_LABELS } from "../utils/format";
 import { getLineLabel } from "../utils/vehicles";

@@ -1,9 +1,9 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./FeedStatusLine.scss";
 
+import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import type { JSX } from "react";
 
-import { useNow } from "../hooks/useNow";
 import type { LoadStatus } from "../types/load-status";
 import { formatAge, formatTime } from "../utils/format";
 

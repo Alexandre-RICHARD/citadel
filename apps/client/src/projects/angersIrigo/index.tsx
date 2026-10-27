@@ -2,6 +2,7 @@ import "leaflet/dist/leaflet.css";
 import "./styles/main.scss";
 
 import { useLocalStorage } from "@citadel/common/src/react/hooks/useLocalStorage";
+import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { AppContainer } from "../../react/AppContainer";
@@ -18,7 +19,6 @@ import {
 import { GTFS_STATIC } from "./data/gtfs-static";
 import { STOP_GROUP_BY_STOP_ID, STOP_GROUPS } from "./data/stop-groups";
 import { FavoritesContext } from "./hooks/useFavorites";
-import { useNow } from "./hooks/useNow";
 import { useRealtimeFeed } from "./hooks/useRealtimeFeed";
 import { useShapes } from "./hooks/useShapes";
 import type { Favorite } from "./types/favorite";

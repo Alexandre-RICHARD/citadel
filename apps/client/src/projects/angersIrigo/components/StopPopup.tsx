@@ -1,13 +1,13 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./StopPopup.scss";
 
+import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import type { JSX } from "react";
 
 import { MAX_FAVORITES } from "../config";
 import { GTFS_STATIC } from "../data/gtfs-static";
 import { MAIN_DESTINATIONS } from "../data/main-destinations";
 import { useFavorites } from "../hooks/useFavorites";
-import { useNow } from "../hooks/useNow";
 import type { Favorite } from "../types/favorite";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { Departure, DirectionDepartures, StopGroup } from "../types/stop";

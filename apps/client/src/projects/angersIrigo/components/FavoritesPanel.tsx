@@ -1,13 +1,13 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./FavoritesPanel.scss";
 
+import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import { type JSX, memo, useId, useState } from "react";
 
 import { MOBILE_MEDIA_QUERY } from "../config";
 import { GTFS_STATIC } from "../data/gtfs-static";
 import { MAIN_DESTINATIONS } from "../data/main-destinations";
 import { STOP_GROUP_BY_STOP_ID } from "../data/stop-groups";
-import { useNow } from "../hooks/useNow";
 import type { Favorite } from "../types/favorite";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { LoadStatus } from "../types/load-status";

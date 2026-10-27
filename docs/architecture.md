@@ -264,7 +264,7 @@ projects/angersIrigo/
 ├── config.ts       URL des flux, intervalles, centre de la carte
 ├── api/            gtfs-realtime.proto (schéma officiel) et feed.ts (téléchargement et décodage protobuf)
 ├── data/           GTFS théorique embarqué (routes, stops, trips en .txt, shapes.json) et sa lecture
-├── hooks/          useRealtimeFeed, usePersistentState, useShapes, useFavorites…
+├── hooks/          useRealtimeFeed, useMarkerAnimation, useShapes, useFavorites… (useLocalStorage et useNow viennent de common)
 ├── utils/          CSV, géométrie, simulation des déplacements, arrêts, tracés, recherche
 ├── components/     composants React et leur .scss
 ├── styles/         styles du projet, sous le conteneur .angers-irigo
