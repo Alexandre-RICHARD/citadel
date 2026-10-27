@@ -1,8 +1,12 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./InfoPanel.scss";
 
+import { Castle } from "lucide-react";
 import { type JSX, useId, useState } from "react";
+import { Link } from "react-router";
 
+import { buildReturnToHomepagePath } from "../../../react/appNavigation/buildReturnToHomepagePath";
+import { ProjectsEnum } from "../../../react/appNavigation/projects.enum";
 import { STALE_POSITION_SECONDS } from "../config";
 import { usePersistentState } from "../hooks/usePersistentState";
 import type { GtfsRoute } from "../types/gtfs-static";
@@ -112,6 +116,19 @@ export function InfoPanel({
 					)}
 				</div>
 				<div className="info-panel__header-buttons">
+					{!isCollapsed && (
+						<Link
+							to={buildReturnToHomepagePath(ProjectsEnum.AngersIrigo)}
+							className="info-panel__icon-button info-panel__return-link"
+							aria-label="Retour à la Citadel"
+							title="Retour à la Citadel"
+						>
+							<Castle
+								size={20}
+								aria-hidden
+							/>
+						</Link>
+					)}
 					{!isCollapsed && (
 						<button
 							type="button"

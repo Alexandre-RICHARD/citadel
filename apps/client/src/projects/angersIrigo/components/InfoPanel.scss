@@ -60,11 +60,14 @@
     }
   }
 
-  // Au-dessus de la zone de clic du bandeau : ouvre les paramètres sans replier le panneau
+  // Au-dessus de la zone de clic du bandeau : ramène à la Citadel, ou ouvre les paramètres, sans replier le panneau
+  &__return-link,
   &__settings-button {
     position: relative;
     z-index: 1;
+  }
 
+  &__settings-button {
     &[aria-expanded='true'] {
       background: $color-surface-alt;
       color: $color-text;
