@@ -1,9 +1,10 @@
+import { wait } from "@citadel/common/src/universal/async/wait";
+
 import { projectTransitionStore } from "./projectTransitionStore";
 import type { TransitionEffectEnum } from "./transitionEffect.enum";
 import type { TransitionPalette } from "./transitionPalette.type";
 import type { TransitionPoint } from "./transitionPoint.type";
 import type { TransitionTip } from "./transitionTip.type";
-import { wait } from "./wait";
 import { waitForNextPaint } from "./waitForNextPaint";
 
 // Au-delà de ce délai après que l'écran est couvert, le chargement traîne : l'astuce s'affiche,

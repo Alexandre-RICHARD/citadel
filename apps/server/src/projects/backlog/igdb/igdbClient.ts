@@ -1,3 +1,4 @@
+import { wait } from "@citadel/common/src/universal/async/wait.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 
 import { env } from "../../../configuration/env.ts";
@@ -79,10 +80,7 @@ class IgdbClient {
 		const now = Date.now();
 		const startAt = Math.max(now, this.#nextRequestAt);
 		this.#nextRequestAt = startAt + REQUEST_GAP_MS;
-		if (startAt > now)
-			await new Promise((resolve) => {
-				setTimeout(resolve, startAt - now);
-			});
+		if (startAt > now) await wait(startAt - now);
 	}
 
 	// Des appels simultanés partagent la même demande de token ; une demande échouée est refaite au prochain appel
