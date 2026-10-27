@@ -1,3 +1,5 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
+
 import { getGameTypeName } from "./getGameTypeName.ts";
 import { getIgdbReference } from "./getIgdbReference.ts";
 import { getOriginalParentId } from "./getOriginalParentId.ts";
@@ -133,14 +135,12 @@ export async function fetchIgdbGameData(
 	if (originalGame === undefined) return null;
 
 	// DLC et extensions de l'original et de toutes ses versions, sans doublon
-	const dlcIds = [
-		...new Set(
-			versions.flatMap((version) => [
-				...(version.dlcs ?? []),
-				...(version.expansions ?? []),
-			]),
-		),
-	];
+	const dlcIds = getUniqueValues(
+		versions.flatMap((version) => [
+			...(version.dlcs ?? []),
+			...(version.expansions ?? []),
+		]),
+	);
 	const dlcCandidates =
 		dlcIds.length === 0
 			? []

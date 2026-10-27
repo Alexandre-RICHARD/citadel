@@ -1,3 +1,5 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
+
 import { getGameTypeName } from "./getGameTypeName.ts";
 import { getIgdbReference } from "./getIgdbReference.ts";
 import { getOriginalParentId } from "./getOriginalParentId.ts";
@@ -88,11 +90,9 @@ async function fetchRelatedGames(
 	const expandedBundleIds = new Set<number>();
 	let level = matches;
 	while (level.length > 0) {
-		const parentIds = [
-			...new Set(
-				level.flatMap((game) => getSearchParentId(reference, game) ?? []),
-			),
-		].filter((id) => !gamesById.has(id) && !requestedIds.has(id));
+		const parentIds = getUniqueValues(
+			level.flatMap((game) => getSearchParentId(reference, game) ?? []),
+		).filter((id) => !gamesById.has(id) && !requestedIds.has(id));
 		const bundleIds = level
 			.filter(
 				(game) =>

@@ -1,3 +1,4 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { ConfirmDialog } from "@citadel/design-system/src/molecules/ConfirmDialog";
 import { Toaster } from "@citadel/design-system/src/organisms/Toaster";
@@ -74,7 +75,7 @@ function describeSteps(
 				<p>{`Démarrage : ${started.join(", ")}.`}</p>
 			) : null}
 			{alwaysOn.length > 0 ? (
-				<p>{`${[...new Set(alwaysOn)].join(", ")} : normalement toujours allumé.`}</p>
+				<p>{`${getUniqueValues(alwaysOn).join(", ")} : normalement toujours allumé.`}</p>
 			) : null}
 		</>
 	);

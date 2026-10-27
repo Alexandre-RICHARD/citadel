@@ -1,3 +1,5 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
+
 import type { UserGameBean } from "../bean/userGameBean.type.ts";
 import { fromUserGameEntitiesToUserGameBeans } from "../mapper/beanEntity/fromUserGameEntitiesToUserGameBeans.ts";
 import { getDlcsOfGamesQuery } from "../query/dlc/getDlcsOfGamesQuery.ts";
@@ -6,10 +8,6 @@ import { getUserGameEntitiesQuery } from "../query/userGame/getUserGameEntitiesQ
 import { getUserVersionEntitiesQuery } from "../query/userVersion/getUserVersionEntitiesQuery.ts";
 import { getVersionPlatformsQuery } from "../query/version/getVersionPlatformsQuery.ts";
 import { getVersionsQuery } from "../query/version/getVersionsQuery.ts";
-
-function unique(ids: number[]): number[] {
-	return [...new Set(ids)];
-}
 
 /**
  * Lignes du backlog, dans l'ordre d'ajout ; null : tout le backlog. Quelques requêtes à plat plutôt qu'une jointure
@@ -27,10 +25,10 @@ export async function loadUserGameBeans(
 	]);
 	const [versionPlatforms, seriesNumbers] = await Promise.all([
 		getVersionPlatformsQuery(
-			unique(userVersions.map(({ versionId }) => versionId)),
+			getUniqueValues(userVersions.map(({ versionId }) => versionId)),
 		),
 		getSeriesListNumbersQuery(
-			unique(userGames.flatMap(({ seriesId }) => seriesId ?? [])),
+			getUniqueValues(userGames.flatMap(({ seriesId }) => seriesId ?? [])),
 		),
 	]);
 

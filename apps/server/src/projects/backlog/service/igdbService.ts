@@ -1,3 +1,4 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 
 import { NotFoundError } from "../../../error/NotFoundError.ts";
@@ -64,7 +65,7 @@ class IgdbService {
 		];
 		const dlcIds = gameImport.dlcs.map(({ id }) => id);
 		const [storedVersions, emulators] = await Promise.all([
-			getStoredVersionsQuery([...new Set([...treeIds, ...dlcIds])]),
+			getStoredVersionsQuery(getUniqueValues([...treeIds, ...dlcIds])),
 			getEmulatorsQuery(),
 		]);
 		const storedGameId =
