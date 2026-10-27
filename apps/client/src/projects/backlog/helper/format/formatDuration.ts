@@ -1,6 +1,8 @@
-const MINUTES_PER_HOUR = 60;
+import { splitMinutesIntoHours } from "@citadel/common/src/universal/date/splitMinutesIntoHours";
+import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros";
 
-// Minutes → « 12 h 30 »
-export function formatDuration(minutes: number): string {
-	return `${Math.floor(minutes / MINUTES_PER_HOUR)} h ${String(minutes % MINUTES_PER_HOUR).padStart(2, "0")}`;
+// Minutes → « 12 h 30 », heures toujours écrites : les temps de jeu se lisent en heures
+export function formatDuration(totalMinutes: number): string {
+	const { hours, minutes } = splitMinutesIntoHours(totalMinutes);
+	return `${hours} h ${padWithZeros(minutes)}`;
 }

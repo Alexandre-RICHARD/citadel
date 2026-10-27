@@ -2,6 +2,8 @@
 import "./TripTimeMarkers.scss";
 
 import { easeInOutQuad } from "@citadel/common/src/universal/animation/easeInOutQuad";
+import { splitMinutesIntoHours } from "@citadel/common/src/universal/date/splitMinutesIntoHours";
+import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros";
 import { type DivIcon, divIcon, type Marker as LeafletMarker } from "leaflet";
 import { type JSX, useMemo, useRef, useState } from "react";
 import { Marker, Pane } from "react-leaflet";
@@ -20,11 +22,11 @@ const MOVE_DURATION_MS = 1000;
 
 /** "5 min", "1 h", "1 h 20" */
 function formatMinutes(minutes: number): string {
-	if (minutes < 60) {
+	const { hours, minutes: extraMinutes } = splitMinutesIntoHours(minutes);
+	if (hours === 0) {
 		return `${minutes} min`;
 	}
-	const rest = minutes % 60;
-	return `${Math.floor(minutes / 60)} h${rest ? ` ${String(rest).padStart(2, "0")}` : ""}`;
+	return `${hours} h${extraMinutes ? ` ${padWithZeros(extraMinutes)}` : ""}`;
 }
 
 /** Les couleurs sont déjà validées au format #RRGGBB (voir data/gtfs-static.ts) */

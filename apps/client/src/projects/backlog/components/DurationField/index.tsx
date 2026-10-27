@@ -1,3 +1,5 @@
+import { splitMinutesIntoHours } from "@citadel/common/src/universal/date/splitMinutesIntoHours";
+import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros";
 import { useRef } from "react";
 
 import { blurOnEnter } from "../../helper/dom/blurOnEnter";
@@ -23,8 +25,8 @@ export function DurationField({
 }: Props) {
 	const hoursRef = useRef<HTMLInputElement>(null);
 	const minutesRef = useRef<HTMLInputElement>(null);
-	const hours = Math.floor(minutes / 60);
-	const extraMinutesText = String(minutes % 60).padStart(2, "0");
+	const { hours, minutes: extraMinutes } = splitMinutesIntoHours(minutes);
+	const extraMinutesText = padWithZeros(extraMinutes);
 
 	function commit() {
 		const hoursInput = hoursRef.current;
