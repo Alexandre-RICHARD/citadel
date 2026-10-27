@@ -1,6 +1,8 @@
 import { easeOutBack } from "@citadel/common/src/universal/animation/easeOutBack";
 import { mixHexColors } from "@citadel/common/src/universal/color/mixHexColors";
 import { clamp } from "@citadel/common/src/universal/number/clamp";
+import { pickRandomItem } from "@citadel/common/src/universal/random/pickRandomItem";
+import { rollChance } from "@citadel/common/src/universal/random/rollChance";
 
 import type { TransitionPalette } from "../transitionPalette.type";
 import { TransitionPhaseEnum } from "../transitionPhase.enum";
@@ -34,15 +36,13 @@ export function createCellWave(
 		Math.hypot(point.x - origin.x, point.y - origin.y),
 	);
 	const maxDistance = Math.max(...distances) || 1;
-	const { decorations } = palette;
 	const cells: WaveCell[] = points.map((point, index) => ({
 		...point,
 		distance: distances[index] / maxDistance,
 		// Une case sur quatre environ prend la couleur principale, les autres une couleur de décoration
-		color:
-			Math.random() < 0.25 || decorations.length === 0
-				? palette.accent
-				: decorations[Math.floor(Math.random() * decorations.length)],
+		color: rollChance(0.25)
+			? palette.accent
+			: (pickRandomItem(palette.decorations) ?? palette.accent),
 	}));
 
 	return {

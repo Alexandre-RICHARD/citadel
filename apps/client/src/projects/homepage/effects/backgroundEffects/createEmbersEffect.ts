@@ -1,5 +1,6 @@
 import { hexToRgba } from "@citadel/common/src/universal/color/hexToRgba";
 import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
+import { rollChance } from "@citadel/common/src/universal/random/rollChance";
 
 import type { BackgroundEffect } from "./backgroundEffect.type";
 
@@ -40,7 +41,7 @@ export function createEmbersEffect(): BackgroundEffect {
 					swayAmplitude: randomBetween(6, 22),
 					swaySpeed: randomBetween(0.4, 1.3),
 					phase: randomBetween(0, Math.PI * 2),
-					isHot: Math.random() > 0.6,
+					isHot: rollChance(0.4),
 				});
 			}
 

@@ -1,4 +1,5 @@
 import { hexToRgba } from "@citadel/common/src/universal/color/hexToRgba";
+import { pickRandomItem } from "@citadel/common/src/universal/random/pickRandomItem";
 import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
 
 import type { BackgroundEffect } from "./backgroundEffect.type";
@@ -94,10 +95,11 @@ export function createHexGridEffect(): BackgroundEffect {
 			}
 
 			// Une case s'allume toutes les 0,3 s environ, et s'éteint en 2,5 s
-			if (time > nextPulseAt && cells.length > 0) {
+			const pulseCenter =
+				time > nextPulseAt ? pickRandomItem(cells) : undefined;
+			if (pulseCenter !== undefined) {
 				nextPulseAt = time + randomBetween(0.15, 0.45);
-				const center = cells[Math.floor(Math.random() * cells.length)];
-				pulses.push({ center, startedAt: time });
+				pulses.push({ center: pulseCenter, startedAt: time });
 			}
 			pulses = pulses.filter((pulse) => time - pulse.startedAt < PULSE_SECONDS);
 			for (const { center, startedAt } of pulses) {

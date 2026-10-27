@@ -1,5 +1,7 @@
 import { hexToRgba } from "@citadel/common/src/universal/color/hexToRgba";
+import { pickRandomItem } from "@citadel/common/src/universal/random/pickRandomItem";
 import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
+import { rollChance } from "@citadel/common/src/universal/random/rollChance";
 
 import type { BackgroundEffect } from "./backgroundEffect.type";
 
@@ -52,8 +54,8 @@ export function createShapesEffect(): BackgroundEffect {
 			speedY: randomBetween(6, 14),
 			rotation: randomBetween(0, Math.PI * 2),
 			rotationSpeed: randomBetween(-0.25, 0.25),
-			kind: SHAPE_KINDS[Math.floor(Math.random() * SHAPE_KINDS.length)],
-			isAccent: Math.random() < 0.3,
+			kind: pickRandomItem(SHAPE_KINDS),
+			isAccent: rollChance(0.3),
 		}));
 	}
 

@@ -1,3 +1,4 @@
+import { rollChance } from "@citadel/common/src/universal/random/rollChance";
 import { gsap } from "gsap";
 
 type Options = {
@@ -37,7 +38,7 @@ export function ghostOut(
 	blocks.forEach((block, index) => {
 		const duration = 1.2 + Math.random() * 0.6;
 		const startAt = index * 0.08 + Math.random() * 0.06;
-		const direction = Math.random() < 0.5 ? -1 : 1;
+		const direction = rollChance(0.5) ? -1 : 1;
 		const sway = 10 + Math.random() * 14;
 		timeline.to(
 			block,
