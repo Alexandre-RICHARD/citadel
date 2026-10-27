@@ -12,6 +12,7 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 4. [Angers Irigo](#4-angers-irigo)
 5. [Satisfactory](#5-satisfactory)
 6. [Hébergement et mise en production](#6-hébergement-et-mise-en-production)
+7. [Homepage](#7-homepage)
 
 ## 1. Général
 
@@ -52,7 +53,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 - Réunification totale du design system.
 - Design system : recherche et filtre de liste insensibles aux accents et à la casse.
 - Design system : toasts avec un nombre maximum affichés et les autres en pile, barre de temps, clic pour les figer, croix pour fermer (voir l'ancien projet account).
-- Est ce que le "©" a une quelconque utilisé dans le footer ou c'est juste stylé ? Voir même, est-ce illégal d'avoir ça sans avoir déposé de brevet ?
 
 ## 2. Connexions
 
@@ -174,3 +174,11 @@ Numéros d'origine gardés.
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
 
 Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
+
+## 7. Homepage
+
+Pour plus tard :
+
+- Console de commande : `²` ouvre une console à la Quake pour aller quelque part en tapant (`goto backlog`).
+- Mini-jeu, par exemple sur le logo hexagonal.
+- Refaire le logo et son intro.
