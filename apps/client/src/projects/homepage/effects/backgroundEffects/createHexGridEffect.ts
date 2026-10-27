@@ -1,4 +1,7 @@
+import { traceHexagon } from "@citadel/common/src/browser/canvas/traceHexagon";
 import { hexToRgba } from "@citadel/common/src/universal/color/hexToRgba";
+import { getHexGridCenters } from "@citadel/common/src/universal/geometry/getHexGridCenters";
+import type { Point } from "@citadel/common/src/universal/geometry/point.type";
 import { pickRandomItem } from "@citadel/common/src/universal/random/pickRandomItem";
 import { randomBetween } from "@citadel/common/src/universal/random/randomBetween";
 
@@ -6,7 +9,7 @@ import type { BackgroundEffect } from "./backgroundEffect.type";
 import type { BackgroundEffectPalette } from "./backgroundEffectPalette.type";
 
 type Pulse = {
-	center: [number, number];
+	center: Point;
 	startedAt: number;
 };
 
@@ -15,28 +18,12 @@ const SCAN_SPEED = 45;
 const SCAN_REACH = 110;
 const PULSE_SECONDS = 2.5;
 
-function traceHexagon(
-	context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-	x: number,
-	y: number,
-	radius: number,
-): void {
-	for (let corner = 0; corner < 6; corner++) {
-		const angle = (Math.PI / 3) * corner;
-		const pointX = x + radius * Math.cos(angle);
-		const pointY = y + radius * Math.sin(angle);
-		if (corner === 0) context.moveTo(pointX, pointY);
-		else context.lineTo(pointX, pointY);
-	}
-	context.closePath();
-}
-
 // Satisfactory : une grille hexagonale discrète, une ligne de balayage qui la parcourt, et des cases qui
 // s'allument çà et là, comme des machines qui démarrent
 export function createHexGridEffect(): BackgroundEffect {
 	let grid: OffscreenCanvas | null = null;
 	let gridKey = "";
-	let cells: [number, number][] = [];
+	let cells: Point[] = [];
 	let pulses: Pulse[] = [];
 	let nextPulseAt = 0;
 
@@ -48,22 +35,12 @@ export function createHexGridEffect(): BackgroundEffect {
 	) {
 		grid = new OffscreenCanvas(Math.max(1, width), Math.max(1, height));
 		const gridContext = grid.getContext("2d");
-		const columnStep = HEX_RADIUS * 1.5;
-		const rowStep = HEX_RADIUS * Math.sqrt(3);
-		cells = [];
-		for (let column = -1; column * columnStep < width + HEX_RADIUS; column++) {
-			for (let row = -1; row * rowStep < height + HEX_RADIUS; row++) {
-				cells.push([
-					column * columnStep,
-					row * rowStep + (column % 2 ? rowStep / 2 : 0),
-				]);
-			}
-		}
+		cells = getHexGridCenters(width, height, HEX_RADIUS);
 		if (!gridContext) return;
 		gridContext.strokeStyle = hexToRgba(palette.text, 0.07);
 		gridContext.lineWidth = 1;
 		gridContext.beginPath();
-		for (const [x, y] of cells) traceHexagon(gridContext, x, y, HEX_RADIUS - 2);
+		for (const cell of cells) traceHexagon(gridContext, cell, HEX_RADIUS - 2);
 		gridContext.stroke();
 	}
 
@@ -82,15 +59,15 @@ export function createHexGridEffect(): BackgroundEffect {
 			// La ligne de balayage éclaire les cases qu'elle croise
 			const scanY = ((time * SCAN_SPEED) % (height + 400)) - 200;
 			context.lineWidth = 1.5;
-			for (const [x, y] of cells) {
-				const distance = Math.abs(y - scanY);
+			for (const cell of cells) {
+				const distance = Math.abs(cell.y - scanY);
 				if (distance > SCAN_REACH) continue;
 				context.strokeStyle = hexToRgba(
 					palette.text,
 					0.28 * (1 - distance / SCAN_REACH),
 				);
 				context.beginPath();
-				traceHexagon(context, x, y, HEX_RADIUS - 2);
+				traceHexagon(context, cell, HEX_RADIUS - 2);
 				context.stroke();
 			}
 
@@ -108,7 +85,7 @@ export function createHexGridEffect(): BackgroundEffect {
 					0.26 * (1 - (time - startedAt) / PULSE_SECONDS),
 				);
 				context.beginPath();
-				traceHexagon(context, center[0], center[1], HEX_RADIUS - 4);
+				traceHexagon(context, center, HEX_RADIUS - 4);
 				context.fill();
 			}
 		},

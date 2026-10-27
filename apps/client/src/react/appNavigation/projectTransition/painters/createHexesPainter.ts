@@ -1,6 +1,7 @@
-import type { TransitionPoint } from "../transitionPoint.type";
+import { traceHexagon } from "@citadel/common/src/browser/canvas/traceHexagon";
+import { getHexGridCenters } from "@citadel/common/src/universal/geometry/getHexGridCenters";
+
 import { createCellWave } from "./createCellWave";
-import { traceHexagon } from "./traceHexagon";
 import type { TransitionPainter } from "./transitionPainter.type";
 import type { TransitionPainterOptions } from "./transitionPainterOptions.type";
 
@@ -13,21 +14,15 @@ export function createHexesPainter({
 	palette,
 	origin,
 }: TransitionPainterOptions): TransitionPainter {
-	const columnStep = HEX_RADIUS * 1.5;
-	const rowStep = HEX_RADIUS * Math.sqrt(3);
-	const cells: TransitionPoint[] = [];
-	for (let column = -1; column * columnStep < width + HEX_RADIUS; column++) {
-		for (let row = -1; row * rowStep < height + HEX_RADIUS; row++) {
-			cells.push({
-				x: column * columnStep,
-				y: row * rowStep + (column % 2 ? rowStep / 2 : 0),
-			});
-		}
-	}
-
-	return createCellWave(cells, palette, origin, (context, cell, scale) => {
-		// Un peu plus grands que la grille : pas de jour entre deux cases posées
-		traceHexagon(context, cell, HEX_RADIUS * 1.04 * scale);
-		context.fill();
-	});
+	return createCellWave(
+		getHexGridCenters(width, height, HEX_RADIUS),
+		palette,
+		origin,
+		(context, cell, scale) => {
+			// Un peu plus grands que la grille : pas de jour entre deux cases posées
+			context.beginPath();
+			traceHexagon(context, cell, HEX_RADIUS * 1.04 * scale);
+			context.fill();
+		},
+	);
 }

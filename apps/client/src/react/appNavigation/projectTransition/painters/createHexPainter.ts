@@ -1,7 +1,7 @@
+import { traceHexagon } from "@citadel/common/src/browser/canvas/traceHexagon";
 import { easeInOutCubic } from "@citadel/common/src/universal/animation/easeInOutCubic";
 
 import { TransitionPhaseEnum } from "../transitionPhase.enum";
-import { traceHexagon } from "./traceHexagon";
 import type { TransitionPainter } from "./transitionPainter.type";
 import type { TransitionPainterOptions } from "./transitionPainterOptions.type";
 
@@ -34,9 +34,11 @@ export function createHexPainter({
 			const rotation = eased * 0.6;
 
 			if (phase === TransitionPhaseEnum.Cover) {
+				context.beginPath();
 				traceHexagon(context, origin, radius, rotation);
 				context.fillStyle = palette.accent;
 				context.fill();
+				context.beginPath();
 				traceHexagon(context, origin, innerRadius, rotation);
 				context.fillStyle = palette.background;
 				context.fill();
@@ -45,10 +47,12 @@ export function createHexPainter({
 
 			context.fillStyle = palette.background;
 			context.fillRect(0, 0, width, height);
+			context.beginPath();
 			traceHexagon(context, center, radius, rotation);
 			context.fillStyle = palette.accent;
 			context.fill();
 			context.globalCompositeOperation = "destination-out";
+			context.beginPath();
 			traceHexagon(context, center, innerRadius, rotation);
 			context.fill();
 			context.globalCompositeOperation = "source-over";
