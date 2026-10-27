@@ -1,3 +1,4 @@
+import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
@@ -11,7 +12,6 @@ import { NumberField } from "../../../../components/NumberField";
 import { Select } from "../../../../components/Select";
 import { TextField } from "../../../../components/TextField";
 import { statusLabels } from "../../../../helper/label/statusLabels";
-import { toggleId } from "../../../../helper/list/toggleId";
 import type { UserVersionDraft } from "../../userVersionDraft.type";
 import { FormField } from "../FormField";
 import { StatusBadge } from "../StatusBadge";
@@ -155,7 +155,7 @@ export function UserVersionDraftFields({
 									onChange={() =>
 										onChange({
 											...draft,
-											doneDlcIds: toggleId(draft.doneDlcIds, dlc.id),
+											doneDlcIds: toggleArrayItem(draft.doneDlcIds, dlc.id),
 										})
 									}
 								/>

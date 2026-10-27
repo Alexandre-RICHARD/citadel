@@ -1,3 +1,4 @@
+import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import { Skeleton } from "@citadel/design-system/src/atoms/Skeleton";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
@@ -18,7 +19,6 @@ import { useBacklogOverview } from "../../api/overview/useBacklogOverview";
 import { useBacklogRows } from "../../api/userGame/useBacklogRows";
 import styles from "../../backlog.module.scss";
 import { isTextField } from "../../helper/dom/isTextField";
-import { toggleId } from "../../helper/list/toggleId";
 import type { BacklogView } from "../../helper/view/backlogView.type";
 import { buildViewParams } from "../../helper/view/buildViewParams";
 import type { ColumnSetting } from "../../helper/view/columnSetting.type";
@@ -191,7 +191,7 @@ export function Homepage() {
 		setPopover,
 		openModal,
 		toggleExpanded: (gameId) =>
-			setExpandedGameIds((current) => toggleId(current, gameId)),
+			setExpandedGameIds((current) => toggleArrayItem(current, gameId)),
 		filterOnSeries: (seriesName) =>
 			changeFilter(BacklogColumnEnum.SERIES, {
 				column: BacklogColumnEnum.SERIES,

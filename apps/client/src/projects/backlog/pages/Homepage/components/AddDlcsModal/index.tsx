@@ -1,3 +1,4 @@
+import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import { Puzzle } from "lucide-react";
 import { useState } from "react";
 
@@ -7,7 +8,6 @@ import styles from "../../../../backlog.module.scss";
 import { Callout } from "../../../../components/Callout";
 import { Checkbox } from "../../../../components/Checkbox";
 import { Modal } from "../../../../components/Modal";
-import { toggleId } from "../../../../helper/list/toggleId";
 import { LoadingState } from "../LoadingState";
 import { ModalActions } from "../ModalActions";
 
@@ -69,7 +69,7 @@ export function AddDlcsModal({ gameId, gameName, onClose }: Props) {
 									disabled={isStored}
 									tooltip={isStored ? "Déjà en base" : null}
 									label={name}
-									onChange={() => setDlcIds(toggleId(dlcIds, id))}
+									onChange={() => setDlcIds(toggleArrayItem(dlcIds, id))}
 								/>
 							</li>
 						))}

@@ -1,3 +1,4 @@
+import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import { CalendarDays, ExternalLink, Puzzle } from "lucide-react";
 
 import type { GamePreviewFm } from "../../../../api/model/gamePreviewFm.type";
@@ -5,7 +6,6 @@ import styles from "../../../../backlog.module.scss";
 import { Callout } from "../../../../components/Callout";
 import { Checkbox } from "../../../../components/Checkbox";
 import { joinClassNames } from "../../../../helper/dom/joinClassNames";
-import { toggleId } from "../../../../helper/list/toggleId";
 import type { ImportSelection } from "../../importSelection.type";
 import { CompanyLabel } from "../CompanyLabel";
 import { Cover } from "../Cover";
@@ -122,7 +122,10 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 									onChange={() =>
 										onSelectionChange({
 											...selection,
-											versionIds: toggleId(selection.versionIds, version.id),
+											versionIds: toggleArrayItem(
+												selection.versionIds,
+												version.id,
+											),
 										})
 									}
 								/>
@@ -153,7 +156,7 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 									onChange={() =>
 										onSelectionChange({
 											...selection,
-											dlcIds: toggleId(selection.dlcIds, id),
+											dlcIds: toggleArrayItem(selection.dlcIds, id),
 										})
 									}
 								/>
@@ -173,7 +176,7 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 									onChange={() =>
 										onSelectionChange({
 											...selection,
-											dlcAsGameIds: toggleId(selection.dlcAsGameIds, id),
+											dlcAsGameIds: toggleArrayItem(selection.dlcAsGameIds, id),
 										})
 									}
 								/>
