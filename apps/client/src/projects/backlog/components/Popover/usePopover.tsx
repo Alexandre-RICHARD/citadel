@@ -1,13 +1,10 @@
+import { clamp } from "@citadel/common/src/universal/number/clamp";
 import { type RefObject, useLayoutEffect } from "react";
 
 import type { PopoverPlacement } from "./popoverPlacement.type";
 
 /** Marge gardée entre un panneau et les bords de la fenêtre */
 const viewportMargin = 8;
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.max(min, Math.min(value, max));
-}
 
 /** Position fixe du panneau : du côté demandé s'il y tient, sinon de l'autre, puis ramené dans la fenêtre */
 function computePosition(

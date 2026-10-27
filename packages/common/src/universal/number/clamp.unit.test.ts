@@ -15,5 +15,9 @@ describe("clamp.ts", () => {
 		it("SHOULD return the maximum WHEN the number is above it", () => {
 			expect(clamp(12, 0, 10)).toBe(10);
 		});
+
+		it("SHOULD return the minimum WHEN the bounds cross each other", () => {
+			expect(clamp(5, 8, -20)).toBe(8);
+		});
 	});
 });
