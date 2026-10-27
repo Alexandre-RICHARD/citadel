@@ -5,7 +5,7 @@
   overflow: hidden;
 
   &Finished {
-    border-color: #c9a22759;
+    border-color: color-mix(in srgb, vars.$gold 35%, transparent);
   }
 
   .gameHeader {

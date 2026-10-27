@@ -111,7 +111,7 @@
     }
 
     &[aria-pressed='true'] {
-      background: #fff;
+      background: $color-surface-solid;
       box-shadow:
         0 0 0 2px $color-focus,
         0 1px 3px rgba(15, 23, 42, 0.15);

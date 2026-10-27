@@ -1,8 +1,11 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
 import "./SettingsPanel.scss";
 
+import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import type { JSX } from "react";
 
+import { ProjectsEnum } from "../../../react/appNavigation/projects.enum";
+import { useProjectColorScheme } from "../../../react/projectTheme/useProjectColorScheme";
 import { STALE_POSITION_SECONDS, TIME_MARKER_STEPS_MINUTES } from "../config";
 import type { Settings } from "../types/settings";
 import { ToggleSwitch } from "./ToggleSwitch";
@@ -25,6 +28,10 @@ export function SettingsPanel({
 	settings,
 	onChange,
 }: SettingsPanelProps): JSX.Element {
+	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
+		ProjectsEnum.AngersIrigo,
+	);
+
 	return (
 		<section
 			id={id}
@@ -58,6 +65,12 @@ export function SettingsPanel({
 				onChange={(simulateMovement) =>
 					onChange({ ...settings, simulateMovement })
 				}
+			/>
+			<ToggleSwitch
+				label="Thème sombre"
+				description="Par défaut, celui du système"
+				checked={colorScheme === ColorSchemeEnum.Dark}
+				onChange={toggleColorScheme}
 			/>
 			{/* Le curseur parcourt les crans de TIME_MARKER_STEPS_MINUTES, pas des minutes */}
 			<label className="settings-panel__slider">

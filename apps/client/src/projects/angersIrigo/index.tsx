@@ -3,6 +3,9 @@ import "./styles/main.scss";
 
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { AppContainer } from "../../react/AppContainer";
+import { ProjectsEnum } from "../../react/appNavigation/projects.enum";
+import { ProjectThemeProvider } from "../../react/projectTheme/ProjectThemeProvider";
 import { FavoritesPanel } from "./components/FavoritesPanel";
 import { InfoPanel } from "./components/InfoPanel";
 import { TransitMap } from "./components/TransitMap";
@@ -153,48 +156,52 @@ export function AngersIrigo() {
 	const endStopFocus = useCallback(() => setStopFocus(undefined), []);
 
 	return (
-		<FavoritesContext value={favoritesContext}>
-			<div className="angers-irigo">
-				<TransitMap
-					vehicles={filterVehicles(displayableVehicles, filter, lineFilter)}
-					stops={stops}
-					routeIdsByStopGroup={routeIdsByStopGroup}
-					motions={motions}
-					simulationSeconds={isSimulating ? now / 1000 : undefined}
-					timeMarkersMinutes={settings.timeMarkersMinutes}
-					tripUpdates={tripUpdates}
-					stopFocus={stopFocus}
-					onStopFocusEnd={endStopFocus}
-					overlaysRef={overlaysRef}
-				/>
-				{/* Panneaux par-dessus la carte : à gauche et à droite sur ordinateur, l'un sous l'autre sur mobile */}
-				<div
-					ref={overlaysRef}
-					className="map-overlays"
-				>
-					<InfoPanel
-						vehicles={displayableVehicles}
-						tramRoutes={TRAM_ROUTES}
-						status={positions.status}
-						updatedAt={positions.updatedAt}
-						filter={filter}
-						onFilterChange={handleFilterChange}
-						lineFilter={lineFilter}
-						onLineFilterChange={setLineFilter}
-						settings={settings}
-						onSettingsChange={setSettings}
-						onStopSelect={focusStop}
-					/>
-					<FavoritesPanel
-						favorites={favorites}
-						tripUpdates={tripUpdates}
-						tripUpdatesStatus={tripUpdatesFeed.status}
-						onSelect={focusStop}
-						// Le favori est forcément dans la liste : le basculer le retire
-						onRemove={handleFavoriteToggle}
-					/>
-				</div>
-			</div>
-		</FavoritesContext>
+		<AppContainer>
+			<ProjectThemeProvider project={ProjectsEnum.AngersIrigo}>
+				<FavoritesContext value={favoritesContext}>
+					<div className="angers-irigo">
+						<TransitMap
+							vehicles={filterVehicles(displayableVehicles, filter, lineFilter)}
+							stops={stops}
+							routeIdsByStopGroup={routeIdsByStopGroup}
+							motions={motions}
+							simulationSeconds={isSimulating ? now / 1000 : undefined}
+							timeMarkersMinutes={settings.timeMarkersMinutes}
+							tripUpdates={tripUpdates}
+							stopFocus={stopFocus}
+							onStopFocusEnd={endStopFocus}
+							overlaysRef={overlaysRef}
+						/>
+						{/* Panneaux par-dessus la carte : à gauche et à droite sur ordinateur, l'un sous l'autre sur mobile */}
+						<div
+							ref={overlaysRef}
+							className="map-overlays"
+						>
+							<InfoPanel
+								vehicles={displayableVehicles}
+								tramRoutes={TRAM_ROUTES}
+								status={positions.status}
+								updatedAt={positions.updatedAt}
+								filter={filter}
+								onFilterChange={handleFilterChange}
+								lineFilter={lineFilter}
+								onLineFilterChange={setLineFilter}
+								settings={settings}
+								onSettingsChange={setSettings}
+								onStopSelect={focusStop}
+							/>
+							<FavoritesPanel
+								favorites={favorites}
+								tripUpdates={tripUpdates}
+								tripUpdatesStatus={tripUpdatesFeed.status}
+								onSelect={focusStop}
+								// Le favori est forcément dans la liste : le basculer le retire
+								onRemove={handleFavoriteToggle}
+							/>
+						</div>
+					</div>
+				</FavoritesContext>
+			</ProjectThemeProvider>
+		</AppContainer>
 	);
 }

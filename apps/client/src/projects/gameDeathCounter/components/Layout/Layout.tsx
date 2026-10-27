@@ -1,15 +1,15 @@
-import { ThemeProvider } from "@citadel/design-system/src/theme/ThemeProvider";
 import { Outlet } from "react-router";
 
+import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
 import { AppToaster } from "../../../../react/AppToaster";
+import { ProjectThemeProvider } from "../../../../react/projectTheme/ProjectThemeProvider";
 import { QueryErrorBoundary } from "../../../../react/QueryErrorBoundary";
 import { gameDeathCounterErrorReasons } from "../../api/gameDeathCounterErrorReasons";
-import { gameDeathCounterTheme } from "../../theme";
 import styles from "./layout.module.scss";
 
 export function Layout() {
 	return (
-		<ThemeProvider theme={gameDeathCounterTheme}>
+		<ProjectThemeProvider project={ProjectsEnum.GameDeathCount}>
 			<div className={styles.gameDeathCounterLayout}>
 				{/* Dernier filet : une erreur qu'aucune zone n'a attrapée remplace la page, pas toute l'application */}
 				<QueryErrorBoundary
@@ -20,6 +20,6 @@ export function Layout() {
 				</QueryErrorBoundary>
 			</div>
 			<AppToaster />
-		</ThemeProvider>
+		</ProjectThemeProvider>
 	);
 }

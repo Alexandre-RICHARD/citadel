@@ -142,3 +142,38 @@
     margin: 12px 14px;
   }
 }
+
+// Leaflet dessine ses popups, ses boutons de zoom et son attribution en blanc : ils suivent le thème
+.angers-irigo {
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: $color-surface-solid;
+    color: $color-text;
+  }
+
+  .leaflet-bar a {
+    border-bottom-color: $color-border;
+    background-color: $color-surface-solid;
+    color: $color-text;
+
+    &:hover,
+    &:focus {
+      background-color: $color-surface-alt;
+    }
+  }
+
+  .leaflet-control-attribution {
+    background: $color-surface;
+    color: $color-muted;
+
+    a {
+      color: $color-focus;
+    }
+  }
+}
+
+// En sombre, les tuiles d'OpenStreetMap, claires, sont inversées : les teintes restent (eau bleue, parcs verts),
+// la carte s'assombrit
+[data-color-scheme='dark'] .angers-irigo .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.6);
+}

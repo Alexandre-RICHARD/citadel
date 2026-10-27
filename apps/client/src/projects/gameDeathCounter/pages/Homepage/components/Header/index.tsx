@@ -1,10 +1,13 @@
 import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
+import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodySchema";
-import { Flame, Plus, Save, X } from "lucide-react";
+import { Flame, Moon, Plus, Save, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { checkInput } from "../../../../../../common/validation/checkInput";
+import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
+import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
 import { useCreateGame } from "../../../../api/game/useCreateGame";
 import { useGameListTotalDeath } from "../../../../api/game/useGameListTotalDeath";
 import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
@@ -17,6 +20,9 @@ export function Header() {
 	const [addingGame, setAddingGame] = useState(false);
 	const [newGameName, setNewGameName] = useState("");
 
+	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
+		ProjectsEnum.GameDeathCount,
+	);
 	const grandTotal = useGameListTotalDeath();
 	const createGame = useCreateGame();
 	const nameCheck = checkInput(
@@ -69,6 +75,11 @@ export function Header() {
 						/>
 						Nouveau jeu
 					</button>
+					<IconButton
+						icon={colorScheme === ColorSchemeEnum.Dark ? Moon : Sun}
+						label={`Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`}
+						onClick={toggleColorScheme}
+					/>
 				</div>
 			</header>
 

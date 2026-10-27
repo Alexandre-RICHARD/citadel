@@ -20,12 +20,12 @@
     transition: background-color 0.15s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.6);
+      background: color-mix(in srgb, $color-surface-solid 60%, transparent);
     }
 
     // L'input radio est masqué : l'état sélectionné et le focus se voient sur le label
     &:has(input:checked) {
-      background: #fff;
+      background: $color-surface-solid;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
     }
 

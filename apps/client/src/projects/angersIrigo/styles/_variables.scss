@@ -5,20 +5,24 @@ $font-family:
   Roboto,
   sans-serif;
 
-$color-text: #1f2933;
-$color-muted: #616e7c;
-$color-surface: rgba(255, 255, 255, 0.92);
-$color-surface-alt: #f1f4f8;
-$color-border: rgba(15, 23, 42, 0.1);
-$color-map-background: #e8ecef;
+// Les couleurs viennent du thème du projet (design system, projectThemes/angersIrigoTheme.ts), en clair ou en sombre
+$color-text: var(--theme-colorText);
+$color-muted: var(--theme-colorTextMuted);
+/** Panneaux par-dessus la carte, légèrement translucides */
+$color-surface: color-mix(in srgb, var(--theme-colorSurface) 92%, transparent);
+/** Ce qui se pose sur un panneau : champ, option choisie, étiquette sur la carte */
+$color-surface-solid: var(--theme-colorSurface);
+$color-surface-alt: var(--theme-colorSurfaceSunken);
+$color-border: var(--theme-colorBorderSoft);
+$color-map-background: var(--theme-colorBackground);
 
 /** Couleur des bus et des lignes sans couleur connue */
 $color-bus: #2f3b48;
 
-$color-success: #16a34a;
-$color-error: #dc2626;
+$color-success: var(--theme-colorConstructiveHue);
+$color-error: var(--theme-colorDestructiveHue);
 $color-loading: #94a3b8;
-$color-focus: #2563eb;
+$color-focus: var(--theme-colorPrimaryHue);
 
 /** Étoile des favoris */
 $color-favorite: #f59e0b;

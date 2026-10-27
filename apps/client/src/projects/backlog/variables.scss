@@ -1,6 +1,7 @@
 // Identité visuelle du backlog : couleurs, ombres, rayons, typographie et mixins partagés.
 // Injecté dans chaque .scss du projet sous le nom `vars` (vite.config.ts). Les couleurs vivent dans des variables CSS
-// posées sur <html> par la page (mixin `theme`) : clair ou sombre selon le réglage du système, portails compris.
+// posées sur <html> par la page (mixin `theme`) : clair ou sombre selon le choix fait dans le backlog, sinon le réglage
+// du système, portails compris. Les principales reprennent le thème du backlog (design system, projectThemes/backlogTheme.ts).
 
 // ---------- Typographie (1rem = 10px) ----------
 
@@ -92,54 +93,54 @@ $tooltip-text: var(--bl-tooltip-text);
 $tooltip-muted: var(--bl-tooltip-muted);
 $tooltip-border: var(--bl-tooltip-border);
 
-// ---------- Thème : clair, sombre selon le système ----------
+// ---------- Thème : clair, et sombre ----------
 
 @mixin theme {
   color-scheme: light;
 
   // Surfaces : page, tableau et cartes, en-têtes, survol, panneaux flottants, champs
-  --bl-bg: #f3f4f7;
-  --bl-surface: #fff;
-  --bl-surface-2: #f8f9fb;
+  --bl-bg: var(--theme-colorBackground);
+  --bl-surface: var(--theme-colorSurface);
+  --bl-surface-2: var(--theme-colorSurfaceSunken);
   --bl-surface-3: #eef0f4;
-  --bl-surface-raised: #fff;
+  --bl-surface-raised: var(--theme-colorSurfaceRaised);
   --bl-field: #fff;
   --bl-field-hover: #fafbfc;
 
   // Bordures
-  --bl-border: #e4e7ec;
-  --bl-border-strong: #d0d5dd;
+  --bl-border: var(--theme-colorBorderSoft);
+  --bl-border-strong: var(--theme-colorBorder);
   --bl-border-field: #cfd4dc;
 
   // Textes : principal, secondaire, discret (≥ 4.5:1 sur blanc), très discret (indications)
-  --bl-text: #111827;
-  --bl-text-muted: #4a5465;
-  --bl-text-subtle: #667085;
+  --bl-text: var(--theme-colorText);
+  --bl-text-muted: var(--theme-colorTextMuted);
+  --bl-text-subtle: var(--theme-colorTextSubtle);
   --bl-text-faint: #98a2b3;
 
   // Accent : indigo
-  --bl-accent: #5b5bd6;
-  --bl-accent-hover: #4d4cc9;
+  --bl-accent: var(--theme-colorPrimaryHue);
+  --bl-accent-hover: var(--theme-colorPrimaryStrong);
   --bl-accent-text: #4743bf;
-  --bl-accent-contrast: #fff;
-  --bl-accent-subtle: #f0f0fe;
+  --bl-accent-contrast: var(--theme-colorPrimaryContent);
+  --bl-accent-subtle: var(--theme-colorPrimarySubtle);
   --bl-accent-subtle-hover: #e5e5fd;
   --bl-accent-border: #c8c9f6;
   --bl-focus: #6b6be0;
 
   // Intentions
-  --bl-danger: #d92d20;
-  --bl-danger-hover: #b42318;
+  --bl-danger: var(--theme-colorDestructiveHue);
+  --bl-danger-hover: var(--theme-colorDestructiveStrong);
   --bl-danger-text: #b42318;
-  --bl-danger-subtle: #fef3f2;
+  --bl-danger-subtle: var(--theme-colorDestructiveSubtle);
   --bl-danger-border: #fecdca;
   --bl-warning: #f79009;
   --bl-warning-text: #b54708;
   --bl-warning-subtle: #fffaeb;
   --bl-warning-border: #fedf89;
-  --bl-success: #17b26a;
-  --bl-success-text: #067647;
-  --bl-success-subtle: #ecfdf3;
+  --bl-success: var(--theme-colorConstructiveHue);
+  --bl-success-text: var(--theme-colorConstructiveStrong);
+  --bl-success-subtle: var(--theme-colorConstructiveSubtle);
   --bl-success-border: #abefc6;
 
   // Lignes du tableau, opaques : les cellules collantes les reprennent
@@ -178,7 +179,7 @@ $tooltip-border: var(--bl-tooltip-border);
     0 12px 24px -6px rgb(16 24 40 / 14%), 0 4px 8px -4px rgb(16 24 40 / 6%);
   --bl-shadow-lg:
     0 24px 48px -12px rgb(16 24 40 / 24%), 0 8px 16px -8px rgb(16 24 40 / 8%);
-  --bl-overlay: rgb(16 24 40 / 42%);
+  --bl-overlay: var(--theme-colorOverlay);
 
   // Plaque des logos des sociétés
   --bl-logo-plate: #f4f5f7;
@@ -189,43 +190,25 @@ $tooltip-border: var(--bl-tooltip-border);
   --bl-tooltip-muted: #b3b9c5;
   --bl-tooltip-border: transparent;
 
-  @media (prefers-color-scheme: dark) {
+  // Sombre : choisi dans le backlog, sinon préférence du système (data-color-scheme, posé sur <html> par useDocumentTheme)
+  &[data-color-scheme="dark"] {
     color-scheme: dark;
 
-    --bl-bg: #0b0d11;
-    --bl-surface: #111419;
-    --bl-surface-2: #161a21;
     --bl-surface-3: #1e232c;
-    --bl-surface-raised: #191d25;
     --bl-field: #0d1015;
     --bl-field-hover: #12151b;
-    --bl-border: #242a34;
-    --bl-border-strong: #323946;
     --bl-border-field: #363d4b;
-    --bl-text: #eceef3;
-    --bl-text-muted: #b4bac6;
-    --bl-text-subtle: #8c94a3;
     --bl-text-faint: #5f6775;
-    --bl-accent: #6e6ae8;
-    --bl-accent-hover: #7f7cf0;
     --bl-accent-text: #adaaff;
-    --bl-accent-contrast: #fff;
-    --bl-accent-subtle: #1c1c38;
     --bl-accent-subtle-hover: #252548;
     --bl-accent-border: #3d3b7a;
     --bl-focus: #8f8cff;
-    --bl-danger: #f04438;
-    --bl-danger-hover: #f97066;
     --bl-danger-text: #fda29b;
-    --bl-danger-subtle: #2a1517;
     --bl-danger-border: #5c2420;
     --bl-warning: #f79009;
     --bl-warning-text: #fec84b;
     --bl-warning-subtle: #261d0e;
     --bl-warning-border: #5a4112;
-    --bl-success: #17b26a;
-    --bl-success-text: #75e0a7;
-    --bl-success-subtle: #0f2219;
     --bl-success-border: #1d4a34;
     --bl-row: #111419;
     --bl-row-hover: #151920;
@@ -258,7 +241,6 @@ $tooltip-border: var(--bl-tooltip-border);
       0 16px 32px -8px rgb(0 0 0 / 60%), 0 0 0 1px rgb(255 255 255 / 4%);
     --bl-shadow-lg:
       0 32px 64px -16px rgb(0 0 0 / 70%), 0 0 0 1px rgb(255 255 255 / 5%);
-    --bl-overlay: rgb(3 5 9 / 68%);
 
     // Les logos, souvent sombres sur fond transparent, gardent une plaque claire
     --bl-logo-plate: #e6e9ee;

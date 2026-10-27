@@ -5,7 +5,7 @@
   overflow: hidden;
 
   &Defeated {
-    border-color: #c9a2274d;
+    border-color: color-mix(in srgb, vars.$gold 30%, transparent);
   }
 
   .bossHeader {
