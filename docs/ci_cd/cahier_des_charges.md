@@ -491,11 +491,11 @@ Juste après, sans coupure : extrait l'archive dans un dossier temporaire du HDD
 
 | | Rétention, sur le HDD et sur le Drive |
 |---|---|
-| Base, chaque jour | les 14 derniers jours + les 8 derniers dimanches + les 12 derniers premiers du mois |
-| Base, avant déploiement | les 10 derniers |
-| Configs, chaque lundi | les 4 dernières semaines + les 3 derniers premiers lundis du mois |
+| Base, chaque jour | les 14 derniers jours + les 4 derniers dimanches |
+| Base, avant déploiement | les 2 derniers |
+| Configs, chaque lundi | les 4 dernières semaines + les 2 derniers premiers lundis du mois |
 
-Environ 6 Go de configs et quelques centaines de Mo de base sur chaque support.
+Environ 5 Go de configs et quelques centaines de Mo de base sur chaque support. Une donnée effacée de la base disparaît des sauvegardes quotidiennes au bout de 5 semaines au plus : c'est le délai à annoncer sur la page « Données personnelles » quand les comptes arriveront.
 
 ### 11.8 Remonter le NAS de zéro
 

@@ -56,7 +56,7 @@ REGISTRY=ghcr.io/alexandre-richard
 # Nombre de versions dont on garde les images (retour arrière en quelques secondes)
 KEEP_VERSIONS=5
 # Nombre de dumps « avant déploiement » gardés (cahier des charges, §11.7)
-KEEP_PRE_DEPLOY_DUMPS=10
+KEEP_PRE_DEPLOY_DUMPS=2
 
 # --- Affichage ---
 say() { printf '%s\n' "$*"; }
