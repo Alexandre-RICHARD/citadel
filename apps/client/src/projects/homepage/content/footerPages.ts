@@ -1,6 +1,6 @@
 import type { FooterPage } from "./footerPage.type";
 
-const CONTACT_EMAIL = "alexandre.richard.dev@gmail.com";
+const CONTACT_EMAIL = "contact@alexandre-richard.fr";
 
 // Les pages du footer, dans l'ordre de ses liens
 export const footerPages: FooterPage[] = [
