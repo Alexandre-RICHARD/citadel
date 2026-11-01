@@ -176,9 +176,13 @@ services:
       # renouvelle quand il expire (plus rien à refaire à la main). Le navigateur ne les voit jamais
       INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+      # Les mails du site (formulaire de contact) partent vraiment, par l'API de Brevo. Les
+      # seuils du quota quotidien gardent leurs valeurs par défaut (env.ts du serveur)
+      MAIL_SENDER: brevo
+      BREVO_API_KEY: ${BREVO_API_KEY:?manque dans .env.prod}
     networks:
       - site
-      # edge : Caddy, qui lui envoie /api, et la sortie vers Internet (IGDB, Twitch)
+      # edge : Caddy, qui lui envoie /api, et la sortie vers Internet (IGDB, Twitch, Brevo)
       - edge
     depends_on:
       site-prod-db:
@@ -320,6 +324,9 @@ services:
       DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+      # Jamais de vrai mail depuis la pré-prod : elle lit le même .env.prod que la prod, mais
+      # le « journal » écrit seulement dans son log qu'un mail serait parti. Pas de clé Brevo
+      MAIL_SENDER: journal
     networks:
       - site-preprod
       - edge

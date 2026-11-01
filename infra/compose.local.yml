@@ -66,6 +66,11 @@ services:
     build:
       <<: *build
       target: server
+    environment:
+      # Aucun vrai mail depuis ton PC : le journal écrit dans le log du serveur qu'un mail
+      # serait parti (docker logs site-prod-server). La clé reçue est celle, factice, de
+      # compose.local.env
+      MAIL_SENDER: journal
     depends_on:
       site-prod-migrations:
         condition: service_completed_successfully

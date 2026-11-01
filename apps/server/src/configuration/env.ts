@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MailSenderKindEnum } from "../mail/sender/mailSenderKind.enum.ts";
+
 const envSchema = z.object({
 	SERVER_PORT: z.coerce.number().int().positive(),
 	// Gravée dans l'image Docker à sa construction (tag git, v2026.10.25) ; "dev" en local
@@ -19,10 +21,44 @@ const envSchema = z.object({
 		.enum(["true", "false"])
 		.default("false")
 		.transform((logDb) => logDb === "true"),
+
+	// ----- Mails -----
+	// Qui envoie : brevo (la prod) ; journal (une ligne dans le log, sans contenu : dev, pré-prod) ; memory (tests)
+	MAIL_SENDER: z.enum(MailSenderKindEnum).default(MailSenderKindEnum.JOURNAL),
+	BREVO_API_KEY: z.string().default(""),
+	// Seuils du quota quotidien de Brevo, en mails envoyés dans la journée : les inscriptions, puis le formulaire
+	// de contact, puis tout le reste s'arrêtent
+	MAIL_REGISTRATION_STOP: z.coerce.number().int().positive().default(250),
+	MAIL_CONTACT_STOP: z.coerce.number().int().positive().default(280),
+	MAIL_DAILY_LIMIT: z.coerce.number().int().positive().default(300),
+	// Messages du formulaire de contact par heure et par IP
+	CONTACT_HOURLY_LIMIT_PER_IP: z.coerce.number().int().positive().default(5),
 });
 
-function parseEnv(): z.infer<typeof envSchema> {
-	const result = envSchema.safeParse(process.env);
+// Les règles entre variables, une fois chacune valide
+const envRulesSchema = envSchema
+	.refine(
+		(variables) =>
+			variables.MAIL_SENDER !== MailSenderKindEnum.BREVO ||
+			variables.BREVO_API_KEY !== "",
+		{
+			message: "required when MAIL_SENDER is brevo",
+			path: ["BREVO_API_KEY"],
+		},
+	)
+	.refine(
+		(variables) =>
+			variables.MAIL_REGISTRATION_STOP <= variables.MAIL_CONTACT_STOP &&
+			variables.MAIL_CONTACT_STOP <= variables.MAIL_DAILY_LIMIT,
+		{
+			message:
+				"MAIL_REGISTRATION_STOP <= MAIL_CONTACT_STOP <= MAIL_DAILY_LIMIT expected",
+			path: ["MAIL_CONTACT_STOP"],
+		},
+	);
+
+function parseEnv(): z.infer<typeof envRulesSchema> {
+	const result = envRulesSchema.safeParse(process.env);
 
 	if (!result.success) {
 		const invalidVariables = result.error.issues
