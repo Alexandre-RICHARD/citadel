@@ -233,7 +233,7 @@ services:
   # ===================================================================================
   # Mêmes images que la prod, sa propre base (citadel_preprod) : restaurée chaque nuit
   # depuis la prod par db-restore-test, et par chaque déploiement qui apporte des
-  # migrations (répétition, §8.2). http://<IP du NAS>:8002 ou http://<nom Tailscale>:8002,
+  # migrations (répétition, §8.2). http://<IP du NAS>:8002, en LAN ou par Tailscale,
   # servie par Caddy, jamais depuis Internet. Sans connexion.
   # Mode « on-demand » : citadel deploy la met à jour sans la démarrer. La démarrer :
   # la console, ou citadel start site-preprod.
@@ -425,11 +425,11 @@ services:
     container_name: infra-tailscale
     # Le réseau du NAS lui-même, pas un réseau Docker : Tailscale y ajoute son interface,
     # et tes appareils joignent le NAS (SSH, TOS, ports des services) par son nom
-    # Tailscale, ce nom, de partout, sans port ouvert sur la box (§12.4)
+    # Tailscale (NAS_HOSTNAME), de partout, sans port ouvert sur la box (§12.4)
     network_mode: host
     # Le nom que Tailscale annonce au tailnet, comme l'ancien conteneur : sans lui, ce
     # serait le nom système du NAS, et ce nom (ton alias ssh nas, les adresses par
-    # Tailscale) pourrait changer
+    # Tailscale) pourrait changer. Dans .env.prod : un détail du réseau, hors du dépôt public.
     hostname: ${NAS_HOSTNAME:?manque dans .env.prod}
     environment:
       # Même dossier d'état que l'ancien conteneur « tailscale » : le NAS garde son
@@ -658,7 +658,7 @@ services:
   # arrêtés. Les démarrer : citadel start media (ou un seul : citadel start media-radarr).
   #
   # Ports : rien n'est ouvert vers Internet (la box n'envoie que 80 et 443, à Caddy). Ils
-  # répondent sur le LAN (http://<IP du NAS>:7878) et par Tailscale (http://<nom Tailscale>:7878).
+  # répondent sur le LAN et par Tailscale (http://<NAS>:7878).
 
   media-gluetun:
     <<: *defaults
@@ -693,7 +693,8 @@ services:
       DNS_UPSTREAM_RESOLVER_TYPE: DoT
       DNS_UPSTREAM_RESOLVERS: cloudflare,quad9
       BLOCK_MALICIOUS: "off"
-      # Le LAN reste joignable depuis le tunnel (les *arr appellent Jellyfin par son IP)
+      # Le LAN reste joignable depuis le tunnel (les *arr appellent Jellyfin par son IP).
+      # Dans .env.prod, comme le nom du NAS : un détail du réseau, hors du dépôt public.
       FIREWALL_OUTBOUND_SUBNETS: ${LAN_SUBNET:?manque dans .env.prod}
       # Liste des serveurs de Proton remise à jour chaque jour
       UPDATER_PERIOD: 24h
