@@ -378,8 +378,7 @@ Jamais de mot de passe, jeton, code, lien ni secret TOTP dans un log, un message
 
 ### 8.1 Envoi
 
-- **Fournisseur, adresse `noreply@` et DNS** : mis en place avant ce chantier ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2 et §4).
-- **Côté serveur** : une abstraction « expéditeur », réelle ou en mémoire pour les tests ; envoi pendant la requête, 10 s au plus ; un échec est logué sans contenu sensible.
+- **Fournisseur, adresse `noreply`, DNS, expéditeur réel, en mémoire ou « journal »** : construits avant ce chantier, pour le formulaire de contact ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2, §5 et §6). Ce chantier n'y ajoute que ses gabarits (§8.3).
 
 ### 8.2 Réception : `contact@`
 
@@ -446,7 +445,7 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 
 ### 9.3 Secrets (`.env.prod` + Bitwarden, créés avant d'être écrits)
 
-`AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version ; identifiants du fournisseur de mails. Valeurs quelconques dans `.env.test` (envoi simulé). Chaque variable va dans `.env.example` (bonne section, `[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`).
+`AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version. Valeurs quelconques dans `.env.test`. La clé du fournisseur de mails existe déjà (cahier de l'hébergement). Chaque variable va dans `.env.example` (bonne section, `[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`).
 
 ---
 
@@ -614,107 +613,104 @@ Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all
 4. [moi] Suppression de `POST /error-log/entries` (endpoint, specs, tests) ; `logError` et `error_log` restent.
 5. [moi] `logError` n'enregistre jamais de corps de requête (§7.5).
 6. [moi] Front : faux `Authorization: Bearer` retiré du `fetchHandler`.
-7. [moi] Specs : `429` dans `HttpStatutCodeErrorEnum` ; front : `ApiError` garde `Retry-After`.
-8. [moi] Serveur : erreurs 401, 403 et 429 (avec `Retry-After`) dans `AppError` et `globalErrorHandler`.
-9. [moi] `packages/common/src/node/` et son bloc ESLint. Vérif : un import depuis le front échoue au lint.
-10. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant.
-11. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », 2 hashs simultanés au plus.
-12. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console en `prod:local` avec un nouveau hash.
-13. [moi] IP réelle : `header_up X-Real-IP` dans Caddy, middleware qui ne lit que cet en-tête, regroupement `/64` en IPv6. Vérif : IP du client dans un log en `prod:local`.
-14. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres.
-15. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées courtes, secrets de test) ; outil de test pour avancer l'horloge.
-16. [moi] Chiffrement AES-256-GCM avec version de clé.
+7. [moi] Serveur : erreurs 401 et 403 dans `AppError` et `globalErrorHandler`.
+8. [moi] `packages/common/src/node/` et son bloc ESLint. Vérif : un import depuis le front échoue au lint.
+9. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant.
+10. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », 2 hashs simultanés au plus.
+11. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console en `prod:local` avec un nouveau hash.
+12. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
+13. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres.
+14. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées courtes, secrets de test) ; outil de test pour avancer l'horloge.
+15. [moi] Chiffrement AES-256-GCM avec version de clé.
 
 **Phase 2 — Base de données**
 
-17. [moi] Migration `auth_user`, collation de l'email. Vérif : `Alex@` et `alex@` refusés ensemble, `josé@` et `jose@` acceptés.
-18. [moi] Migrations `auth_session` et `auth_flow`.
-19. [moi] Migrations `auth_factor`, `auth_recovery_code`, `auth_event`.
-20. [moi] Modèles Sequelize des tables `auth_*`.
-21. [moi] Migration `user_id` de `gdc_game` (lignes existantes supprimées : rien à garder, §1.2) ; données de test GDC rattachées à un utilisateur.
-22. [moi] Migration `user_id` du Backlog (`backlog_user_game`, `backlog_user_version`, `backlog_series`) ; données de test rattachées.
+16. [moi] Migration `auth_user`, collation de l'email. Vérif : `Alex@` et `alex@` refusés ensemble, `josé@` et `jose@` acceptés.
+17. [moi] Migrations `auth_session` et `auth_flow`.
+18. [moi] Migrations `auth_factor`, `auth_recovery_code`, `auth_event`.
+19. [moi] Modèles Sequelize des tables `auth_*`.
+20. [moi] Migration `user_id` de `gdc_game` (lignes existantes supprimées : rien à garder, §1.2) ; données de test GDC rattachées à un utilisateur.
+21. [moi] Migration `user_id` du Backlog (`backlog_user_game`, `backlog_user_version`, `backlog_series`) ; données de test rattachées.
 
 **Phase 3 — Socle serveur**
 
-23. [moi] Projet `auth` : `ApiPrefixEnum.AUTH`, registre d'endpoints, `router.ts`, `AuthErrorCodeEnum`, `authErrorReasons` côté front.
-24. [moi] Service des sessions : création, lecture avec les trois expirations, prolongation toutes les 5 minutes, suppression.
-25. [moi] Cookie de session : nom, attributs, `Max-Age` selon « se souvenir de moi ».
-26. [moi] `protected` lu par le routeur typé : session exigée, `401` ajouté aux erreurs de l'endpoint, identifiant de l'utilisateur passé au contrôleur.
-27. [moi] `GET /auth/me` et `POST /auth/logout`. Vérif : critère 7.
-28. [moi] GDC, jeux : endpoints `protected`, filtrage par `user_id`, `404` chez un autre.
-29. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
-30. [moi] Backlog, jeux suivis et versions : `protected`, filtrage par `user_id`.
-31. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
-32. [moi] Purges : parcours et sessions toutes les 15 minutes, `auth_event` et `error_log` à 90 jours chaque jour.
-33. [moi] Écriture des `auth_event` (§7.4).
-34. [moi] Limiteurs en mémoire : 2 s par compte, couple compte + IP banni après 15 échecs, bannissement d'IP, limites d'inscriptions et de mails. Vérif : critère 3 en tests.
+22. [moi] Projet `auth` : `ApiPrefixEnum.AUTH`, registre d'endpoints, `router.ts`, `AuthErrorCodeEnum`, `authErrorReasons` côté front.
+23. [moi] Service des sessions : création, lecture avec les trois expirations, prolongation toutes les 5 minutes, suppression.
+24. [moi] Cookie de session : nom, attributs, `Max-Age` selon « se souvenir de moi ».
+25. [moi] `protected` lu par le routeur typé : session exigée, `401` ajouté aux erreurs de l'endpoint, identifiant de l'utilisateur passé au contrôleur.
+26. [moi] `GET /auth/me` et `POST /auth/logout`. Vérif : critère 7.
+27. [moi] GDC, jeux : endpoints `protected`, filtrage par `user_id`, `404` chez un autre.
+28. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
+29. [moi] Backlog, jeux suivis et versions : `protected`, filtrage par `user_id`.
+30. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
+31. [moi] Purges : parcours et sessions toutes les 15 minutes, `auth_event` et `error_log` à 90 jours chaque jour.
+32. [moi] Écriture des `auth_event` (§7.4).
+33. [moi] Limiteurs en mémoire : 2 s par compte, couple compte + IP banni après 15 échecs, bannissement d'IP, limites d'inscriptions et de mails. Vérif : critère 3 en tests.
 
 **Phase 4 — Mail**
 
-35–36. Fournisseur, domaine vérifié, SPF, DKIM et DMARC `p=none`, identifiants dans `.env` : faits avant ce chantier (cahier de l'hébergement, §5).
-37. [moi] Expéditeur : réel, ou en mémoire pour les tests ; 10 s au plus ; échec logué sans contenu.
-38. [moi] Gabarits minimaux de tous les mails (§8.3), durée floue de la dernière connexion.
-39. [nous] Envoi réel depuis le dev vers Gmail et Outlook. Vérif : critère 13.
+34. [moi] Gabarits minimaux de tous les mails (§8.3), durée floue de la dernière connexion.
+35. [nous] Chaque gabarit envoyé depuis le dev vers Gmail et Outlook. Vérif : critère 13.
 
 **Phase 5 — Parcours**
 
-40. [moi] Service `auth_flow` : création, cookie de parcours, code HMAC, lien haché, essais, renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
-41. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
-42. [moi] Règles de format dans les specs (pseudo, email, mot de passe, code) ; `GET /auth/usernames/:username/availability`.
-43. [moi] Serveur, inscription : honeypot, interrupteur, limites, réponse neutre, deux mails, remplacement d'un parcours en attente, création du compte et de la session. Vérif : critère 1.
-44. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, gestion du `401`, accès des projets avec retour à la page demandée.
-45. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
-46. [moi] Front : reprise des parcours (`GET /auth/flow` au chargement et au retour sur l'onglet, `sessionStorage`).
-47. [moi] Page d'inscription.
-48. [moi] Étape « code ou lien » commune et page `/auth/verify`. Vérif : critère 4.
-49. [moi] Serveur, connexion par mot de passe : hash factice, délais, rehash, méthodes fermées, `last_login_at`, passage au second facteur s'il existe.
-50. [moi] Serveur, connexion par mail.
-51. [moi] Page de connexion (mot de passe, lien par mail), déjà connecté redirigé. Vérif : critère 2 sans 2FA.
-52. [moi] Serveur, mot de passe oublié : parcours, `/flow/new-password`, même mot de passe refusé, sessions supprimées, notification.
-53. [moi] Page « mot de passe oublié ».
+36. [moi] Service `auth_flow` : création, cookie de parcours, code HMAC, lien haché, essais, renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
+37. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
+38. [moi] Règles de format dans les specs (pseudo, email, mot de passe, code) ; `GET /auth/usernames/:username/availability`.
+39. [moi] Serveur, inscription : honeypot, interrupteur (fermée aussi par le quota de mails du site, voir le cahier de l'hébergement), limites, réponse neutre, deux mails, remplacement d'un parcours en attente, création du compte et de la session. Vérif : critère 1.
+40. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, gestion du `401`, accès des projets avec retour à la page demandée.
+41. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
+42. [moi] Front : reprise des parcours (`GET /auth/flow` au chargement et au retour sur l'onglet, `sessionStorage`).
+43. [moi] Page d'inscription.
+44. [moi] Étape « code ou lien » commune et page `/auth/verify`. Vérif : critère 4.
+45. [moi] Serveur, connexion par mot de passe : hash factice, délais, rehash, méthodes fermées, `last_login_at`, passage au second facteur s'il existe.
+46. [moi] Serveur, connexion par mail.
+47. [moi] Page de connexion (mot de passe, lien par mail), déjà connecté redirigé. Vérif : critère 2 sans 2FA.
+48. [moi] Serveur, mot de passe oublié : parcours, `/flow/new-password`, même mot de passe refusé, sessions supprimées, notification.
+49. [moi] Page « mot de passe oublié ».
 
 **Phase 6 — Double authentification**
 
-54. [moi] TOTP et Base32 écrits à la main. Vérif : vecteurs officiels de la RFC 6238, dérive de ±1 pas, anti-rejeu.
-55. [moi] Facteur TOTP : `POST /auth/factors/totp` et `/confirm`, secret chiffré.
-56. [moi] Facteur mail : `POST /auth/factors/email` (parcours `email_factor`).
-57. [moi] Codes de secours : création au premier facteur, usage unique, `POST /auth/recovery-codes`.
-58. [moi] `/flow/second-factor` (TOTP, code par mail, code de secours) dans la connexion et le mot de passe oublié ; `GET` et `DELETE /auth/factors` ; notifications.
-59. [moi] Front : étape « second facteur » de la connexion et du mot de passe oublié. Vérif : critère 2 avec 2FA, la connexion par mail ne contourne pas le TOTP.
+50. [moi] TOTP et Base32 écrits à la main. Vérif : vecteurs officiels de la RFC 6238, dérive de ±1 pas, anti-rejeu.
+51. [moi] Facteur TOTP : `POST /auth/factors/totp` et `/confirm`, secret chiffré.
+52. [moi] Facteur mail : `POST /auth/factors/email` (parcours `email_factor`).
+53. [moi] Codes de secours : création au premier facteur, usage unique, `POST /auth/recovery-codes`.
+54. [moi] `/flow/second-factor` (TOTP, code par mail, code de secours) dans la connexion et le mot de passe oublié ; `GET` et `DELETE /auth/factors` ; notifications.
+55. [moi] Front : étape « second facteur » de la connexion et du mot de passe oublié. Vérif : critère 2 avec 2FA, la connexion par mail ne contourne pas le TOTP.
 
 **Phase 7 — Profil**
 
-60. [moi] Serveur : `PATCH /auth/me` (pseudo affiché, méthodes de connexion).
-61. [moi] Page de profil : structure, identité, méthodes de connexion.
-62. [moi] Serveur : `POST /auth/me/password`.
-63. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse).
-64. [moi] Profil : mot de passe et email. Vérif : critère 9.
-65. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables.
-66. [moi] Étape facultative « Protège ton compte » après l'inscription.
-67. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions).
-68. [moi] Profil : sessions actives. Vérif : critère 8.
-69. [moi] Serveur : export ZIP de CSV, sans aucun secret.
-70. [moi] Serveur : `DELETE /auth/me/projects/:project`.
-71. [moi] Serveur : `DELETE /auth/me`, journal des suppressions, mail.
-72. [moi] Profil : mes données (export, suppression d'un projet, suppression du compte). Vérif : critère 11.
+56. [moi] Serveur : `PATCH /auth/me` (pseudo affiché, méthodes de connexion).
+57. [moi] Page de profil : structure, identité, méthodes de connexion.
+58. [moi] Serveur : `POST /auth/me/password`.
+59. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse).
+60. [moi] Profil : mot de passe et email. Vérif : critère 9.
+61. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables.
+62. [moi] Étape facultative « Protège ton compte » après l'inscription.
+63. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions).
+64. [moi] Profil : sessions actives. Vérif : critère 8.
+65. [moi] Serveur : export ZIP de CSV, sans aucun secret.
+66. [moi] Serveur : `DELETE /auth/me/projects/:project`.
+67. [moi] Serveur : `DELETE /auth/me`, journal des suppressions, mail.
+68. [moi] Profil : mes données (export, suppression d'un projet, suppression du compte). Vérif : critère 11.
 
 **Phase 8 — Interface et RGPD**
 
-73. [moi] Header de la homepage (bouton, icône et pseudo affiché, déconnexion) ; icône de profil dans le Backlog et GDC ; avertissement de déconnexion, cache vidé.
-74. [toi] Recette visuelle de toutes les pages en dev.
-75. [moi] Commande « après restauration » du serveur, branchée dans `citadel restore-db` ; volume du journal dans `compose.yml` ; phrase ajoutée au message du bandeau.
-76. [moi] Page « Données personnelles » (§10.6).
-77. [nous] Vérification CNIL (§10.4) et cookies posés par Cloudflare.
-78. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
+69. [moi] Header de la homepage (bouton, icône et pseudo affiché, déconnexion) ; icône de profil dans le Backlog et GDC ; avertissement de déconnexion, cache vidé.
+70. [toi] Recette visuelle de toutes les pages en dev.
+71. [moi] Commande « après restauration » du serveur, branchée dans `citadel restore-db` ; volume du journal dans `compose.yml` ; phrase ajoutée au message du bandeau.
+72. [moi] Page « Données personnelles » (§10.6).
+73. [nous] Vérification CNIL (§10.4) et cookies posés par Cloudflare.
+74. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
 
 **Phase 9 — Recette et release**
 
-79. [moi] Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
-80. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, fournisseur de mails, nouveau `ADMIN_PASSWORD_HASH`.
-81. [nous] Recette en `pnpm prod:local` : les 15 critères du §12.2, un par un.
-82. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
-83. [toi] En prod : inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
-84. [toi] Deux semaines plus tard : DMARC en `p=quarantine`.
+75. [moi] Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
+76. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH`.
+77. [nous] Recette en `pnpm prod:local` : les 15 critères du §12.2, un par un.
+78. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
+79. [toi] En prod : inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
+80. [toi] Deux semaines plus tard : aucun mail de l'authentification en indésirables, rapports DMARC propres.
 
 ---
 
