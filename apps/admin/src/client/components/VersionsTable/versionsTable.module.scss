@@ -36,6 +36,17 @@
     white-space: nowrap;
   }
 
+  .upToDate {
+    color: var(--text-subtle);
+    font-family: var(--font);
+  }
+
+  // Une version plus récente existe : à regarder
+  .newer {
+    color: var(--warn);
+    font-weight: 600;
+  }
+
   // Sur un téléphone, le nom de l'image ne tient pas : le service et sa version suffisent
   @media (width <= 600px) {
     th:nth-child(2),

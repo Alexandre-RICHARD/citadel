@@ -7,6 +7,7 @@ import type { DockerStats } from "./dockerStats.type.ts";
 import { imageVersion } from "./imageVersion.ts";
 import { inspectContainer } from "./inspectContainer.ts";
 import { parseDependsOn } from "./parseDependsOn.ts";
+import { readLatestVersions } from "./readLatestVersions.ts";
 
 // Ordre d'affichage : groupes comme dans compose.yml, les « toujours allumés » en tête
 const GROUP_ORDER = ["infra", "site-prod", "site-preprod", "media"];
@@ -58,6 +59,7 @@ function memoryOf(stats: DockerStats | null): number | null {
 
 async function toServiceItem(
 	summary: DockerContainerSummary,
+	latestVersionOf: (image: string) => string | null,
 ): Promise<ServiceItem> {
 	const running = summary.State === "running";
 	const [details, stats] = await Promise.all([
@@ -82,6 +84,8 @@ async function toServiceItem(
 		memoryLimitBytes: details.HostConfig.Memory || null,
 		image: summary.Image,
 		version: imageVersion(summary.Image),
+		latestVersion: latestVersionOf(summary.Image),
+		releaseNotesUrl: labels["citadel.release-notes"] ?? null,
 		dependsOn: parseDependsOn(labels["com.docker.compose.depends_on"]),
 	};
 }
@@ -95,7 +99,10 @@ export async function listServices(): Promise<ServiceItem[]> {
 		`/containers/json?all=true&filters=${filters}`,
 	);
 	const summaries = (await response.json()) as DockerContainerSummary[];
-	const services = await Promise.all(summaries.map(toServiceItem));
+	const latestVersionOf = await readLatestVersions();
+	const services = await Promise.all(
+		summaries.map((summary) => toServiceItem(summary, latestVersionOf)),
+	);
 
 	return services.sort(
 		(first, second) =>

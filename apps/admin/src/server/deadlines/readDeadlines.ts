@@ -1,5 +1,6 @@
 import type { DeadlineItem } from "../../shared/deadlineItem.type.ts";
 import { env } from "../configuration/env.ts";
+import { readStateJson } from "../state/readStateJson.ts";
 import { readTailscaleStateFile } from "../tailscale/readTailscaleStateFile.ts";
 import { readCertificateExpiry } from "./readCertificateExpiry.ts";
 
@@ -12,7 +13,27 @@ async function readTailscaleKeyExpiry(): Promise<DeadlineItem> {
 	return { label, expiresAt: state.selfKeyExpiry, problem: null };
 }
 
-// Le quota du Drive s'ajoutera avec les sauvegardes (étape 30).
+type DriveFile = { checkedAt: string; totalBytes: number; usedBytes: number };
+
+// Le quota du Drive, relevé chaque nuit par update-check : plein, plus de sauvegarde
+// hors site
+async function readDriveQuota(): Promise<DeadlineItem> {
+	const label = "Quota du Drive";
+	const drive = await readStateJson<DriveFile>("drive.json");
+	if (!drive)
+		return {
+			label,
+			expiresAt: null,
+			problem: "aucun relevé (job update-check)",
+		};
+	return {
+		label,
+		expiresAt: null,
+		problem: null,
+		usage: { usedBytes: drive.usedBytes, totalBytes: drive.totalBytes },
+	};
+}
+
 export function readDeadlines(): Promise<DeadlineItem[]> {
 	const domain = env.SITE_DOMAIN;
 	return Promise.all([
@@ -20,5 +41,6 @@ export function readDeadlines(): Promise<DeadlineItem[]> {
 		readCertificateExpiry(`www.${domain}`),
 		readCertificateExpiry(`jellyfin.${domain}`),
 		readTailscaleKeyExpiry(),
+		readDriveQuota(),
 	]);
 }

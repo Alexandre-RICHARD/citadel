@@ -23,5 +23,9 @@ export type ServiceItem = {
 	memoryLimitBytes: number | null;
 	image: string;
 	version: string;
+	// La plus récente publiée de la même forme (update-check) ; null : pas relevée
+	latestVersion: string | null;
+	// Label citadel.release-notes : où lire ce qui change
+	releaseNotesUrl: string | null;
 	dependsOn: ServiceDependency[];
 };

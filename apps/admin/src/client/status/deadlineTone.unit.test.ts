@@ -12,7 +12,30 @@ function expiringIn(days: number) {
 	};
 }
 
+function usingPercent(percent: number) {
+	return {
+		label: "Quota du Drive",
+		expiresAt: null,
+		problem: null,
+		usage: { usedBytes: percent, totalBytes: 100 },
+	};
+}
+
 describe("deadlineTone.ts", () => {
+	describe("usage", () => {
+		it("SHOULD be ok WHEN less than 80 % is used", () => {
+			expect(deadlineTone(usingPercent(40), NOW)).toBe("ok");
+		});
+
+		it("SHOULD warn WHEN 80 % or more is used", () => {
+			expect(deadlineTone(usingPercent(85), NOW)).toBe("warn");
+		});
+
+		it("SHOULD be danger WHEN 95 % or more is used", () => {
+			expect(deadlineTone(usingPercent(97), NOW)).toBe("danger");
+		});
+	});
+
 	describe("dates", () => {
 		it("SHOULD be ok WHEN more than two weeks are left", () => {
 			expect(deadlineTone(expiringIn(40), NOW)).toBe("ok");
