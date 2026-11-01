@@ -2,6 +2,24 @@
   color: var(--text-subtle);
 }
 
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  summary {
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+}
+
+.historyTitle {
+  margin-top: 0.6rem;
+  color: var(--text-subtle);
+  font-size: 1.2rem;
+}
+
 .speeds {
   display: flex;
   flex-wrap: wrap;

@@ -6,6 +6,7 @@ import type { SiteStatus } from "../shared/siteStatus.type.ts";
 import type { SiteTraffic } from "../shared/siteTraffic.type.ts";
 import type { SystemSnapshot } from "../shared/systemSnapshot.type.ts";
 import type { TailscaleStatus } from "../shared/tailscaleStatus.type.ts";
+import type { TorrentHistory } from "../shared/torrentHistory.type.ts";
 import type { TorrentStats } from "../shared/torrentStats.type.ts";
 import type { VpnStatus } from "../shared/vpnStatus.type.ts";
 import { readJellyfinActivity } from "./access/readJellyfinActivity.ts";
@@ -14,6 +15,7 @@ import { readDeadlines } from "./deadlines/readDeadlines.ts";
 import { readSiteStatus } from "./site/readSiteStatus.ts";
 import { readSystemSnapshot } from "./system/readSystemSnapshot.ts";
 import { readTailscaleStatus } from "./tailscale/readTailscaleStatus.ts";
+import { readTorrentHistory } from "./torrent/readTorrentHistory.ts";
 import { readTorrentStats } from "./torrent/readTorrentStats.ts";
 import { readVpnStatus } from "./vpn/readVpnStatus.ts";
 
@@ -38,6 +40,14 @@ overviewRouter.get(
 	"/api/torrents",
 	async (_request, response: Response<TorrentStats>) => {
 		response.json(await readTorrentStats());
+	},
+);
+
+// Volumes par jour et par semaine, tirés des relevés horaires d'infra-ops
+overviewRouter.get(
+	"/api/torrents/history",
+	async (_request, response: Response<TorrentHistory>) => {
+		response.json(await readTorrentHistory());
 	},
 );
 
