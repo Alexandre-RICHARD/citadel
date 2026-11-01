@@ -116,6 +116,7 @@ Dans `infra/ops/crontab`, versionné ; la tâche planifiée de TOS disparaît.
 |---|---|---|
 | Chaque jour, 05:00 | `db-backup`, puis `db-restore-test` (1 à 3 min) | la base de pré-prod démarre, puis s'arrête |
 | Lundi, 03:00 | `config-backup`, puis `config-verify` (5 à 20 min) | services média arrêtés pendant l'archivage, puis remis comme avant |
+| Chaque nuit, 03:30 | `log-retention` | aucun : vide le log d'un conteneur dont la plus vieille ligne a plus de 90 jours (§12.7) |
 | Chaque nuit, 04:00 | `update-check` | aucun : liste les mises à jour d'images |
 | Chaque nuit, 04:30 | `vpn-leak-test` | aucun : IP de sortie et DNS des téléchargements, par le VPN |
 | Toutes les heures | `qbittorrent-stats` | aucun : compteurs pour les historiques de la console |

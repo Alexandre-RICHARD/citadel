@@ -97,7 +97,7 @@ export const footerPages: FooterPage[] = [
 				title: "Les journaux du serveur",
 				paragraphs: [
 					"Chaque requête laisse une ligne dans les journaux du serveur : adresse IP, pays, date, page demandée et réponse. Ils servent à repérer les pannes et les accès suspects ; je suis seul à les lire.",
-					"Ils s’effacent au fil de l’eau : le serveur n’en garde que les plus récents, quelques dizaines de mégaoctets au plus. Base légale : l’intérêt légitime à faire fonctionner et à protéger le site.",
+					"Ils sont effacés au bout de 90 jours au plus, et plus tôt pour un journal très bavard : le serveur ne garde que quelques dizaines de mégaoctets de chacun. Base légale : l’intérêt légitime à faire fonctionner et à protéger le site.",
 				],
 			},
 			{

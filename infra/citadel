@@ -30,6 +30,7 @@
 #   citadel vpn-leak-test              le trafic des téléchargements sort-il bien par le VPN ?
 #   citadel qbittorrent-stats          compteurs de qBittorrent, pour la console
 #   citadel auto-stop                  arrête ce qui tourne depuis trop longtemps
+#   citadel log-retention              vide les logs dont la plus vieille ligne a plus de 90 jours
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
 #   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #
@@ -1842,6 +1843,62 @@ job_qbittorrent_stats() {
 	record_check ok "relevé" "$counters"
 }
 
+# --- log-retention : chaque nuit à 3 h 30 (§12.7) ---
+# Les logs ne gardent pas plus de LOG_MAX_AGE_DAYS jours (règle des 3 mois de l'authentification :
+# les logs d'accès de Caddy portent les IP des visiteurs). Le pilote de logs de Docker ne
+# limite que la taille (3 fichiers de 10 Mo, compose.yml) : un service peu bavard garderait
+# ses lignes des mois. Pour chaque conteneur de la stack : si sa plus vieille ligne a plus de
+# 90 jours, tout son log est vidé. Pas ligne par ligne : Docker n'offre pas de quoi retirer
+# les seules lignes anciennes, et le log n'est qu'un outil de diagnostic.
+# Variable seulement pour tester (`LOG_MAX_AGE_DAYS=0 citadel log-retention` vide tout).
+LOG_MAX_AGE_DAYS=${LOG_MAX_AGE_DAYS:-90}
+
+# La date (en secondes depuis 1970) de la plus vieille ligne du log d'un conteneur, rien s'il
+# est vide. `docker logs` lit la sortie standard et la sortie d'erreur séparément : chacune
+# donne sa première ligne, la plus ancienne des deux est gardée. « || true » : `head` ferme
+# le tuyau dès sa première ligne, et `docker logs` en sort alors en erreur (SIGPIPE).
+oldest_log_epoch() {
+	local first
+	{
+		docker logs --timestamps "$1" 2>/dev/null | head -n 1 || true
+		docker logs --timestamps "$1" 2>&1 >/dev/null | head -n 1 || true
+	} | while read -r first _; do
+		[[ -z $first ]] || date -d "$first" +%s
+	done | sort -n | head -n 1
+}
+
+# Vide les fichiers de log d'un conteneur (<chemin du log principal>). Le fichier est sur le
+# disque du NAS, hors de portée d'infra-ops : un conteneur jetable (l'image ops, sans aucun
+# droit) y monte le dossier du conteneur et le tronque. Docker continue d'écrire dans le
+# même fichier, qui repart de zéro. Les fichiers tournants (-json.log.1…) sont vidés aussi.
+empty_container_log() {
+	docker run --rm --user 0 --read-only --cap-drop ALL --security-opt no-new-privileges \
+		--volume "$(dirname "$1"):/logs" --entrypoint sh "$2" \
+		-c 'for file in /logs/*-json.log*; do : >"$file"; done'
+}
+
+job_log_retention() {
+	local own_image limit id name log_path oldest checked=0 emptied=()
+	own_image=$(docker inspect --format '{{.Config.Image}}' "$HOSTNAME")
+	limit=$(date -d "$LOG_MAX_AGE_DAYS days ago" +%s)
+	# Tous les conteneurs de la stack, arrêtés compris. Sans chemin de log (autre pilote que
+	# json-file), il n'y a rien à vider.
+	while read -r id name log_path; do
+		[[ -n $log_path ]] || continue
+		checked=$((checked + 1))
+		oldest=$(oldest_log_epoch "$id")
+		[[ -n $oldest ]] || continue
+		if ((oldest < limit || LOG_MAX_AGE_DAYS == 0)); then
+			empty_container_log "$log_path" "$own_image" || check_fail "${name#/}" "log impossible à vider"
+			say "  ${name#/} : plus vieille ligne du $(date -d "@$oldest" +%F), log vidé"
+			emptied+=("${name#/}")
+		fi
+	done < <(docker ps --all --quiet --no-trunc --filter "label=com.docker.compose.project=$(own_project)" |
+		xargs -r docker inspect --format '{{.Id}} {{.Name}} {{.LogPath}}')
+	check_ok "logs de $LOG_MAX_AGE_DAYS jours au plus" \
+		"$checked conteneurs vérifiés, ${#emptied[@]} vidés${emptied:+ : ${emptied[*]}}"
+}
+
 # --- auto-stop : toutes les 5 minutes (§14.3) ---
 # Les services étiquetés citadel.auto-stop (« 3h » dans compose.yml) s'arrêtent quand
 # ils tournent depuis plus longtemps : allumés pour une recherche, ils s'éteignent seuls.
@@ -1888,7 +1945,7 @@ write_schedule() {
 # conteneur ops à part, détaché : un déploiement recrée infra-ops sans s'interrompre.
 # Leur sortie va dans state/requests/<id>.log, leur code de sortie dans <id>.exit.
 
-CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop "
+CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop log-retention "
 VERSION_PATTERN='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
 
 # Termine une demande : son message dans le log, son code de sortie
@@ -2087,7 +2144,7 @@ ops_main() {
 		# déploiement ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
 		db-backup | db-restore-test | config-backup | config-verify) run_job "$command" wait ;;
 		auto-stop) run_job "$command" skip ;;
-		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats) run_job "$command" none ;;
+		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats | log-retention) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;
 		tailscale-status) cmd_tailscale_status ;;
 		queue-watch) cmd_queue_watch ;;

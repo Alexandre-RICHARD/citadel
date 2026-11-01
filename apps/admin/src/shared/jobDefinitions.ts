@@ -63,4 +63,10 @@ export const JOB_DEFINITIONS = [
 		description: "Les *arr et cross-seed, 3 h après leur démarrage",
 		monitored: false,
 	},
+	{
+		name: "log-retention",
+		label: "Logs à 90 jours",
+		description: "Vide les logs dont la plus vieille ligne a plus de 90 jours",
+		monitored: false,
+	},
 ] as const;

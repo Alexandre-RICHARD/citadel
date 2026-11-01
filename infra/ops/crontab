@@ -31,6 +31,9 @@
 # Toutes les heures : la place prise par Docker, les configs, les sauvegardes et la base
 15 * * * * citadel storage-stats
 
+# Chaque nuit à 3 h 30 : les logs de plus de 90 jours sont vidés (règle des 3 mois, §12.7)
+30 3 * * * citadel log-retention
+
 # Chaque nuit à 4 h : nouvelles versions publiées des images en service (§10.7)
 0 4 * * * citadel update-check
 
