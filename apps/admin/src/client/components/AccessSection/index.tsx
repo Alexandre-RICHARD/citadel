@@ -7,7 +7,7 @@ import { TailscaleCard } from "../TailscaleCard";
 import { TrafficCard } from "../TrafficCard";
 import styles from "./accessSection.module.scss";
 
-// Fonctionnalité 6 (§14.3) : qui vient sur le NAS. Le site par les logs de Caddy (relus
+// Qui vient sur le NAS. Le site par les logs de Caddy (relus
 // chaque minute, une seule lecture pour les cartes et le tableau), Jellyfin et
 // Tailscale chacun à son rythme.
 export function AccessSection() {

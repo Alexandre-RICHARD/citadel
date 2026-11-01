@@ -1,5 +1,5 @@
 # =====================================================================================
-# crontab : le planning des jobs d'infra-ops (cahier des charges, §10.2 et §11.2)
+# crontab : le planning des jobs d'infra-ops (cahier des charges, §11.2)
 # =====================================================================================
 #
 # Lu par supercronic, un cron fait pour les conteneurs, lancé par `citadel cron`.
@@ -9,7 +9,7 @@
 # Format : minute heure jour-du-mois mois jour-de-la-semaine commande
 #   « * » = toutes les valeurs ; « */5 » = toutes les 5.
 
-# Chaque minute : relancer ce qui a perdu le réseau de Gluetun (P18)
+# Chaque minute : relancer ce qui a perdu le réseau de Gluetun
 * * * * * citadel vpn-watch
 
 # Chaque minute : les appareils de ton tailnet, déposés pour la console (state/tailscale.json)

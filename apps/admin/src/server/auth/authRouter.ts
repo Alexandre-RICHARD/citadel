@@ -16,7 +16,7 @@ const loginBodySchema = z.object({ password: z.string().min(1).max(200) });
 
 // HttpOnly : illisible par JavaScript ; SameSite=Strict : jamais envoyé depuis un autre
 // site ; Secure seulement en HTTPS, sinon le navigateur ne le renverrait pas (console en
-// HTTP sur le LAN, §12.1)
+// HTTP sur le LAN)
 function setSessionCookie(
 	request: Request,
 	response: Response,

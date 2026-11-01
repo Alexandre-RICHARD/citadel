@@ -1,5 +1,5 @@
 # =====================================================================================
-# Caddyfile : la porte d'entrée web du NAS (cahier des charges, §12.3)
+# Caddyfile : la porte d'entrée web du NAS
 # =====================================================================================
 #
 # Copié dans l'image « caddy » à sa construction (Dockerfile) : une règle modifiée part
@@ -23,7 +23,7 @@
 	# Certificats par l'API DNS de Cloudflare (le « challenge DNS ») : Caddy prouve qu'il
 	# contrôle le domaine en créant un enregistrement DNS temporaire. C'est la méthode
 	# fiable derrière le proxy de Cloudflare, qui intercepte les autres. Le jeton n'a le
-	# droit que de modifier le DNS de ton domaine (étape 23).
+	# droit que de modifier le DNS de ton domaine.
 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 
 	servers {
@@ -58,7 +58,7 @@
 
 (access_log) {
 	# Une ligne JSON par requête sur la sortie standard du conteneur : la console la lit
-	# (accès externes, scans suspects, §14.3). Les messages de Caddy lui-même vont sur la
+	# (accès externes, scans suspects). Les messages de Caddy lui-même vont sur la
 	# sortie d'erreur. La rotation est réglée par Docker.
 	log {
 		output stdout

@@ -30,7 +30,7 @@ name: citadel-dev
 
 # --- Réglages communs aux deux bases (« x- » : bloc réutilisé plus bas, ignoré par Compose) ---
 x-mariadb: &mariadb
-  # Version exacte : la même que la prod, mise à jour en même temps (§10.7 du cahier des charges)
+  # Version exacte : la même que la prod, mise à jour en même temps
   image: mariadb:11.8.9
   environment:
     # Mot de passe root, demandé par l'image. root n'est joignable que de l'intérieur

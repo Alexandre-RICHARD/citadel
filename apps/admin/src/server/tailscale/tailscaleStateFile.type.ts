@@ -4,7 +4,7 @@ import type { TailscaleDevice } from "../../shared/tailscaleDevice.type.ts";
 // partir de `tailscale status --json`, déjà réduit à ce que la console affiche
 export type TailscaleStateFile = {
 	collectedAt: string;
-	// La clé du NAS dans le tailnet ; null : expiration désactivée (§12.4)
+	// La clé du NAS dans le tailnet ; null : expiration désactivée
 	selfKeyExpiry: string | null;
 	devices: TailscaleDevice[];
 };

@@ -9,7 +9,7 @@ type Props = {
 };
 
 // Le formulaire ne protège rien à lui seul : c'est le serveur qui vérifie le mot de passe
-// et exige ensuite le cookie de session à chaque appel (§14.4)
+// et exige ensuite le cookie de session à chaque appel
 export function LoginScreen({ onLoggedIn }: Props) {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);

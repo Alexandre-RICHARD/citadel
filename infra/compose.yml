@@ -1,5 +1,5 @@
 # =====================================================================================
-# compose.yml : LE projet Docker Compose du NAS, nommé « citadel » (cahier des charges, §10)
+# compose.yml : LE projet Docker Compose du NAS, nommé « citadel »
 # =====================================================================================
 #
 # Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod), Caddy,
@@ -28,11 +28,11 @@
 
 name: citadel
 
-# --- Règles communes à tous les services (§10.4), reprises par « <<: *defaults » ---
+# --- Règles communes à tous les services, reprises par « <<: *defaults » ---
 x-defaults: &defaults
   # Après un redémarrage du NAS, Docker relance ce qui tournait, et pas ce qu'on a arrêté
   restart: unless-stopped
-  # Logs limités à 3 fichiers de 10 Mo par conteneur : le SSD ne se remplit jamais (P13)
+  # Logs limités à 3 fichiers de 10 Mo par conteneur : le SSD ne se remplit jamais
   logging:
     driver: json-file
     options:
@@ -60,7 +60,7 @@ x-linuxserver-env: &linuxserver-env
 # --- Derrière le VPN : qBittorrent et les *arr vivent DANS le réseau de Gluetun ---
 # Ils n'ont pas de réseau à eux : tout leur trafic sort par le tunnel du VPN, et si le VPN
 # tombe, Gluetun coupe tout (kill-switch). Leurs ports sont donc publiés par Gluetun.
-# Dans le même projet, Compose sait que Gluetun recréé = eux aussi à recréer (P11).
+# Dans le même projet, Compose sait que Gluetun recréé = eux aussi à recréer.
 x-behind-vpn: &behind-vpn
   network_mode: service:media-gluetun
   depends_on:
@@ -69,7 +69,7 @@ x-behind-vpn: &behind-vpn
       condition: service_healthy
       # Gluetun redémarré par Compose (citadel restart media-gluetun) : eux aussi, pour
       # rejoindre son nouveau réseau. Un redémarrage hors de Compose (reboot du NAS) est
-      # rattrapé par vpn-watch, dans infra-ops (P18).
+      # rattrapé par vpn-watch, dans infra-ops.
       restart: true
 
 services:
@@ -87,7 +87,7 @@ services:
     command: ["--innodb-buffer-pool-size=64M"]
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?manque dans .env.prod}
-      # root n'est joignable que de l'intérieur du conteneur (§12.5)
+      # root n'est joignable que de l'intérieur du conteneur
       MARIADB_ROOT_HOST: localhost
       # Lus par mariadb-init.sh à la première initialisation : base et trois comptes
       DB_DATABASE_NAME: citadel
@@ -108,7 +108,7 @@ services:
           create_host_path: false
     ports:
       # Seulement sur 127.0.0.1 du NAS : invisible du réseau, joignable par un tunnel
-      # SSH (DBeaver, §12.5)
+      # SSH (DBeaver)
       - "127.0.0.1:3306:3306"
     networks:
       - site
@@ -234,7 +234,7 @@ services:
     image: ghcr.io/alexandre-richard/citadel-caddy:${CITADEL_VERSION:?version manquante, passer par citadel}
     container_name: infra-caddy
     environment:
-      # Jeton Cloudflare limité au DNS du domaine : certificats par challenge DNS (§12.3)
+      # Jeton Cloudflare limité au DNS du domaine : certificats par challenge DNS
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?manque dans .env.prod}
       ACME_EMAIL: ${ACME_EMAIL:?manque dans .env.prod}
       # Absent de .env.prod : alexandre-richard.fr. Les tests sur ton PC mettent
@@ -328,7 +328,7 @@ services:
     network_mode: none
     volumes:
       # Piloter le Docker du NAS. Donne tous les droits sur le NAS : ce conteneur
-      # n'exécute que les scripts de son image, et n'écoute sur aucun port (§10.2).
+      # n'exécute que les scripts de son image, et n'écoute sur aucun port.
       - /var/run/docker.sock:/var/run/docker.sock
       # Le verrou partagé avec citadel deploy (state/lock) : jamais de vpn-watch pendant
       # qu'un déploiement recrée les conteneurs ; et state/tailscale.json, pour la console
@@ -346,7 +346,7 @@ services:
       citadel.mode: "always"
       citadel.controllable: "false"
 
-  # --- Le filtre entre la console et Docker (§14.2) ---
+  # --- Le filtre entre la console et Docker ---
   # Le socket de Docker donne tous les droits sur le NAS. La console ne le voit jamais :
   # elle parle à ce petit proxy, qui ne laisse passer que les requêtes de ses listes
   # (méthode + chemin), et refuse tout le reste (créer un conteneur, exécuter une
@@ -463,7 +463,7 @@ services:
   # ===================================================================================
   # La stack média
   # ===================================================================================
-  # Versions figées (§10.7), jamais « latest » : pour les images linuxserver, le tag de
+  # Versions figées, jamais « latest » : pour les images linuxserver, le tag de
   # build complet, qui désigne toujours la même image. Au départ, exactement celles qui
   # tournaient sur le NAS (relevé du 25 octobre 2026) : la bascule ne change que la
   # façon de les lancer ; les mises à jour viendront ensuite, une par une. Exception,
@@ -775,7 +775,7 @@ services:
       citadel.mode: "on-demand"
       citadel.controllable: "true"
 
-# --- Réseaux séparés (§10.4) : un conteneur ne joint que ceux de ses réseaux ---
+# --- Réseaux séparés : un conteneur ne joint que ceux de ses réseaux ---
 networks:
   # Caddy et ce qu'il sert, plus la console, qui lit Jellyfin et les certificats de Caddy.
   # Sort sur Internet : certificats, relais du front (Irigo), appels du serveur à IGDB

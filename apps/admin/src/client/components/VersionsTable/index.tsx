@@ -5,7 +5,7 @@ type Props = {
 	services: ServiceItem[];
 };
 
-// Fonctionnalité 10 (§14.3) : la version en service de chaque outil. La dernière version
+// La version en service de chaque outil. La dernière version
 // publiée s'ajoutera avec le job update-check (étape 29).
 export function VersionsTable({ services }: Props) {
 	return (

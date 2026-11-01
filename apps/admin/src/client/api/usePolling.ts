@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "./apiRequest";
 
 // Relit une route de l'API à intervalle régulier, seulement quand l'onglet est visible :
-// onglet caché ou fermé, la console ne demande rien au NAS (§14.1, CPU nul au repos).
+// onglet caché ou fermé, la console ne demande rien au NAS (CPU nul au repos).
 // En cas d'erreur, les dernières données restent affichées avec le message.
 // updatedAt : l'heure de la dernière lecture réussie, pour les durées (« depuis 3 h »)
 export function usePolling<T>(

@@ -22,7 +22,7 @@
 #   DB_BACKUP_PASSWORD    (prod seulement) mot de passe du compte citadel_backup
 #   MARIADB_ROOT_PASSWORD posé par compose : l'image en a besoin, et ce script s'en sert
 #
-# Les comptes (cahier des charges, §12.5) :
+# Les comptes :
 #   - En prod, trois comptes aux droits séparés :
 #       DB_USER_NAME     (citadel_app)  lire et écrire les données, rien d'autre ;
 #       citadel_migrator                structure et données de la base (Flyway, DBeaver) ;

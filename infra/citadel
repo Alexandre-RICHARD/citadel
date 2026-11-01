@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =====================================================================================
-# citadel : la commande du NAS (cahier des charges, §8.2, §8.4 et §10.6)
+# citadel : la commande du NAS
 # =====================================================================================
 #
 #   citadel status                     état des services, version en service
@@ -11,7 +11,7 @@
 #   citadel up                         secours : relance tout ce qui doit toujours tourner
 #   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
 #   citadel version                    la version en service, seule (lue par pnpm release)
-#   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun (P18)
+#   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
 #   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #   citadel admin-password             fabrique ADMIN_PASSWORD_HASH (mot de passe de la console)
 #
@@ -305,7 +305,7 @@ dump_prod_db() {
 
 # --- Démarrer ce qui doit tourner (étape 7, retour arrière, citadel up) ---
 # « always » : démarré et recréé si besoin ; « on-demand » : seulement s'il tournait,
-# sinon juste mis à jour sans démarrer (§8.2) ; les jobs ne sont pas lancés ici.
+# sinon juste mis à jour sans démarrer ; les jobs ne sont pas lancés ici.
 #
 # Piège de bash : une fonction appelée dans un « || » ou un « if » ne s'arrête PAS à la
 # première erreur (set -e y est suspendu). D'où les « || return 1 » explicites ici et
@@ -455,7 +455,7 @@ cmd_deploy() {
 	install -m 644 /opt/citadel/mariadb-init.sh "$CITADEL_DIR/mariadb-init.sh"
 	compose up --detach --wait site-prod-db
 	compose run --rm site-prod-migrations migrate </dev/null ||
-		die "migrations en échec : la version précédente tourne toujours (voir §8.4 du cahier des charges)"
+		die "migrations en échec : la version précédente tourne toujours (voir le README de l'hébergement)"
 
 	# Le compose.yml de cette version est gardé : un retour arrière le reprendra
 	mkdir -p "$STATE_DIR/releases/$version"
@@ -480,7 +480,7 @@ cmd_deploy() {
 }
 
 # citadel rollback : la version précédente, avec son compose.yml et ses images, déjà là.
-# Pas de migrations : celles passées restent, elles sont rétrocompatibles (§8.3).
+# Pas de migrations : celles passées restent, elles sont rétrocompatibles.
 cmd_rollback() {
 	take_lock
 	local current previous
@@ -591,7 +591,7 @@ own_project() {
 	printf '%s\n' "${project:-citadel}"
 }
 
-# --- vpn-watch : chaque minute, par infra-ops (P18) ---
+# --- vpn-watch : chaque minute, par infra-ops ---
 # qBittorrent et les *arr vivent dans le réseau de Gluetun. Deux façons de le perdre,
 # hors de Compose :
 #   - au redémarrage du NAS, Docker relance les conteneurs sans ordre : partis avant
@@ -640,10 +640,10 @@ cmd_vpn_watch() {
 }
 
 # --- tailscale-status : chaque minute, par infra-ops ---
-# Les appareils de ton tailnet, pour la console (§14.3, fonctionnalité 6). Elle n'a pas
+# Les appareils de ton tailnet, pour la console. Elle n'a pas
 # accès à Tailscale : infra-ops lui dépose state/tailscale.json, réduit à ce qu'elle
 # affiche (nom, système, en ligne, liaison directe ou relayée, dernière connexion) et à
-# l'expiration de la clé du NAS (null : désactivée, §12.4).
+# l'expiration de la clé du NAS (null : désactivée).
 cmd_tailscale_status() {
 	local tailscale status
 	tailscale=$(docker ps --quiet --filter "label=com.docker.compose.project=$(own_project)" \

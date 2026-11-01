@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =====================================================================================
-# release.sh : lancé par `pnpm release`, sur ton PC, dans Git Bash (cahier des charges, §8.1)
+# release.sh : lancé par `pnpm release`, sur ton PC, dans Git Bash
 # =====================================================================================
 #
 #   pnpm release             valide, tague, pousse, attend les images, déploie
@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-# Le dépôt sur GitHub, et le NAS : alias de ton ~/.ssh/config (§8.1, étape 6 de la roadmap)
+# Le dépôt sur GitHub, et le NAS : alias de ton ~/.ssh/config
 REPOSITORY=Alexandre-RICHARD/citadel
 NAS=nas
 NAS_CITADEL=/Volume1/citadel/citadel

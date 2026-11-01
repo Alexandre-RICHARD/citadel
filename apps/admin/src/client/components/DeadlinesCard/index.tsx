@@ -30,7 +30,7 @@ function describeDeadline(item: DeadlineItem, now: number): string {
 		: `${date} · expiré`;
 }
 
-// Fonctionnalité 8 (§14.3) : ce qui expire. Les dates bougent peu : relues toutes les 5 min
+// Ce qui expire. Les dates bougent peu : relues toutes les 5 min
 export function DeadlinesCard() {
 	const { data, updatedAt, error } = usePolling<DeadlineItem[]>(
 		"/deadlines",
