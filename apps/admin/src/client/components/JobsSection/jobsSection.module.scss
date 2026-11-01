@@ -1,0 +1,127 @@
+.jobsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+
+  .title {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .muted {
+    color: var(--text-subtle);
+  }
+
+  .error {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--danger-subtle);
+    color: var(--danger);
+  }
+
+  .list {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    list-style: none;
+  }
+
+  .job {
+    display: grid;
+    grid-template-columns: minmax(18rem, 1.2fr) minmax(16rem, 1.4fr) 13rem auto;
+    align-items: start;
+    gap: 1.2rem;
+    padding: 1.2rem 1.6rem;
+
+    & + .job {
+      border-top: 1px solid var(--border);
+    }
+  }
+
+  .identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+
+    > span {
+      margin-top: 0.5rem;
+    }
+  }
+
+  .names {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+  }
+
+  .monitored {
+    display: inline-flex;
+    color: var(--accent);
+  }
+
+  .description {
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+  }
+
+  .result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+    font-size: 1.3rem;
+  }
+
+  .checks {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+
+    summary {
+      cursor: pointer;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-top: 0.6rem;
+      font-family: var(--mono);
+      list-style: none;
+      word-break: break-word;
+    }
+
+    li[data-ok="false"] {
+      color: var(--danger);
+    }
+  }
+
+  .next {
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.2rem;
+  }
+
+  @media (width <= 800px) {
+    .job {
+      grid-template-columns: 1fr auto;
+    }
+
+    .result,
+    .next {
+      grid-column: 1;
+    }
+  }
+}

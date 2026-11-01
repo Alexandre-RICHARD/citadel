@@ -23,8 +23,11 @@ const envSchema = z.object({
 	CADDY_CONTAINER: z.string().min(1),
 	SITE_DOMAIN: z.string().min(1),
 
-	// /Volume1/citadel/state du NAS, en lecture seule : version en service, historique
+	// /Volume1/citadel/state du NAS, en lecture seule : version en service, historique,
+	// jobs, sauvegardes, résultats des demandes
 	STATE_DIR: z.string().min(1),
+	// Sa seule écriture : les demandes à infra-ops (state/queue du NAS)
+	QUEUE_DIR: z.string().min(1),
 	// Un dossier par disque surveillé, monté en lecture seule : seul l'espace libre est lu
 	SSD_PATH: z.string().min(1),
 	HDD_PATH: z.string().min(1),

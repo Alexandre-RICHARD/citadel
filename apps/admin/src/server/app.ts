@@ -8,7 +8,9 @@ import { requireSession } from "./auth/requireSession.ts";
 import { errorHandler } from "./http/errorHandler.ts";
 import { HttpError } from "./http/HttpError.ts";
 import { securityHeaders } from "./http/securityHeaders.ts";
+import { jobsRouter } from "./jobs/jobsRouter.ts";
 import { overviewRouter } from "./overviewRouter.ts";
+import { requestsRouter } from "./requests/requestsRouter.ts";
 import { servicesRouter } from "./services/servicesRouter.ts";
 
 // Le front construit par Vite (build/public), à côté du serveur dans l'image
@@ -31,6 +33,8 @@ app.use(authRouter);
 app.use("/api", requireSession);
 app.use(servicesRouter);
 app.use(overviewRouter);
+app.use(jobsRouter);
+app.use(requestsRouter);
 app.use("/api", () => {
 	throw new HttpError(404, "Route inconnue");
 });

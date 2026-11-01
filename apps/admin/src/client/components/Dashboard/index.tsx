@@ -18,7 +18,9 @@ import { ACTION_LABELS } from "../../status/actionLabels";
 import { GROUP_LABELS } from "../../status/groupLabels";
 import { AccessSection } from "../AccessSection";
 import { DeadlinesCard } from "../DeadlinesCard";
+import { JobsSection } from "../JobsSection";
 import { LogsDialog } from "../LogsDialog";
+import { RequestDialog } from "../RequestDialog";
 import { ServiceGroup } from "../ServiceGroup";
 import { SiteCard } from "../SiteCard";
 import { SystemCard } from "../SystemCard";
@@ -87,8 +89,17 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 	const [confirmation, setConfirmation] = useState<PendingConfirmation | null>(
 		null,
 	);
-	const [logsService, setLogsService] = useState<ServiceItem | null>(null);
+	const [logsTarget, setLogsTarget] = useState<{
+		title: string;
+		path: string;
+		hint: string;
+	} | null>(null);
 	const [toasts, setToasts] = useState<ToastItem[]>([]);
+	// Un job lancé depuis la console, suivi dans sa fenêtre
+	const [jobRequest, setJobRequest] = useState<{
+		id: string;
+		title: string;
+	} | null>(null);
 	// crypto.randomUUID n'existe qu'en HTTPS : la console est en HTTP sur le LAN
 	const toastCounter = useRef(0);
 
@@ -107,6 +118,23 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 		},
 		[dismissToast],
 	);
+
+	const pushError = useCallback(
+		(message: string) => pushToast(ToastVariantEnum.ERROR, message),
+		[pushToast],
+	);
+
+	async function runJob(name: string, label: string) {
+		try {
+			const { requestId } = await apiRequest<{ requestId: string }>(
+				`/jobs/${name}/run`,
+				{ method: "POST", body: {} },
+			);
+			setJobRequest({ id: requestId, title: `Job · ${label}` });
+		} catch (error) {
+			pushError(error instanceof Error ? error.message : String(error));
+		}
+	}
 
 	async function execute(path: string, target: string, done: string) {
 		setPendingTarget(target);
@@ -239,11 +267,31 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 										`le groupe ${GROUP_LABELS[groupName] ?? groupName}`,
 									)
 								}
-								onShowLogs={setLogsService}
+								onShowLogs={(service) =>
+									setLogsTarget({
+										title: `Logs · ${service.label}`,
+										path: `/services/${service.name}/logs`,
+										hint: "200 dernières lignes",
+									})
+								}
 							/>
 						))}
 					</section>
 				</ThemeProvider>
+
+				<JobsSection
+					busy={jobRequest !== null}
+					onRun={(job) => {
+						void runJob(job.name, job.label);
+					}}
+					onShowLog={(job) =>
+						setLogsTarget({
+							title: `Log · ${job.label}`,
+							path: `/jobs/${job.name}/log`,
+							hint: "dernier passage",
+						})
+					}
+				/>
 
 				<AccessSection />
 
@@ -275,9 +323,13 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 				}}
 				onCancel={() => setConfirmation(null)}
 			/>
+			<RequestDialog
+				request={jobRequest}
+				onClose={() => setJobRequest(null)}
+			/>
 			<LogsDialog
-				service={logsService}
-				onClose={() => setLogsService(null)}
+				target={logsTarget}
+				onClose={() => setLogsTarget(null)}
 			/>
 			<Toaster
 				toasts={toasts}

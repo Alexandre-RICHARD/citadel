@@ -1,0 +1,53 @@
+// Les jobs d'infra-ops que la console montre et sait lancer, dans l'ordre d'affichage.
+// Les noms sont ceux de `citadel <job>` (infra/citadel, infra/ops/crontab).
+// monitored : le job a son contrôle chez healthchecks.io (cahier des charges, §13)
+export const JOB_DEFINITIONS = [
+	{
+		name: "site-check",
+		label: "Site en ligne",
+		description: "Le site répond depuis Internet",
+		monitored: true,
+	},
+	{
+		name: "db-backup",
+		label: "Sauvegarde de la base",
+		description: "Dump, copie sur le HDD et le Drive",
+		monitored: true,
+	},
+	{
+		name: "db-restore-test",
+		label: "Test de restauration",
+		description: "Le dump de la nuit, restauré en pré-prod et contrôlé",
+		monitored: true,
+	},
+	{
+		name: "config-backup",
+		label: "Sauvegarde des configs",
+		description: "Archive de /Volume1/appdata, services média arrêtés",
+		monitored: true,
+	},
+	{
+		name: "config-verify",
+		label: "Contrôle des configs",
+		description: "Bases SQLite et fichiers clés de la dernière archive",
+		monitored: true,
+	},
+	{
+		name: "update-check",
+		label: "Mises à jour",
+		description: "Versions publiées des images, quota du Drive",
+		monitored: false,
+	},
+	{
+		name: "qbittorrent-stats",
+		label: "Compteurs qBittorrent",
+		description: "Volumes échangés, pour l'historique",
+		monitored: false,
+	},
+	{
+		name: "auto-stop",
+		label: "Arrêt automatique",
+		description: "Les *arr et cross-seed, 3 h après leur démarrage",
+		monitored: false,
+	},
+] as const;
