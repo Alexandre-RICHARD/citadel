@@ -41,6 +41,9 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel deploy <version>` | déploie une version : plan, confirmation, dump, migrations, vérifications, retour arrière automatique en cas d'échec |
 | `citadel rollback` | revient à la version précédente |
 | `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) |
+| `citadel maintenance on\|off` | page de maintenance (503) à la place du site, ou plus |
+| `citadel banner "<message>"\|off` | le bandeau du site, ou plus de bandeau |
+| `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `update-check`, `qbittorrent-stats`, `auto-stop` |
 
 Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm release` ; revenir en arrière : `citadel rollback`.
 
@@ -57,7 +60,7 @@ Depuis tes appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME
 | Jellyfin | `https://jellyfin.alexandre-richard.fr` ; `:8096` en direct | ✅ par le domaine | ✅ les deux | comptes Jellyfin |
 | qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | `:8080`, `:9696`, `:7878`, `:8989`, `:6767`, `:2468` | ❌ | ✅ | la leur, inchangée : leurs réglages suivent leurs dossiers |
 | Console | `http://…:8100` | ❌ | ✅ | son mot de passe |
-| Pré-prod (phase 6) | `http://…:8002`, servie par Caddy | ❌ | ✅ | aucune |
+| Pré-prod | `http://…:8002`, servie par Caddy | ❌ | ✅ | aucune |
 | Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
 | SSH | son port, dans ton `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
 | MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes plus bas |
@@ -106,6 +109,22 @@ ssh -o PubkeyAuthentication=no nas echo ok      # attendu : Permission denied (p
 pnpm prod:local                                 # attendu : 15 conteneurs « Healthy » ; puis pnpm prod:local:down
 pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
+
+## Alertes (healthchecks.io)
+
+Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`) signalent leur début, leur réussite ou leur échec à healthchecks.io, qui alerte par e-mail et sur Discord si un job échoue **ou ne passe pas à l'heure**. Chaque contrôle (une ligne dans la liste de ton projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
+
+1. healthchecks.io → ton projet → Settings → API Access → « Ping key » : la générer, la ranger dans Bitwarden, puis l'écrire dans `.env.prod` (`HEALTHCHECKS_PING_KEY`), avant le déploiement.
+2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console (`http://…:8100`), section « Jobs », le bouton ▶ de chaque ligne ; ou depuis ton PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
+3. healthchecks.io ne sait pas encore **quand** attendre chaque job : par défaut, une fois par jour. Pour `site-check`, une panne ne serait donc signalée qu'au bout d'un jour. Sur chaque contrôle : cliquer dessus → « Change Schedule » → onglet « Cron » → coller l'expression du tableau, fuseau `Europe/Paris`, le délai de grâce (le retard toléré avant l'alerte) → Save. Ces expressions sont celles de `infra/ops/crontab` : à reporter ici si elles y changent.
+
+| Contrôle | Cron | Délai de grâce |
+|---|---|---|
+| `site-check` | `*/5 * * * *` | 10 min |
+| `db-backup` | `0 5 * * *` | 30 min |
+| `db-restore-test` | `0 5 * * *` | 1 h |
+| `config-backup` | `0 3 * * 1` | 1 h |
+| `config-verify` | `0 3 * * 1` | 2 h |
 
 ## Accès au Drive (rclone)
 
@@ -195,6 +214,21 @@ Attendu : `-rw-------` (seul le propriétaire lit/écrit, personne d'autre n'y v
 **Note** : `infra-ops` (le conteneur des jobs) relira ce fichier, et le réécrit quand le jeton OAuth de Google doit être renouvelé (normal, aucune action de ta part).
 
 **Si un jour le Drive refuse** (`invalid_grant`, jeton expiré ou révoqué) : sur ton PC, `rclone config reconnect gdrive:`, puis refaire l'étape 4. Le chiffrement ne change pas : rien n'est perdu.
+
+**Déchiffrer un fichier téléchargé du Drive**, sans NAS ni `rclone.conf` : juste rclone, le mot de passe et le sel de Bitwarden. Sur drive.google.com, dans `citadel`, les dossiers et les fichiers ont des noms illisibles : télécharger le fichier voulu **sans le renommer** (son nom chiffré sert au déchiffrement). Puis, dans Git Bash :
+
+```sh
+cd ~/Downloads
+mkdir -p chiffre clair
+mv <nom illisible téléchargé> chiffre/          # un ou plusieurs fichiers
+read -rsp "Mot de passe (Bitwarden) : " PW; echo
+read -rsp "Sel (Bitwarden) : " SALT; echo
+rclone copy ":crypt,remote='chiffre',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")':" clair
+unset PW SALT
+ls clair                                        # attendu : citadel-AAAAMMJJ-HHMMSS-….sql.zst ou ….tar.zst
+```
+
+Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget install Meta.Zstandard`), et la console sait le restaurer tel quel (« Restaurer la base » → « Un dump envoyé depuis ce PC »). Une archive des configs (`.tar.zst`) s'ouvre avec `tar --zstd -xf <fichier>`. Sans rien télécharger, rclone lit aussi le Drive directement : `rclone ls ":crypt,remote='gdrive:',password=…,password2=…:"` liste tout en clair, et `rclone copy` du même remote suivi de `:db/daily/<nom en clair>` récupère un fichier (même syntaxe que l'étape 3).
 
 ## Remonter le NAS de zéro
 

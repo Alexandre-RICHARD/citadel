@@ -157,7 +157,6 @@ Numéros d'origine gardés.
 - Console : ajuster en direct la limite CPU, la priorité CPU et la limite RAM d'un conteneur (`docker update`, à autoriser dans `infra-socket-proxy`). Un déploiement remet les valeurs de `compose.yml` : proposer de les y reporter.
 - Console : afficher proprement `pnpm audit` et `pnpm outdated` (failles et dépendances en retard, par paquet du monorepo).
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
-- Audit du dépôt public, historique compris : aucune donnée personnelle (emails, noms, adresses, utilisateur TOS), aucun détail d'infra exploitable (IP locales, ports, noms de machines, chemins, versions, comptes) au-delà du strict nécessaire ; gitleaks relancé ; idem pour les images publiques de GHCR.
 
 Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
 
