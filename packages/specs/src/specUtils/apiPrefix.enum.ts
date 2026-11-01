@@ -3,4 +3,6 @@ export enum ApiPrefixEnum {
 	BACKLOG = "/backlog",
 	ERROR_LOG = "/error-log",
 	SATISFACTORY = "/satisfactory",
+	MAIL = "/mail",
+	CONTACT = "/contact",
 }
