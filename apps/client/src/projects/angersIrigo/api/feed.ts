@@ -1,30 +1,28 @@
 /* eslint-disable citadel/max-one-export, no-restricted-syntax -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
-import { type IConversionOptions, parse } from "protobufjs";
+// Le décodeur officiel GTFS-RT, précompilé : il n'a pas besoin de `eval`, que la
+// Content-Security-Policy du site interdit (infra/Caddyfile). protobufjs, lui, fabrique son décodeur
+// à l'exécution à partir d'un fichier .proto, avec `new Function` : il aurait fallu autoriser
+// 'unsafe-eval' pour tout le site.
+import { transit_realtime } from "gtfs-realtime-bindings";
 
 import type { FeedMessage } from "../types/gtfs-realtime";
-// Schéma officiel GTFS-RT, copié depuis github.com/google/gtfs-realtime-bindings.
-// `?raw` : Vite importe le contenu du fichier sous forme de chaîne
-import gtfsRealtimeProto from "./gtfs-realtime.proto?raw";
-
-// Le schéma est compilé une seule fois, au chargement du module
-const feedMessageSchema = parse(gtfsRealtimeProto).root.lookupType(
-	"transit_realtime.FeedMessage",
-);
 
 /**
  * Options de conversion du message protobuf en objet JS.
  * Les types de src/types/gtfs-realtime.ts en dépendent : les modifier implique de revoir les types.
  */
-const FEED_CONVERSION_OPTIONS: IConversionOptions = {
+const FEED_CONVERSION_OPTIONS: Parameters<
+	typeof transit_realtime.FeedMessage.toObject
+>[1] = {
 	enums: String, // nom de la valeur ('FULL_DATASET') plutôt que son numéro
 	longs: Number, // int64 en number plutôt qu'en objet Long
 };
 
 /** Décode un flux GTFS-RT binaire (protobuf) */
 export function decodeFeed(buffer: Uint8Array): FeedMessage {
-	const message = feedMessageSchema.decode(buffer);
-	// toObject() renvoie un objet non typé ; sa forme est garantie par le schéma et les options de conversion
-	return feedMessageSchema.toObject(
+	const message = transit_realtime.FeedMessage.decode(buffer);
+	// toObject() renvoie un objet non typé ; sa forme est garantie par le schéma officiel et les options de conversion
+	return transit_realtime.FeedMessage.toObject(
 		message,
 		FEED_CONVERSION_OPTIONS,
 	) as FeedMessage;

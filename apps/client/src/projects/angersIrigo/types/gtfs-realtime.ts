@@ -2,7 +2,7 @@
 /**
  * Types du flux GTFS-Realtime, tels que renvoyés par `toObject()` de protobufjs.
  *
- * Écrits à la main d'après src/api/gtfs-realtime.proto (toutes les entités, y compris
+ * Écrits à la main d'après le schéma officiel GTFS-RT, dans gtfs-realtime-bindings (toutes les entités, y compris
  * celles qu'Irigo n'utilise pas). La forme découle des options de conversion
  * (voir FEED_CONVERSION_OPTIONS dans src/api/feed.ts) :
  * - noms de champs en camelCase (`route_id` → `routeId`) ;

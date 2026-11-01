@@ -56,6 +56,21 @@
 	}
 }
 
+# La Content-Security-Policy (§12.7) : dit au navigateur d'où la page a le droit de charger
+# ses scripts, styles, images et connexions. Un script injecté par une faille (XSS) vient
+# d'ailleurs, ou est écrit dans la page : le navigateur le refuse. C'est la seconde
+# barrière, après l'échappement du contenu par React. Pour le site seulement : Jellyfin a
+# ses propres scripts, qu'elle casserait.
+# style-src-attr : les attributs style="…" que posent la carte (Leaflet : icônes des bus) ; les
+# feuilles de style restent limitées au site. Un attribut style ne peut pas exécuter de script.
+# Un site qui charge quelque chose d'une source non listée ici le voit bloqué sans bruit
+# (seulement une erreur dans la console du navigateur) : toute nouvelle source externe
+# (images, cartes, API) s'ajoute à la ligne qui lui correspond, puis se teste avec
+# `pnpm prod:local`.
+(content_security_policy) {
+	header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://images.igdb.com https://tile.openstreetmap.org; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+}
+
 (access_log) {
 	# Une ligne JSON par requête sur la sortie standard du conteneur : la console la lit
 	# (accès externes, scans suspects). Les messages de Caddy lui-même vont sur la
@@ -81,6 +96,7 @@
 # ===== Le site : la box envoie 80/443 vers les ports 8001/4443 du NAS =====
 {$SITE_DOMAIN:alexandre-richard.fr} {
 	import security_headers
+	import content_security_policy
 	import access_log
 	# Compression des réponses, si le navigateur l'accepte
 	encode zstd gzip
