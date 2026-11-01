@@ -85,15 +85,47 @@
 	# Compression des réponses, si le navigateur l'accepte
 	encode zstd gzip
 
-	# /api/… va au serveur, préfixe retiré : /api/health arrive en /health.
-	# Les routes du serveur ne changent donc pas, et le front appelle /api partout.
-	handle_path /api/* {
-		reverse_proxy site-prod-server:3000
+	# Le mode maintenance : state/public/maintenance.on existe (la console, ou
+	# `citadel maintenance on`). Caddy regarde le fichier à chaque requête : rien à
+	# recharger. /api/health reste ouvert : site-check vérifie toujours le serveur.
+	@maintenance {
+		file {
+			root /srv/public
+			try_files /maintenance.on
+		}
+		not path /api/health
 	}
 
-	# Tout le reste va au nginx du front : fichiers du site, /irigo
-	handle {
-		reverse_proxy site-prod-client:8080
+	# `route` garde l'ordre écrit ici : la maintenance passe avant /api. Les `handle`
+	# sont exclusifs : la première qui correspond répond, les suivantes sont ignorées.
+	route {
+		# Le bandeau du site (§11.8) : un fichier écrit par infra-ops, servi tel quel.
+		# Absent : 404, et le front n'affiche rien. Jamais gardé en cache.
+		handle /banner.json {
+			root * /srv/public
+			header Cache-Control "no-store"
+			file_server
+		}
+
+		handle @maintenance {
+			root * /srv/maintenance
+			rewrite * /index.html
+			header Cache-Control "no-store"
+			file_server {
+				status 503
+			}
+		}
+
+		# /api/… va au serveur, préfixe retiré : /api/health arrive en /health.
+		# Les routes du serveur ne changent donc pas, et le front appelle /api partout.
+		handle_path /api/* {
+			reverse_proxy site-prod-server:3000
+		}
+
+		# Tout le reste va au nginx du front : fichiers du site, /irigo
+		handle {
+			reverse_proxy site-prod-client:8080
+		}
 	}
 }
 

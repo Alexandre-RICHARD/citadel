@@ -179,6 +179,8 @@ FROM caddy:${CADDY_VERSION}-alpine AS caddy
 COPY --from=caddy-build /tmp/caddy /usr/bin/caddy
 # Les règles de Caddy font partie de la version : une règle modifiée part en prod avec elle
 COPY infra/Caddyfile /etc/caddy/Caddyfile
+# La page du mode maintenance, servie quand state/public/maintenance.on existe
+COPY infra/maintenance.html /srv/maintenance/index.html
 # Un utilisateur sans droits. Il peut quand même écouter sur 80 et 443 dans le conteneur :
 # Docker l'autorise depuis sa version 20.10, sans capacité supplémentaire.
 # /data (certificats) et /config lui appartiennent ; un volume Docker neuf reprend ces droits.

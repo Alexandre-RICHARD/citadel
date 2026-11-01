@@ -392,6 +392,8 @@ services:
       # Certificats et comptes ACME, gardés d'une version à l'autre (volume Docker : il
       # reprend les droits de l'utilisateur caddy de l'image, sans réglage)
       - caddy-data:/data
+      # Le bandeau et l'interrupteur du mode maintenance, écrits par infra-ops ; lecture seule
+      - /Volume1/citadel/state/public:/srv/public:ro
     tmpfs:
       # Copie de travail de sa config, réécrite à chaque démarrage
       - /config:uid=1000,gid=1000,mode=0700

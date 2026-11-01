@@ -1,0 +1,85 @@
+<!doctype html>
+<!--
+  La page du mode maintenance (cahier des charges, §14.3), copiée dans l'image Caddy.
+  Caddy la sert, en 503, à la place de tout le site quand state/public/maintenance.on
+  existe (la console, ou `citadel maintenance on`). Autonome : ni script, ni police, ni
+  image à charger, elle s'affiche même si le reste du site est en panne.
+-->
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1"
+		/>
+		<meta
+			name="robots"
+			content="noindex"
+		/>
+		<title>Maintenance en cours</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--bg: #fbf7f2;
+				--text: #1f1a14;
+				--muted: #6b6157;
+				--accent: #e8730c;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #15120f;
+					--text: #f1ebe4;
+					--muted: #a99d91;
+					--accent: #ff9a3c;
+				}
+			}
+			body {
+				display: grid;
+				place-items: center;
+				min-height: 100vh;
+				margin: 0;
+				padding: 1.5rem;
+				box-sizing: border-box;
+				background: var(--bg);
+				color: var(--text);
+				font-family: system-ui, -apple-system, "Segoe UI", roboto, sans-serif;
+				text-align: center;
+			}
+			main {
+				max-width: 32rem;
+			}
+			.emoji {
+				font-size: 3.5rem;
+			}
+			h1 {
+				margin: 1rem 0 0.5rem;
+				font-size: 1.6rem;
+			}
+			p {
+				margin: 0;
+				color: var(--muted);
+				line-height: 1.5;
+			}
+			.bar {
+				width: 6rem;
+				height: 0.3rem;
+				margin: 1.5rem auto 0;
+				border-radius: 1rem;
+				background: var(--accent);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<div
+				class="emoji"
+				aria-hidden="true"
+			>
+				🚧
+			</div>
+			<h1>Maintenance en cours</h1>
+			<p>Le site revient très vite. Merci de repasser dans quelques minutes.</p>
+			<div class="bar"></div>
+		</main>
+	</body>
+</html>

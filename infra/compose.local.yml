@@ -117,6 +117,8 @@ services:
       - "127.0.0.1:8000:80"
       - "127.0.0.1:8443:443"
       - "127.0.0.1:8002:8002"
+    volumes:
+      - site-public:/srv/public:ro
 
   # Tailscale : seulement sur le NAS (il lui faut un compte et le réseau de l'hôte).
   # Un profil jamais activé : `up` ne le lance pas.
@@ -138,6 +140,8 @@ services:
       - ops-state:/Volume1/citadel
       # Et son state/, partagé avec la console comme sur le NAS (relevés pour la console)
       - admin-state:/Volume1/citadel/state
+      # Ce que Caddy sert (bandeau, maintenance)
+      - site-public:/Volume1/citadel/state/public
       # Les sauvegardes, et le faux Drive où rclone les envoie chiffrées
       - backups:/Volume2/backups
       - fake-drive:/Volume2/drive
@@ -297,6 +301,7 @@ volumes:
   preprod-db-data:
   ops-state:
   admin-state:
+  site-public:
   backups:
   fake-drive:
   appdata:
