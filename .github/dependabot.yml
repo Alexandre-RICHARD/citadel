@@ -1,0 +1,36 @@
+# =====================================================================================
+# dependabot.yml : la veille des dépendances par GitHub (cahier des charges, §12.7)
+# =====================================================================================
+#
+# Dependabot lit le dépôt et ouvre une demande de fusion (pull request) quand une
+# dépendance a une nouvelle version : tu la relis, tu la fusionnes ou tu la fermes. Il
+# n'y a rien à lancer. Les alertes de sécurité (failles connues) sont un réglage à part,
+# dans les paramètres du dépôt (Settings > Advanced Security) : elles n'ont pas besoin de ce fichier.
+#
+# Une demande groupée par semaine pour les mises à jour mineures : sans le groupement, chaque
+# paquet aurait la sienne et la liste serait ingérable (le dépôt en a plusieurs centaines).
+# Pas de volet « docker » : les images sont suivies par update-check (console), et les
+# Dockerfile prennent leurs versions par ARG, que Dependabot ne sait pas lire.
+version: 2
+
+updates:
+  # --- Les paquets pnpm (apps/* et packages/*) ---
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    # Au plus 5 demandes ouvertes à la fois
+    open-pull-requests-limit: 5
+    groups:
+      # Les mises à jour mineures et correctifs ensemble : une demande, un test
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # --- Les actions GitHub de .github/workflows (épinglées par SHA : Dependabot met à jour
+  # le SHA et le commentaire de version) ---
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
