@@ -1705,7 +1705,9 @@ job_vpn_leak_test() {
 	# 2. Le DNS
 	real_as=$(curl --silent --fail --max-time 10 "https://ipinfo.io/$real_ip/org" | cut -d' ' -f1) ||
 		check_fail "DNS" "ipinfo.io injoignable"
-	test_id=$(curl --silent --fail --max-time 10 https://bash.ws/id) || check_fail "DNS" "bash.ws injoignable"
+	# L'identifiant du test, tiré ici : bash.ws/id renvoie maintenant sa page en
+	# indonésien (« id » pris pour une langue). N'importe quel nom inédit convient.
+	test_id=$(printf '%04x' "$RANDOM" "$RANDOM" "$RANDOM" "$RANDOM")
 	# shellcheck disable=SC2016 # les $ sont pour le sh du conteneur
 	behind_vpn sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do nslookup "$i.$0.bash.ws" >/dev/null 2>&1; done; true' "$test_id"
 	servers=$(curl --silent --fail --max-time 10 "https://bash.ws/dnsleak/test/$test_id?json" |
