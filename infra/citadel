@@ -307,6 +307,9 @@ show_plan() {
 }
 
 # --- Migrations en attente : demandées à Flyway, avec les migrations de la nouvelle version ---
+# Gardées dans PENDING_MIGRATIONS : avec des migrations, le déploiement les répète
+# d'abord en pré-prod (étape 5).
+PENDING_MIGRATIONS=""
 show_pending_migrations() {
 	if ! is_healthy site-prod-db; then
 		say "  base pas encore démarrée : toutes les migrations de la version seront appliquées"
@@ -317,6 +320,7 @@ show_pending_migrations() {
 	pending=$(compose run --rm --no-deps site-prod-migrations info -outputType=json </dev/null 2>/dev/null |
 		jq -r '.migrations[] | select(.state == "Pending") | "  V\(.version)  \(.description)"') ||
 		die "Flyway n'a pas pu lire l'état de la base"
+	PENDING_MIGRATIONS=$pending
 	if [[ -n $pending ]]; then
 		say "$pending"
 	else
@@ -473,6 +477,21 @@ cleanup_old_versions() {
 	shopt -u nullglob
 }
 
+# Étape 5 : la nouvelle version essayée sur une copie de la prod (§8.2). Le dump de
+# l'étape 4 est restauré dans la base de pré-prod, les migrations de la nouvelle version
+# y passent, puis son serveur démarre et doit répondre sur /health (son healthcheck, qui
+# interroge la base). Rien de la prod n'est touché ici.
+rehearse_in_preprod() {
+	local dump=$1
+	compose up --detach --wait --wait-timeout 180 site-preprod-db || return 1
+	import_into_preprod "$dump" || return 1
+	say "  dump importé dans citadel_preprod"
+	compose run --rm site-preprod-migrations migrate </dev/null || return 1
+	say "  migrations appliquées"
+	compose up --detach --wait --wait-timeout 180 --no-deps site-preprod-server || return 1
+	say "  serveur de pré-prod sain (/health)"
+}
+
 cmd_deploy() {
 	local version=${1:-}
 	[[ -n $version ]] || die "usage : citadel deploy <version>"
@@ -506,6 +525,9 @@ cmd_deploy() {
 	say ""
 	say "Migrations à appliquer :"
 	show_pending_migrations
+	if [[ -n $PENDING_MIGRATIONS ]]; then
+		say "  (répétées d'abord en pré-prod, sur une copie de la base)"
+	fi
 	confirm "Déployer $version ? [o/N]"
 
 	step "4. Dump de la base de prod"
@@ -517,11 +539,25 @@ cmd_deploy() {
 		say "  pas de base en service : rien à sauvegarder"
 	fi
 
-	# 5. Répétition en pré-prod : arrivera avec la pré-prod (étape 28 de la roadmap)
+	# Le script d'init des bases, lu à leur toute première initialisation (compose.yml) :
+	# celle de la pré-prod (étape 5), puis celle de la prod (étape 6)
+	install -m 644 /opt/citadel/mariadb-init.sh "$CITADEL_DIR/mariadb-init.sh"
+
+	step "5. Répétition en pré-prod"
+	if [[ -z $PENDING_MIGRATIONS ]]; then
+		say "  aucune migration : rien à répéter"
+	elif [[ -z $DUMP_FILE ]]; then
+		say "  pas de base en service : rien à répéter"
+	else
+		if ! rehearse_in_preprod "$DUMP_FILE"; then
+			compose stop site-preprod-server site-preprod-db || true
+			die "la répétition a échoué : la prod n'a pas été touchée. Détail : citadel logs site-preprod-server"
+		fi
+		# La pré-prod reprend son état normal : arrêtée
+		compose stop site-preprod-server site-preprod-db
+	fi
 
 	step "6. Migrations"
-	# Le script d'init de la base, lu à sa toute première initialisation (compose.yml)
-	install -m 644 /opt/citadel/mariadb-init.sh "$CITADEL_DIR/mariadb-init.sh"
 	compose up --detach --wait site-prod-db
 	compose run --rm site-prod-migrations migrate </dev/null ||
 		die "migrations en échec : la version précédente tourne toujours (voir le README de l'hébergement)"
