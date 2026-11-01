@@ -19,7 +19,7 @@
   "dependencies": {
     "@citadel/common": "workspace:*",
     "@citadel/specs": "workspace:*",
-    "express": "^5.1.0",
+    "express": "catalog:",
     "mariadb": "^3.5.4",
     "sequelize": "6.37.8",
     "zod": "catalog:"
@@ -27,14 +27,14 @@
   "devDependencies": {
     "@citadel/eslint-config": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
-    "@types/express": "^5.0.3",
+    "@types/express": "catalog:",
     "@types/node": "catalog:",
     "@types/supertest": "^7.2.1",
-    "esbuild": "^0.28.2",
+    "esbuild": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
-    "supertest": "^7.3.0",
-    "tsx": "^4.23.15",
+    "supertest": "^7.3.1",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

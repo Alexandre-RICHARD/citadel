@@ -20,7 +20,7 @@
     "check-types": "pnpm -r check-types",
     "test:integration": "pnpm --filter @citadel/server integration-test",
     "validate-all": "pnpm -r validate-all",
-    "test-report": "vitest run --reporter=html --coverage.enabled=true && vite preview --outDir report --open",
+    "test-report": "vitest run --config vitest.report.config.ts && vite preview --outDir report --open",
     "=== Build & Production ===": "",
     "build": "pnpm --filter \"./apps/*\" build",
     "prod:local": "docker compose -p citadel-local -f infra/compose.yml -f infra/compose.local.yml --env-file .env --env-file infra/compose.local.env up --build --detach --wait",
@@ -35,8 +35,8 @@
     "tools": "bash scripts/run.sh"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vitest/ui": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.5",
+    "@vitest/ui": "^5.0.5",
     "vite": "catalog:",
     "vitest": "catalog:"
   }

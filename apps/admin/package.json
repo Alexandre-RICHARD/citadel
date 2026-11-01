@@ -18,7 +18,7 @@
   "dependencies": {
     "@citadel/common": "workspace:*",
     "@citadel/design-system": "workspace:*",
-    "express": "^5.1.0",
+    "express": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -27,16 +27,16 @@
   "devDependencies": {
     "@citadel/eslint-config": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
-    "@types/express": "^5.0.3",
+    "@types/express": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "esbuild": "^0.28.2",
+    "esbuild": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
     "sass": "catalog:",
-    "tsx": "^4.23.15",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

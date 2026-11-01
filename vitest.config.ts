@@ -19,7 +19,6 @@ export default defineConfig({
 			"packages/common/vitest.browser.config.ts",
 			"packages/specs/vitest.config.ts",
 		],
-		outputFile: "./report/index.html",
 		passWithNoTests: true,
 		coverage: {
 			reportOnFailure: true,
