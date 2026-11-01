@@ -64,7 +64,10 @@ cd "$(git rev-parse --show-toplevel)"
 step "1. Vérifications"
 [[ $(git rev-parse --abbrev-ref HEAD) == main ]] || die "pas sur la branche main"
 [[ -z $(git status --porcelain) ]] || die "des changements ne sont pas commités (git status)"
-git fetch --quiet --tags origin || die "GitHub injoignable (git fetch)"
+# Sa sortie n'est montrée qu'en cas d'échec : GitHub injoignable, ou un tag local qui
+# diffère de celui de GitHub (« would clobber existing tag »)
+fetch_output=$(git fetch --tags origin 2>&1) || die "git fetch a échoué :
+$fetch_output"
 if git rev-parse --verify --quiet origin/main >/dev/null; then
 	behind=$(git rev-list --count HEAD..origin/main)
 	((behind == 0)) || die "main a $behind commit(s) de retard sur GitHub : git pull d'abord"
