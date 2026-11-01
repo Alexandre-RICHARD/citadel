@@ -1,16 +1,6 @@
 # CI/CD et hébergement sur le NAS — Cahier des charges
 
-30 octobre 2026 · v4 : phases 0 à 5 faites, donc retirées ; restauration depuis la console, bandeau du site et ajouts venus du cahier de l'authentification · 25 octobre 2026 · v3 : roadmap réordonnée, médias et console avant la bascule, sauvegardes après · aucune question ouverte (§16)
-
 [Citadel](../../README.md) › [Hébergement et mise en production](README.md) › Cahier des charges
-
-Ce document décrit la cible et le chemin pour y arriver : construction et mise en production du site, stack média, sauvegardes, accès et sécurité, console d'administration. **Il fait foi pour la migration**. Le mode d'emploi de ce qui est en place est dans le [README](README.md). Ce qui est fait (phases 0 à 5) en est retiré : le code, commenté, et l'historique git en gardent le détail. Les sections restantes gardent leur numéro, auquel le code renvoie.
-
-Conventions :
-- **[Q2]** renvoie à la question 2 de la §16 ; ce qui en dépend reste provisoire.
-- Dans la roadmap (§15), **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
-- Chaque fichier créé pour l'infra (Dockerfile, compose, scripts, workflow, Caddyfile, conf nginx) est **commenté abondamment** : pourquoi et comment, même si les commentaires dépassent le code.
-- Quand tu tranches entre plusieurs options, les autres disparaissent du document.
 
 ## Sommaire
 
@@ -192,20 +182,12 @@ Environ 5 Go de configs et quelques centaines de Mo de base sur chaque support. 
 
 Pré-prod (phase 6) : `http://…:8002`, servie par Caddy ; LAN et Tailscale seulement, sans connexion. Le reste de la matrice est en place : voir le [README](README.md#accès).
 
-### 12.4 Tailscale
-
-- ACL : tes appareils vers le NAS. MagicDNS activé.
-
 ### 12.5 La base de prod depuis DBeaver
 
 Mêmes comptes en pré-prod, avec des droits sur `citadel_preprod` seulement.
 
 ### 12.7 Avant l'authentification
 
-Venus du [cahier de l'authentification](../auth/cahier_des_charges.md), qui commence après cette phase :
-- **Logs à 90 jours au plus**, pour la règle des 3 mois (cahier de l'authentification, §10.1) : le pilote de logs de Docker ne limite que la taille (3 fichiers de 10 Mo). Un job nocturne d'`infra-ops` vide le log d'un conteneur dont la plus vieille ligne a plus de 90 jours, logs d'accès de Caddy compris (écrits sur sa sortie standard). La page « Données personnelles » l'annonce.
-- **Content-Security-Policy** : en-tête envoyé par Caddy, qui dit au navigateur d'où la page a le droit de charger scripts, styles, images et connexions. Un script injecté (faille XSS) venant d'ailleurs est refusé : c'est la seconde barrière qui protégera les sessions. Testée en `prod:local` : une CSP mal réglée casse le front sans bruit.
-- **Veille des dépendances** : `pnpm audit` dans `validate-all`, alertes Dependabot sur le dépôt GitHub.
 - **`contact@`** : Cloudflare Email Routing transfère `contact@` vers ta boîte personnelle : rien à héberger (aucune boîte n'existe encore sur le domaine). L'adresse de contact des pages légales devient `contact@`.
 
 ---
@@ -247,37 +229,15 @@ Venus du [cahier de l'authentification](../auth/cahier_des_charges.md), qui comm
 
 ## 15. Roadmap
 
-Chaque étape se termine par une vérification.
-
-Jusqu'à la phase 6, seules sauvegardes : le dump avant chaque déploiement et l'archive faite à la bascule. Accepté.
-
-**Phase 6 — Sauvegardes, pré-prod, alertes, par-dessus le reste**
-
-27. [toi] Compte healthchecks.io, branché sur ton e-mail et un salon Discord ; remote rclone chiffré, mot de passe et sel dans Bitwarden **avant** le premier envoi.
-28. [moi] `infra-ops` complet ; `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
-29. [moi] `config-backup`, `config-verify`, `update-check`, `qbittorrent-stats`.
-30. [moi] Console : fonctionnalités restantes (§14.3), dont la restauration et le bandeau du site (§11.8).
-31. [toi] Un échec simulé, puis observation. Fini quand : une alerte reçue, puis les premiers matins avec restauration vérifiée. Puis désactiver UptimeRobot.
-
 **Phase 7 — Réseau, sécurité, ménage**
 
-32. [nous] Réglages Tailscale (§12.4).
-33. [toi] Depuis l'extérieur (4G) : seuls 80 et 443 répondent.
-34. [toi] Changer les secrets restants (clé WireGuard Proton…).
 35. [nous] Ménage : `docker/other` sur ton PC, packages GHCR `reunification-*`, enregistrement DNS `api.` chez Cloudflare.
 36. [nous] Ménage du NAS, sans rien perdre : ce qui tourne en permanence pour rien (applis TOS, services) ; `appdata/#recycle`, `appdata/reunification`, `appdata/nginx-proxy-manager`, `appdata/docker`, `/Volume1/backup`, raccourcis de `@collect` ; `joal`, `compare_movies.py`, `Flow.jpg`, `~/bin/rclone` ; ancien dossier `NAS_BACKUP` du Drive, après un mois de nouvelles sauvegardes.
-37. [moi] Avant l'authentification (§12.7) : logs à 90 jours, CSP, `pnpm audit` et Dependabot ; page « Données personnelles » à jour.
 38. [toi] `contact@` dans Cloudflare Email Routing ; [moi] adresse des pages légales.
 
 ---
 
-## 16. Questions ouvertes
-
-Aucune pour l'instant.
-
----
-
-## 17. Pour plus tard
+## 16. Pour plus tard
 
 - Procédures de restauration écrites et testées : la config d'un service, toute la stack média, la base de prod.
 - Instantanés Btrfs (tes deux volumes sont en Btrfs) : retour en arrière après une suppression accidentelle, et coupure plus courte de `config-backup`.
@@ -290,10 +250,3 @@ Aucune pour l'instant.
 - IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
 - Node 26, MariaDB 12.3 et Flyway 13, testés en pré-prod.
 - Jellyfin 12, sortie en octobre 2026 : sa base migre sans retour possible, donc après une copie de `/Volume1/appdata/jellyfin`.
-
----
-
-## Annexe B — Références
-
-- rclone crypt : <https://rclone.org/crypt/>
-- healthchecks.io : <https://healthchecks.io/docs/>

@@ -468,7 +468,7 @@ Aucune donnée personnelle temporaire ou supprimée ne survit plus de **3 mois**
 | Sessions (empreinte, user agent, IP tronquée, dates) | 30 jours au plus, puis purge |
 | Parcours (`auth_flow`) | Quelques minutes, puis purge |
 | `auth_event`, `error_log` | 90 jours |
-| Logs de Caddy et des conteneurs | 90 jours (cahier de l'hébergement, §12.7) |
+| Logs de Caddy et des conteneurs | 90 jours (job `log-retention`, cahier de l'hébergement, §11.2) |
 | Sauvegardes de la base | Moins de 10 semaines (cahier de l'hébergement, §11.7) |
 | Journal des comptes supprimés (identifiant, date) | 90 jours |
 | Données des projets | Tant que le compte existe |

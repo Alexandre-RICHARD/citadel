@@ -37,7 +37,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 - Accessibilité (textes au survol, etc.).
 - Responsive.
 - Sécurité une fois en ligne : savoir qui se connecte et quand, détecter les connexions anormales.
-- Page de maintenance, activable vite sur un des sites.
 - Pouvoir commiter les `.env`, chiffrés.
 - Stocker des images en base.
 - Faire un bilan des icônes et des SVG.
@@ -154,7 +153,6 @@ Numéros d'origine gardés.
 - Une barrette de RAM de plus, si c'est bien le goulot d'étranglement. À 16 Go : Jellyfin à 8 Go, qBittorrent à 6 Go, et son cache interne à 2 Go (options avancées).
 - [Docker Credentials Store](https://docs.docker.com/reference/cli/docker/login/#credential-stores) sur le NAS pour les mots de passe et les clés.
 - Console : modifier `.env.prod`. Aujourd'hui elle n'a aucun accès en écriture aux secrets (§14.2) : passer par une demande à `infra-ops`, comme les jobs, suivie du redémarrage des services concernés.
-- Console : ajuster en direct la limite CPU, la priorité CPU et la limite RAM d'un conteneur (`docker update`, à autoriser dans `infra-socket-proxy`). Un déploiement remet les valeurs de `compose.yml` : proposer de les y reporter.
 - Console : afficher proprement `pnpm audit` et `pnpm outdated` (failles et dépendances en retard, par paquet du monorepo).
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
 
