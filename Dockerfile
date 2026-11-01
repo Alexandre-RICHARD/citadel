@@ -201,16 +201,19 @@ USER caddy
 FROM ${ALPINE_IMAGE} AS ops
 # bash, curl, jq : le script citadel ; docker-cli et son plugin compose : piloter Docker
 # du NAS (par son socket) ; mariadb-client et zstd : dumps compressés de la base ;
-# coreutils : sha256sum, et un `date` qui lit les dates de Docker ; util-linux-misc :
-# flock, le verrou partagé ; tzdata : l'heure de Paris dans les noms de fichiers ;
-# supercronic : le cron d'infra-ops, qui lit infra/ops/crontab.
-# rclone et regctl arriveront avec les sauvegardes et les mises à jour (étapes 28, 29).
+# coreutils : sha256sum, et un `date` qui lit les dates de Docker ; flock : le verrou
+# partagé (celui d'util-linux, qui sait attendre son tour : --wait ; celui de busybox,
+# là par défaut, non) ; tzdata : l'heure de Paris dans les noms de fichiers ;
+# supercronic : le cron d'infra-ops, qui lit infra/ops/crontab ; rclone : le Drive ;
+# tar (celui de GNU) et findutils : l'archive des configs et la rétention ; sqlite :
+# le contrôle des bases des *arr ; crane : les tags publiés des images (update-check).
 RUN apk add --no-cache \
 	bash curl jq \
 	docker-cli docker-cli-compose \
 	mariadb-client zstd \
-	coreutils util-linux-misc tzdata \
-	supercronic
+	coreutils flock tzdata \
+	supercronic \
+	rclone tar findutils sqlite crane
 ENV TZ=Europe/Paris
 WORKDIR /opt/citadel
 COPY infra/compose.yml infra/mariadb-init.sh ./
