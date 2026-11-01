@@ -86,6 +86,7 @@ async function toServiceItem(
 		version: imageVersion(summary.Image),
 		latestVersion: latestVersionOf(summary.Image),
 		releaseNotesUrl: labels["citadel.release-notes"] ?? null,
+		autoStop: labels["citadel.auto-stop"] ?? null,
 		dependsOn: parseDependsOn(labels["com.docker.compose.depends_on"]),
 	};
 }

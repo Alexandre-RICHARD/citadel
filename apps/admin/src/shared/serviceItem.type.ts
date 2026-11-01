@@ -27,5 +27,7 @@ export type ServiceItem = {
 	latestVersion: string | null;
 	// Label citadel.release-notes : où lire ce qui change
 	releaseNotesUrl: string | null;
+	// Label citadel.auto-stop (« 3h ») : arrêté par infra-ops au-delà
+	autoStop: string | null;
 	dependsOn: ServiceDependency[];
 };

@@ -5,6 +5,7 @@ import type { ActionStep } from "../../shared/actionStep.type.ts";
 import { planServiceAction } from "../../shared/planServiceAction.ts";
 import { ServiceActionEnum } from "../../shared/serviceAction.enum.ts";
 import type { ServiceItem } from "../../shared/serviceItem.type.ts";
+import { readJellyfinActivity } from "../access/readJellyfinActivity.ts";
 import { listServices } from "../docker/listServices.ts";
 import { readContainerLogs } from "../docker/readContainerLogs.ts";
 import { runActionStep } from "../docker/runActionStep.ts";
@@ -12,6 +13,8 @@ import { HttpError } from "../http/HttpError.ts";
 import { writeAuditLog } from "../http/writeAuditLog.ts";
 
 const actionSchema = z.enum(ServiceActionEnum);
+
+const JELLYFIN_CONTAINER = "media-jellyfin";
 
 // Une seule action à la fois : deux clics croisés (démarrer Gluetun pendant qu'on l'arrête)
 // donneraient un état imprévisible
@@ -48,6 +51,21 @@ async function runAction(
 			403,
 			`Non pilotable depuis la console : ${refused.join(", ")}`,
 		);
+
+	// Jellyfin ne s'arrête pas sous les yeux de quelqu'un (§14.3) : arrêt ou redémarrage
+	// refusés pendant une lecture
+	if (
+		steps.some(
+			(step) => step.name === JELLYFIN_CONTAINER && step.operation === "stop",
+		)
+	) {
+		const activity = await readJellyfinActivity();
+		if (activity.available && activity.playbacks.length > 0)
+			throw new HttpError(
+				409,
+				`Jellyfin : ${activity.playbacks.length} lecture(s) en cours, arrêt refusé`,
+			);
+	}
 
 	if (actionInProgress !== null)
 		throw new HttpError(409, `Action déjà en cours : ${actionInProgress}`);

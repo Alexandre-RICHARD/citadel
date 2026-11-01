@@ -8,6 +8,7 @@ import { formatBytes } from "../../format/formatBytes";
 import { formatDuration } from "../../format/formatDuration";
 import { formatPercent } from "../../format/formatPercent";
 import { ACTION_LABELS } from "../../status/actionLabels";
+import { parseAutoStop } from "../../status/parseAutoStop";
 import { serviceStatus } from "../../status/serviceStatus";
 import { Meter } from "../Meter";
 import { StatusDot } from "../StatusDot";
@@ -47,6 +48,13 @@ export function ServiceRow({
 		service.startedAt === null
 			? null
 			: formatDuration((now - Date.parse(service.startedAt)) / 1000);
+	// Arrêté par infra-ops au-delà de citadel.auto-stop (job auto-stop, toutes les 5 min)
+	const autoStopSeconds =
+		service.autoStop === null ? null : parseAutoStop(service.autoStop);
+	const autoStopIn =
+		running && autoStopSeconds !== null && service.startedAt !== null
+			? autoStopSeconds - (now - Date.parse(service.startedAt)) / 1000
+			: null;
 	const actions = running
 		? [ServiceActionEnum.RESTART, ServiceActionEnum.STOP]
 		: [ServiceActionEnum.START];
@@ -70,6 +78,14 @@ export function ServiceRow({
 			<div className={styles.state}>
 				<span>{status.text}</span>
 				{since ? <span className={styles.muted}>{since}</span> : null}
+				{autoStopIn === null ? null : (
+					<span
+						className={styles.muted}
+						title={`Arrêt automatique ${service.autoStop} après le démarrage`}
+					>
+						{`arrêt dans ${formatDuration(autoStopIn)}`}
+					</span>
+				)}
 				{service.restartCount > 0 ? (
 					<span
 						className={styles.restarts}
