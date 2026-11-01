@@ -33,9 +33,22 @@ export const JOB_DEFINITIONS = [
 		monitored: true,
 	},
 	{
+		name: "vpn-leak-test",
+		label: "Test de fuite du VPN",
+		description: "IP de sortie et DNS des téléchargements",
+		monitored: true,
+	},
+	{
 		name: "update-check",
-		label: "Mises à jour",
-		description: "Versions publiées des images, quota du Drive",
+		label: "Mises à jour disponibles",
+		description:
+			"Vérifier les nouvelles versions disponibles des images utilisées",
+		monitored: false,
+	},
+	{
+		name: "storage-stats",
+		label: "Tailles du stockage",
+		description: "Docker, configs, sauvegardes et base du site",
 		monitored: false,
 	},
 	{

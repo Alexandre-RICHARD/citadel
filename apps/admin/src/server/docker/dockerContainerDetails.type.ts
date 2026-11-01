@@ -7,6 +7,6 @@ export type DockerContainerDetails = {
 		Health?: { Status: string };
 	};
 	Config: { Tty: boolean };
-	// Limite mémoire en octets, 0 sans limite
-	HostConfig: { Memory: number };
+	// Limites en octets et en milliardièmes de cœur, 0 sans limite
+	HostConfig: { Memory: number; NanoCpus: number };
 };

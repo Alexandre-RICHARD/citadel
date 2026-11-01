@@ -1,4 +1,6 @@
+import { LIMITS_EXCLUDED_SERVICES } from "../../shared/limitsExcludedServices.ts";
 import type { ServiceItem } from "../../shared/serviceItem.type.ts";
+import { readStateJson } from "../state/readStateJson.ts";
 import { computeCpuPercent } from "./computeCpuPercent.ts";
 import type { CpuSample } from "./cpuSample.type.ts";
 import type { DockerContainerSummary } from "./dockerContainerSummary.type.ts";
@@ -57,9 +59,14 @@ function memoryOf(stats: DockerStats | null): number | null {
 	return usage - (stats?.memory_stats.stats?.inactive_file ?? 0);
 }
 
+// state/limits.json : les limites changées à chaud (citadel limits), avec l'id du
+// conteneur. Recréé depuis (déploiement, limits-reset), il a un autre id : revenu à compose.yml.
+type LimitsFile = Record<string, { containerId: string }>;
+
 async function toServiceItem(
 	summary: DockerContainerSummary,
 	latestVersionOf: (image: string) => string | null,
+	changedLimits: LimitsFile,
 ): Promise<ServiceItem> {
 	const running = summary.State === "running";
 	const [details, stats] = await Promise.all([
@@ -67,9 +74,10 @@ async function toServiceItem(
 		running ? readStats(summary.Id) : Promise.resolve(null),
 	]);
 	const labels = summary.Labels;
+	const name = summary.Names[0]?.replace("/", "") ?? summary.Id.slice(0, 12);
 
 	return {
-		name: summary.Names[0]?.replace("/", "") ?? summary.Id.slice(0, 12),
+		name,
 		label: labels["citadel.name"] ?? summary.Names[0] ?? "",
 		description: labels["citadel.description"] ?? "",
 		group: labels["citadel.group"] ?? "",
@@ -82,6 +90,9 @@ async function toServiceItem(
 		cpuPercent: running ? cpuPercentOf(summary.Id, stats) : null,
 		memoryBytes: running ? memoryOf(stats) : null,
 		memoryLimitBytes: details.HostConfig.Memory || null,
+		cpuLimit: details.HostConfig.NanoCpus / 1e9 || null,
+		limitsChanged: changedLimits[name]?.containerId === summary.Id,
+		limitsEditable: !LIMITS_EXCLUDED_SERVICES.includes(name),
 		image: summary.Image,
 		version: imageVersion(summary.Image),
 		latestVersion: latestVersionOf(summary.Image),
@@ -100,9 +111,14 @@ export async function listServices(): Promise<ServiceItem[]> {
 		`/containers/json?all=true&filters=${filters}`,
 	);
 	const summaries = (await response.json()) as DockerContainerSummary[];
-	const latestVersionOf = await readLatestVersions();
+	const [latestVersionOf, changedLimits] = await Promise.all([
+		readLatestVersions(),
+		readStateJson<LimitsFile>("limits.json"),
+	]);
 	const services = await Promise.all(
-		summaries.map((summary) => toServiceItem(summary, latestVersionOf)),
+		summaries.map((summary) =>
+			toServiceItem(summary, latestVersionOf, changedLimits ?? {}),
+		),
 	);
 
 	return services.sort(

@@ -19,6 +19,7 @@ type Props = {
 	onServiceAction: (service: ServiceItem, action: ServiceActionEnum) => void;
 	onGroupAction: (group: string, action: ServiceActionEnum) => void;
 	onShowLogs: (service: ServiceItem) => void;
+	onEditLimits: (service: ServiceItem) => void;
 };
 
 const GROUP_ACTIONS = [
@@ -35,6 +36,7 @@ export function ServiceGroup({
 	onServiceAction,
 	onGroupAction,
 	onShowLogs,
+	onEditLimits,
 }: Props) {
 	const label = GROUP_LABELS[group] ?? group;
 	const runningCount = services.filter((service) =>
@@ -81,6 +83,7 @@ export function ServiceGroup({
 						now={now}
 						onAction={(action) => onServiceAction(service, action)}
 						onShowLogs={() => onShowLogs(service)}
+						onEditLimits={() => onEditLimits(service)}
 					/>
 				))}
 			</ul>

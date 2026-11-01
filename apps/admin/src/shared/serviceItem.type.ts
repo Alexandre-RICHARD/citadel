@@ -21,6 +21,12 @@ export type ServiceItem = {
 	memoryBytes: number | null;
 	// null : aucune limite
 	memoryLimitBytes: number | null;
+	// En cœurs (1,5 = un cœur et demi) ; null : aucune limite
+	cpuLimit: number | null;
+	// Limites changées à chaud depuis la console, pas encore remises à celles de compose.yml
+	limitsChanged: boolean;
+	// La console peut changer ses limites (pas elle-même, ni infra-ops, ni le filtre Docker)
+	limitsEditable: boolean;
 	image: string;
 	version: string;
 	// La plus récente publiée de la même forme (update-check) ; null : pas relevée

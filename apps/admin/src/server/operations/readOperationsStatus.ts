@@ -9,6 +9,7 @@ import { readStateText } from "../state/readStateText.ts";
 import { findPreviousVersion } from "./findPreviousVersion.ts";
 
 type UpdatesFile = { checkedAt: string; versions: string[] };
+type BackupsFile = { driveError: string | null; items: BackupItem[] };
 
 // Ce que Caddy sert au site (state/public du NAS)
 async function readPublic<T>(fileName: string): Promise<T | null> {
@@ -38,7 +39,7 @@ export async function readOperationsStatus(): Promise<OperationsStatus> {
 			readStateText("current-version"),
 			readStateText("deploy-history.log"),
 			readStateJson<UpdatesFile>("updates.json"),
-			readStateJson<BackupItem[]>("backups.json"),
+			readStateJson<BackupsFile>("backups.json"),
 			readPublic<SiteBanner>("banner.json"),
 			isMaintenanceOn(),
 		]);
@@ -50,7 +51,8 @@ export async function readOperationsStatus(): Promise<OperationsStatus> {
 		previousVersion: findPreviousVersion(history ?? "", currentVersion),
 		publishedVersions: updates?.versions ?? [],
 		versionsCheckedAt: updates?.checkedAt ?? null,
-		backups: backups ?? [],
+		backups: backups?.items ?? [],
+		backupsDriveError: backups?.driveError ?? null,
 		banner,
 		maintenance,
 	};

@@ -1,6 +1,13 @@
 import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
-import { LoaderCircle, Play, RotateCw, ScrollText, Square } from "lucide-react";
+import {
+	Gauge,
+	LoaderCircle,
+	Play,
+	RotateCw,
+	ScrollText,
+	Square,
+} from "lucide-react";
 
 import { isRunningState } from "../../../shared/isRunningState";
 import { ServiceActionEnum } from "../../../shared/serviceAction.enum";
@@ -24,6 +31,7 @@ type Props = {
 	now: number;
 	onAction: (action: ServiceActionEnum) => void;
 	onShowLogs: () => void;
+	onEditLimits: () => void;
 };
 
 function memoryText(service: ServiceItem): string {
@@ -41,6 +49,7 @@ export function ServiceRow({
 	now,
 	onAction,
 	onShowLogs,
+	onEditLimits,
 }: Props) {
 	const status = serviceStatus(service);
 	const running = isRunningState(service.state);
@@ -99,7 +108,11 @@ export function ServiceRow({
 			<div className={styles.usage}>
 				<span
 					className={styles.cpu}
-					title="Processeur (100 % = un cœur)"
+					title={
+						service.cpuLimit === null
+							? "Processeur (100 % = un cœur)"
+							: `Processeur (100 % = un cœur), limité à ${formatPercent(service.cpuLimit * 100)}`
+					}
 				>
 					{running ? formatPercent(service.cpuPercent) : "–"}
 				</span>
@@ -154,6 +167,19 @@ export function ServiceRow({
 							/>
 						))
 					: null}
+				{service.limitsEditable ? (
+					<IconButton
+						icon={Gauge}
+						label={
+							service.limitsChanged
+								? `Limites de ${service.label} (modifiées depuis la console)`
+								: `Limites de ${service.label}`
+						}
+						variant={service.limitsChanged ? "accent" : "ghost"}
+						size="sm"
+						onClick={onEditLimits}
+					/>
+				) : null}
 				<IconButton
 					icon={ScrollText}
 					label={`Logs de ${service.label}`}

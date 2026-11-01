@@ -12,14 +12,24 @@ type Props = {
 	status?: { tone: StatusTone; text: string } | undefined;
 	// Message d'erreur de la dernière lecture : les données d'avant restent affichées
 	error?: string | null;
+	// danger : une carte dont l'action ne se rattrape pas (restaurer la base), en rouge
+	tone?: "danger";
 	children: ReactNode;
 };
 
-export function Card({ title, icon: Icon, status, error, children }: Props) {
+export function Card({
+	title,
+	icon: Icon,
+	status,
+	error,
+	tone,
+	children,
+}: Props) {
 	return (
 		<section
 			className={styles.card}
 			aria-label={title}
+			data-tone={tone}
 		>
 			<header className={styles.header}>
 				<span className={styles.icon}>

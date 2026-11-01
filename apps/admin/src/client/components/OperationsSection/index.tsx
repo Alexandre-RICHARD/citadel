@@ -5,6 +5,7 @@ import { apiRequest } from "../../api/apiRequest";
 import { usePolling } from "../../api/usePolling";
 import { waitForRequest } from "../../api/waitForRequest";
 import { ActionButton } from "../ActionButton";
+import { BackupsCard } from "../BackupsCard";
 import { BannerCard } from "../BannerCard";
 import { DeployCard } from "../DeployCard";
 import { RequestDialog } from "../RequestDialog";
@@ -21,8 +22,9 @@ function messageOf(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
 
-// Mises en production, bandeau et maintenance du site, restauration de la base : des
-// demandes à infra-ops (§14.2), suivies en direct dans une fenêtre
+// Mises en production, bandeau et maintenance du site, sauvegardes et restauration de
+// la base : des demandes à infra-ops (§14.2), suivies en direct dans une fenêtre.
+// Deux lignes : le site (versions, bandeau), puis la base (sauvegardes, restauration).
 export function OperationsSection({ onError, onSuccess }: Props) {
 	const { data, error, refresh } = usePolling<OperationsStatus>(
 		"/operations",
@@ -86,21 +88,29 @@ export function OperationsSection({ onError, onSuccess }: Props) {
 			</h2>
 			{error ? <p className={styles.error}>{error}</p> : null}
 			{data ? (
-				<div className={styles.cards}>
-					<DeployCard
-						status={data}
-						send={send}
-					/>
-					<BannerCard
-						status={data}
-						quick={quick}
-					/>
-					<RestoreCard
-						status={data}
-						send={send}
-						onError={onError}
-					/>
-				</div>
+				<>
+					<div className={styles.cards}>
+						<DeployCard
+							status={data}
+							send={send}
+						/>
+						<BannerCard
+							status={data}
+							quick={quick}
+						/>
+					</div>
+					<div className={styles.cards}>
+						<BackupsCard
+							status={data}
+							send={send}
+						/>
+						<RestoreCard
+							status={data}
+							send={send}
+							onError={onError}
+						/>
+					</div>
+				</>
 			) : null}
 			<RequestDialog
 				request={followed}

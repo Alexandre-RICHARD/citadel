@@ -10,7 +10,7 @@
 #   « * » = toutes les valeurs ; « */5 » = toutes les 5 ; jour 1 = lundi.
 #
 # Les heures des jobs suivis par healthchecks.io (site-check, db-backup, db-restore-test,
-# config-backup, config-verify) sont reportées là-bas : le README dit comment. Un
+# config-backup, config-verify, vpn-leak-test) sont reportées là-bas : le README dit comment. Un
 # changement ici se reporte aussi chez healthchecks.io.
 
 # Chaque minute : relancer ce qui a perdu le réseau de Gluetun
@@ -28,8 +28,14 @@
 # Toutes les heures : les compteurs de qBittorrent, pour les historiques de la console
 0 * * * * citadel qbittorrent-stats
 
-# Chaque nuit à 4 h : versions publiées des images, quota du Drive (§10.7)
+# Toutes les heures : la place prise par Docker, les configs, les sauvegardes et la base
+15 * * * * citadel storage-stats
+
+# Chaque nuit à 4 h : nouvelles versions publiées des images en service (§10.7)
 0 4 * * * citadel update-check
+
+# Chaque nuit à 4 h 30 : le trafic des téléchargements sort-il bien par le VPN ?
+30 4 * * * citadel vpn-leak-test
 
 # Chaque jour à 5 h : dump de la base, puis test de restauration en pré-prod (§11.3, §11.4).
 # « ; » : le test tourne même si le dump a raté, et échoue alors clairement (pas de dump du jour)

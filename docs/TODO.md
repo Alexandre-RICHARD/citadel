@@ -166,7 +166,7 @@ Idées pour la console, en vrac :
 - Historique des alertes de healthchecks.io.
 - Courbes CPU, RAM, disque et réseau sur 24 h, 7 jours, 30 jours ; par conteneur.
 - Santé SMART des disques, températures, prévision de remplissage des volumes.
-- Taille de la base, des tables, des sauvegardes ; espace occupé par Docker (images, volumes, logs), nettoyage en un clic.
+- Taille de chaque table de la base.
 - Navigateur des sauvegardes : liste, taille, contrôles, téléchargement d'un dump.
 - Requêtes SQL en lecture seule sur la pré-prod.
 - Logs : recherche, filtre par niveau, suivi en direct, plusieurs conteneurs à la fois.
@@ -177,7 +177,7 @@ Idées pour la console, en vrac :
 - Jellyfin : bibliothèques, derniers ajouts, transcodages en cours, utilisateurs.
 - *arr : files d'attente, téléchargements en cours, prochains épisodes, erreurs d'indexeurs.
 - qBittorrent : pause et reprise globales, limites de vitesse, torrents en erreur, ratio par tracker.
-- VPN : changer de serveur, test de fuite.
+- VPN : changer de serveur.
 - Planning des jobs modifiable (activer, désactiver, déplacer).
 - Notifications : Discord ou mail pour les événements de la console (redémarrages en boucle, disque presque plein).
 - Journal des actions de la console : consultation et filtre.

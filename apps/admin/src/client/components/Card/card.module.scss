@@ -9,6 +9,20 @@
   background: var(--surface);
   box-shadow: var(--shadow);
 
+  &[data-tone="danger"] {
+    border-color: color-mix(in srgb, var(--danger) 50%, var(--border));
+    background: color-mix(in srgb, var(--danger-subtle) 35%, var(--surface));
+
+    .icon {
+      background: var(--danger-subtle);
+      color: var(--danger);
+    }
+
+    .title {
+      color: var(--danger);
+    }
+  }
+
   .header {
     display: flex;
     align-items: center;

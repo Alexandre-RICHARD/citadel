@@ -9,7 +9,10 @@ export type OperationsStatus = {
 	// Les versions publiées sur GHCR, de la plus ancienne à la plus récente (update-check)
 	publishedVersions: string[];
 	versionsCheckedAt: string | null;
+	// Ceux du HDD et du Drive, du plus récent au plus ancien
 	backups: BackupItem[];
+	// Le Drive injoignable au dernier relevé : seuls ceux du HDD sont listés
+	backupsDriveError: string | null;
 	banner: SiteBanner | null;
 	maintenance: boolean;
 };

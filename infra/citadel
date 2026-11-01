@@ -9,7 +9,11 @@
 #   citadel start|stop|restart <cible> un service (site-prod-server) ou un groupe (site-prod)
 #   citadel logs <service>             200 dernières lignes, puis la suite en direct
 #   citadel up                         secours : relance tout ce qui doit toujours tourner
-#   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier)
+#   citadel restore-db <dump>          remet la base de prod d'un dump (pre-deploy, latest, fichier, drive:…)
+#   citadel backup-delete <dump>       supprime un dump de la base, du HDD ou du Drive (drive:…)
+#   citadel docker-cleanup             supprime les images inutiles (pas celles des retours arrière)
+#   citadel limits <conteneur> <mémoire en octets> <cpus>   change ses limites, à chaud
+#   citadel limits-reset <conteneur>   le recrée, avec les limites de compose.yml
 #   citadel version                    la version en service, seule (lue par pnpm release)
 #   citadel maintenance on|off         le site affiche sa page de maintenance, ou plus
 #   citadel banner <message>|off       le bandeau du site, ou plus de bandeau
@@ -21,7 +25,9 @@
 #   citadel config-backup              archive de /Volume1/appdata, services média arrêtés
 #   citadel config-verify              contrôle de la dernière archive
 #   citadel site-check                 le site répond-il depuis Internet ?
-#   citadel update-check               versions publiées des images, quota du Drive
+#   citadel update-check               nouvelles versions publiées des images en service
+#   citadel storage-stats              place prise par Docker, les configs et la base
+#   citadel vpn-leak-test              le trafic des téléchargements sort-il bien par le VPN ?
 #   citadel qbittorrent-stats          compteurs de qBittorrent, pour la console
 #   citadel auto-stop                  arrête ce qui tourne depuis trop longtemps
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
@@ -50,9 +56,11 @@
 #   tailscale.json        les appareils de ton tailnet, relevés chaque minute pour la console
 #   jobs/<job>.json, .log le dernier passage de chaque job : résultat, contrôles, log
 #   jobs/schedule.json    le planning des jobs (infra/ops/crontab), pour la console
-#   backups.json          les dumps de la base, pour la restauration depuis la console
+#   backups.json          les dumps de la base, sur le HDD et le Drive, pour la console
 #   updates.json          les versions publiées des images tierces, et celles de Citadel
-#   drive.json            le quota du Drive
+#   drive.json            le quota du Drive, relevé après chaque opération sur le Drive
+#   storage.json          la place prise par Docker, les configs, les sauvegardes, la base
+#   limits.json           les limites changées à chaud depuis la console
 #   qbittorrent-stats.jsonl  les compteurs de qBittorrent, une ligne par heure
 #   queue/                les demandes de la console (une par fichier), uploads/ ses dumps
 #   requests/             le résultat et le log de chaque demande
@@ -85,6 +93,9 @@ KEEP_VERSIONS=5
 export RCLONE_CONFIG=$CITADEL_DIR/rclone.conf
 export RCLONE_CACHE_DIR=/tmp/rclone
 DRIVE=citadel-backups:
+# Un dump de la base désigné par la console : <kind>/<nom> sur le HDD, drive:<kind>/<nom>
+# sur le Drive. Rien d'autre (ni « .. », ni chemin absolu) ne passe.
+BACKUP_SOURCE_PATTERN='^(drive:)?(daily|pre-deploy|pre-restore)/citadel-[0-9]{8}-[0-9]{6}-[A-Za-z0-9._-]+\.sql\.zst$'
 HEALTHCHECKS_URL=https://hc-ping.com
 # L'utilisateur de la console dans son image (node) : il doit pouvoir écrire dans queue/
 CONSOLE_UID=1000
@@ -639,18 +650,33 @@ cmd_rollback() {
 # citadel restore-db <pre-deploy | latest | fichier> : remet la base de prod d'un dump.
 # Les écritures faites depuis ce dump sont perdues : confirmation renforcée.
 # « upload:<id> » : un dump envoyé depuis ton PC par la console (state/queue/uploads/).
+# « drive:<kind>/<dump> » : un dump du Drive, téléchargé d'abord (avec son .sha256).
 cmd_restore_db() {
 	local source=${1:-}
-	local file
+	local file work=$BACKUP_DIR/tmp/restore-drive
 	# Les noms commencent par citadel-AAAAMMJJ-HHMMSS : trier les noms, c'est trier les dates
 	case $source in
+		drive:*)
+			[[ $source =~ $BACKUP_SOURCE_PATTERN ]] || die "dump du Drive invalide : $source"
+			[[ -f $RCLONE_CONFIG ]] || die "$RCLONE_CONFIG absent : voir le README, « Accès au Drive »"
+			rm -rf "$work"
+			mkdir -p "$work"
+			# Le dossier temporaire disparaît quoi qu'il arrive
+			# shellcheck disable=SC2064 # $work remplacé tout de suite : voulu
+			trap "rm -rf '$work'" EXIT
+			say "  téléchargement depuis le Drive : ${source#drive:}"
+			file=$work/$(basename "$source")
+			rclone copy "${DRIVE}db/$(dirname "${source#drive:}")" "$work" \
+				--include "$(basename "$file")" --include "$(basename "$file").sha256" ||
+				die "téléchargement depuis le Drive en échec"
+			;;
 		pre-deploy) file=$(find "$BACKUP_DIR/db/pre-deploy" -name 'citadel-*.sql.zst' 2>/dev/null | sort | tail -n 1) ;;
 		latest)
 			file=$(find "$BACKUP_DIR/db" -name 'citadel-*.sql.zst' 2>/dev/null |
 				awk -F/ '{print $NF " " $0}' | sort | tail -n 1 | cut -d' ' -f2-)
 			;;
 		upload:*) file=$STATE_DIR/queue/uploads/${source#upload:}.sql.zst ;;
-		"") die "usage : citadel restore-db <pre-deploy | latest | chemin du dump>" ;;
+		"") die "usage : citadel restore-db <pre-deploy | latest | drive:<kind>/<dump> | chemin du dump>" ;;
 		*) file=$source ;;
 	esac
 	[[ -n $file && -f $file ]] || die "dump introuvable : ${file:-$source}"
@@ -906,7 +932,7 @@ cmd_tailscale_status() {
 
 # Les jobs qui ont leur contrôle chez healthchecks.io (§13) : les autres ne font
 # qu'afficher, une panne y serait sans conséquence
-PINGED_JOBS=" site-check db-backup db-restore-test config-backup config-verify "
+PINGED_JOBS=" site-check db-backup db-restore-test config-backup config-verify vpn-leak-test "
 
 # Les exclusions de l'ancien backup.sh, reprises telles quelles (§11.5), plus les
 # dossiers des bases du site : elles ont leurs propres dumps, et s'archivent mal en
@@ -1121,16 +1147,78 @@ offsite_copy() {
 		--include "$name" --include "$name.*" || return 1
 }
 
-# L'index des dumps de la base, pour la restauration depuis la console (state/backups.json)
-write_backups_index() {
-	local kind
+# Le quota du Drive, pour les échéances de la console (state/drive.json). Relevé après
+# chaque opération qui change ce qu'il contient (sauvegardes, rétention, suppressions) :
+# un échec n'arrête rien, le relevé précédent reste.
+write_drive_quota() {
+	local about
+	[[ -f $RCLONE_CONFIG ]] || return 0
+	if ! about=$(rclone about gdrive: --json); then
+		warn "quota du Drive : rclone about en échec, le relevé précédent reste"
+		return 0
+	fi
 	mkdir -p "$STATE_DIR"
-	for kind in daily pre-deploy pre-restore; do
-		find "$BACKUP_DIR/db/$kind" -maxdepth 1 -name 'citadel-*.sql.zst' -printf "$kind/%f %s\n" 2>/dev/null || true
-	done | jq -Rn '[inputs | split(" ") | {path: .[0], kind: (.[0] | split("/")[0]),
-		name: (.[0] | split("/")[1]), sizeBytes: (.[1] | tonumber)}] | sort_by(.name) | reverse' \
-		>"$STATE_DIR/backups.json.tmp"
+	jq '{checkedAt: (now | todate), totalBytes: .total, usedBytes: .used, freeBytes: .free}' \
+		<<<"$about" >"$STATE_DIR/drive.json.tmp"
+	mv "$STATE_DIR/drive.json.tmp" "$STATE_DIR/drive.json"
+}
+
+# L'index des dumps de la base, sur le HDD et sur le Drive, pour la console
+# (state/backups.json) : « Sauvegardes de la base » et « Restaurer la base ». Le Drive
+# injoignable : seuls ceux du HDD, avec la raison (driveError). Le quota est relevé au
+# passage : chaque opération sur les dumps finit ici.
+write_backups_index() {
+	local kind lines drive_lines="" drive_error=""
+	mkdir -p "$STATE_DIR"
+	# Une ligne par dump : « lieu kind/nom taille »
+	lines=$(for kind in daily pre-deploy pre-restore; do
+		find "$BACKUP_DIR/db/$kind" -maxdepth 1 -name 'citadel-*.sql.zst' -printf "nas $kind/%f %s\n" 2>/dev/null || true
+	done)
+	if [[ ! -f $RCLONE_CONFIG ]]; then
+		drive_error="$RCLONE_CONFIG absent"
+	# Tout db/ d'un coup (-R), « taille kind/nom » : un seul appel au Drive
+	elif drive_lines=$(rclone lsf -R --files-only --format sp --separator ' ' "${DRIVE}db" \
+		--include 'citadel-*.sql.zst' 2>/dev/null); then
+		drive_lines=$(awk 'NF == 2 { print "drive " $2 " " $1 }' <<<"$drive_lines")
+		write_drive_quota
+	else
+		drive_lines=""
+		drive_error="Drive injoignable (rclone lsf en échec)"
+	fi
+	printf '%s\n%s\n' "$lines" "$drive_lines" | jq -Rn --arg driveError "$drive_error" '
+		{driveError: (if $driveError == "" then null else $driveError end),
+		items: [inputs | select(. != "") | split(" ") | {location: .[0], kind: (.[1] | split("/")[0]),
+			name: (.[1] | split("/")[1]), sizeBytes: (.[2] | tonumber),
+			path: (if .[0] == "drive" then "drive:" + .[1] else .[1] end)}
+			| select(.kind == "daily" or .kind == "pre-deploy" or .kind == "pre-restore")]
+			| sort_by(.name, .location) | reverse}' >"$STATE_DIR/backups.json.tmp"
 	mv "$STATE_DIR/backups.json.tmp" "$STATE_DIR/backups.json"
+}
+
+# citadel backup-delete <kind/dump | drive:kind/dump> : supprime un dump de la base, du
+# HDD ou du Drive, avec ses fichiers compagnons (.sha256, .manifest.json). La console le
+# demande depuis « Sauvegardes de la base ». Attention : un dump retiré du Drive mais
+# encore sur le HDD y repart à la prochaine sauvegarde (offsite_copy envoie ce qui manque).
+cmd_backup_delete() {
+	local source=${1:-} name sub file
+	[[ $source =~ $BACKUP_SOURCE_PATTERN ]] ||
+		die "usage : citadel backup-delete <daily|pre-deploy|pre-restore>/<dump> (préfixe drive: pour le Drive)"
+	# Jamais pendant une restauration ou une sauvegarde, qui pourrait lire ce dump
+	take_lock
+	name=$(basename "$source")
+	if [[ $source == drive:* ]]; then
+		[[ -f $RCLONE_CONFIG ]] || die "$RCLONE_CONFIG absent : voir le README, « Accès au Drive »"
+		sub=db/$(dirname "${source#drive:}")
+		[[ -n $(rclone lsf --files-only "$DRIVE$sub" --include "$name") ]] || die "absent du Drive : $sub/$name"
+		rclone delete "$DRIVE$sub" --include "$name" --include "$name.*"
+		say "  supprimé du Drive : $sub/$name"
+	else
+		file=$BACKUP_DIR/db/$source
+		[[ -f $file ]] || die "absent du HDD : db/$source"
+		rm -f "$file" "$file".*
+		say "  supprimé du HDD : db/$source"
+	fi
+	write_backups_index
 }
 
 # --- La base : requêtes, manifeste, pré-prod ---
@@ -1385,6 +1473,7 @@ job_config_backup() {
 	fi
 	prune_remote configs configs || check_fail "rétention sur le Drive" "voir le log"
 	check_ok "rétention" "HDD et Drive"
+	write_drive_quota
 }
 
 # --- config-verify : juste après config-backup (§11.6) ---
@@ -1435,7 +1524,7 @@ job_config_verify() {
 # Pour chaque image tierce, le tag publié le plus récent « de la même forme » que celui en
 # service : 5.1.4-r2-ls447 se compare aux N.N.N-rN-lsN, jamais aux nightly-… ni aux
 # version-…. Plus les versions de Citadel publiées sur GHCR (pour la carte de déploiement
-# de la console), et le quota du Drive.
+# de la console).
 newest_like() {
 	awk -v current="$1" '
 		function shape(tag) { gsub(/[0-9]+/, "N", tag); return tag }
@@ -1444,7 +1533,7 @@ newest_like() {
 }
 
 job_update_check() {
-	local images image repo tag tags latest entries="[]" versions about count=0 newer=0
+	local images image repo tag tags latest entries="[]" versions count=0 newer=0
 	images=$(docker ps --all --filter "label=com.docker.compose.project=$(own_project)" \
 		--format '{{.Image}}' | sort -u)
 	for image in $images; do
@@ -1474,14 +1563,253 @@ job_update_check() {
 	mv "$STATE_DIR/updates.json.tmp" "$STATE_DIR/updates.json"
 	check_ok "images tierces" "$count comparées, $newer mise(s) à jour publiée(s)"
 	check_ok "versions de Citadel" "dernière publiée : $(tail -n 1 <<<"$versions")"
+}
 
-	# Le quota du Drive, pour les échéances de la console
-	[[ -f $RCLONE_CONFIG ]] || check_fail "quota du Drive" "$RCLONE_CONFIG absent"
-	about=$(rclone about gdrive: --json) || check_fail "quota du Drive" "rclone about en échec"
-	jq '{checkedAt: (now | todate), totalBytes: .total, usedBytes: .used, freeBytes: .free}' \
-		<<<"$about" >"$STATE_DIR/drive.json.tmp"
-	mv "$STATE_DIR/drive.json.tmp" "$STATE_DIR/drive.json"
-	check_ok "quota du Drive" "$(jq -r '"\(.used / 1e9 | floor) Go utilisés sur \(.total / 1e9 | floor) Go"' <<<"$about")"
+# --- storage-stats : chaque heure, et après docker-cleanup ---
+# La place prise sur les disques par ce que l'infra fait tourner, pour la console
+# (state/storage.json) :
+#   - Docker : images, couches propres des conteneurs, volumes, cache de build ;
+#   - les configs et données des services (/Volume1/appdata, bases MariaDB comprises) ;
+#   - les sauvegardes du HDD ;
+#   - la base du site, vue par MariaDB (données et index des tables) ;
+#   - ce que docker-cleanup libérerait.
+# Les logs des conteneurs n'y sont pas : 3 fichiers de 10 Mo au plus chacun (compose.yml).
+
+# La vue de Docker sur ses disques, en JSON. Son API plutôt que `docker system df`, qui
+# écrit « 1.2GB » : ici, des octets exacts.
+docker_disk_usage() {
+	curl --silent --fail --unix-socket /var/run/docker.sock http://localhost/system/df
+}
+
+# Les images à garder même sans conteneur : celles des versions gardées pour un retour
+# arrière instantané (KEEP_VERSIONS), les nôtres comme les tierces de leur compose.yml
+# (Tailscale, MariaDB…). Une ligne par « dépôt:tag ».
+kept_images() {
+	local keep version
+	keep=$(successful_versions | tac | awk '!seen[$0]++' | head -n "$KEEP_VERSIONS")
+	for version in $keep; do
+		printf '%s\n' "$REGISTRY/citadel-"{client,server,admin,caddy,ops,migrations}":$version"
+		if [[ -f $STATE_DIR/releases/$version/compose.yml ]]; then
+			# Les images écrites en clair (pas celles à variable, les nôtres, déjà listées)
+			sed -nE 's/^ *image: *"?([^"$ ]+)"? *$/\1/p' "$STATE_DIR/releases/$version/compose.yml"
+		fi
+	done | sort -u
+}
+
+# Ce que docker-cleanup supprimerait : les images qu'aucun conteneur n'utilise (même
+# arrêté) et que kept_images ne garde pas. Une ligne par image : « id octets tag… »
+# (octets : sa part à elle, sans les couches partagées avec d'autres images).
+cleanup_candidates() {
+	local usage=$1
+	jq -r --arg kept "$(kept_images)" '($kept | split("\n")) as $kept
+		| .Images[] | select(.Containers == 0)
+		| (.RepoTags // [] | map(select(. != "<none>:<none>"))) as $tags
+		| select(all($tags[]; . as $tag | $kept | index([$tag]) | not))
+		| "\(.Id) \(.Size - ([.SharedSize, 0] | max)) \($tags | join(" "))"' <<<"$usage"
+}
+
+write_storage_stats() {
+	local usage reclaimable appdata backups database
+	usage=$(docker_disk_usage) || return 1
+	reclaimable=$(cleanup_candidates "$usage" | awk '{ sum += $2 } END { print sum + 0 }')
+	appdata=$(du -sb "$APPDATA_DIR" 2>/dev/null | cut -f1)
+	backups=$(du -sb "$BACKUP_DIR" 2>/dev/null | cut -f1)
+	# Le compte de sauvegarde voit les tables de la base citadel : il en lit les tailles
+	database=$(prod_query <<<"SELECT COALESCE(SUM(data_length + index_length), 0)
+		FROM information_schema.tables WHERE table_schema = 'citadel'" 2>/dev/null || true)
+	mkdir -p "$STATE_DIR"
+	jq --arg reclaimable "$reclaimable" --arg appdata "${appdata:-}" --arg backups "${backups:-}" \
+		--arg database "${database:-}" '
+		def bytes: if . == "" then null else tonumber end;
+		{checkedAt: (now | todate),
+		docker: {imagesBytes: .LayersSize,
+			containersBytes: ([.Containers[]?.SizeRw // 0] | add // 0),
+			volumesBytes: ([.Volumes[]?.UsageData.Size // 0 | select(. > 0)] | add // 0),
+			buildCacheBytes: ([.BuildCache[]?.Size // 0] | add // 0),
+			reclaimableBytes: (($reclaimable | tonumber) + ([.BuildCache[]? | select(.InUse | not) | .Size] | add // 0))},
+		appdataBytes: ($appdata | bytes), backupsBytes: ($backups | bytes),
+		databaseBytes: ($database | bytes)}' <<<"$usage" >"$STATE_DIR/storage.json.tmp"
+	mv "$STATE_DIR/storage.json.tmp" "$STATE_DIR/storage.json"
+}
+
+job_storage_stats() {
+	write_storage_stats || check_fail "Docker" "GET /system/df en échec"
+	check_ok "tailles relevées" "$(jq -r '"Docker : \((.docker.imagesBytes + .docker.containersBytes
+		+ .docker.volumesBytes + .docker.buildCacheBytes) / 1e9 * 100 | floor / 100) Go, configs : \((.appdataBytes // 0)
+		/ 1e9 * 100 | floor / 100) Go"' "$STATE_DIR/storage.json")"
+	[[ $(jq '.databaseBytes' "$STATE_DIR/storage.json") != null ]] ||
+		check_fail "base du site" "taille illisible (site-prod-db arrêtée ?)"
+	check_ok "base du site" "$(jq -r '"\(.databaseBytes / 1e6 * 100 | floor / 100) Mo"' "$STATE_DIR/storage.json")"
+}
+
+# citadel docker-cleanup : le « nettoyage » de la console. Supprime :
+#   - les images qu'aucun conteneur n'utilise, sauf celles des retours arrière ;
+#   - le cache de build (le NAS ne construit rien, il devrait être vide) ;
+#   - les conteneurs arrêtés étrangers à compose (restes d'un `docker run` à la main).
+# Jamais les conteneurs de compose, même arrêtés : les *arr « à la demande » en sont.
+# Jamais les volumes : des données.
+cmd_docker_cleanup() {
+	local usage id size tags tag freed=0
+	# Pas pendant un déploiement : ses nouvelles images n'ont pas encore de conteneur
+	take_lock
+	usage=$(docker_disk_usage) || die "GET /system/df en échec"
+	while read -r id size tags; do
+		[[ -n $id ]] || continue
+		# Par tag : une image à plusieurs tags refuse d'être supprimée par son id
+		if [[ -z $tags ]]; then
+			docker image rm "$id" >/dev/null 2>&1 || continue
+		else
+			for tag in $tags; do docker image rm "$tag" >/dev/null 2>&1 || true; done
+		fi
+		say "  image supprimée : ${tags:-$id}"
+		freed=$((freed + size))
+	done < <(cleanup_candidates "$usage")
+	curl --silent --fail --request POST --unix-socket /var/run/docker.sock \
+		'http://localhost/build/prune' >/dev/null || warn "cache de build : nettoyage en échec"
+	docker container prune --force --filter 'label!=com.docker.compose.project' >/dev/null
+	say "  environ $((freed / 1000000)) Mo libérés par les images"
+	write_storage_stats || warn "tailles : relevé en échec"
+}
+
+# --- vpn-leak-test : chaque nuit à 4 h 30, et depuis la carte VPN de la console ---
+# Le trafic des téléchargements sort-il bien par le VPN ? Un conteneur jetable (l'image
+# ops) est lancé DANS le réseau de Gluetun, là où vivent qBittorrent et les *arr :
+#   1. son IP publique doit différer de celle du NAS (vue d'ici, hors VPN) ;
+#   2. ses requêtes DNS ne doivent pas passer par le fournisseur d'accès du NAS. Test de
+#      bash.ws : des noms uniques à résoudre, puis la liste des serveurs DNS qui les ont
+#      demandés ; leur opérateur (AS, d'après ipinfo.io) comparé à celui du NAS ;
+#   3. qBittorrent est bien dans le réseau de CE Gluetun.
+# Le kill-switch (rien ne sort si le tunnel tombe) n'est pas testé : il faudrait couper
+# le tunnel. C'est le pare-feu de Gluetun qui le garantit.
+job_vpn_leak_test() {
+	local gluetun own_image real_ip vpn_ip real_as test_id servers server server_as leaks="" network_mode
+	gluetun=$(docker ps --quiet --no-trunc --filter "label=com.docker.compose.project=$(own_project)" \
+		--filter "label=com.docker.compose.service=media-gluetun")
+	[[ -n $gluetun ]] || check_fail "Gluetun" "arrêté : rien ne passe par le VPN (qBittorrent n'a pas de réseau)"
+	own_image=$(docker inspect --format '{{.Config.Image}}' "$HOSTNAME")
+	# Le conteneur jetable, dans le réseau de Gluetun, sans aucun droit
+	behind_vpn() {
+		docker run --rm --network "container:$gluetun" --read-only --cap-drop ALL \
+			--security-opt no-new-privileges --entrypoint "$1" "$own_image" "${@:2}"
+	}
+
+	# 1. Les IP publiques
+	real_ip=$(curl --silent --fail --max-time 10 https://api.ipify.org) ||
+		check_fail "IP du NAS" "api.ipify.org injoignable"
+	vpn_ip=$(behind_vpn curl --silent --fail --max-time 15 https://api.ipify.org) ||
+		check_fail "IP par le VPN" "pas de sortie depuis le réseau de Gluetun (tunnel tombé ?)"
+	[[ $vpn_ip != "$real_ip" ]] ||
+		check_fail "IP de sortie" "celle du NAS ($real_ip) : le trafic ne passe PAS par le VPN"
+	check_ok "IP de sortie" "$vpn_ip par le VPN (celle du NAS : $real_ip)"
+
+	# 2. Le DNS
+	real_as=$(curl --silent --fail --max-time 10 "https://ipinfo.io/$real_ip/org" | cut -d' ' -f1) ||
+		check_fail "DNS" "ipinfo.io injoignable"
+	test_id=$(curl --silent --fail --max-time 10 https://bash.ws/id) || check_fail "DNS" "bash.ws injoignable"
+	# shellcheck disable=SC2016 # les $ sont pour le sh du conteneur
+	behind_vpn sh -c 'for i in 1 2 3 4 5 6 7 8 9 10; do nslookup "$i.$0.bash.ws" >/dev/null 2>&1; done; true' "$test_id"
+	servers=$(curl --silent --fail --max-time 10 "https://bash.ws/dnsleak/test/$test_id?json" |
+		jq -r '.[] | select(.type == "dns") | .ip') || check_fail "DNS" "résultat de bash.ws illisible"
+	[[ -n $servers ]] || check_fail "DNS" "aucun serveur DNS vu par bash.ws"
+	for server in $servers; do
+		server_as=$(curl --silent --max-time 10 "https://ipinfo.io/$server/org" || true)
+		if [[ $server == "$real_ip" || ${server_as%% *} == "$real_as" ]]; then
+			leaks+=" $server (${server_as:-?})"
+		fi
+	done
+	[[ -z $leaks ]] || check_fail "DNS" "requêtes vues chez l'opérateur du NAS ($real_as) :$leaks"
+	check_ok "DNS" "$(wc -w <<<"$servers") serveur(s), aucun chez l'opérateur du NAS ($real_as)"
+
+	# 3. qBittorrent, s'il tourne
+	if container_running media-qbittorrent; then
+		network_mode=$(docker inspect --format '{{.HostConfig.NetworkMode}}' media-qbittorrent)
+		[[ $network_mode == "container:$gluetun" ]] ||
+			check_fail "qBittorrent" "hors du réseau de Gluetun ($network_mode)"
+		check_ok "qBittorrent" "dans le réseau de Gluetun"
+	else
+		check_ok "qBittorrent" "arrêté : rien à contrôler"
+	fi
+}
+
+# --- Limites de mémoire et de processeur, changées à chaud depuis la console ---
+# docker update change les limites d'un conteneur qui tourne, sans le redémarrer. Elles
+# tiennent jusqu'à sa prochaine recréation (déploiement, limits-reset) : compose.yml
+# reste la référence. state/limits.json garde ce qui a été changé, avec l'id du
+# conteneur : recréé, il a un autre id, et la console sait qu'il est revenu à compose.yml.
+# Jamais la console, infra-ops ni le filtre Docker : c'est par eux qu'on annule.
+LIMITS_EXCLUDED=" infra-admin infra-ops infra-socket-proxy "
+LIMITS_MIN_MEMORY=$((64 * 1024 * 1024))
+
+limits_target() {
+	local name=$1
+	[[ $name =~ ^[a-z0-9-]{1,64}$ && $LIMITS_EXCLUDED != *" $name "* ]] || die "conteneur refusé : $name"
+	[[ $(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$name" 2>/dev/null) == "$(own_project)" ]] ||
+		die "pas un conteneur de Citadel : $name"
+}
+
+# Retire de limits.json le conteneur donné, et ceux qui ont été recréés depuis
+prune_limits() {
+	local name=$1 file=$STATE_DIR/limits.json current="{}" entry
+	[[ -f $file ]] && current=$(cat "$file")
+	for entry in $(jq -r 'keys[]' <<<"$current"); do
+		if [[ $entry == "$name" || $(docker inspect --format '{{.Id}}' "$entry" 2>/dev/null) != "$(jq -r --arg e "$entry" '.[$e].containerId' <<<"$current")" ]]; then
+			current=$(jq --arg e "$entry" 'del(.[$e])' <<<"$current")
+		fi
+	done
+	printf '%s\n' "$current" >"$file.tmp"
+	mv "$file.tmp" "$file"
+}
+
+# citadel limits <conteneur> <mémoire en octets | -> <cpus | -> (« - » : inchangé)
+cmd_limits() {
+	local name=${1:-} memory=${2:-} cpus=${3:-} total cores args=() swap=()
+	limits_target "$name"
+	total=$(awk '/^MemTotal:/ { print $2 * 1024 }' /proc/meminfo)
+	cores=$(nproc)
+	if [[ $memory != - ]]; then
+		if ! [[ $memory =~ ^[0-9]{1,15}$ ]] || ((memory < LIMITS_MIN_MEMORY || memory > total)); then
+			die "mémoire : entre 64 Mio et $((total / 1024 / 1024)) Mio"
+		fi
+		# Le swap autorisé suit, comme Docker le fait à la création (le double)
+		args+=(--memory "$memory")
+		swap=(--memory-swap "$((memory * 2))")
+	fi
+	if [[ $cpus != - ]]; then
+		if ! [[ $cpus =~ ^[0-9]{1,2}(\.[0-9]{1,2})?$ ]] ||
+			! awk -v c="$cpus" -v n="$cores" 'BEGIN { exit !(c >= 0.1 && c <= n) }'; then
+			die "processeur : entre 0,1 et $cores cœurs"
+		fi
+		args+=(--cpus "$cpus")
+	fi
+	((${#args[@]} > 0)) || die "usage : citadel limits <conteneur> <mémoire en octets | -> <cpus | ->"
+	take_lock
+	# Sans comptabilité du swap dans le noyau, --memory-swap est refusé : sans lui alors
+	docker update "${args[@]}" "${swap[@]}" "$name" >/dev/null 2>&1 ||
+		docker update "${args[@]}" "$name" >/dev/null 2>&1 ||
+		die "docker update refusé : $(docker update "${args[@]}" "$name" 2>&1 | tail -n 1)"
+	prune_limits ""
+	jq --arg name "$name" --arg id "$(docker inspect --format '{{.Id}}' "$name")" \
+		--argjson memory "$(docker inspect --format '{{.HostConfig.Memory}}' "$name")" \
+		--argjson nanoCpus "$(docker inspect --format '{{.HostConfig.NanoCpus}}' "$name")" \
+		'. + {($name): {containerId: $id, memoryBytes: $memory, cpus: ($nanoCpus / 1e9), changedAt: (now | todate)}}' \
+		"$STATE_DIR/limits.json" >"$STATE_DIR/limits.json.tmp"
+	mv "$STATE_DIR/limits.json.tmp" "$STATE_DIR/limits.json"
+	say "  $name : $(jq -r --arg n "$name" '.[$n] | "mémoire \(.memoryBytes / 1048576 | floor) Mio, processeur \(if .cpus == 0 then "sans limite" else .cpus end)"' "$STATE_DIR/limits.json")"
+}
+
+# citadel limits-reset <conteneur> : le recrée depuis compose.yml, avec ses limites
+# d'origine. Il redémarre : quelques secondes de coupure. Arrêté, il le reste.
+cmd_limits_reset() {
+	local name=${1:-}
+	limits_target "$name"
+	take_lock
+	if container_running "$name"; then
+		compose up --detach --no-deps --force-recreate "$name"
+	else
+		compose create --no-deps --force-recreate "$name"
+	fi
+	prune_limits "$name"
+	say "  $name : recréé, limites de compose.yml"
 }
 
 # --- qbittorrent-stats : chaque heure ---
@@ -1558,7 +1886,7 @@ write_schedule() {
 # conteneur ops à part, détaché : un déploiement recrée infra-ops sans s'interrompre.
 # Leur sortie va dans state/requests/<id>.log, leur code de sortie dans <id>.exit.
 
-CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check qbittorrent-stats auto-stop "
+CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop "
 VERSION_PATTERN='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
 
 # Termine une demande : son message dans le log, son code de sortie
@@ -1631,7 +1959,10 @@ handle_request() {
 		rollback) launch_request "$id" "$own_image" CITADEL_ASSUME_YES=1 -- rollback ;;
 		restore-db)
 			source=$(jq -r '.source // ""' <<<"$request")
-			if [[ $source =~ ^(daily|pre-deploy|pre-restore)/citadel-[0-9]{8}-[0-9]{6}-[A-Za-z0-9._-]+\.sql\.zst$ ]]; then
+			# Un dump du Drive est téléchargé par restore-db, qui dira s'il n'existe pas
+			if [[ $source =~ $BACKUP_SOURCE_PATTERN && $source == drive:* ]]; then
+				path=$source
+			elif [[ $source =~ $BACKUP_SOURCE_PATTERN ]]; then
 				path=$BACKUP_DIR/db/$source
 			elif [[ $source =~ ^upload:[A-Za-z0-9-]{1,64}$ ]]; then
 				path=$source
@@ -1639,11 +1970,32 @@ handle_request() {
 			else
 				path=""
 			fi
-			[[ -n $path && ( $path == upload:* || -f $path ) ]] ||
+			[[ -n $path && ( $path == upload:* || $path == drive:* || -f $path ) ]] ||
 				{ finish_request "$id" 2 "refusé : dump inconnu ($source)"; return 0; }
 			[[ $(jq -r '.confirmation // ""' <<<"$request") == RESTAURER ]] ||
 				{ finish_request "$id" 2 "refusé : confirmation manquante"; return 0; }
 			launch_request "$id" "$own_image" CITADEL_ASSUME_YES=1 -- restore-db "$path"
+			;;
+		backup-delete)
+			source=$(jq -r '.source // ""' <<<"$request")
+			[[ $source =~ $BACKUP_SOURCE_PATTERN ]] || { finish_request "$id" 2 "refusé : dump inconnu ($source)"; return 0; }
+			launch_request "$id" "$own_image" -- backup-delete "$source"
+			;;
+		docker-cleanup) launch_request "$id" "$own_image" -- docker-cleanup ;;
+		service-limits | service-limits-reset)
+			local service memory cpus
+			service=$(jq -r '.service // ""' <<<"$request")
+			# Les valeurs fines (bornes, conteneurs exclus) sont contrôlées par citadel limits
+			[[ $service =~ ^[a-z0-9-]{1,64}$ ]] || { finish_request "$id" 2 "refusé : conteneur invalide ($service)"; return 0; }
+			if [[ $action == service-limits-reset ]]; then
+				launch_request "$id" "$own_image" -- limits-reset "$service"
+			else
+				memory=$(jq -r '.memoryBytes // "-"' <<<"$request")
+				cpus=$(jq -r '.cpus // "-"' <<<"$request")
+				[[ $memory =~ ^([0-9]{1,15}|-)$ && $cpus =~ ^([0-9]{1,2}(\.[0-9]{1,2})?|-)$ ]] ||
+					{ finish_request "$id" 2 "refusé : limites invalides ($memory, $cpus)"; return 0; }
+				launch_request "$id" "$own_image" -- limits "$service" "$memory" "$cpus"
+			fi
 			;;
 		banner-set)
 			message=$(jq -r '.message // ""' <<<"$request")
@@ -1715,6 +2067,10 @@ ops_main() {
 		deploy) cmd_deploy "$@" ;;
 		rollback) cmd_rollback ;;
 		restore-db) cmd_restore_db "$@" ;;
+		backup-delete) cmd_backup_delete "$@" ;;
+		docker-cleanup) cmd_docker_cleanup ;;
+		limits) cmd_limits "$@" ;;
+		limits-reset) cmd_limits_reset "$@" ;;
 		start | stop | restart) cmd_service "$command" "$@" ;;
 		status) cmd_status ;;
 		logs) cmd_logs "$@" ;;
@@ -1729,7 +2085,7 @@ ops_main() {
 		# déploiement ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
 		db-backup | db-restore-test | config-backup | config-verify) run_job "$command" wait ;;
 		auto-stop) run_job "$command" skip ;;
-		site-check | update-check | qbittorrent-stats) run_job "$command" none ;;
+		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;
 		tailscale-status) cmd_tailscale_status ;;
 		queue-watch) cmd_queue_watch ;;

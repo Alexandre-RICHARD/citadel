@@ -15,8 +15,8 @@ async function readTailscaleKeyExpiry(): Promise<DeadlineItem> {
 
 type DriveFile = { checkedAt: string; totalBytes: number; usedBytes: number };
 
-// Le quota du Drive, relevé chaque nuit par update-check : plein, plus de sauvegarde
-// hors site
+// Le quota du Drive, relevé par infra-ops après chaque opération sur le Drive
+// (sauvegardes, rétention, suppressions) : plein, plus de sauvegarde hors site
 async function readDriveQuota(): Promise<DeadlineItem> {
 	const label = "Quota du Drive";
 	const drive = await readStateJson<DriveFile>("drive.json");
@@ -24,7 +24,7 @@ async function readDriveQuota(): Promise<DeadlineItem> {
 		return {
 			label,
 			expiresAt: null,
-			problem: "aucun relevé (job update-check)",
+			problem: "aucun relevé (job db-backup)",
 		};
 	return {
 		label,

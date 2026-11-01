@@ -1,0 +1,72 @@
+@use "../../styles/form";
+
+.limitsDialog {
+  width: min(46rem, calc(100vw - 3.2rem));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1.2rem 4rem rgb(0 0 0 / 35%);
+
+  &::backdrop {
+    background: var(--overlay, rgb(0 0 0 / 50%));
+    backdrop-filter: blur(0.2rem);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem 1rem 1.8rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--warn);
+  }
+
+  .title {
+    flex: 1;
+    color: var(--text);
+    font-size: 1.5rem;
+    font-weight: 650;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.6rem 1.8rem 1.8rem;
+  }
+
+  .warning {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--warn-subtle);
+    color: var(--warn);
+    font-size: 1.3rem;
+  }
+
+  .field {
+    @include form.field;
+  }
+
+  .input {
+    @include form.input;
+  }
+
+  .actions {
+    @include form.actions;
+
+    justify-content: flex-end;
+  }
+
+  .error {
+    color: var(--danger);
+    font-size: 1.3rem;
+  }
+
+  .hint {
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+  }
+}

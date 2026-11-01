@@ -43,7 +43,7 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) |
 | `citadel maintenance on\|off` | page de maintenance (503) à la place du site, ou plus |
 | `citadel banner "<message>"\|off` | le bandeau du site, ou plus de bandeau |
-| `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `update-check`, `qbittorrent-stats`, `auto-stop` |
+| `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `vpn-leak-test`, `update-check`, `storage-stats`, `qbittorrent-stats`, `auto-stop` |
 
 Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm release` ; revenir en arrière : `citadel rollback`.
 
@@ -112,7 +112,7 @@ pnpm release --dry-run                          # attendu (tout commité) : vali
 
 ## Alertes (healthchecks.io)
 
-Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`) signalent leur début, leur réussite ou leur échec à healthchecks.io, qui alerte par e-mail et sur Discord si un job échoue **ou ne passe pas à l'heure**. Chaque contrôle (une ligne dans la liste de ton projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
+Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`) signalent leur début, leur réussite ou leur échec à healthchecks.io, qui alerte par e-mail et sur Discord si un job échoue **ou ne passe pas à l'heure**. Chaque contrôle (une ligne dans la liste de ton projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
 
 1. healthchecks.io → ton projet → Settings → API Access → « Ping key » : la générer, la ranger dans Bitwarden, puis l'écrire dans `.env.prod` (`HEALTHCHECKS_PING_KEY`), avant le déploiement.
 2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console (`http://…:8100`), section « Jobs », le bouton ▶ de chaque ligne ; ou depuis ton PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
@@ -125,6 +125,7 @@ Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, 
 | `db-restore-test` | `0 5 * * *` | 1 h |
 | `config-backup` | `0 3 * * 1` | 1 h |
 | `config-verify` | `0 3 * * 1` | 2 h |
+| `vpn-leak-test` | `30 4 * * *` | 1 h |
 
 ## Accès au Drive (rclone)
 

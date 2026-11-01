@@ -92,7 +92,7 @@ Reste à ajouter, entre le dump (4) et les migrations en prod (6) :
 
 ### 10.7 Mises à jour des images tierces
 
-- Chaque nuit, `update-check` compare avec les versions publiées ; la console liste les mises à jour disponibles, avec leurs notes de version.
+- Chaque nuit, `update-check` compare avec les versions publiées ; la console liste les mises à jour disponibles des images tierces (pas les nôtres, qui suivent les versions de Citadel), avec leurs notes de version.
 
 ---
 
@@ -117,7 +117,9 @@ Dans `infra/ops/crontab`, versionné ; la tâche planifiée de TOS disparaît.
 | Chaque jour, 05:00 | `db-backup`, puis `db-restore-test` (1 à 3 min) | la base de pré-prod démarre, puis s'arrête |
 | Lundi, 03:00 | `config-backup`, puis `config-verify` (5 à 20 min) | services média arrêtés pendant l'archivage, puis remis comme avant |
 | Chaque nuit, 04:00 | `update-check` | aucun : liste les mises à jour d'images |
+| Chaque nuit, 04:30 | `vpn-leak-test` | aucun : IP de sortie et DNS des téléchargements, par le VPN |
 | Toutes les heures | `qbittorrent-stats` | aucun : compteurs pour les historiques de la console |
+| Toutes les heures | `storage-stats` | aucun : place prise par Docker, les configs, les sauvegardes et la base |
 | Toutes les 5 min | `site-check` | aucun : vérifie que le site répond depuis Internet (§13) |
 | Toutes les minutes | `vpn-watch` | aucun : relance les services du réseau de Gluetun qui n'ont pas pu démarrer ou ont perdu son réseau |
 
@@ -234,8 +236,11 @@ Venus du [cahier de l'authentification](../auth/cahier_des_charges.md), qui comm
 - **Arrêt automatique** : par exemple, les *arr arrêtés 3 h après leur démarrage manuel ; refus d'arrêter Jellyfin pendant une lecture.
 - **Déployer** une version déjà construite, ou revenir à la précédente, en un clic, après le même plan que `citadel deploy`.
 - **Mode maintenance** du site.
-- **Restaurer la base** du site, écrire ou retirer le message du bandeau (§11.8).
-- Ce qui dépend des jobs : historique de qBittorrent par jour et par semaine, quota du Drive dans les échéances, dernière version publiée dans « Versions ».
+- **Restaurer la base** du site, depuis le NAS ou le Drive, écrire ou retirer le message du bandeau (§11.8).
+- **Sauvegardes de la base** : celles du NAS et du Drive, suppression à la main.
+- **Stockage** : place prise par Docker et les services, taille de la base ; nettoyage des images inutiles, jamais celles des retours arrière.
+- **Test de fuite du VPN** à la demande ; **limites RAM et CPU** d'un conteneur changées à chaud, jusqu'à sa recréation.
+- Ce qui dépend des jobs : historique de qBittorrent par jour et par semaine, quota du Drive dans les échéances (relevé après chaque opération sur le Drive), dernière version publiée dans « Versions ».
 
 ---
 

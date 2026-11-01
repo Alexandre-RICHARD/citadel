@@ -14,14 +14,21 @@ const versionSchema = z.object({
 		.string()
 		.regex(/^v\d{4}\.\d{2}\.\d{2}(\.\d+)?$/, "Version invalide"),
 });
+// Un dump du HDD (<kind>/<nom>) ou du Drive (drive:<kind>/<nom>)
+const BACKUP_SOURCE =
+	/^(drive:)?(daily|pre-deploy|pre-restore)\/citadel-\d{8}-\d{6}-[\w.-]+\.sql\.zst$/;
+const UPLOAD_SOURCE = /^upload:[A-Za-z0-9-]{1,64}$/;
 const restoreSchema = z.object({
 	source: z
 		.string()
-		.regex(
-			/^((daily|pre-deploy|pre-restore)\/citadel-\d{8}-\d{6}-[\w.-]+\.sql\.zst|upload:[A-Za-z0-9-]{1,64})$/,
+		.refine(
+			(source) => BACKUP_SOURCE.test(source) || UPLOAD_SOURCE.test(source),
 			"Dump inconnu",
 		),
 	confirmation: z.literal("RESTAURER", "Tape RESTAURER pour confirmer"),
+});
+const backupDeleteSchema = z.object({
+	source: z.string().regex(BACKUP_SOURCE, "Dump inconnu"),
 });
 const bannerSchema = z.object({
 	message: z
@@ -56,7 +63,8 @@ async function enqueue(
 	response.json({ requestId: await enqueueRequest(payload, request.ip) });
 }
 
-// Mises en production, restauration, bandeau et maintenance du site. Chaque action est
+// Mises en production, sauvegardes et restauration, bandeau et maintenance du site,
+// nettoyage de Docker. Chaque action est
 // une demande déposée pour infra-ops (§14.2) ; la console la suit par /api/requests/:id
 export const operationsRouter = Router();
 
@@ -100,6 +108,23 @@ operationsRouter.post("/api/operations/restore", async (request, response) => {
 		confirmation,
 	});
 });
+
+// Un dump du HDD ou du Drive, avec ses fichiers compagnons (.sha256, .manifest.json)
+operationsRouter.post(
+	"/api/operations/backup-delete",
+	async (request, response) => {
+		const { source } = parse(backupDeleteSchema, request.body);
+		await enqueue(request, response, { action: "backup-delete", source });
+	},
+);
+
+// Les images inutiles, hors retours arrière (citadel docker-cleanup)
+operationsRouter.post(
+	"/api/operations/docker-cleanup",
+	async (request, response) => {
+		await enqueue(request, response, { action: "docker-cleanup" });
+	},
+);
 
 // En secours, un dump envoyé depuis ton PC : déposé tel quel, contrôlé par infra-ops
 // au moment de la restauration

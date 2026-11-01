@@ -2,6 +2,7 @@ import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
 import type { ActionStep } from "../../shared/actionStep.type.ts";
+import { LIMITS_EXCLUDED_SERVICES } from "../../shared/limitsExcludedServices.ts";
 import { planServiceAction } from "../../shared/planServiceAction.ts";
 import { ServiceActionEnum } from "../../shared/serviceAction.enum.ts";
 import type { ServiceItem } from "../../shared/serviceItem.type.ts";
@@ -11,8 +12,32 @@ import { readContainerLogs } from "../docker/readContainerLogs.ts";
 import { runActionStep } from "../docker/runActionStep.ts";
 import { HttpError } from "../http/HttpError.ts";
 import { writeAuditLog } from "../http/writeAuditLog.ts";
+import { enqueueRequest } from "../queue/enqueueRequest.ts";
 
 const actionSchema = z.enum(ServiceActionEnum);
+
+// Les bornes basses d'infra/citadel (citadel limits), qui revérifie tout et borne aussi
+// par le haut (la mémoire et les cœurs du NAS). null : inchangé.
+const MIN_MEMORY_BYTES = 64 * 1024 ** 2;
+const limitsSchema = z
+	.object({
+		memoryBytes: z
+			.number()
+			.int()
+			.min(MIN_MEMORY_BYTES, "64 Mio au moins")
+			.max(1e15)
+			.nullable(),
+		cpus: z
+			.number()
+			.min(0.1, "0,1 cœur au moins")
+			.max(99)
+			.multipleOf(0.01, "Deux décimales au plus")
+			.nullable(),
+	})
+	.refine(
+		(limits) => limits.memoryBytes !== null || limits.cpus !== null,
+		"Rien à changer",
+	);
 
 const JELLYFIN_CONTAINER = "media-jellyfin";
 
@@ -105,6 +130,54 @@ servicesRouter.get("/api/services/:name/logs", async (request, response) => {
 	const service = await findService(request.params.name);
 	response.type("text/plain").send(await readContainerLogs(service.name));
 });
+
+async function findLimitsTarget(name: string): Promise<ServiceItem> {
+	const service = await findService(name);
+	if (LIMITS_EXCLUDED_SERVICES.includes(service.name))
+		throw new HttpError(403, `Limites non modifiables : ${service.label}`);
+	return service;
+}
+
+// Limites changées à chaud (docker update) par infra-ops : une demande, suivie par
+// /api/requests/:id. Avant la route générique, que « limits » ne doit pas atteindre.
+servicesRouter.post(
+	"/api/services/:name/limits",
+	async (request, response: Response<{ requestId: string }>) => {
+		const service = await findLimitsTarget(request.params.name);
+		const parsed = limitsSchema.safeParse(request.body);
+		if (!parsed.success)
+			throw new HttpError(
+				400,
+				parsed.error.issues[0]?.message ?? "Limites invalides",
+			);
+		const { memoryBytes, cpus } = parsed.data;
+		response.json({
+			requestId: await enqueueRequest(
+				{
+					action: "service-limits",
+					service: service.name,
+					memoryBytes: memoryBytes === null ? "-" : String(memoryBytes),
+					cpus: cpus === null ? "-" : cpus.toFixed(2),
+				},
+				request.ip,
+			),
+		});
+	},
+);
+
+// Le conteneur recréé depuis compose.yml : ses limites d'origine
+servicesRouter.post(
+	"/api/services/:name/limits/reset",
+	async (request, response: Response<{ requestId: string }>) => {
+		const service = await findLimitsTarget(request.params.name);
+		response.json({
+			requestId: await enqueueRequest(
+				{ action: "service-limits-reset", service: service.name },
+				request.ip,
+			),
+		});
+	},
+);
 
 servicesRouter.post(
 	"/api/services/:name/:action",

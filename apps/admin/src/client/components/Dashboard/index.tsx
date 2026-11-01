@@ -19,11 +19,13 @@ import { GROUP_LABELS } from "../../status/groupLabels";
 import { AccessSection } from "../AccessSection";
 import { DeadlinesCard } from "../DeadlinesCard";
 import { JobsSection } from "../JobsSection";
+import { LimitsDialog } from "../LimitsDialog";
 import { LogsDialog } from "../LogsDialog";
 import { OperationsSection } from "../OperationsSection";
 import { RequestDialog } from "../RequestDialog";
 import { ServiceGroup } from "../ServiceGroup";
 import { SiteCard } from "../SiteCard";
+import { StorageCard } from "../StorageCard";
 import { SystemCard } from "../SystemCard";
 import { TorrentCard } from "../TorrentCard";
 import { VersionsTable } from "../VersionsTable";
@@ -96,7 +98,9 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 		hint: string;
 	} | null>(null);
 	const [toasts, setToasts] = useState<ToastItem[]>([]);
-	// Un job lancé depuis la console, suivi dans sa fenêtre
+	// Le service dont la fenêtre « Limites » est ouverte
+	const [limitsTarget, setLimitsTarget] = useState<ServiceItem | null>(null);
+	// Une demande à infra-ops lancée d'ici (job, nettoyage, limites), suivie dans sa fenêtre
 	const [jobRequest, setJobRequest] = useState<{
 		id: string;
 		title: string;
@@ -129,16 +133,20 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 		[pushToast],
 	);
 
-	async function runJob(name: string, label: string) {
+	async function followRequest(path: string, body: unknown, title: string) {
 		try {
-			const { requestId } = await apiRequest<{ requestId: string }>(
-				`/jobs/${name}/run`,
-				{ method: "POST", body: {} },
-			);
-			setJobRequest({ id: requestId, title: `Job · ${label}` });
+			const { requestId } = await apiRequest<{ requestId: string }>(path, {
+				method: "POST",
+				body,
+			});
+			setJobRequest({ id: requestId, title });
 		} catch (error) {
 			pushError(error instanceof Error ? error.message : String(error));
 		}
+	}
+
+	function runJob(name: string, label: string) {
+		void followRequest(`/jobs/${name}/run`, {}, `Job · ${label}`);
 	}
 
 	async function execute(path: string, target: string, done: string) {
@@ -222,9 +230,22 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 			<main className={styles.main}>
 				<div className={styles.cards}>
 					<SystemCard />
-					<VpnCard />
+					<VpnCard
+						busy={jobRequest !== null}
+						onLeakTest={() => runJob("vpn-leak-test", "Test de fuite du VPN")}
+					/>
 					<TorrentCard />
 					<SiteCard />
+					<StorageCard
+						busy={jobRequest !== null}
+						onCleanup={() => {
+							void followRequest(
+								"/operations/docker-cleanup",
+								{},
+								"Nettoyage de Docker",
+							);
+						}}
+					/>
 					<DeadlinesCard />
 				</div>
 
@@ -272,6 +293,7 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 										`le groupe ${GROUP_LABELS[groupName] ?? groupName}`,
 									)
 								}
+								onEditLimits={setLimitsTarget}
 								onShowLogs={(service) =>
 									setLogsTarget({
 										title: `Logs · ${service.label}`,
@@ -286,9 +308,7 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 
 				<JobsSection
 					busy={jobRequest !== null}
-					onRun={(job) => {
-						void runJob(job.name, job.label);
-					}}
+					onRun={(job) => runJob(job.name, job.label)}
 					onShowLog={(job) =>
 						setLogsTarget({
 							title: `Log · ${job.label}`,
@@ -335,7 +355,30 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 			/>
 			<RequestDialog
 				request={jobRequest}
-				onClose={() => setJobRequest(null)}
+				onClose={() => {
+					setJobRequest(null);
+					services.refresh();
+				}}
+			/>
+			<LimitsDialog
+				service={limitsTarget}
+				onApply={(service, limits) => {
+					setLimitsTarget(null);
+					void followRequest(
+						`/services/${service.name}/limits`,
+						limits,
+						`Limites · ${service.label}`,
+					);
+				}}
+				onReset={(service) => {
+					setLimitsTarget(null);
+					void followRequest(
+						`/services/${service.name}/limits/reset`,
+						{},
+						`Limites d'origine · ${service.label}`,
+					);
+				}}
+				onClose={() => setLimitsTarget(null)}
 			/>
 			<LogsDialog
 				target={logsTarget}

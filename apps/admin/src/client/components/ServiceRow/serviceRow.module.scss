@@ -1,7 +1,7 @@
 // Une ligne par service. Large : une seule rangée de colonnes ; étroit (téléphone) : deux
 .serviceRow {
   display: grid;
-  grid-template-columns: minmax(18rem, 2.2fr) minmax(11rem, 1fr) minmax(16rem, 1.2fr) minmax(9rem, 0.9fr) 11.2rem;
+  grid-template-columns: minmax(18rem, 2.2fr) minmax(11rem, 1fr) minmax(16rem, 1.2fr) minmax(9rem, 0.9fr) 14.4rem;
   grid-template-areas: "identity state usage version actions";
   align-items: center;
   gap: 1.2rem 1.6rem;
