@@ -71,6 +71,17 @@
 	header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://images.igdb.com https://tile.openstreetmap.org; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
 }
 
+# L'IP du visiteur, transmise au serveur Express. {client_ip} est celle que Caddy a validée
+# (trusted_proxies, plus haut) : derrière Cloudflare, le CF-Connecting-IP d'une adresse de
+# Cloudflare ; sinon, l'adresse de la connexion. `header_up` ÉCRASE l'en-tête : un visiteur
+# qui enverrait son propre X-Real-IP ne peut pas se faire passer pour un autre. Le serveur,
+# joignable seulement par Caddy (réseau Docker), ne lit que cet en-tête : les limites du
+# formulaire de contact (messages par heure et par IP) en dépendent. Sans lui, tous les
+# visiteurs auraient l'IP de Caddy, et se partageraient la même limite.
+(real_ip) {
+	header_up X-Real-IP {client_ip}
+}
+
 (access_log) {
 	# Une ligne JSON par requête sur la sortie standard du conteneur : la console la lit
 	# (accès externes, scans suspects). Les messages de Caddy lui-même vont sur la
@@ -135,7 +146,9 @@
 		# /api/… va au serveur, préfixe retiré : /api/health arrive en /health.
 		# Les routes du serveur ne changent donc pas, et le front appelle /api partout.
 		handle_path /api/* {
-			reverse_proxy site-prod-server:3000
+			reverse_proxy site-prod-server:3000 {
+				import real_ip
+			}
 		}
 
 		# Tout le reste va au nginx du front : fichiers du site, /irigo
@@ -151,7 +164,9 @@
 http://:8002 {
 	encode zstd gzip
 	handle_path /api/* {
-		reverse_proxy site-preprod-server:3000
+		reverse_proxy site-preprod-server:3000 {
+			import real_ip
+		}
 	}
 	handle {
 		reverse_proxy site-preprod-client:8080

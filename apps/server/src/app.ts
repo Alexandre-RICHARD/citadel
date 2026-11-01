@@ -4,11 +4,13 @@ import { globalRouter } from "./globalRouter.ts";
 import { healthRouter } from "./health/router.ts";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
 import { notFound } from "./middleware/notFound.ts";
+import { realClientIp } from "./middleware/realClientIp.ts";
 import { unhandledMethod } from "./middleware/unhandledMethod.ts";
 
 export const app = express();
 app.disable("etag");
 
+app.use(realClientIp);
 app.use(unhandledMethod);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
