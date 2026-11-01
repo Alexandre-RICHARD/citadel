@@ -535,7 +535,7 @@ Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintCo
 
 Après les mails du cahier de l'hébergement, sur une branche dédiée :
 
-1. **Prérequis** : `packages/common/src/node` ; IP réelle ; erreurs 401, 403, 429 et `Retry-After` jusqu'à `ApiError` ; suppression de `POST /error-log/entries` et de `todo_folder`.
+1. **Prérequis** : `packages/common/src/node` ; erreur 401 (IP réelle, `403`, `429` et `Retry-After` jusqu'à `ApiError` faits avec le formulaire de contact) ; suppression de `POST /error-log/entries` et de `todo_folder`.
 2. **Base** : tables `auth_*` ; `user_id` et cascades des projets.
 3. **Socle serveur** : `authSettings`, hash, sessions, `requireSession` piloté par `protected`, filtrage par `user_id` dans tous les services de GDC et du Backlog (avec leurs tests), purges, `auth_event`, limiteurs.
 4. **Mail** : fournisseur, DNS, expéditeur réel et simulé, gabarits minimaux.
@@ -613,7 +613,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all
 4. [moi] Suppression de `POST /error-log/entries` (endpoint, specs, tests) ; `logError` et `error_log` restent.
 5. [moi] `logError` n'enregistre jamais de corps de requête (§7.5).
 6. [moi] Front : faux `Authorization: Bearer` retiré du `fetchHandler`.
-7. [moi] Serveur : erreurs 401 et 403 dans `AppError` et `globalErrorHandler`.
+7. [moi] Serveur : erreur 401 dans `AppError` et `globalErrorHandler` (`ForbiddenError` et `TooManyRequestsError` existent déjà).
 8. [moi] `packages/common/src/node/` et son bloc ESLint. Vérif : un import depuis le front échoue au lint.
 9. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant.
 10. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », 2 hashs simultanés au plus.

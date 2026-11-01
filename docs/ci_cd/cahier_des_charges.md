@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › [Hébergement et mise en production](README.md) › Cahier des charges
 
-1er novembre 2026 · v9 : Brevo retenu (essai), quota quotidien surveillé · v8 : accusé de réception avec le sujet, réponses en tant que `contact`, messages gardés une semaine · v7 : adresses, formulaire de contact, roadmap complète · v6 : l'hébergement est en place, son mode d'emploi est dans le [README](README.md). Il ne reste que les mails, dernier prérequis du [cahier de l'authentification](../auth/cahier_des_charges.md).
+1er novembre 2026 · v10 : socle serveur, quota et formulaire de contact codés ; reste la recette et la mise en prod · v9 : Brevo retenu (essai), quota quotidien surveillé · v8 : accusé de réception avec le sujet, réponses en tant que `contact`, messages gardés une semaine · v7 : adresses, formulaire de contact, roadmap complète · v6 : l'hébergement est en place, son mode d'emploi est dans le [README](README.md). Il ne reste que les mails, dernier prérequis du [cahier de l'authentification](../auth/cahier_des_charges.md).
 
 Conventions :
 - Dans la roadmap (§7), **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
@@ -52,8 +52,8 @@ Conventions :
 | `MAIL_CONTACT_STOP` | 280 mails | Le formulaire de contact : `contact@` reste affiché pour écrire directement |
 | `MAIL_DAILY_LIMIT` | 300 mails | Tout le reste, y compris la connexion |
 
-- **Le décompte vient de Brevo**, pas du serveur : `GET /v3/account` donne les envois restants du jour (`plan[].credits`, sur 300), ceux de tes réponses depuis Gmail compris, et il survit aux déploiements. Le serveur le relit au plus une fois par minute et garde la valeur en cache. Si Brevo ne répond pas, il compte lui-même ses envois, en mémoire. Les statistiques du jour (`GET /v3/smtp/statistics/aggregatedReport`) servent de repli.
-- **Le site le sait** : un endpoint sans connexion (`GET /mail/status`) dit quelles fonctions sont ouvertes. Le front désactive le bouton d'inscription ou le formulaire, et affiche le bandeau du site (même composant que le mode maintenance) : « Les inscriptions sont fermées pour aujourd'hui, elles rouvrent demain. Tu peux toujours te connecter. » Il rouvre tout seul quand le compteur retombe à zéro.
+- **Le décompte vient de Brevo**, pas du serveur : `GET /v3/account` donne les envois restants du jour (`plan[].credits`, sur 300), ceux de tes réponses depuis Gmail compris, et il survit aux déploiements. Le serveur le relit au plus une fois par minute et y ajoute ses propres envois depuis le relevé. Si Brevo ne répond pas, il garde le dernier relevé et compte lui-même, en mémoire (de zéro un nouveau jour).
+- **Le site le sait** : un endpoint sans connexion (`GET /mail/status`) dit quelles fonctions sont ouvertes. Le front le relit toutes les 5 minutes, désactive le formulaire (puis le bouton d'inscription) et affiche le bandeau du site, empilé sous celui de la console : « Le formulaire de contact est fermé pour aujourd'hui, il rouvre demain. Vous pouvez toujours écrire à contact@alexandre-richard.fr. » L'inscription aura le sien. Tout rouvre seul quand le compteur retombe à zéro.
 - **Tu es prévenu**: un mail à `contact` (donc dans `perso`) au premier franchissement de chaque seuil du jour, une fois seulement par seuil et par jour. Pour la fermeture totale, c'est le dernier mail que Brevo laisse partir : le seuil d'alerte est un peu sous la limite.
 - **À vérifier** : à quelle heure Brevo remet les crédits à 300 (compte en heure de Paris ; relevé le 2 novembre au matin). La réouverture du site suit ce compteur.
 - **Suivi anonymisé, pas supprimé** : l'offre gratuite de Brevo ne permet pas de le couper sur les mails transactionnels. Il garde un pixel d'ouverture et réécrit les liens par `r.mail.alexandre-richard.fr` (notre sous-domaine, mais Brevo les voit passer). Réglage « Suivi anonyme » sur Oui dans Brevo, et `contactPixelTrackingConsent: false` dans chaque envoi. Acceptable pour l'essai : le lien d'un mail de connexion ne sert que dans le navigateur qui a commencé le parcours, et le code est à usage unique. À annoncer sur la page « Données personnelles ». Si ça pèse au moment de l'authentification, c'est un critère pour changer de fournisseur.
@@ -87,7 +87,7 @@ Un accusé de réception réaliste, envoyé à [mail-tester.com](https://www.mai
 
 ## 4. Formulaire de contact
 
-- **Où** : une rubrique « Contact » dans le footer, une page de la homepage comme « À propos » ou « Mentions légales », avec le formulaire. Sous le formulaire : « Tu peux aussi écrire à contact@alexandre-richard.fr ».
+- **Où** : la page « Contact » de la homepage (`/homepage/contact`), deuxième lien du footer, dans le même cadre que « À propos ». Sous le formulaire : « Vous pouvez aussi écrire directement à contact@alexandre-richard.fr ». Échap dans un champ ne ferme pas la page. Endpoint : `POST /contact/messages`, `204`.
 - **Champs** : sujet et message obligatoires ; email et nom facultatifs. Longueurs maximales dans les schémas zod de `packages/specs`. Un champ piège caché (honeypot) : rempli, le serveur répond comme un succès et n'envoie rien.
 - **À l'envoi**, deux mails, tous les deux de `noreply` :
 
@@ -97,8 +97,8 @@ Un accusé de réception réaliste, envoyé à [mail-tester.com](https://www.mai
 | Accusé de réception, si un email est donné | le visiteur | Message bien reçu, avec son sujet ; réponse à cette adresse. En bas : « Si vous remplissez un autre formulaire de contact dans la même journée, vous ne recevrez pas d'autre accusé de réception. » `Reply-To` : `contact` |
 
 - **L'accusé de réception ne reprend du visiteur que le sujet**, ni le nom, ni le message : sinon, le formulaire servirait à envoyer n'importe quel texte à n'importe quelle adresse, au nom du domaine. Le sujet est court (longueur maximale dans les specs), et un seul accusé par adresse et par jour.
-- **Limites**, pour la réputation du domaine et le quota du fournisseur (que l'authentification partagera) : par IP, un nombre de messages par heure ; par adresse, un accusé de réception par jour au plus ; un plafond global par jour. Au-delà : `429` + `Retry-After`, compte à rebours sur le bouton. Les valeurs sont des variables d'environnement.
-- Texte brut, en français, pour les deux mails.
+- **Limites**, pour la réputation du domaine et le quota du fournisseur (que l'authentification partagera) : par IP, `CONTACT_HOURLY_LIMIT_PER_IP` messages par heure (5) ; par adresse, un accusé de réception par jour au plus ; le plafond global du jour est le seuil `MAIL_CONTACT_STOP` du quota (`403 CONTACT_CLOSED`). Au-delà de la limite par IP : `429` + `Retry-After`, compte à rebours sur le bouton.
+- Les deux mails en HTML et en texte brut (§2), en français, en vouvoiement. Fournisseur en échec : `502 MAIL_UNAVAILABLE` pour la notification ; un accusé qui échoue est seulement logué.
 - **Rien en base** : le message n'existe que dans les mails. Tu supprimes les messages de `perso` dans la semaine. La page « Données personnelles » dit ce qui est collecté, pourquoi, que c'est gardé une semaine au plus, et que le fournisseur d'envoi le voit passer.
 
 ---
@@ -126,13 +126,13 @@ Tous les enregistrements en « DNS seulement » (nuage gris).
 
 Socle construit ici et repris par l'authentification, qui l'avait prévu (son §7.2 et son §8.1) :
 
-- **Expéditeur** : une abstraction, avec trois versions. Réelle (le fournisseur) en prod ; en mémoire pour les tests ; « journal » en dev sans clé et en pré-prod, qui écrit dans le log qu'un mail serait parti, sans son contenu. La pré-prod tourne sur `.env.prod` : sans ce réglage, elle enverrait de vrais mails.
+- **Expéditeur** : une abstraction, avec trois versions, choisie par `MAIL_SENDER`. `brevo` en prod (ou en dev, pour un envoi réel) ; `memory` pour les tests ; `journal` en dev par défaut, en pré-prod et en `prod:local`, qui écrit dans le log le type du mail qui serait parti, sans contenu ni adresse. La pré-prod tourne sur `.env.prod` : compose lui impose `journal` et ne lui donne pas la clé ; `prod:local` reçoit une clé factice.
 - Envoi pendant la requête, 10 s au plus. Un échec est logué sans contenu (ni message, ni adresse) ; le visiteur voit une erreur et garde son texte dans le formulaire.
 - **IP réelle** : Caddy écrase un en-tête `X-Real-IP` avec l'IP qu'il a validée ; le serveur ne lit que lui (cahier de l'authentification, §7.2). Les limites du formulaire en dépendent : derrière Caddy, tous les visiteurs ont sinon la même IP.
 - **`429` + `Retry-After`** de bout en bout : specs, `AppError`, `globalErrorHandler`, `ApiError` du front.
-- **Quota** : lecture du compteur de Brevo, seuils, `GET /mail/status`, mail d'alerte (§2).
-- Compteurs des limites par IP et par adresse en mémoire (une seule instance), remis à zéro à chaque déploiement.
-- Variables dans la section `mail` d'`env.ts` (zod), dans `.env.example` (`[secret]` devant la clé), `.env.test`, et `infra/compose.yml` (`site-prod-server`, `site-preprod-server`).
+- **Quota** : lecture du compteur de Brevo, seuils, `GET /mail/status`, mail d'alerte (§2). Tout mail passe par `mailService`, qui l'envoie et le compte.
+- Compteurs des limites par IP et par adresse, et alertes déjà envoyées, en mémoire (une seule instance), remis à zéro à chaque déploiement.
+- Variables : `MAIL_SENDER`, `BREVO_API_KEY`, les trois seuils et `CONTACT_HOURLY_LIMIT_PER_IP`, dans la partie « Mails » d'`env.ts` (zod, valeurs par défaut pour les seuils), `.env.example`, `.env.test` et `infra/compose.yml`.
 
 ---
 
@@ -140,36 +140,19 @@ Socle construit ici et repris par l'authentification, qui l'avait prévu (son §
 
 Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all` passe à chaque commit. Je te donne le pas-à-pas de chaque étape [toi] au moment de la faire.
 
-**Phase 1 — Réception**
+**Phase 1 — Recette**
 
-1. [toi] Filtre Gmail : `to:contact@alexandre-richard.fr` → libellé « Contact », jamais en indésirables.
+1. [toi] Les deux mails de l'envoi réel depuis le dev (1er novembre au soir, sujet « Test du formulaire de contact (envoi réel depuis le dev) ») : notification et accusé de réception dans `perso`. Vérif : hors indésirables, accents et emoji intacts, `<b>` affiché tel quel et non en gras.
+2. [toi] Brevo : « Suivi anonyme » sur Oui (§2).
+3. [moi] Crédits de Brevo relus le 2 novembre au matin : heure de la remise à 300 (§2, « À vérifier »).
+4. [nous] mail-tester sur un vrai accusé de réception (tu me donnes une adresse, je l'envoie par le formulaire), et un message vers une adresse Outlook si tu en as une. Vérif : le critère du §5.
+5. [toi] Recette visuelle en dev (`MAIL_SENDER=journal`, seuils abaissés dans `.env` pour voir la fermeture), puis en `pnpm prod:local`.
 
-**Phase 2 — Envoi**
+**Phase 2 — Mise en prod**
 
-2. [toi] Gmail : « Envoyer des e-mails en tant que » `contact`, par le SMTP du fournisseur ; réponse depuis l'adresse de réception. Vérif : une réponse à un mail reçu par `contact` arrive de `contact`, sans `perso` dans ses en-têtes.
-
-**Phase 3 — Socle serveur**
-
-3. [moi] `429` + `Retry-After` : specs, `AppError`, `globalErrorHandler`, `ApiError` du front.
-4. [moi] IP réelle : `header_up X-Real-IP` dans Caddy, middleware qui ne lit que cet en-tête. Vérif : IP du client dans un log en `prod:local`.
-5. [moi] Expéditeur réel, en mémoire et « journal » ; section `mail` d'`env.ts` ; `.env.example`, `.env.test`, `compose.yml`.
-6. [moi] Quota : lecture du compteur de Brevo (cache d'une minute, repli sur un compte local), seuils, mail d'alerte une fois par seuil et par jour, `GET /mail/status`. Vérif : tests avec un compteur simulé, seuils franchis dans l'ordre.
-7. [nous] Envoi réel depuis le dev vers Gmail et Outlook. Vérif : le critère du §5.
-
-**Phase 4 — Formulaire de contact**
-
-8. [moi] Specs : `POST /contact`, schémas et codes d'erreur.
-9. [moi] Serveur : honeypot, limites, notification et accusé de réception. Vérif : tests d'intégration avec l'expéditeur en mémoire.
-10. [moi] Front : rubrique « Contact » du footer, page et formulaire (envoi, succès, compte à rebours du `429`, erreur sans perte du texte), adresse `contact` en dessous.
-11. [moi] Front : `GET /mail/status` lu au chargement ; formulaire de contact désactivé et bandeau du site quand il est fermé (l'inscription fera de même, cahier de l'authentification). Vérif : seuil abaissé en `.env` de dev, bandeau et boutons désactivés, réouverture au retour sous le seuil.
-12. [moi] Page « Données personnelles » : le formulaire de contact (§4).
-13. [toi] Recette visuelle en dev, puis en `pnpm prod:local`.
-
-**Phase 5 — Mise en prod**
-
-14. [toi] Clé d'API dans `.env.prod`, depuis Bitwarden.
-15. [nous] `pnpm release`, puis en prod : un message avec email, un sans, un mail direct à `contact`. Vérif : notifications et accusé de réception reçus en boîte de réception, expéditeurs visibles dans `perso`, une réponse à l'accusé arrive dans `perso`, ta réponse au visiteur part de `contact`.
-16. [toi] Deux semaines plus tard, rapports DMARC propres : `p=quarantine`.
+6. [toi] Clé d'API dans `.env.prod`, depuis Bitwarden.
+7. [nous] `pnpm release`, puis en prod : un message avec email, un sans, un mail direct à `contact`. Vérif : notifications et accusé de réception reçus en boîte de réception, expéditeurs visibles dans `perso`, une réponse à l'accusé arrive dans `perso`, ta réponse au visiteur part de `contact`.
+8. [toi] Deux semaines plus tard, rapports DMARC propres : `p=quarantine`.
 
 ---
 
