@@ -20,6 +20,7 @@ import { AccessSection } from "../AccessSection";
 import { DeadlinesCard } from "../DeadlinesCard";
 import { JobsSection } from "../JobsSection";
 import { LogsDialog } from "../LogsDialog";
+import { OperationsSection } from "../OperationsSection";
 import { RequestDialog } from "../RequestDialog";
 import { ServiceGroup } from "../ServiceGroup";
 import { SiteCard } from "../SiteCard";
@@ -121,6 +122,10 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 
 	const pushError = useCallback(
 		(message: string) => pushToast(ToastVariantEnum.ERROR, message),
+		[pushToast],
+	);
+	const pushSuccess = useCallback(
+		(message: string) => pushToast(ToastVariantEnum.SUCCESS, message),
 		[pushToast],
 	);
 
@@ -291,6 +296,11 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 							hint: "dernier passage",
 						})
 					}
+				/>
+
+				<OperationsSection
+					onError={pushError}
+					onSuccess={pushSuccess}
 				/>
 
 				<AccessSection />

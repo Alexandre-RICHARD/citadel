@@ -28,6 +28,8 @@ const envSchema = z.object({
 	STATE_DIR: z.string().min(1),
 	// Sa seule écriture : les demandes à infra-ops (state/queue du NAS)
 	QUEUE_DIR: z.string().min(1),
+	// Le bandeau et le mode maintenance du site (state/public du NAS), en lecture seule
+	PUBLIC_DIR: z.string().min(1),
 	// Un dossier par disque surveillé, monté en lecture seule : seul l'espace libre est lu
 	SSD_PATH: z.string().min(1),
 	HDD_PATH: z.string().min(1),

@@ -1,0 +1,24 @@
+.operationsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+
+  .title {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .error {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--danger-subtle);
+    color: var(--danger);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+    align-items: start;
+    gap: 1.6rem;
+  }
+}

@@ -1,0 +1,21 @@
+@use "../../styles/form";
+
+.field {
+  @include form.field;
+}
+
+.input {
+  @include form.input;
+}
+
+.actions {
+  @include form.actions;
+}
+
+.warning {
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-s);
+  background: var(--danger-subtle);
+  color: var(--danger);
+  font-size: 1.3rem;
+}

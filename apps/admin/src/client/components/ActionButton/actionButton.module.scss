@@ -1,0 +1,40 @@
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  font-size: 1.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &[data-variant="primary"] {
+    border-color: transparent;
+    background: var(--accent);
+    color: #fff;
+  }
+
+  &[data-variant="danger"] {
+    border-color: transparent;
+    background: var(--danger);
+    color: #fff;
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  &[data-variant="ghost"]:hover:not(:disabled) {
+    background: var(--surface-2);
+    filter: none;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}

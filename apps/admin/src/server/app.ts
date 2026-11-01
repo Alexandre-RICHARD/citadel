@@ -9,6 +9,7 @@ import { errorHandler } from "./http/errorHandler.ts";
 import { HttpError } from "./http/HttpError.ts";
 import { securityHeaders } from "./http/securityHeaders.ts";
 import { jobsRouter } from "./jobs/jobsRouter.ts";
+import { operationsRouter } from "./operations/operationsRouter.ts";
 import { overviewRouter } from "./overviewRouter.ts";
 import { requestsRouter } from "./requests/requestsRouter.ts";
 import { servicesRouter } from "./services/servicesRouter.ts";
@@ -35,6 +36,7 @@ app.use(servicesRouter);
 app.use(overviewRouter);
 app.use(jobsRouter);
 app.use(requestsRouter);
+app.use(operationsRouter);
 app.use("/api", () => {
 	throw new HttpError(404, "Route inconnue");
 });

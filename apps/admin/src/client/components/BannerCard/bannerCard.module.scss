@@ -1,0 +1,39 @@
+@use "../../styles/form";
+
+.field {
+  @include form.field;
+}
+
+.input {
+  @include form.input;
+
+  resize: vertical;
+}
+
+.actions {
+  @include form.actions;
+}
+
+.current {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.label {
+  color: var(--text-muted);
+  font-size: 1.3rem;
+}
+
+.banner {
+  padding: 0.8rem 1.2rem;
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius-s);
+  background: var(--warn-subtle);
+}
+
+.hint {
+  color: var(--text-subtle);
+  font-size: 1.2rem;
+}
