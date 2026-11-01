@@ -51,7 +51,7 @@
 #   jobs/<job>.json, .log le dernier passage de chaque job : résultat, contrôles, log
 #   jobs/schedule.json    le planning des jobs (infra/ops/crontab), pour la console
 #   backups.json          les dumps de la base, pour la restauration depuis la console
-#   updates.json          les versions publiées des images tierces, et les nôtres
+#   updates.json          les versions publiées des images tierces, et celles de Citadel
 #   drive.json            le quota du Drive
 #   qbittorrent-stats.jsonl  les compteurs de qBittorrent, une ligne par heure
 #   queue/                les demandes de la console (une par fichier), uploads/ ses dumps
@@ -1434,7 +1434,8 @@ job_config_verify() {
 # --- update-check : chaque nuit à 4 h (§10.7) ---
 # Pour chaque image tierce, le tag publié le plus récent « de la même forme » que celui en
 # service : 5.1.4-r2-ls447 se compare aux N.N.N-rN-lsN, jamais aux nightly-… ni aux
-# version-…. Plus les versions de Citadel publiées sur GHCR, et le quota du Drive.
+# version-…. Plus les versions de Citadel publiées sur GHCR (pour la carte de déploiement
+# de la console), et le quota du Drive.
 newest_like() {
 	awk -v current="$1" '
 		function shape(tag) { gsub(/[0-9]+/, "N", tag); return tag }
