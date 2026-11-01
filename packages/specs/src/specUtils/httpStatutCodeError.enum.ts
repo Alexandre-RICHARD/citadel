@@ -10,6 +10,7 @@ export enum HttpStatutCodeErrorEnum {
 	DELETE_ON_SERVER = 410, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/410
 	CONTENT_TOO_LARGE = 413, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/413
 	OUT_OF_RANGE = 416, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/416
+	TOO_MANY_REQUESTS = 429, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429
 	SERVER_ERROR = 500, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500
 	BAD_GATEWAY = 502, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/502
 	SERVICE_UNAVAILABLE = 503, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/503

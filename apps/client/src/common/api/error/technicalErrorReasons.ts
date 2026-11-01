@@ -9,5 +9,7 @@ export const technicalErrorReasons: Record<TechnicalErrorCodeEnum, string> = {
 		"cette action n'existe pas sur le serveur",
 	[TechnicalErrorCodeEnum.METHOD_NOT_ALLOWED]:
 		"cette action n'est pas acceptée par le serveur",
+	[TechnicalErrorCodeEnum.TOO_MANY_REQUESTS]:
+		"trop de demandes d'affilée, réessayez dans un moment",
 	[TechnicalErrorCodeEnum.INTERNAL_ERROR]: "le serveur a rencontré une erreur",
 };

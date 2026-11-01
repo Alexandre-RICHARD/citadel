@@ -6,6 +6,8 @@ type ApiErrorDetail = {
 	// null : pas de réponse, ou corps illisible (page d'erreur d'un proxy…)
 	code: string | null;
 	issues?: ValidationIssueDto[];
+	// En-tête Retry-After d'une 429, en secondes ; null sans délai annoncé
+	retryAfterSeconds?: number | null;
 	cause?: unknown;
 };
 
@@ -17,7 +19,15 @@ export class ApiError extends Error {
 
 	readonly issues: ValidationIssueDto[];
 
-	constructor({ status, code, issues = [], cause }: ApiErrorDetail) {
+	readonly retryAfterSeconds: number | null;
+
+	constructor({
+		status,
+		code,
+		issues = [],
+		retryAfterSeconds = null,
+		cause,
+	}: ApiErrorDetail) {
 		super(
 			status === null
 				? "No response from the API"
@@ -28,5 +38,6 @@ export class ApiError extends Error {
 		this.status = status;
 		this.code = code;
 		this.issues = issues;
+		this.retryAfterSeconds = retryAfterSeconds;
 	}
 }

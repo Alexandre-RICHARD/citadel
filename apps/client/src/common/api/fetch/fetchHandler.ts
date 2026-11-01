@@ -7,6 +7,7 @@ import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStat
 import { ApiError } from "../error/ApiError";
 import { buildQueryString } from "./buildQueryString";
 import { insertParamsInRequestUrl } from "./insertParamsInRequestUrl";
+import { parseRetryAfter } from "./parseRetryAfter";
 
 // Adresse relative, la même partout : Vite en dev, Caddy en prod la transmettent au serveur
 const API_BASE_URL = "/api";
@@ -75,6 +76,10 @@ export async function fetchHandler<Spec extends EndpointModel>(
 		throw new ApiError({
 			status: response.status,
 			...(await readErrorBody(response)),
+			retryAfterSeconds: parseRetryAfter(
+				response.headers.get("Retry-After"),
+				Date.now(),
+			),
 		});
 
 	// Un 204 n'a pas de corps : data vaut null, comme le déclare l'interface de l'endpoint

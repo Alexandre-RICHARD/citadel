@@ -8,6 +8,7 @@ import { AppError } from "../error/AppError.ts";
 import { BadRequestError } from "../error/BadRequestError.ts";
 import type { ErrorCode } from "../error/errorCode.type.ts";
 import { logError } from "../error/logError.ts";
+import { TooManyRequestsError } from "../error/TooManyRequestsError.ts";
 
 // Type que body-parser (express.json) donne à un corps JSON illisible
 const BODY_PARSE_FAILED_TYPE = "entity.parse.failed";
@@ -102,6 +103,9 @@ export function globalErrorHandler(
 		next(error);
 		return;
 	}
+
+	if (error instanceof TooManyRequestsError)
+		response.set("Retry-After", String(error.retryAfterSeconds));
 
 	response.status(statusCode).json(buildErrorResponse(error, statusCode));
 }

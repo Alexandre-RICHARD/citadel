@@ -277,6 +277,62 @@ describe("fetchHandler.ts", () => {
 			});
 		});
 
+		it("SHOULD keep the Retry-After delay WHEN the API answers 429", async () => {
+			// Arrange
+			fetchMock.mockResolvedValueOnce(
+				new Response(
+					JSON.stringify({
+						code: TechnicalErrorCodeEnum.TOO_MANY_REQUESTS,
+						message: "Too many messages",
+					}),
+					{
+						status: 429,
+						headers: {
+							"Content-Type": "application/json",
+							"Retry-After": "1800",
+						},
+					},
+				),
+			);
+
+			// Act
+			const error = await catchError(
+				fetchHandler(
+					{
+						url: "/contact/messages",
+						method: HttpMethodEnum.POST,
+						protected: false,
+					},
+					{ urlDomain: DOMAIN },
+				),
+			);
+
+			// Assert
+			expect(error).toMatchObject({
+				status: 429,
+				code: TechnicalErrorCodeEnum.TOO_MANY_REQUESTS,
+				retryAfterSeconds: 1800,
+			});
+		});
+
+		it("SHOULD have no delay WHEN the error response has no Retry-After", async () => {
+			// Arrange
+			fetchMock.mockResolvedValueOnce(
+				jsonResponse(404, { code: "GAME_NOT_FOUND", message: "No game" }),
+			);
+
+			// Act
+			const error = await catchError(
+				fetchHandler(
+					{ url: "/games/7", method: HttpMethodEnum.GET, protected: false },
+					{ urlDomain: DOMAIN },
+				),
+			);
+
+			// Assert
+			expect(error).toMatchObject({ retryAfterSeconds: null });
+		});
+
 		it.each([
 			{
 				reason: "is not JSON, like the page of a proxy",
