@@ -46,7 +46,7 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 
 ## 2. Connexions
 
-Tout le chantier est dans le [cahier des charges de l'authentification](auth/cahier_des_charges.md). Il commence après les phases 6 et 7 de l'hébergement.
+Tout le chantier est dans le [cahier des charges de l'authentification](auth/cahier_des_charges.md). Il commence après les mails de l'hébergement.
 
 Pour plus tard :
 
@@ -149,14 +149,26 @@ Numéros d'origine gardés.
 
 ## 6. Hébergement et mise en production
 
-- Phases 6 et 7 de la roadmap : sauvegardes, pré-prod et alertes ; réseau, sécurité et ménage ([cahier des charges, §15](docs/ci_cd/cahier_des_charges.md#15-roadmap)).
+- Mails, envoi et réception, avant l'authentification ([cahier des charges](ci_cd/cahier_des_charges.md)).
 - Une barrette de RAM de plus, si c'est bien le goulot d'étranglement. À 16 Go : Jellyfin à 8 Go, qBittorrent à 6 Go, et son cache interne à 2 Go (options avancées).
 - [Docker Credentials Store](https://docs.docker.com/reference/cli/docker/login/#credential-stores) sur le NAS pour les mots de passe et les clés.
-- Console : modifier `.env.prod`. Aujourd'hui elle n'a aucun accès en écriture aux secrets (§14.2) : passer par une demande à `infra-ops`, comme les jobs, suivie du redémarrage des services concernés.
+- Console : modifier `.env.prod`. Aujourd'hui elle n'a aucun accès en écriture aux secrets : passer par une demande à `infra-ops`, comme les jobs, suivie du redémarrage des services concernés.
 - Console : afficher proprement `pnpm audit` et `pnpm outdated` (failles et dépendances en retard, par paquet du monorepo).
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
 
-Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
+Pour plus tard :
+
+- Procédures de restauration écrites et testées : la config d'un service, toute la stack média, la base de prod.
+- Instantanés Btrfs (les deux volumes sont en Btrfs) : retour en arrière après une suppression accidentelle, et coupure plus courte de `config-backup`.
+- Onduleur : sans lui, une coupure de courant peut abîmer la base ou les bases SQLite des *arr.
+- Déploiement sans coupure (blue/green derrière Caddy) ; déploiement sans GitHub (images construites sur le PC, envoyées par SSH).
+- `.env.prod` chiffré et versionné (SOPS + age).
+- Nettoyage automatique des vieilles images sur GHCR.
+- Limitation de débit sur l'API ; CrowdSec devant le site et Jellyfin.
+- Double authentification sur TOS, pas trouvée dans TOS 7 : risque limité, son interface n'est jamais exposée sur Internet.
+- IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
+- Node 26, MariaDB 12.3 et Flyway 13, testés en pré-prod.
+- Jellyfin 12, sortie en octobre 2026 : sa base migre sans retour possible, donc après une copie de `/Volume1/appdata/jellyfin`.
 
 Idées pour la console, en vrac :
 

@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 1 de la roadmap (§15), après les phases 6 et 7 de l'hébergement.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 1 de la roadmap (§15), après les mails de l'hébergement.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -39,7 +39,7 @@ Des comptes utilisateurs partagés entre tous les projets, pour que la prod soit
 ### 1.2 Livraison
 
 - **Tout d'un coup**, sans MVP, comme la refonte de l'infra : fondations d'abord, parcours ensuite (§12).
-- **Prérequis** : les phases 6 et 7 du [cahier de l'hébergement](../ci_cd/cahier_des_charges.md) (sauvegardes, pré-prod, alertes ; réseau, sécurité et ménage) sont terminées.
+- **Prérequis** : les mails du [cahier de l'hébergement](../ci_cd/cahier_des_charges.md) (envoi, `contact@`, DNS) sont en place.
 - **Branche dédiée** pendant tout le chantier, mise à jour avec `main` régulièrement, puis fusionnée en gardant chaque commit (`git merge --no-ff`).
 - La prod ne contient aucune donnée à garder : les colonnes `user_id` sont obligatoires dès leur migration, et l'inscription est ouverte dès la release.
 
@@ -100,7 +100,7 @@ Je code ; tu relis et valides chaque étape. Design volontairement sommaire (« 
 | 10 | `AppError` sans 401, 403, 429 | Erreurs créées ; `AuthErrorCodeEnum` ajouté à `ErrorCode` |
 | 11 | Collation `utf8mb4_unicode_520_ci` : casse **et** accents ignorés dans les comparaisons (`=`, `UNIQUE`, `WHERE`) | Voulu ailleurs (chercher « pokemon » trouve « Pokémon ») : aucune migration globale. Colonnes de l'auth réglées une par une (§5.3) |
 
-Passés à la phase 7 du [cahier de l'hébergement](../ci_cd/cahier_des_charges.md) (§12.7), donc faits avant ce chantier : CSP, `pnpm audit` et Dependabot, logs à 90 jours, `contact@`. La restauration depuis la console et le bandeau du site sont dans sa phase 6 (§11.8).
+Faits par le chantier de l'hébergement, avant celui-ci : CSP, `pnpm audit` et Dependabot, logs à 90 jours (job `log-retention`), restauration depuis la console et bandeau du site. Les mails (fournisseur, DNS, `contact@`) sont son [cahier des charges](../ci_cd/cahier_des_charges.md).
 
 ---
 
@@ -378,14 +378,12 @@ Jamais de mot de passe, jeton, code, lien ni secret TOTP dans un log, un message
 
 ### 8.1 Envoi
 
-- **Par un fournisseur** (SMTP ou API HTTP), pas directement depuis le NAS : Node sait parler SMTP, mais l'IP résidentielle du NAS est listée comme « domestique » par les listes anti-spam, le port 25 sortant est souvent bloqué et il n'y a pas de résolution inverse. Gmail et Outlook classeraient les mails en indésirables, ou les refuseraient. Choix du fournisseur à l'implémentation (O2Switch ou Proton s'ils fournissent un SMTP pour ton domaine, sinon un service transactionnel européen ; une API HTTP s'appelle avec `fetch`, sans bibliothèque).
-- Adresse d'envoi : `noreply@` ton domaine.
-- **DNS** chez Cloudflare, en « DNS seulement » : SPF, DKIM, DMARC (d'abord `p=none`, puis durci). Critère : un test arrive en boîte de réception chez Gmail et Outlook.
+- **Fournisseur, adresse `noreply@` et DNS** : mis en place avant ce chantier ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2 et §4).
 - **Côté serveur** : une abstraction « expéditeur », réelle ou en mémoire pour les tests ; envoi pendant la requête, 10 s au plus ; un échec est logué sans contenu sensible.
 
 ### 8.2 Réception : `contact@`
 
-Mise en place par la phase 7 du cahier de l'hébergement (§12.7).
+Mise en place avant ce chantier ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §3).
 
 ### 8.3 Mails
 
@@ -468,8 +466,8 @@ Aucune donnée personnelle temporaire ou supprimée ne survit plus de **3 mois**
 | Sessions (empreinte, user agent, IP tronquée, dates) | 30 jours au plus, puis purge |
 | Parcours (`auth_flow`) | Quelques minutes, puis purge |
 | `auth_event`, `error_log` | 90 jours |
-| Logs de Caddy et des conteneurs | 90 jours (job `log-retention`, cahier de l'hébergement, §11.2) |
-| Sauvegardes de la base | Moins de 10 semaines (cahier de l'hébergement, §11.7) |
+| Logs de Caddy et des conteneurs | 90 jours (job `log-retention` d'`infra/citadel`) |
+| Sauvegardes de la base | Moins de 10 semaines (rétention dans `infra/citadel`) |
 | Journal des comptes supprimés (identifiant, date) | 90 jours |
 | Données des projets | Tant que le compte existe |
 
@@ -494,8 +492,8 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 
 ### 10.5 Sauvegardes et restauration
 
-- **Rétention** (cahier de l'hébergement, §11.7) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
-- **Restauration** (`citadel restore-db` ou la console : cahier de l'hébergement, §11.8). Ce chantier y ajoute la commande « après restauration » du serveur, lancée avec la date de la sauvegarde :
+- **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
+- **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur, lancée avec la date de la sauvegarde :
   - **rejouer les suppressions** : les comptes supprimés après la date de la sauvegarde sont supprimés de nouveau, d'après un journal en lignes JSON (identifiant, date) tenu dans un volume du serveur, hors de la base (sinon il serait restauré avec elle), purgé à 90 jours ;
   - **vider toutes les sessions et tous les parcours** : sinon, une session révoquée après la sauvegarde redevient valide.
 - **Bandeau** : le message automatique de restauration gagne la phrase « Si tu as changé de mot de passe ou d'email pendant cette période, refais-le. »
@@ -536,7 +534,7 @@ Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintCo
 
 ### 12.1 Ordre
 
-Après les phases 6 et 7 du cahier de l'hébergement, sur une branche dédiée :
+Après les mails du cahier de l'hébergement, sur une branche dédiée :
 
 1. **Prérequis** : `packages/common/src/node` ; IP réelle ; erreurs 401, 403, 429 et `Retry-After` jusqu'à `ApiError` ; suppression de `POST /error-log/entries` et de `todo_folder`.
 2. **Base** : tables `auth_*` ; `user_id` et cascades des projets.
@@ -607,7 +605,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all
 
 **Phase 0 — Départ**
 
-1. [nous] Phases 6 et 7 de l'hébergement terminées ; branche `feat/auth` depuis `main` à jour. Vérif : `pnpm validate-all`.
+1. [nous] Mails de l'hébergement en place ; branche `feat/auth` depuis `main` à jour. Vérif : `pnpm validate-all`.
 2. [moi] Relecture du cahier contre le code du moment (écarts du §3.2, hook de `citadel restore-db`, bandeau) ; corrections du cahier si besoin, relues par toi.
 
 **Phase 1 — Nettoyage et socle transverse**
@@ -653,8 +651,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all
 
 **Phase 4 — Mail**
 
-35. [nous] Choix du fournisseur : comparatif court (SMTP ou API HTTP, hébergé en Europe, offre gratuite suffisante).
-36. [toi] Compte chez le fournisseur, domaine vérifié, SPF, DKIM et DMARC `p=none` chez Cloudflare ; identifiants dans Bitwarden, puis dans `.env` pour les essais.
+35–36. Fournisseur, domaine vérifié, SPF, DKIM et DMARC `p=none`, identifiants dans `.env` : faits avant ce chantier (cahier de l'hébergement, §5).
 37. [moi] Expéditeur : réel, ou en mémoire pour les tests ; 10 s au plus ; échec logué sans contenu.
 38. [moi] Gabarits minimaux de tous les mails (§8.3), durée floue de la dernière connexion.
 39. [nous] Envoi réel depuis le dev vers Gmail et Outlook. Vérif : critère 13.
@@ -734,4 +731,4 @@ Aucune.
 - `packages/specs/src/specUtils/` : `apiPrefix.enum.ts`, `httpStatutCodeError.enum.ts`, `endpointModel.type.ts`, `error/`.
 - `apps/client/src/` : `common/api/fetch/fetchHandler.ts`, `common/api/error/ApiError.ts`, `configuration/tanStackQueryClient.ts`, `react/appNavigation/`, `projects/homepage/components/Header/`, `projects/homepage/content/footerPages.ts`.
 - `infra/Caddyfile`, `infra/compose.yml`, `infra/citadel`, `packages/eslint-config/eslintConfigCommon.js`.
-- `docs/architecture.md` ; `docs/ci_cd/cahier_des_charges.md` (§11, §12.7, phases 6 et 7).
+- `docs/architecture.md` ; `docs/ci_cd/README.md` ; `docs/ci_cd/cahier_des_charges.md` (les mails).
