@@ -229,11 +229,11 @@ services:
       citadel.controllable: "false"
 
   # ===================================================================================
-  # La pré-prod (§9) : la prod en petit, arrêtée la plupart du temps
+  # La pré-prod : la prod en petit, arrêtée la plupart du temps
   # ===================================================================================
   # Mêmes images que la prod, sa propre base (citadel_preprod) : restaurée chaque nuit
   # depuis la prod par db-restore-test, et par chaque déploiement qui apporte des
-  # migrations (répétition, §8.2). http://<IP du NAS>:8002, en LAN ou par Tailscale,
+  # migrations (répétition). http://<IP du NAS>:8002, en LAN ou par Tailscale,
   # servie par Caddy, jamais depuis Internet. Sans connexion.
   # Mode « on-demand » : citadel deploy la met à jour sans la démarrer. La démarrer :
   # la console, ou citadel start site-preprod.
@@ -247,7 +247,7 @@ services:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?manque dans .env.prod}
       MARIADB_ROOT_HOST: localhost
       # Mêmes comptes et mots de passe que la prod, mais des droits sur citadel_preprod
-      # seulement (§12.5) : mariadb-init.sh les crée pour la base qu'on lui donne
+      # seulement : mariadb-init.sh les crée pour la base qu'on lui donne
       DB_DATABASE_NAME: citadel_preprod
       DB_USER_NAME: citadel_app
       DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
@@ -425,7 +425,7 @@ services:
     container_name: infra-tailscale
     # Le réseau du NAS lui-même, pas un réseau Docker : Tailscale y ajoute son interface,
     # et tes appareils joignent le NAS (SSH, TOS, ports des services) par son nom
-    # Tailscale (NAS_HOSTNAME), de partout, sans port ouvert sur la box (§12.4)
+    # Tailscale (NAS_HOSTNAME), de partout, sans port ouvert sur la box
     network_mode: host
     # Le nom que Tailscale annonce au tailnet, comme l'ancien conteneur : sans lui, ce
     # serait le nom système du NAS, et ce nom (ton alias ssh nas, les adresses par
@@ -567,7 +567,7 @@ services:
       citadel.controllable: "false"
       citadel.release-notes: "https://github.com/wollomatic/socket-proxy/releases"
 
-  # --- La console d'administration (§14) ---
+  # --- La console d'administration ---
   # http://<IP du NAS>:8100 chez toi, http://<nom Tailscale>:8100 par Tailscale ; jamais depuis
   # Internet (la box n'envoie que 80 et 443, à Caddy). Protégée par son mot de passe.
   infra-admin:
@@ -597,7 +597,7 @@ services:
       # Ce qu'écrivent citadel et infra-ops : version en service, historique des
       # déploiements, jobs, sauvegardes, résultats des demandes
       STATE_DIR: /state
-      # Où la console dépose ses demandes à infra-ops (§14.2)
+      # Où la console dépose ses demandes à infra-ops
       QUEUE_DIR: /queue
       # Le bandeau et le mode maintenance du site, qu'elle affiche
       PUBLIC_DIR: /state/public

@@ -16,7 +16,7 @@ type Props = {
 
 const MESSAGE_LIMIT = 500;
 
-// Le bandeau du site (§11.8) et son mode maintenance (§14.3) : deux fichiers qu'infra-ops
+// Le bandeau du site et son mode maintenance : deux fichiers qu'infra-ops
 // écrit, que Caddy sert ou regarde. Ils marchent même si l'API est en panne.
 export function BannerCard({ status, quick }: Props) {
 	const [message, setMessage] = useState("");

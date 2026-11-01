@@ -1,5 +1,5 @@
 # =====================================================================================
-# crontab : le planning des jobs d'infra-ops (cahier des charges, §11.2)
+# crontab : le planning des jobs d'infra-ops
 # =====================================================================================
 #
 # Lu par supercronic, un cron fait pour les conteneurs, lancé par `citadel cron`.
@@ -19,7 +19,7 @@
 # Chaque minute : les appareils de ton tailnet, déposés pour la console (state/tailscale.json)
 * * * * * citadel tailscale-status
 
-# Toutes les 5 min : le site répond-il depuis Internet ? (§13)
+# Toutes les 5 min : le site répond-il depuis Internet ?
 */5 * * * * citadel site-check
 
 # Toutes les 5 min : arrêt des services allumés depuis trop longtemps (citadel.auto-stop)
@@ -31,18 +31,18 @@
 # Toutes les heures : la place prise par Docker, les configs, les sauvegardes et la base
 15 * * * * citadel storage-stats
 
-# Chaque nuit à 3 h 30 : les logs de plus de 90 jours sont vidés (règle des 3 mois, §12.7)
+# Chaque nuit à 3 h 30 : les logs de plus de 90 jours sont vidés (règle des 3 mois)
 30 3 * * * citadel log-retention
 
-# Chaque nuit à 4 h : nouvelles versions publiées des images en service (§10.7)
+# Chaque nuit à 4 h : nouvelles versions publiées des images en service
 0 4 * * * citadel update-check
 
 # Chaque nuit à 4 h 30 : le trafic des téléchargements sort-il bien par le VPN ?
 30 4 * * * citadel vpn-leak-test
 
-# Chaque jour à 5 h : dump de la base, puis test de restauration en pré-prod (§11.3, §11.4).
+# Chaque jour à 5 h : dump de la base, puis test de restauration en pré-prod.
 # « ; » : le test tourne même si le dump a raté, et échoue alors clairement (pas de dump du jour)
 0 5 * * * citadel db-backup; citadel db-restore-test
 
-# Chaque lundi à 3 h : archive des configs, puis son contrôle (§11.5, §11.6)
+# Chaque lundi à 3 h : archive des configs, puis son contrôle
 0 3 * * 1 citadel config-backup; citadel config-verify

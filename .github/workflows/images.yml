@@ -1,5 +1,5 @@
 # =====================================================================================
-# images.yml : construit les images de Citadel et les publie sur ghcr.io (§7)
+# images.yml : construit les images de Citadel et les publie sur ghcr.io
 # =====================================================================================
 #
 # Déclenché seulement par un tag v* (créé par `pnpm release`) : un commit seul ne lance

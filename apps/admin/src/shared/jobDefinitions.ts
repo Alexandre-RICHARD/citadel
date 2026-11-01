@@ -1,6 +1,6 @@
 // Les jobs d'infra-ops que la console montre et sait lancer, dans l'ordre d'affichage.
 // Les noms sont ceux de `citadel <job>` (infra/citadel, infra/ops/crontab).
-// monitored : le job a son contrôle chez healthchecks.io (cahier des charges, §13)
+// monitored : le job a son contrôle chez healthchecks.io
 export const JOB_DEFINITIONS = [
 	{
 		name: "site-check",

@@ -111,7 +111,7 @@ EXPOSE 3000
 CMD ["node", "--enable-source-maps", "build/build.server.cjs"]
 
 # =====================================================================================
-# admin : la console d'administration (cahier des charges, §14)
+# admin : la console d'administration
 # =====================================================================================
 FROM workspace AS admin-build
 RUN pnpm install --offline --frozen-lockfile --filter "@citadel/admin..."
@@ -158,7 +158,7 @@ USER nobody
 CMD ["migrate"]
 
 # =====================================================================================
-# caddy : la porte d'entrée web (cahier des charges, §12.3)
+# caddy : la porte d'entrée web
 # =====================================================================================
 # L'image officielle de Caddy ne sait pas parler à Cloudflare : on recompile Caddy avec
 # deux modules, grâce à xcaddy (fourni par l'image « builder ») :
@@ -195,7 +195,7 @@ LABEL org.opencontainers.image.source="https://github.com/Alexandre-RICHARD/cita
 USER caddy
 
 # =====================================================================================
-# ops : les outils du NAS (cahier des charges, §8.2 et §10.2)
+# ops : les outils du NAS
 # =====================================================================================
 # `citadel deploy <version>` lance un conteneur jetable de CETTE image, à la version
 # demandée : il contient le compose.yml et la logique de déploiement de cette version.

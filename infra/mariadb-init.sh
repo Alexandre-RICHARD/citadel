@@ -104,7 +104,7 @@ citadel_mariadb_init() (
 	fi
 
 	if [[ -n ${DB_BACKUP_PASSWORD:-} ]]; then
-		# Les droits minimaux de mariadb-dump --single-transaction (cahier des charges, §11.3) :
+		# Les droits minimaux de mariadb-dump --single-transaction :
 		# lire les tables et les vues, voir triggers, événements et procédures
 		sql+="
 			CREATE USER IF NOT EXISTS 'citadel_backup'@'%'

@@ -15,7 +15,7 @@ type Props = {
 };
 
 // Déployer une version déjà construite, ou revenir à la précédente, en un clic : après
-// le même plan que `citadel deploy` (§14.3). Le plan ne change rien ; « Déployer », dans
+// le même plan que `citadel deploy`. Le plan ne change rien ; « Déployer », dans
 // la fenêtre du plan, lance le vrai déploiement.
 export function DeployCard({ status, send }: Props) {
 	const versions = [...status.publishedVersions].reverse();

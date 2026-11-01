@@ -28,7 +28,7 @@ function latestCell(service: ServiceItem): ReactNode {
 }
 
 // La version en service de chaque outil tiers, et la dernière publiée de la même forme,
-// relevée chaque nuit par update-check (§10.7), avec le lien vers ses notes de version.
+// relevée chaque nuit par update-check, avec le lien vers ses notes de version.
 // Mettre à jour : changer le tag dans compose.yml, commiter, pnpm release. Nos images
 // n'y sont pas : elles suivent les versions de Citadel, celles de la carte de déploiement.
 export function VersionsTable({ services }: Props) {

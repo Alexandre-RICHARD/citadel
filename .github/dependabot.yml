@@ -1,5 +1,5 @@
 # =====================================================================================
-# dependabot.yml : la veille des dépendances par GitHub (cahier des charges, §12.7)
+# dependabot.yml : la veille des dépendances par GitHub
 # =====================================================================================
 #
 # Dependabot lit le dépôt et ouvre une demande de fusion (pull request) quand une

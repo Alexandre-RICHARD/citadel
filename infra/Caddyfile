@@ -56,7 +56,7 @@
 	}
 }
 
-# La Content-Security-Policy (§12.7) : dit au navigateur d'où la page a le droit de charger
+# La Content-Security-Policy : dit au navigateur d'où la page a le droit de charger
 # ses scripts, styles, images et connexions. Un script injecté par une faille (XSS) vient
 # d'ailleurs, ou est écrit dans la page : le navigateur le refuse. C'est la seconde
 # barrière, après l'échappement du contenu par React. Pour le site seulement : Jellyfin a
@@ -115,7 +115,7 @@
 	# `route` garde l'ordre écrit ici : la maintenance passe avant /api. Les `handle`
 	# sont exclusifs : la première qui correspond répond, les suivantes sont ignorées.
 	route {
-		# Le bandeau du site (§11.8) : un fichier écrit par infra-ops, servi tel quel.
+		# Le bandeau du site : un fichier écrit par infra-ops, servi tel quel.
 		# Absent : 404, et le front n'affiche rien. Jamais gardé en cache.
 		handle /banner.json {
 			root * /srv/public
@@ -145,7 +145,7 @@
 	}
 }
 
-# ===== La pré-prod : http://<NAS>:8002, en LAN et par Tailscale seulement (§12.1) =====
+# ===== La pré-prod : http://<NAS>:8002, en LAN et par Tailscale seulement =====
 # La box n'envoie jamais ce port : invisible depuis Internet. En HTTP, sans certificat,
 # comme la console. Arrêtée la plupart du temps : Caddy répond alors 502.
 http://:8002 {

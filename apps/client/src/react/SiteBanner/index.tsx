@@ -16,7 +16,7 @@ function readDismissed(stored: unknown): string | null {
 	return typeof stored === "string" ? stored : null;
 }
 
-// Le bandeau du site, sur tous les projets (cahier des charges de l'hébergement, §11.8) :
+// Le bandeau du site, sur tous les projets :
 // un message écrit depuis la console, ou l'avis automatique après une restauration.
 // Lu une fois au chargement, dans /banner.json que Caddy sert sans passer par l'API :
 // il s'affiche même si l'API est en panne. Seule sa croix le ferme.

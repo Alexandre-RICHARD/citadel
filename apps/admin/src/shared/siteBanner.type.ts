@@ -1,4 +1,4 @@
-// Le bandeau du site (cahier des charges, §11.8), servi par Caddy en /banner.json.
+// Le bandeau du site, servi par Caddy en /banner.json.
 // kind : restore (écrit après une restauration) ou message (écrit depuis la console)
 export type SiteBanner = {
 	id: string;

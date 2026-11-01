@@ -4,7 +4,7 @@ import { env } from "../configuration/env.ts";
 import { writeAuditLog } from "../http/writeAuditLog.ts";
 import { newRequestId } from "./newRequestId.ts";
 
-// Dépose une demande pour infra-ops (cahier des charges, §14.2), qui la vérifie avant de
+// Dépose une demande pour infra-ops, qui la vérifie avant de
 // l'exécuter : la console ne fait rien d'autre qu'écrire ce fichier. Écrit à côté puis
 // renommé : infra-ops ne lit jamais une demande à moitié écrite.
 export async function enqueueRequest(

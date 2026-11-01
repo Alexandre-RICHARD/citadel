@@ -23,7 +23,7 @@ function messageOf(error: unknown): string {
 }
 
 // Mises en production, bandeau et maintenance du site, sauvegardes et restauration de
-// la base : des demandes à infra-ops (§14.2), suivies en direct dans une fenêtre.
+// la base : des demandes à infra-ops, suivies en direct dans une fenêtre.
 // Deux lignes : le site (versions, bandeau), puis la base (sauvegardes, restauration).
 export function OperationsSection({ onError, onSuccess }: Props) {
 	const { data, error, refresh } = usePolling<OperationsStatus>(

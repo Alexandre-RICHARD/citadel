@@ -65,7 +65,7 @@ async function enqueue(
 
 // Mises en production, sauvegardes et restauration, bandeau et maintenance du site,
 // nettoyage de Docker. Chaque action est
-// une demande déposée pour infra-ops (§14.2) ; la console la suit par /api/requests/:id
+// une demande déposée pour infra-ops ; la console la suit par /api/requests/:id
 export const operationsRouter = Router();
 
 operationsRouter.get(

@@ -18,7 +18,7 @@ type Props = {
 
 const CONFIRMATION = "RESTAURER";
 const UPLOAD_CHOICE = "upload";
-// La zone de danger (§11.8) : remettre la base du site d'une sauvegarde du NAS ou du
+// La zone de danger : remettre la base du site d'une sauvegarde du NAS ou du
 // Drive (téléchargée d'abord), ou en secours d'un dump envoyé depuis ton PC. infra-ops dumpe d'abord la base actuelle,
 // puis affiche le bandeau « restauré » pendant 3 mois.
 export function RestoreCard({ status, send, onError }: Props) {

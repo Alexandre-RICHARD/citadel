@@ -77,7 +77,7 @@ async function runAction(
 			`Non pilotable depuis la console : ${refused.join(", ")}`,
 		);
 
-	// Jellyfin ne s'arrête pas sous les yeux de quelqu'un (§14.3) : arrêt ou redémarrage
+	// Jellyfin ne s'arrête pas sous les yeux de quelqu'un : arrêt ou redémarrage
 	// refusés pendant une lecture
 	if (
 		steps.some(

@@ -367,7 +367,7 @@ dump_prod_db() {
 	mkdir -p "$dir"
 
 	# --single-transaction : une image cohérente de la base, sans la bloquer.
-	# Sans --databases : le dump se restaure dans n'importe quelle base (§11.3).
+	# Sans --databases : le dump se restaure dans n'importe quelle base.
 	docker exec site-prod-db sh -c 'MYSQL_PWD="$DB_BACKUP_PASSWORD" exec mariadb-dump \
 		--host=127.0.0.1 --user=citadel_backup \
 		--single-transaction --quick --routines --triggers --events --hex-blob --no-tablespaces \
@@ -503,7 +503,7 @@ cleanup_old_versions() {
 	shopt -u nullglob
 }
 
-# Étape 5 : la nouvelle version essayée sur une copie de la prod (§8.2). Le dump de
+# Étape 5 : la nouvelle version essayée sur une copie de la prod. Le dump de
 # l'étape 4 est restauré dans la base de pré-prod, les migrations de la nouvelle version
 # y passent, puis son serveur démarre et doit répondre sur /health (son healthcheck, qui
 # interroge la base). Rien de la prod n'est touché ici.
@@ -708,7 +708,7 @@ cmd_restore_db() {
 	fi
 	[[ $answer == RESTAURER ]] || die "annulé : rien n'a été modifié"
 
-	# La base actuelle d'abord, au cas où (§11.8) : même rétention que les dumps
+	# La base actuelle d'abord, au cas où : même rétention que les dumps
 	# avant déploiement
 	if is_healthy site-prod-db; then
 		say "  dump de la base actuelle :"
@@ -729,7 +729,7 @@ cmd_restore_db() {
 	history_line "$(current_version)  restore-db  ($file)"
 	say "  base restaurée"
 
-	# Les visiteurs sont prévenus, trois mois (§11.8). La date de la sauvegarde vient de
+	# Les visiteurs sont prévenus, trois mois. La date de la sauvegarde vient de
 	# son nom (citadel-AAAAMMJJ-…) ; un dump envoyé depuis ton PC n'en a pas forcément.
 	local backup_day message
 	backup_day=$(basename "$file" | sed -nE 's/^citadel-[0-9]{4}([0-9]{2})([0-9]{2})-.*/\2\/\1/p')
@@ -746,7 +746,7 @@ cmd_restore_db() {
 	write_backups_index
 }
 
-# --- Le bandeau et la page de maintenance du site (§11.8, §14.3) ---
+# --- Le bandeau et la page de maintenance du site ---
 # Des fichiers dans state/public/, que Caddy sert ou regarde à chaque requête : ni base ni
 # API en jeu, ils marchent même si le serveur est en panne. Écrits à côté puis renommés :
 # jamais lus à moitié.
@@ -921,7 +921,7 @@ cmd_tailscale_status() {
 }
 
 # =====================================================================================
-# 3. Les jobs (cahier des charges, §11 et §13)
+# 3. Les jobs
 # =====================================================================================
 # Chaque job est une fonction job_<nom>, lancée par run_job, qui fait le reste :
 #   - le verrou, selon le job (plus bas) ;
@@ -931,11 +931,11 @@ cmd_tailscale_status() {
 #     fin du log. Un job qui ne signale rien à l'heure prévue déclenche aussi l'alerte.
 # Dans un job, une commande qui échoue arrête le job (set -e) : il est alors « échoué ».
 
-# Les jobs qui ont leur contrôle chez healthchecks.io (§13) : les autres ne font
+# Les jobs qui ont leur contrôle chez healthchecks.io : les autres ne font
 # qu'afficher, une panne y serait sans conséquence
 PINGED_JOBS=" site-check db-backup db-restore-test config-backup config-verify vpn-leak-test "
 
-# Les exclusions de l'ancien backup.sh, reprises telles quelles (§11.5), plus les
+# Les exclusions de l'ancien backup.sh, reprises telles quelles, plus les
 # dossiers des bases du site : elles ont leurs propres dumps, et s'archivent mal en
 # pleine écriture. Chemins relatifs à /Volume1/appdata.
 CONFIG_EXCLUDES=(
@@ -1043,7 +1043,7 @@ run_job() {
 	return "$status"
 }
 
-# --- Rétention (§11.7) ---
+# --- Rétention ---
 # retention_keep <politique> : lit des noms de sauvegardes (un par ligne), écrit ceux à
 # garder. La date vient du nom (citadel-AAAAMMJJ-HHMMSS-…), jamais de celle du fichier :
 # mêmes noms, donc mêmes décisions, sur le HDD et sur le Drive.
@@ -1235,7 +1235,7 @@ preprod_query() {
 		--user=root --batch --skip-column-names citadel_preprod'
 }
 
-# Le manifeste d'une base (§11.3), en JSON : nombre de lignes de chaque table, dernière
+# Le manifeste d'une base, en JSON : nombre de lignes de chaque table, dernière
 # migration. db_manifest prod_query | preprod_query
 db_manifest() {
 	local query=$1 tables table sql="" counts="" migration
@@ -1302,7 +1302,7 @@ restore_preprod_state() {
 	done
 }
 
-# --- db-backup : chaque nuit à 5 h (§11.3) ---
+# --- db-backup : chaque nuit à 5 h ---
 job_db_backup() {
 	container_running site-prod-db || check_fail "base de prod" "site-prod-db ne tourne pas"
 	local version before after attempt name
@@ -1336,7 +1336,7 @@ job_db_backup() {
 	write_backups_index
 }
 
-# --- db-restore-test : juste après db-backup (§11.4) ---
+# --- db-restore-test : juste après db-backup ---
 job_db_restore_test() {
 	local today name expected actual differences work=$BACKUP_DIR/tmp/db-restore-test
 	[[ -f $RCLONE_CONFIG ]] || check_fail "Drive" "$RCLONE_CONFIG absent"
@@ -1389,7 +1389,7 @@ job_db_restore_test() {
 	# jusqu'à la nuit suivante (DBeaver, port 3307)
 }
 
-# --- site-check : toutes les 5 minutes (§13) ---
+# --- site-check : toutes les 5 minutes ---
 # Le site, depuis Internet : la requête part du NAS et fait le tour par Cloudflare, comme
 # celle d'un visiteur. Silencieux quand tout va bien (il passe 288 fois par jour).
 job_site_check() {
@@ -1403,7 +1403,7 @@ job_site_check() {
 	record_check ok "le site répond" "https://$domain/api/health : 200"
 }
 
-# --- config-backup : chaque lundi à 3 h (§11.5) ---
+# --- config-backup : chaque lundi à 3 h ---
 MEDIA_STOPPED=""
 restart_media() {
 	[[ -n $MEDIA_STOPPED ]] || return 0
@@ -1429,7 +1429,7 @@ job_config_backup() {
 	fi
 	check_ok "services média arrêtés" "${MEDIA_STOPPED:-aucun ne tournait}"
 
-	# 2. L'archive : /Volume1/appdata, plus .env.prod et rclone.conf (§11.1). En 600 :
+	# 2. L'archive : /Volume1/appdata, plus .env.prod et rclone.conf. En 600 :
 	#    elle contient tous les secrets.
 	mkdir -p "$dir"
 	name=citadel-$(date +%Y%m%d-%H%M%S)-appdata.tar.zst
@@ -1477,7 +1477,7 @@ job_config_backup() {
 	write_drive_quota
 }
 
-# --- config-verify : juste après config-backup (§11.6) ---
+# --- config-verify : juste après config-backup ---
 job_config_verify() {
 	local dir=$BACKUP_DIR/configs work=$BACKUP_DIR/tmp/config-verify
 	local name root service db result found missing="" pattern
@@ -1521,7 +1521,7 @@ job_config_verify() {
 	check_ok "fichiers clés" "configs des services, .torrent de qBittorrent"
 }
 
-# --- update-check : chaque nuit à 4 h (§10.7) ---
+# --- update-check : chaque nuit à 4 h ---
 # Pour chaque image tierce, le tag publié le plus récent « de la même forme » que celui en
 # service : 5.1.4-r2-ls447 se compare aux N.N.N-rN-lsN, jamais aux nightly-… ni aux
 # version-…. Plus les versions de Citadel publiées sur GHCR (pour la carte de déploiement
@@ -1843,7 +1843,7 @@ job_qbittorrent_stats() {
 	record_check ok "relevé" "$counters"
 }
 
-# --- log-retention : chaque nuit à 3 h 30 (§12.7) ---
+# --- log-retention : chaque nuit à 3 h 30 ---
 # Les logs ne gardent pas plus de LOG_MAX_AGE_DAYS jours (règle des 3 mois de l'authentification :
 # les logs d'accès de Caddy portent les IP des visiteurs). Le pilote de logs de Docker ne
 # limite que la taille (3 fichiers de 10 Mo, compose.yml) : un service peu bavard garderait
@@ -1899,7 +1899,7 @@ job_log_retention() {
 		"$checked conteneurs vérifiés, ${#emptied[@]} vidés${emptied:+ : ${emptied[*]}}"
 }
 
-# --- auto-stop : toutes les 5 minutes (§14.3) ---
+# --- auto-stop : toutes les 5 minutes ---
 # Les services étiquetés citadel.auto-stop (« 3h » dans compose.yml) s'arrêtent quand
 # ils tournent depuis plus longtemps : allumés pour une recherche, ils s'éteignent seuls.
 job_auto_stop() {
@@ -1934,7 +1934,7 @@ write_schedule() {
 }
 
 # =====================================================================================
-# 4. Les demandes de la console (§14.2)
+# 4. Les demandes de la console
 # =====================================================================================
 # La console n'a pas accès à Docker en écriture, ni au Drive : elle dépose une demande
 # dans state/queue/ (un fichier JSON), qu'infra-ops vérifie ici (liste fermée d'actions,
