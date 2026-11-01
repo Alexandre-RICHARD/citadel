@@ -97,6 +97,19 @@
 	}
 }
 
+# ===== La pré-prod : http://<NAS>:8002, en LAN et par Tailscale seulement (§12.1) =====
+# La box n'envoie jamais ce port : invisible depuis Internet. En HTTP, sans certificat,
+# comme la console. Arrêtée la plupart du temps : Caddy répond alors 502.
+http://:8002 {
+	encode zstd gzip
+	handle_path /api/* {
+		reverse_proxy site-preprod-server:3000
+	}
+	handle {
+		reverse_proxy site-preprod-client:8080
+	}
+}
+
 # www. renvoie vers le domaine sans www., en gardant le chemin
 www.{$SITE_DOMAIN:alexandre-richard.fr} {
 	redir https://{$SITE_DOMAIN:alexandre-richard.fr}{uri} permanent

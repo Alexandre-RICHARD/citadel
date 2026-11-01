@@ -72,6 +72,38 @@ services:
       <<: *build
       target: client
 
+  # La pré-prod : lancée par `up` comme le reste (sur le NAS, citadel ne fait que la créer)
+  site-preprod-db:
+    volumes:
+      - preprod-db-data:/var/lib/mysql
+      - type: bind
+        source: ./mariadb-init.sh
+        target: /docker-entrypoint-initdb.d/citadel.sh
+        read_only: true
+    ports: !override
+      # 3307 et 3308 : les bases de dev et de test de ton PC (compose.dev.yml)
+      - "127.0.0.1:3310:3306"
+
+  # Mêmes images que la prod ; le build est répété pour que Compose ne cherche pas à les
+  # télécharger (le cache de Docker le rend instantané)
+  site-preprod-migrations:
+    image: citadel-migrations:local
+    build:
+      <<: *build
+      target: migrations
+
+  site-preprod-server:
+    image: citadel-server:local
+    build:
+      <<: *build
+      target: server
+
+  site-preprod-client:
+    image: citadel-client:local
+    build:
+      <<: *build
+      target: client
+
   infra-caddy:
     image: citadel-caddy:local
     build:
@@ -80,6 +112,7 @@ services:
     ports: !override
       - "127.0.0.1:8000:80"
       - "127.0.0.1:8443:443"
+      - "127.0.0.1:8002:8002"
 
   # Tailscale : seulement sur le NAS (il lui faut un compte et le réseau de l'hôte).
   # Un profil jamais activé : `up` ne le lance pas.
@@ -237,6 +270,7 @@ configs:
 
 volumes:
   db-data:
+  preprod-db-data:
   ops-state:
   admin-state:
   media-data:

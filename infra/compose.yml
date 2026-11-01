@@ -226,6 +226,145 @@ services:
       citadel.controllable: "false"
 
   # ===================================================================================
+  # La pré-prod (§9) : la prod en petit, arrêtée la plupart du temps
+  # ===================================================================================
+  # Mêmes images que la prod, sa propre base (citadel_preprod) : restaurée chaque nuit
+  # depuis la prod par db-restore-test, et par chaque déploiement qui apporte des
+  # migrations (répétition, §8.2). http://<IP du NAS>:8002 ou http://<nom Tailscale>:8002,
+  # servie par Caddy, jamais depuis Internet. Sans connexion.
+  # Mode « on-demand » : citadel deploy la met à jour sans la démarrer. La démarrer :
+  # la console, ou citadel start site-preprod.
+
+  site-preprod-db:
+    <<: *defaults
+    image: mariadb:11.8.9
+    container_name: site-preprod-db
+    command: ["--innodb-buffer-pool-size=64M"]
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?manque dans .env.prod}
+      MARIADB_ROOT_HOST: localhost
+      # Mêmes comptes et mots de passe que la prod, mais des droits sur citadel_preprod
+      # seulement (§12.5) : mariadb-init.sh les crée pour la base qu'on lui donne
+      DB_DATABASE_NAME: citadel_preprod
+      DB_USER_NAME: citadel_app
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+      DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD:?manque dans .env.prod}
+      DB_BACKUP_PASSWORD: ${DB_BACKUP_PASSWORD:?manque dans .env.prod}
+    volumes:
+      - /Volume1/appdata/site-preprod-db:/var/lib/mysql
+      - type: bind
+        source: /Volume1/citadel/mariadb-init.sh
+        target: /docker-entrypoint-initdb.d/citadel.sh
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      # Comme la prod : 127.0.0.1 du NAS, par tunnel SSH (DBeaver)
+      - "127.0.0.1:3307:3306"
+    networks:
+      - site-preprod
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    labels:
+      citadel.name: "Base de pré-prod"
+      citadel.description: "Copie de la base de prod, restaurée chaque nuit"
+      citadel.group: "site-preprod"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  site-preprod-migrations:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-migrations:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-preprod-migrations
+    # Comme celles de la prod : lancées par citadel, pendant la répétition d'un déploiement
+    profiles: [jobs]
+    restart: "no"
+    environment:
+      FLYWAY_URL: jdbc:mariadb://site-preprod-db:3306/citadel_preprod
+      FLYWAY_USER: citadel_migrator
+      FLYWAY_PASSWORD: ${DB_MIGRATOR_PASSWORD:?manque dans .env.prod}
+    tmpfs:
+      - /tmp
+    networks:
+      - site-preprod
+    depends_on:
+      site-preprod-db:
+        condition: service_healthy
+    labels:
+      citadel.name: "Migrations de pré-prod"
+      citadel.description: "Flyway, pendant la répétition d'un déploiement"
+      citadel.group: "site-preprod"
+      citadel.mode: "job"
+      citadel.controllable: "false"
+
+  site-preprod-server:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-server:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-preprod-server
+    environment:
+      SERVER_PORT: "3000"
+      DB_HOST: site-preprod-db
+      DB_PORT: "3306"
+      DB_DATABASE_NAME: citadel_preprod
+      DB_USER_NAME: citadel_app
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+    networks:
+      - site-preprod
+      - edge
+    depends_on:
+      site-preprod-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      citadel.name: "API de pré-prod"
+      citadel.description: "Serveur Express, sur la base de pré-prod"
+      citadel.group: "site-preprod"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  site-preprod-client:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-client:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-preprod-client
+    tmpfs:
+      - /tmp:uid=101,gid=101,mode=0700
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    labels:
+      citadel.name: "Front de pré-prod"
+      citadel.description: "nginx, servi par Caddy sur le port 8002"
+      citadel.group: "site-preprod"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+
+  # ===================================================================================
   # Infra
   # ===================================================================================
 
@@ -244,6 +383,8 @@ services:
       # TOS occupe les ports 80 et 443 du NAS : la box envoie 80 → 8001 et 443 → 4443
       - "8001:80"
       - "4443:443"
+      # La pré-prod : la box ne l'envoie pas, LAN et Tailscale seulement
+      - "8002:8002"
     volumes:
       # Certificats et comptes ACME, gardés d'une version à l'autre (volume Docker : il
       # reprend les droits de l'utilisateur caddy de l'image, sans réglage)
@@ -789,6 +930,8 @@ networks:
   # La console et le filtre Docker. « internal » : aucune sortie vers Internet
   docker-api:
     internal: true
+  # La base et le serveur de la pré-prod, séparés de la prod
+  site-preprod: {}
 
 volumes:
   caddy-data:
