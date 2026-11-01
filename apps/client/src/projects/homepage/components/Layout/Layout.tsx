@@ -1,5 +1,6 @@
 import "../../ambiance/ambianceProperties.scss";
 
+import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { usePrefersReducedMotion } from "@citadel/common/src/react/hooks/usePrefersReducedMotion";
 import { useSessionStorage } from "@citadel/common/src/react/hooks/useSessionStorage";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
@@ -122,11 +123,12 @@ export function Layout() {
 		document.title = documentTitle;
 	}, [documentTitle]);
 
-	// Échap ferme une page du footer et revient à la présentation d'où l'on venait
+	// Échap ferme une page du footer et revient à la présentation d'où l'on venait ; pas pendant une saisie dans le
+	// formulaire de contact, où il ne fait que quitter le champ
 	useEffect(() => {
 		if (!isPage) return undefined;
 		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key !== "Escape") return;
+			if (event.key !== "Escape" || isTextField(event.target)) return;
 			event.preventDefault();
 			void navigate(backPath);
 		}

@@ -1,0 +1,237 @@
+// Le formulaire de la page Contact : les couleurs de l'ambiance, plus calme que la vitrine.
+// Un seul geste animé, le badge qui flotte ; le reste ne bouge qu'au survol et au focus
+.form {
+  position: relative;
+  margin-top: 2.8rem;
+  padding: 2.8rem 2.4rem 2.4rem;
+  border: 1px solid vars.$border;
+  border-radius: min(#{vars.$radius}, 1.4rem);
+  background:
+    radial-gradient(
+      circle at 100% 0,
+      color-mix(in srgb, vars.$accent 14%, transparent),
+      transparent 45%
+    ),
+    color-mix(in srgb, vars.$surface 35%, transparent);
+
+  @include vars.phone {
+    padding: 2.4rem 1.4rem 1.8rem;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -2rem;
+  right: 2.4rem;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: vars.$accent;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, vars.$accent 85%, transparent);
+  color: vars.$accent-content;
+  animation: badge-float 4s ease-in-out infinite;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.closedNotice {
+  margin-bottom: 2rem;
+  padding: 1.2rem 1.4rem;
+  border-left: 3px solid vars.$accent;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, vars.$accent 12%, transparent);
+  font-size: 1.4rem;
+}
+
+.fieldset {
+  display: grid;
+  gap: 1.8rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// Pour les lecteurs d'écran seulement : le titre de la page suffit à l'œil
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.8rem;
+
+  @include vars.phone {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.optional {
+  font-weight: 400;
+  color: vars.$muted;
+  font-size: 1.25rem;
+}
+
+.counter {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  color: vars.$muted;
+}
+
+.input {
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  border: 1px solid vars.$border;
+  border-radius: min(#{vars.$radius}, 1rem);
+  background: color-mix(in srgb, vars.$background 55%, transparent);
+  color: vars.$text;
+  font: inherit;
+  font-size: 1.5rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+
+  &:hover {
+    border-color: color-mix(in srgb, vars.$accent 45%, vars.$border);
+  }
+
+  &:focus-visible {
+    border-color: vars.$accent;
+    outline: none;
+    background: color-mix(in srgb, vars.$background 80%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, vars.$accent 22%, transparent);
+  }
+}
+
+.textarea {
+  min-height: 18rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+// Hors de l'écran, mais pas en display: none, que certains robots repèrent
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2rem 1.8rem;
+}
+
+.submit {
+  @include vars.button;
+
+  padding: 1.2rem 2.2rem;
+  border-color: vars.$accent;
+  background: vars.$accent;
+  color: vars.$accent-content;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 600;
+
+  svg {
+    transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 10px 24px -12px color-mix(in srgb, vars.$accent 85%, transparent);
+    transform: translateY(-1px);
+
+    svg {
+      transform: translate(3px, -3px) rotate(-8deg);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.feedback {
+  flex: 1;
+  min-width: 20rem;
+  font-size: 1.35rem;
+  color: vars.$muted;
+
+  p + p {
+    margin-top: 0.4rem;
+  }
+}
+
+.error {
+  color: vars.$text;
+  font-weight: 600;
+}
+
+.direct {
+  margin-top: 2.4rem;
+  font-size: 1.4rem;
+  color: vars.$muted;
+
+  a {
+    color: vars.$text;
+    text-decoration-color: vars.$accent;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+
+    &:hover,
+    &:focus-visible {
+      color: vars.$accent;
+    }
+  }
+}
+
+@keyframes badge-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  50% {
+    transform: translateY(-4px) rotate(-6deg);
+  }
+}

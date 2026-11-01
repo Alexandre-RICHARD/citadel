@@ -10,7 +10,7 @@ function createInput(type: string): HTMLInputElement {
 
 describe("isTextField.ts", () => {
 	describe("text fields", () => {
-		it.each(["text", "number", "date", "search"])(
+		it.each(["text", "email", "number", "date", "search"])(
 			"SHOULD return true WHEN the input type is %s",
 			(type) => {
 				expect(isTextField(createInput(type))).toBe(true);

@@ -30,7 +30,10 @@
   align-items: center;
   gap: 0.8rem;
 
+  // Quatre pages et le dépôt ne tiennent pas sur une ligne étroite : ils passent sur deux
   @include vars.phone {
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.4rem;
   }
 }

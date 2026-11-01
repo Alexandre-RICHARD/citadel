@@ -39,6 +39,16 @@ describe("resolveHomepageView.ts", () => {
 
 			expect(view.kind === "page" && view.page.title).toBe("Mentions légales");
 		});
+
+		it("SHOULD show the contact form WHEN the slug is contact", () => {
+			const view = resolveHomepageView(
+				"contact",
+				showcaseProjects,
+				footerPages,
+			);
+
+			expect(view.kind === "page" && view.page.kind).toBe("contact");
+		});
 	});
 
 	describe("unknown", () => {

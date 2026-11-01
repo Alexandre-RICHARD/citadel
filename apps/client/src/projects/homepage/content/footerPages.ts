@@ -1,10 +1,11 @@
-import type { FooterPage } from "./footerPage.type";
+import { CONTACT_EMAIL } from "@citadel/specs/src/projects/contact/contactEmail";
 
-const CONTACT_EMAIL = "contact@alexandre-richard.fr";
+import type { FooterPage } from "./footerPage.type";
 
 // Les pages du footer, dans l'ordre de ses liens
 export const footerPages: FooterPage[] = [
 	{
+		kind: "text",
 		slug: "a-propos",
 		title: "À propos",
 		intro:
@@ -40,6 +41,14 @@ export const footerPages: FooterPage[] = [
 		],
 	},
 	{
+		kind: "contact",
+		slug: "contact",
+		title: "Contact",
+		intro:
+			"Une question sur un projet, une idée, un bug repéré ? Écrivez-moi : je lis chaque message.",
+	},
+	{
+		kind: "text",
 		slug: "mentions-legales",
 		title: "Mentions légales",
 		intro:
@@ -75,6 +84,7 @@ export const footerPages: FooterPage[] = [
 		],
 	},
 	{
+		kind: "text",
 		slug: "donnees-personnelles",
 		title: "Données personnelles",
 		intro:
@@ -91,6 +101,14 @@ export const footerPages: FooterPage[] = [
 				title: "Le cookie de connexion",
 				paragraphs: [
 					"Il n’y a pas encore de comptes, donc aucun cookie. Quand la connexion arrivera, un cookie gardera votre session ouverte : il ne servira qu’à ça, et cette page sera mise à jour.",
+				],
+			},
+			{
+				title: "Le formulaire de contact",
+				paragraphs: [
+					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse. Il n’est enregistré nulle part sur le site, et je l’efface de ma boîte dans la semaine. Votre adresse ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
+					"Pour limiter les abus, le serveur garde en mémoire, sans les écrire nulle part, votre adresse IP pendant une heure (un nombre de messages par heure) et votre adresse mail jusqu’au soir (un seul accusé de réception par jour). Base légale : votre demande de contact, et l’intérêt légitime à protéger le site.",
+					"Les mails du site partent par Brevo, une société française, qui les voit donc passer. Brevo ajoute à chaque mail un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
 				],
 			},
 			{

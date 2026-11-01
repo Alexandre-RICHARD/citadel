@@ -1,4 +1,4 @@
-const TEXT_INPUT_TYPES = ["text", "number", "date", "search"];
+const TEXT_INPUT_TYPES = ["text", "email", "number", "date", "search"];
 
 // Champ où l'on tape : les raccourcis de la page ne doivent pas y voler les touches
 export function isTextField(

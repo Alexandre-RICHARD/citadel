@@ -7,7 +7,7 @@ import styles from "./footer.module.scss";
 
 const REPOSITORY_URL = "https://github.com/Alexandre-RICHARD/citadel";
 
-// Toujours en bas : le copyright, le dépôt du site, et les trois pages, en verre dépoli
+// Toujours en bas : le copyright, le dépôt du site, et ses pages (dont Contact), en verre dépoli
 export function Footer() {
 	const currentYear = new Date().getFullYear();
 
