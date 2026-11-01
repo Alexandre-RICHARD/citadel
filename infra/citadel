@@ -951,13 +951,19 @@ check_fail() {
 hc_ping() {
 	local job=$1 signal=$2 body=${3:-}
 	[[ $PINGED_JOBS == *" $job "* ]] || return 0
-	local key
+	local key code
 	key=$(env_value HEALTHCHECKS_PING_KEY)
 	[[ -n $key ]] || return 0
 	# --retry : un raté du réseau ne doit pas déclencher une fausse alerte
-	curl --silent --show-error --max-time 10 --retry 3 --output /dev/null \
-		--data-binary "$body" "$HEALTHCHECKS_URL/$key/$job/$signal?create=1" ||
-		warn "healthchecks.io injoignable"
+	code=$(curl --silent --show-error --max-time 10 --retry 3 --output /dev/null --write-out '%{http_code}' \
+		--data-binary "$body" "$HEALTHCHECKS_URL/$key/$job/$signal?create=1") || code=""
+	# 200 : reçu ; 201 : reçu, contrôle créé. Une clé inconnue répond 404 « not found » :
+	# sans ce test, aucun contrôle n'apparaît et rien ne le dit.
+	case $code in
+		200 | 201) ;;
+		404) warn "healthchecks.io ne connaît pas HEALTHCHECKS_PING_KEY : il faut la « Ping key » du projet (Settings), pas une clé d'API" ;;
+		*) warn "healthchecks.io injoignable${code:+ (HTTP $code)}" ;;
+	esac
 }
 
 write_job_state() {
@@ -991,12 +997,13 @@ run_job() {
 	started=$(date -Iseconds)
 	JOB_CHECKS=$(mktemp)
 	write_job_state "$job" running "$started" ""
-	hc_ping "$job" start
 	# Le job dans un sous-shell : son « exit » ou une erreur n'arrête que lui. Sa sortie
-	# va dans son log et dans celle d'infra-ops.
+	# va dans son log et dans celle d'infra-ops. Le signal « start » aussi : un refus de
+	# healthchecks.io se lit dans le log, depuis la console.
 	set +e
 	(
 		set -e
+		hc_ping "$job" start
 		"job_${job//-/_}"
 	) 2>&1 | tee "$log.tmp"
 	status=${PIPESTATUS[0]}
