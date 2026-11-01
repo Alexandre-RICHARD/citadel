@@ -594,14 +594,21 @@ services:
       # certificats (lues en HTTPS, sans accès à ses fichiers ni à ses clés)
       CADDY_CONTAINER: infra-caddy
       SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
-      # Version en service et historique des déploiements, écrits par citadel
+      # Ce qu'écrivent citadel et infra-ops : version en service, historique des
+      # déploiements, jobs, sauvegardes, résultats des demandes
       STATE_DIR: /state
+      # Où la console dépose ses demandes à infra-ops (§14.2)
+      QUEUE_DIR: /queue
+      # Le bandeau et le mode maintenance du site, qu'elle affiche
+      PUBLIC_DIR: /state/public
       # Espace libre des deux disques : un dossier de chacun suffit
       SSD_PATH: /state
       HDD_PATH: /hdd
     volumes:
       # En lecture seule. Seulement state/ : pas .env.prod, qui est à côté
       - /Volume1/citadel/state:/state:ro
+      # Sa seule écriture : les demandes, qu'infra-ops vérifie avant d'exécuter
+      - /Volume1/citadel/state/queue:/queue
       # Seul son espace libre est lu (statfs) ; lecture seule
       - /Volume2/data:/hdd:ro
     ports:

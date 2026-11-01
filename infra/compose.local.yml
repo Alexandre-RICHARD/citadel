@@ -140,7 +140,8 @@ services:
       - ops-state:/Volume1/citadel
       # Et son state/, partagé avec la console comme sur le NAS (relevés pour la console)
       - admin-state:/Volume1/citadel/state
-      # Ce que Caddy sert (bandeau, maintenance)
+      # Les demandes de la console, et ce que Caddy sert (bandeau, maintenance)
+      - console-queue:/Volume1/citadel/state/queue
       - site-public:/Volume1/citadel/state/public
       # Les sauvegardes, et le faux Drive où rclone les envoie chiffrées
       - backups:/Volume2/backups
@@ -165,9 +166,14 @@ services:
     build:
       <<: *build
       target: admin
+    environment:
+      # Hors de /state : un montage ne peut pas se créer dans un dossier en lecture seule
+      PUBLIC_DIR: /public
     volumes:
       # Pas de déploiement sur ton PC : un state/ vide (« aucun déploiement »)
       - admin-state:/state:ro
+      - site-public:/public:ro
+      - console-queue:/queue
       - media-data:/hdd:ro
     ports: !override
       - "127.0.0.1:8100:8100"
@@ -301,6 +307,7 @@ volumes:
   preprod-db-data:
   ops-state:
   admin-state:
+  console-queue:
   site-public:
   backups:
   fake-drive:

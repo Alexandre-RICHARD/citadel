@@ -54,12 +54,15 @@
 #   updates.json          les versions publiées des images tierces, et les nôtres
 #   drive.json            le quota du Drive
 #   qbittorrent-stats.jsonl  les compteurs de qBittorrent, une ligne par heure
+#   queue/                les demandes de la console (une par fichier), uploads/ ses dumps
+#   requests/             le résultat et le log de chaque demande
 #   public/               servi par Caddy : banner.json (bandeau), maintenance.on
 #   lock                  le verrou : jamais deux déploiements, ni un déploiement pendant
 #                         un job (vpn-watch, sauvegardes, test de restauration)
 #
 # Le conteneur infra-ops (compose.yml) fait aussi tourner ce fichier : `citadel cron`
-# y lance le planificateur, qui appelle les jobs d'infra/ops/crontab (citadel vpn-watch…).
+# y lance le planificateur, qui appelle les jobs d'infra/ops/crontab (citadel vpn-watch…),
+# et surveille les demandes de la console (queue-watch).
 
 # -e : s'arrêter à la première erreur ; -u : variable inconnue = erreur ;
 # pipefail : une commande qui échoue au milieu d'un « | » fait échouer la ligne
@@ -83,6 +86,8 @@ export RCLONE_CONFIG=$CITADEL_DIR/rclone.conf
 export RCLONE_CACHE_DIR=/tmp/rclone
 DRIVE=citadel-backups:
 HEALTHCHECKS_URL=https://hc-ping.com
+# L'utilisateur de la console dans son image (node) : il doit pouvoir écrire dans queue/
+CONSOLE_UID=1000
 
 # --- Affichage ---
 say() { printf '%s\n' "$*"; }
@@ -235,9 +240,15 @@ is_healthy() {
 
 # Confirmation : seul « o » (ou « oui ») continue. Lue au clavier, ou depuis l'entrée
 # standard (echo o | citadel …) : rien ne change sans une réponse explicite.
+# CITADEL_ASSUME_YES : la demande vient de la console, où tu as déjà confirmé après
+# avoir lu le même plan (queue-watch le pose, jamais rien d'autre).
 confirm() {
 	local answer=""
 	printf '\n%s ' "$1"
+	if [[ -n ${CITADEL_ASSUME_YES:-} ]]; then
+		say "o (confirmé depuis la console)"
+		return 0
+	fi
 	read -r answer || true
 	[[ $answer =~ ^[oO](ui)?$ ]] || die "annulé : rien n'a été modifié"
 }
@@ -495,12 +506,15 @@ rehearse_in_preprod() {
 	say "  serveur de pré-prod sain (/health)"
 }
 
+# CITADEL_PLAN_ONLY : s'arrêter après le plan (étape 3), sans rien changer. La console
+# montre ce plan avant que tu confirmes.
 cmd_deploy() {
 	local version=${1:-}
 	[[ -n $version ]] || die "usage : citadel deploy <version>"
 	[[ $version == "$CITADEL_VERSION" ]] ||
 		die "cette image ops est en $CITADEL_VERSION, pas en $version : passer par /Volume1/citadel/citadel"
-	take_lock
+	# Le plan seul ne change rien : pas besoin du verrou
+	[[ -n ${CITADEL_PLAN_ONLY:-} ]] || take_lock
 	local previous
 	previous=$(current_version)
 
@@ -530,6 +544,11 @@ cmd_deploy() {
 	show_pending_migrations
 	if [[ -n $PENDING_MIGRATIONS ]]; then
 		say "  (répétées d'abord en pré-prod, sur une copie de la base)"
+	fi
+	if [[ -n ${CITADEL_PLAN_ONLY:-} ]]; then
+		say ""
+		say "Plan seulement : rien n'a changé."
+		return 0
 	fi
 	confirm "Déployer $version ? [o/N]"
 
@@ -589,8 +608,9 @@ cmd_deploy() {
 
 # citadel rollback : la version précédente, avec son compose.yml et ses images, déjà là.
 # Pas de migrations : celles passées restent, elles sont rétrocompatibles.
+# CITADEL_PLAN_ONLY : le plan seul, comme pour deploy.
 cmd_rollback() {
-	take_lock
+	[[ -n ${CITADEL_PLAN_ONLY:-} ]] || take_lock
 	local current previous
 	current=$(current_version)
 	previous=$(previous_version)
@@ -602,6 +622,11 @@ cmd_rollback() {
 	[[ -f $TARGET_COMPOSE ]] || die "compose.yml de $previous introuvable"
 	CONFIG_JSON=$(compose_json)
 	show_plan
+	if [[ -n ${CITADEL_PLAN_ONLY:-} ]]; then
+		say ""
+		say "Plan seulement : rien n'a changé."
+		return 0
+	fi
 	confirm "Revenir à $previous ? [o/N]"
 
 	switch_to "$previous" || die "échec du retour à $previous : citadel status"
@@ -613,6 +638,7 @@ cmd_rollback() {
 
 # citadel restore-db <pre-deploy | latest | fichier> : remet la base de prod d'un dump.
 # Les écritures faites depuis ce dump sont perdues : confirmation renforcée.
+# « upload:<id> » : un dump envoyé depuis ton PC par la console (state/queue/uploads/).
 cmd_restore_db() {
 	local source=${1:-}
 	local file
@@ -623,6 +649,7 @@ cmd_restore_db() {
 			file=$(find "$BACKUP_DIR/db" -name 'citadel-*.sql.zst' 2>/dev/null |
 				awk -F/ '{print $NF " " $0}' | sort | tail -n 1 | cut -d' ' -f2-)
 			;;
+		upload:*) file=$STATE_DIR/queue/uploads/${source#upload:}.sql.zst ;;
 		"") die "usage : citadel restore-db <pre-deploy | latest | chemin du dump>" ;;
 		*) file=$source ;;
 	esac
@@ -645,7 +672,13 @@ cmd_restore_db() {
 	say "  Tout ce qui a été écrit dans la base depuis ce dump sera perdu."
 	local answer=""
 	printf '\nPour confirmer, tape RESTAURER : '
-	read -r answer || true
+	if [[ -n ${CITADEL_ASSUME_YES:-} ]]; then
+		# La console a exigé le même mot avant d'envoyer la demande
+		answer=RESTAURER
+		say "RESTAURER (depuis la console)"
+	else
+		read -r answer || true
+	fi
 	[[ $answer == RESTAURER ]] || die "annulé : rien n'a été modifié"
 
 	# La base actuelle d'abord, au cas où (§11.8) : même rétention que les dumps
@@ -681,6 +714,8 @@ cmd_restore_db() {
 	write_banner restore "$message" "$(date -d '+3 months' -Iseconds)"
 	say "  bandeau du site : « $message »"
 
+	# Le dump envoyé a servi : la base actuelle est désormais la sienne
+	if [[ $source == upload:* ]]; then rm -f "$file"; fi
 	write_backups_index
 }
 
@@ -765,9 +800,13 @@ cmd_logs() {
 
 # Le projet Compose du conteneur où tourne ce script : « citadel » sur le NAS,
 # « citadel-local » avec pnpm prod:local. Lancé à la main hors d'infra-ops : « citadel ».
+# CITADEL_PROJECT : posé par queue-watch sur les conteneurs qu'il lance, qui n'ont pas
+# de label Compose.
 own_project() {
-	local project
-	project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$HOSTNAME" 2>/dev/null || true)
+	local project=${CITADEL_PROJECT:-}
+	if [[ -z $project ]]; then
+		project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$HOSTNAME" 2>/dev/null || true)
+	fi
 	printf '%s\n' "${project:-citadel}"
 }
 
@@ -1499,6 +1538,168 @@ write_schedule() {
 		jq -Rn '[inputs | split("\t") | {job: .[0], cron: .[1]}]' >"$STATE_DIR/jobs/schedule.json"
 }
 
+# =====================================================================================
+# 4. Les demandes de la console (§14.2)
+# =====================================================================================
+# La console n'a pas accès à Docker en écriture, ni au Drive : elle dépose une demande
+# dans state/queue/ (un fichier JSON), qu'infra-ops vérifie ici (liste fermée d'actions,
+# versions et dumps contrôlés) avant de l'exécuter. Une faille dans la console ne donne
+# donc rien de plus que ces actions-là.
+#
+# Les actions longues (jobs, déploiement, retour arrière, restauration) tournent dans un
+# conteneur ops à part, détaché : un déploiement recrée infra-ops sans s'interrompre.
+# Leur sortie va dans state/requests/<id>.log, leur code de sortie dans <id>.exit.
+
+CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check qbittorrent-stats auto-stop "
+VERSION_PATTERN='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
+
+# Termine une demande : son message dans le log, son code de sortie
+finish_request() {
+	local id=$1 status=$2 message=$3
+	printf '%s\n' "$message" >>"$STATE_DIR/requests/$id.log"
+	printf '%s\n' "$status" >"$STATE_DIR/requests/$id.exit"
+}
+
+# launch_request <id> <image> [VAR=valeur…] -- <commande citadel…>
+launch_request() {
+	local id=$1 image=$2
+	shift 2
+	local env_flags=()
+	while [[ $1 != -- ]]; do
+		env_flags+=(--env "$1")
+		shift
+	done
+	shift
+	# --volumes-from : les mêmes dossiers qu'infra-ops (socket Docker, state, sauvegardes,
+	# appdata), sur le NAS comme avec pnpm prod:local. Les variables de .env.prod
+	# utiles aux jobs suivent (--env NOM : la valeur d'ici).
+	# shellcheck disable=SC2016 # les $ sont pour le sh du conteneur
+	if ! docker run --detach --rm --name "citadel-request-$id" \
+		--volumes-from "$HOSTNAME" \
+		--network "$(own_project)_ops" \
+		--env CITADEL_PROJECT="$(own_project)" \
+		--env HEALTHCHECKS_PING_KEY --env QBITTORRENT_USER --env QBITTORRENT_PASSWORD --env SITE_DOMAIN \
+		"${env_flags[@]}" \
+		--entrypoint sh "$image" \
+		-c 'log=$1 exit_file=$2; shift 2; citadel "$@" >>"$log" 2>&1; echo $? >"$exit_file"' \
+		sh "$STATE_DIR/requests/$id.log" "$STATE_DIR/requests/$id.exit" "$@" \
+		>/dev/null 2>>"$STATE_DIR/requests/$id.log"; then
+		finish_request "$id" 1 "lancement impossible : image $image introuvable ?"
+	fi
+}
+
+handle_request() {
+	local file=$1 id request action version source path message ends_at own_image
+	id=$(basename "$file" .json)
+	request=$(cat "$file")
+	rm -f "$file"
+	[[ $id =~ ^[A-Za-z0-9-]{1,64}$ ]] || return 0
+	action=$(jq -r '.action // ""' <<<"$request" 2>/dev/null || true)
+	jq -n --arg id "$id" --arg action "$action" --argjson request "$(jq -c . <<<"$request" 2>/dev/null || echo '{}')" \
+		'$request + {id: $id, action: $action, receivedAt: (now | todate)}' >"$STATE_DIR/requests/$id.json"
+	: >"$STATE_DIR/requests/$id.log"
+	own_image=$(docker inspect --format '{{.Config.Image}}' "$HOSTNAME")
+
+	case $action in
+		run-job)
+			local job
+			job=$(jq -r '.job // ""' <<<"$request")
+			[[ $CONSOLE_JOBS == *" $job "* ]] || { finish_request "$id" 2 "refusé : job inconnu ($job)"; return 0; }
+			launch_request "$id" "$own_image" -- "$job"
+			;;
+		deploy-plan | deploy)
+			version=$(jq -r '.version // ""' <<<"$request")
+			[[ $version =~ $VERSION_PATTERN ]] || { finish_request "$id" 2 "refusé : version invalide ($version)"; return 0; }
+			[[ $CITADEL_VERSION != local ]] || { finish_request "$id" 2 "refusé : pas de déploiement avec pnpm prod:local"; return 0; }
+			mkdir -p "$BACKUP_DIR" "$APPDATA_DIR"
+			# L'image ops de la version demandée : son compose.yml est celui à déployer
+			if [[ $action == deploy-plan ]]; then
+				launch_request "$id" "$REGISTRY/citadel-ops:$version" CITADEL_PLAN_ONLY=1 -- deploy "$version"
+			else
+				launch_request "$id" "$REGISTRY/citadel-ops:$version" CITADEL_ASSUME_YES=1 -- deploy "$version"
+			fi
+			;;
+		rollback-plan) launch_request "$id" "$own_image" CITADEL_PLAN_ONLY=1 -- rollback ;;
+		rollback) launch_request "$id" "$own_image" CITADEL_ASSUME_YES=1 -- rollback ;;
+		restore-db)
+			source=$(jq -r '.source // ""' <<<"$request")
+			if [[ $source =~ ^(daily|pre-deploy|pre-restore)/citadel-[0-9]{8}-[0-9]{6}-[A-Za-z0-9._-]+\.sql\.zst$ ]]; then
+				path=$BACKUP_DIR/db/$source
+			elif [[ $source =~ ^upload:[A-Za-z0-9-]{1,64}$ ]]; then
+				path=$source
+				[[ -f $STATE_DIR/queue/uploads/${source#upload:}.sql.zst ]] || path=""
+			else
+				path=""
+			fi
+			[[ -n $path && ( $path == upload:* || -f $path ) ]] ||
+				{ finish_request "$id" 2 "refusé : dump inconnu ($source)"; return 0; }
+			[[ $(jq -r '.confirmation // ""' <<<"$request") == RESTAURER ]] ||
+				{ finish_request "$id" 2 "refusé : confirmation manquante"; return 0; }
+			launch_request "$id" "$own_image" CITADEL_ASSUME_YES=1 -- restore-db "$path"
+			;;
+		banner-set)
+			message=$(jq -r '.message // ""' <<<"$request")
+			ends_at=$(jq -r '.endsAt // ""' <<<"$request")
+			if [[ -z $message || ${#message} -gt 500 ]]; then
+				finish_request "$id" 2 "refusé : message vide ou trop long (500 caractères au plus)"
+			elif [[ -n $ends_at ]] && ! date -d "$ends_at" >/dev/null 2>&1; then
+				finish_request "$id" 2 "refusé : date de fin illisible ($ends_at)"
+			else
+				write_banner message "$message" "$ends_at"
+				finish_request "$id" 0 "bandeau publié"
+			fi
+			;;
+		banner-clear)
+			clear_banner
+			finish_request "$id" 0 "bandeau retiré"
+			;;
+		maintenance-on | maintenance-off)
+			set_maintenance "${action#maintenance-}"
+			finish_request "$id" 0 "mode maintenance : ${action#maintenance-}"
+			;;
+		*) finish_request "$id" 2 "refusé : action inconnue ($action)" ;;
+	esac
+}
+
+# Une demande lancée dont le conteneur a disparu sans écrire son code de sortie (NAS
+# redémarré, conteneur tué) : marquée en échec, pour que la console ne l'attende pas
+mark_lost_requests() {
+	local file id
+	for file in "$STATE_DIR"/requests/*.json; do
+		[[ -e $file ]] || return 0
+		id=$(basename "$file" .json)
+		[[ -e $STATE_DIR/requests/$id.exit ]] && continue
+		# Laisser au conteneur le temps de démarrer
+		(($(date +%s) - $(stat -c %Y "$file") > 30)) || continue
+		[[ -n $(docker ps --quiet --filter "name=^citadel-request-$id$") ]] && continue
+		finish_request "$id" 255 "interrompu : le conteneur de la demande a disparu"
+	done
+}
+
+cmd_queue_watch() {
+	local queue=$STATE_DIR/queue file count=0
+	mkdir -p "$queue/uploads" "$STATE_DIR/requests"
+	# La console (node, 1000) écrit dans queue/, et elle seule avec root
+	chown "$CONSOLE_UID:$CONSOLE_UID" "$queue" "$queue/uploads"
+	chmod 700 "$queue" "$queue/uploads"
+	while true; do
+		for file in "$queue"/*.json; do
+			[[ -e $file ]] || break
+			handle_request "$file" || true
+		done
+		# Toutes les minutes environ : demandes perdues, et les 30 plus récentes gardées
+		count=$((count + 1))
+		if ((count % 30 == 0)); then
+			mark_lost_requests
+			find "$STATE_DIR/requests" -name '*.json' -printf '%f\n' | sort -r | tail -n +31 |
+				while read -r file; do rm -f "$STATE_DIR/requests/${file%.json}".*; done
+			# Un dump envoyé puis jamais restauré : effacé au bout d'un jour
+			find "$queue/uploads" -type f -mmin +1440 -delete
+		fi
+		sleep 2
+	done
+}
+
 ops_main() {
 	local command=${1:-help}
 	shift || true
@@ -1523,9 +1724,18 @@ ops_main() {
 		site-check | update-check | qbittorrent-stats) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;
 		tailscale-status) cmd_tailscale_status ;;
+		queue-watch) cmd_queue_watch ;;
 		cron)
 			write_schedule
 			write_backups_index
+			# Les demandes de la console, surveillées à côté du planificateur, relancées
+			# 5 s après une erreur
+			(
+				while true; do
+					(cmd_queue_watch) || true
+					sleep 5
+				done
+			) &
 			# Le planificateur d'infra-ops, qui tourne tant que le conteneur vit.
 			# -passthrough-logs : la sortie des jobs telle quelle dans les logs du conteneur ;
 			# -quiet : sans une ligne « job démarré / réussi » chaque minute.
