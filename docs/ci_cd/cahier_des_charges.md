@@ -159,7 +159,7 @@ Juste après, sans coupure : extrait l'archive dans un dossier temporaire du HDD
 - **Mêmes fichiers et même rétention sur le HDD et sur le Drive**, un dossier par type de sauvegarde.
 - Le Drive ne reçoit que du chiffré : rclone `crypt` chiffre noms et contenus avant l'envoi.
 - **Le mot de passe et le sel du chiffrement vont dans Bitwarden avant le premier envoi.** Sans eux, les sauvegardes sont illisibles, y compris pour toi si le NAS meurt.
-- rclone utilise son client OAuth Google partagé : jeton qui ne périme pas tant qu'il sert, débit limité mais suffisant pour quelques Go par semaine.
+- rclone utilise ton propre client OAuth Google, publié en production, avec la portée `drive.file` : procédure dans le [README](README.md#accès-au-drive-rclone).
 - Changer de fournisseur (1 To ailleurs) : rclone en gère plusieurs dizaines, seul le « remote » change.
 
 | | Rétention, sur le HDD et sur le Drive |
@@ -251,7 +251,7 @@ Jusqu'à la phase 6, seules sauvegardes : le dump avant chaque déploiement et l
 28. [moi] `infra-ops` complet ; `db-backup`, `db-restore-test`, `site-check`, pré-prod ; répétition des migrations dans `citadel deploy`.
 29. [moi] `config-backup`, `config-verify`, `update-check`, `qbittorrent-stats`.
 30. [moi] Console : fonctionnalités restantes (§14.3), dont la restauration et le bandeau du site (§11.8).
-31. [toi] Une semaine d'observation et un échec simulé. Fini quand : 7 matins de suite avec restauration vérifiée, et une alerte reçue. Puis désactiver UptimeRobot.
+31. [toi] Un échec simulé, puis observation. Fini quand : une alerte reçue, puis les premiers matins avec restauration vérifiée. Puis désactiver UptimeRobot.
 
 **Phase 7 — Réseau, sécurité, ménage**
 

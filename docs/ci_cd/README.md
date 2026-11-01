@@ -107,6 +107,95 @@ pnpm prod:local                                 # attendu : 15 conteneurs « Hea
 pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
 
+## Accès au Drive (rclone)
+
+Les sauvegardes partent sur ton Google Drive, chiffrées par rclone. Deux « remotes » dans `rclone.conf` : `gdrive` (le dossier `citadel` de ton Drive) et `citadel-backups` (le même dossier, chiffré : noms et contenus illisibles sans le mot de passe et le sel).
+
+Pourquoi ça tient : un client OAuth à toi, publié **en production**. En mode « test », Google coupe le jeton au bout de 7 jours (la cause probable des pannes d'avant). La portée `drive.file` ne donne accès qu'aux fichiers créés par rclone : pas de vérification Google à demander, et rien d'autre de ton Drive n'est lisible. Le jeton ne meurt ensuite que si tu le révoques, ou après 6 mois sans servir.
+
+Accès limité au seul dossier `citadel`, en deux couches : Google (`drive.file`) cache à rclone tout ce qu'il n'a pas créé ; rclone (`root_folder_id`) prend `citadel` pour racine, et aucune commande ne peut en sortir.
+
+**1. Client OAuth**, sur <https://console.cloud.google.com>, connecté au compte Google du Drive. Tout ce qui s'affiche une seule fois va dans Bitwarden **avant** de passer à la suite.
+
+1. Sélecteur de projet → Nouveau projet → `citadel-rclone` → Créer, puis le sélectionner.
+2. API et services → Bibliothèque → « Google Drive API » → Activer.
+3. Google Auth Platform → Commencer : nom `citadel-rclone`, ton email ; audience **Externe** ; ton email en contact ; accepter → Créer.
+4. Accès aux données → Ajouter ou supprimer des champs d'application → filtrer `drive.file` → cocher `.../auth/drive.file` → Mettre à jour → Enregistrer.
+5. Branding : ton email en assistance, l'adresse du site en page d'accueil **et** en règles de confidentialité (Google ne vérifie pas ces pages avec `drive.file`), pas de logo (il déclencherait une vérification) → Enregistrer.
+6. Audience → **Publier l'application** → Confirmer. Le statut doit être « En production ».
+7. Clients → Créer un client → type **Application de bureau**, nom `rclone` → Créer. Copier l'ID client et le code secret dans Bitwarden (le secret n'est plus réaffiché).
+
+**2. Remotes**, sur ton PC. Installer rclone (`winget install Rclone.Rclone`), ouvrir un nouveau terminal, puis `rclone config` :
+
+1. `n` (nouveau remote), nom `gdrive`, type `drive`, `client_id` et `client_secret` collés, `scope` : `drive.file`, `service_account_file` vide, configuration avancée `n`, navigateur `y`. Choisir le compte ; si Google affiche « Google n'a pas validé cette application » : Paramètres avancés → Accéder à citadel-rclone → Continuer. « Success » s'affiche. Shared Drive `n`, garder `y`, puis `q`.
+2. Enfermer `gdrive` dans le dossier `citadel`, dans Git Bash :
+   ```sh
+   rclone mkdir gdrive:citadel
+   ID=$(rclone lsjson gdrive: --dirs-only | jq -r '.[] | select(.Name == "citadel") | .ID')
+   echo "$ID"                                   # attendu : une suite de lettres et de chiffres
+   rclone config update gdrive root_folder_id "$ID"
+   rclone lsd gdrive:                           # attendu : rien (on est dans citadel, vide)
+   ```
+   (`jq` absent : `winget install jqlang.jq`.) Puis relancer `rclone config`, pour créer le remote chiffré :
+3. `n`, nom `citadel-backups`, type `crypt`, `remote` : `gdrive:`, `filename_encryption` et `directory_name_encryption` par défaut (Entrée).
+4. `password` : `g` (générer), 256 bits, `y`. **Copier le mot de passe dans Bitwarden tout de suite.** `password2` (le sel) : pareil. Configuration avancée `n`, garder `y`, puis `q`.
+5. Le fichier entier (`rclone config file` donne son chemin) va aussi dans Bitwarden.
+
+**3. Vérifier**, dans Git Bash : créer un fichier lisible, l'envoyer chiffré, le relire sans aide (juste les secrets) :
+
+```sh
+# 1. Créer un fichier avec du texte que tu reconnaîtras
+echo "test de la citadel" > verification.txt
+
+# 2. L'envoyer sur le Drive (via rclone, il sera chiffré)
+rclone copy verification.txt citadel-backups:verify/
+
+# 3. ⚠️  Va observer sur ton Drive (https://drive.google.com)
+#    Le fichier a un nom illisible, son contenu est illisible : c'est le chiffrement.
+
+# 4. Relire le fichier en clair via rclone (en utilisant la config citadel-backups)
+echo "--- Via citadel-backups (normal) ---"
+rclone cat citadel-backups:verify/verification.txt
+
+# 5. Relire le MÊME fichier JUSTE avec tes secrets Bitwarden
+#    (pas de config rclone, pas de NAS : juste les deux codes de Bitwarden)
+#    Cela prouve que tu peux récupérer tes données en cas de catastrophe.
+echo "--- Avec JUSTE les secrets (mode urgence) ---"
+read -rsp "Mot de passe (depuis Bitwarden) : " PW; echo
+read -rsp "Sel (depuis Bitwarden) : " SALT; echo
+rclone cat ":crypt,remote='gdrive:',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")':verify/verification.txt"
+unset PW SALT
+
+# 6. Nettoyer
+rclone purge citadel-backups:verify/
+rm verification.txt
+echo "Vérification terminée ✓"
+```
+
+**4. Sur le NAS**, depuis Git Bash sur ton PC (pas PowerShell : `<` et `$APPDATA` n'y marchent pas). Cela copie le fichier de config depuis ton PC vers le NAS, avec des permissions très restrictives (seul le propriétaire peut le lire) :
+
+```sh
+# 1. Copier le fichier de ton PC vers le NAS, via SSH
+ssh nas 'umask 077 && cat > /Volume1/citadel/rclone.conf' < "$APPDATA/rclone/rclone.conf"
+```
+
+Ça se décompose ainsi :
+- `ssh nas` : se connecter au NAS en SSH
+- `umask 077` : les permissions par défaut vont être `rw-------` (seul le propriétaire lit/écrit)
+- `cat > /Volume1/citadel/rclone.conf` : écrire ce qui arrive sur l'entrée standard dans ce fichier
+- `< "$APPDATA/rclone/rclone.conf"` : lire depuis ton fichier rclone local (Windows)
+
+```sh
+# 2. Vérifier que le fichier est bien là, avec les bonnes permissions
+ssh nas ls -l /Volume1/citadel/rclone.conf
+```
+
+Attendu : `-rw-------` (seul le propriétaire lit/écrit, personne d'autre n'y voit rien, même les autres utilisateurs du NAS).
+
+**Note** : `infra-ops` (le conteneur des jobs) relira ce fichier, et le réécrit quand le jeton OAuth de Google doit être renouvelé (normal, aucune action de ta part).
+
+**Si un jour le Drive refuse** (`invalid_grant`, jeton expiré ou révoqué) : sur ton PC, `rclone config reconnect gdrive:`, puis refaire l'étape 4. Le chiffrement ne change pas : rien n'est perdu.
+
 ## Remonter le NAS de zéro
 
 Garder dans Bitwarden `.env.prod`, `rclone.conf`, le mot de passe et le sel du chiffrement des sauvegardes, et les accès Google, GitHub, Tailscale, Proton, Cloudflare, O2Switch et TOS. Puis : installer TOS et Docker, puis `citadel` dans `/Volume1/citadel` ; y déposer `.env.prod` et `rclone.conf` ; restaurer la dernière archive dans `/Volume1/appdata` ; `citadel deploy <dernière version>` ; `citadel restore-db latest`.
