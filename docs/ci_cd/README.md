@@ -156,9 +156,10 @@ Accès limité au seul dossier `citadel`, en deux couches : Google (`drive.file`
    rclone lsd gdrive:                           # attendu : rien (on est dans citadel, vide)
    ```
    (`jq` absent : `winget install jqlang.jq`.) Puis relancer `rclone config`, pour créer le remote chiffré :
-3. `n`, nom `citadel-backups`, type `crypt`, `remote` : `gdrive:`, `filename_encryption` et `directory_name_encryption` par défaut (Entrée).
+3. `n`, nom `citadel-backups`, type `crypt`, `remote` : `gdrive:`, `filename_encryption` et `directory_name_encryption` par défaut (Entrée) : changés au 5.
 4. `password` : `g` (générer), 256 bits, `y`. **Copier le mot de passe dans Bitwarden tout de suite.** `password2` (le sel) : pareil. Configuration avancée `n`, garder `y`, puis `q`.
-5. Le fichier entier (`rclone config file` donne son chemin) va aussi dans Bitwarden.
+5. Des noms lisibles sur le Drive, seul le contenu est chiffré (et pas de `.bin` ajouté) : `rclone config update citadel-backups filename_encryption off directory_name_encryption false suffix none`.
+6. Le fichier entier (`rclone config file` donne son chemin) va aussi dans Bitwarden.
 
 **3. Vérifier**, dans Git Bash : créer un fichier lisible, l'envoyer chiffré, le relire sans aide (juste les secrets) :
 
@@ -170,7 +171,7 @@ echo "test de la citadel" > verification.txt
 rclone copy verification.txt citadel-backups:verify/
 
 # 3. ⚠️  Va observer sur ton Drive (https://drive.google.com)
-#    Le fichier a un nom illisible, son contenu est illisible : c'est le chiffrement.
+#    Le fichier garde son nom, mais son contenu est illisible : c'est le chiffrement.
 
 # 4. Relire le fichier en clair via rclone (en utilisant la config citadel-backups)
 echo "--- Via citadel-backups (normal) ---"
@@ -182,7 +183,7 @@ rclone cat citadel-backups:verify/verification.txt
 echo "--- Avec JUSTE les secrets (mode urgence) ---"
 read -rsp "Mot de passe (depuis Bitwarden) : " PW; echo
 read -rsp "Sel (depuis Bitwarden) : " SALT; echo
-rclone cat ":crypt,remote='gdrive:',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")':verify/verification.txt"
+rclone cat ":crypt,remote='gdrive:',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")',filename_encryption=off,directory_name_encryption=false,suffix=none:verify/verification.txt"
 unset PW SALT
 
 # 6. Nettoyer
@@ -215,20 +216,20 @@ Attendu : `-rw-------` (seul le propriétaire lit/écrit, personne d'autre n'y v
 
 **Si un jour le Drive refuse** (`invalid_grant`, jeton expiré ou révoqué) : sur ton PC, `rclone config reconnect gdrive:`, puis refaire l'étape 4. Le chiffrement ne change pas : rien n'est perdu.
 
-**Déchiffrer un fichier téléchargé du Drive**, sans NAS ni `rclone.conf` : juste rclone, le mot de passe et le sel de Bitwarden. Sur drive.google.com, dans `citadel`, les dossiers et les fichiers ont des noms illisibles : télécharger le fichier voulu **sans le renommer** (son nom chiffré sert au déchiffrement). Puis, dans Git Bash :
+**Déchiffrer un fichier téléchargé du Drive**, sans NAS ni `rclone.conf` : juste rclone, le mot de passe et le sel de Bitwarden. Sur drive.google.com, dans `citadel`, télécharger le fichier voulu (`db/daily/citadel-…sql.zst`, par exemple) **sans le renommer**. Puis, dans Git Bash :
 
 ```sh
 cd ~/Downloads
 mkdir -p chiffre clair
-mv <nom illisible téléchargé> chiffre/          # un ou plusieurs fichiers
+mv citadel-<…téléchargé> chiffre/               # un ou plusieurs fichiers
 read -rsp "Mot de passe (Bitwarden) : " PW; echo
 read -rsp "Sel (Bitwarden) : " SALT; echo
-rclone copy ":crypt,remote='chiffre',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")':" clair
+rclone copy ":crypt,remote='chiffre',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")',filename_encryption=off,directory_name_encryption=false,suffix=none:" clair
 unset PW SALT
-ls clair                                        # attendu : citadel-AAAAMMJJ-HHMMSS-….sql.zst ou ….tar.zst
+ls clair                                        # attendu : le même nom, contenu lisible
 ```
 
-Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget install Meta.Zstandard`), et la console sait le restaurer tel quel (« Restaurer la base » → « Un dump envoyé depuis ce PC »). Une archive des configs (`.tar.zst`) s'ouvre avec `tar --zstd -xf <fichier>`. Sans rien télécharger, rclone lit aussi le Drive directement : `rclone ls ":crypt,remote='gdrive:',password=…,password2=…:"` liste tout en clair, et `rclone copy` du même remote suivi de `:db/daily/<nom en clair>` récupère un fichier (même syntaxe que l'étape 3).
+Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget install Meta.Zstandard`), et la console sait le restaurer tel quel (« Restaurer la base » → « Un dump envoyé depuis ce PC »). Une archive des configs (`.tar.zst`) s'ouvre avec `tar --zstd -xf <fichier>`. Sans rien télécharger, rclone lit aussi le Drive directement : `rclone ls ":crypt,remote='gdrive:',password=…,password2=…,filename_encryption=off,…:"` liste tout, et `rclone copy` du même remote suivi de `:db/daily/<nom en clair>` récupère un fichier (même syntaxe que l'étape 3).
 
 ## Remonter le NAS de zéro
 
