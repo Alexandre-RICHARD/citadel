@@ -4,13 +4,36 @@
 #
 # Lu par supercronic, un cron fait pour les conteneurs, lancé par `citadel cron`.
 # Copié dans l'image ops : un job ajouté part en prod avec la version suivante.
-# Heure de Paris (TZ de l'image).
+# Heure de Paris (TZ de l'image). La console lit aussi ce fichier (prochain passage).
 #
 # Format : minute heure jour-du-mois mois jour-de-la-semaine commande
-#   « * » = toutes les valeurs ; « */5 » = toutes les 5.
+#   « * » = toutes les valeurs ; « */5 » = toutes les 5 ; jour 1 = lundi.
+#
+# Les heures des jobs suivis par healthchecks.io (site-check, db-backup, db-restore-test,
+# config-backup, config-verify) sont reportées là-bas : le README dit comment. Un
+# changement ici se reporte aussi chez healthchecks.io.
 
 # Chaque minute : relancer ce qui a perdu le réseau de Gluetun
 * * * * * citadel vpn-watch
 
 # Chaque minute : les appareils de ton tailnet, déposés pour la console (state/tailscale.json)
 * * * * * citadel tailscale-status
+
+# Toutes les 5 min : le site répond-il depuis Internet ? (§13)
+*/5 * * * * citadel site-check
+
+# Toutes les 5 min : arrêt des services allumés depuis trop longtemps (citadel.auto-stop)
+*/5 * * * * citadel auto-stop
+
+# Toutes les heures : les compteurs de qBittorrent, pour les historiques de la console
+0 * * * * citadel qbittorrent-stats
+
+# Chaque nuit à 4 h : versions publiées des images, quota du Drive (§10.7)
+0 4 * * * citadel update-check
+
+# Chaque jour à 5 h : dump de la base, puis test de restauration en pré-prod (§11.3, §11.4).
+# « ; » : le test tourne même si le dump a raté, et échoue alors clairement (pas de dump du jour)
+0 5 * * * citadel db-backup; citadel db-restore-test
+
+# Chaque lundi à 3 h : archive des configs, puis son contrôle (§11.5, §11.6)
+0 3 * * 1 citadel config-backup; citadel config-verify

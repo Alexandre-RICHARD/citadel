@@ -2,9 +2,9 @@
 # compose.yml : LE projet Docker Compose du NAS, nommé « citadel »
 # =====================================================================================
 #
-# Tous les conteneurs du NAS finiront ici. Pour l'instant : le site (prod), Caddy,
-# Tailscale, infra-ops (vpn-watch et le relevé Tailscale), la console et son filtre Docker, et la
-# stack média. Arriveront ensuite : la pré-prod et les sauvegardes (étape 28).
+# Tous les conteneurs du NAS : le site (prod et pré-prod), Caddy, Tailscale, infra-ops
+# (les jobs : sauvegardes, alertes, vpn-watch…), la console et son filtre Docker, et la
+# stack média.
 #
 # Qui lit ce fichier ?
 #   Jamais toi directement : il est copié dans l'image « ops », et c'est la commande
@@ -25,6 +25,8 @@
 #   citadel.group         infra | site-prod | site-preprod | media
 #   citadel.mode          always (toujours allumé) | on-demand (à la demande) | job (ponctuel)
 #   citadel.controllable  la console peut le démarrer et l'arrêter
+#   citadel.auto-stop     arrêté par infra-ops quand il tourne depuis plus longtemps (« 3h »)
+#   citadel.release-notes où lire les notes de version d'une image tierce (console)
 
 name: citadel
 
@@ -128,6 +130,7 @@ services:
       citadel.group: "site-prod"
       citadel.mode: "always"
       citadel.controllable: "false"
+      citadel.release-notes: "https://mariadb.com/docs/release-notes/community-server"
 
   site-prod-migrations:
     <<: [*defaults, *hardened]
@@ -452,37 +455,63 @@ services:
       citadel.group: "infra"
       citadel.mode: "always"
       citadel.controllable: "false"
+      citadel.release-notes: "https://tailscale.com/changelog"
 
   infra-ops:
     <<: [*defaults, *hardened]
     image: ghcr.io/alexandre-richard/citadel-ops:${CITADEL_VERSION:?version manquante, passer par citadel}
     container_name: infra-ops
-    # Le planificateur (supercronic) lit infra/ops/crontab et lance les jobs à l'heure.
-    # Pour l'instant, deux jobs, chaque minute : vpn-watch, et tailscale-status pour la
-    # console. Les sauvegardes arriveront à l'étape 28.
+    # Le planificateur (supercronic) lit infra/ops/crontab et lance les jobs à l'heure :
+    # sauvegardes, test de restauration, site-check, vpn-watch… À côté, il surveille les
+    # demandes de la console (state/queue/).
     command: ["cron"]
     # Un petit processus n°1 (tini) au-dessus de supercronic : il ramasse les processus
     # terminés des jobs, et supercronic n'écrit plus d'avertissement à chaque minute
     init: true
-    # Aucun réseau : il n'écoute rien et ne sort nulle part, il ne parle qu'à Docker, par
-    # son socket. Les sauvegardes lui donneront un accès à Internet (Drive, alertes).
-    network_mode: none
+    # Trois droits de root rendus (cap_drop: ALL les retire tous) : lire tous les
+    # fichiers de /Volume1/appdata pour l'archive, quel que soit leur propriétaire, et
+    # donner state/queue/ à la console. Rien de plus qu'avant : piloter Docker par son
+    # socket, c'est déjà être root sur le NAS.
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+    environment:
+      # rclone, crane : leurs petits fichiers de travail, dans /tmp (le reste est en
+      # lecture seule)
+      HOME: /tmp
+      # Les variables de .env.prod dont les jobs ont besoin, et rien d'autre
+      HEALTHCHECKS_PING_KEY: ${HEALTHCHECKS_PING_KEY:?manque dans .env.prod}
+      QBITTORRENT_USER: ${QBITTORRENT_USER:?manque dans .env.prod}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:?manque dans .env.prod}
+      SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
+    networks:
+      # ops : la sortie vers Internet (Drive, healthchecks.io, site-check, registres
+      # d'images). Il n'écoute toujours rien.
+      - ops
+      # vpn : qBittorrent, dans le réseau de Gluetun (qbittorrent-stats)
+      - vpn
     volumes:
       # Piloter le Docker du NAS. Donne tous les droits sur le NAS : ce conteneur
       # n'exécute que les scripts de son image, et n'écoute sur aucun port.
       - /var/run/docker.sock:/var/run/docker.sock
-      # Le verrou partagé avec citadel deploy (state/lock) : jamais de vpn-watch pendant
-      # qu'un déploiement recrée les conteneurs ; et state/tailscale.json, pour la console
+      # Le verrou partagé avec citadel deploy (state/lock), rclone.conf, et tout ce qu'il
+      # dépose pour la console et pour Caddy dans state/
       - /Volume1/citadel:/Volume1/citadel
+      # Les sauvegardes, sur le HDD
+      - /Volume2/backups:/Volume2/backups
+      # Ce que config-backup archive : lecture seule
+      - /Volume1/appdata:/Volume1/appdata:ro
     tmpfs:
       - /tmp
     deploy:
       resources:
         limits:
-          memory: 256M
+          # rclone, zstd et tar pendant config-backup : de la marge
+          memory: 512M
     labels:
       citadel.name: "Tâches planifiées"
-      citadel.description: "infra-ops : vpn-watch, relevé Tailscale, puis les sauvegardes"
+      citadel.description: "infra-ops : sauvegardes, alertes, vpn-watch, demandes de la console"
       citadel.group: "infra"
       citadel.mode: "always"
       citadel.controllable: "false"
@@ -534,6 +563,7 @@ services:
       citadel.group: "infra"
       citadel.mode: "always"
       citadel.controllable: "false"
+      citadel.release-notes: "https://github.com/wollomatic/socket-proxy/releases"
 
   # --- La console d'administration (§14) ---
   # http://<IP du NAS>:8100 chez toi, http://<nom Tailscale>:8100 par Tailscale ; jamais depuis
@@ -689,6 +719,7 @@ services:
       citadel.group: "media"
       citadel.mode: "always"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/qdm12/gluetun/releases"
 
   media-qbittorrent:
     <<: [*defaults, *behind-vpn]
@@ -722,6 +753,7 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-qbittorrent/releases"
 
   media-jellyfin:
     <<: *defaults
@@ -769,6 +801,7 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-jellyfin/releases"
 
   media-prowlarr:
     <<: [*defaults, *behind-vpn]
@@ -795,6 +828,9 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-prowlarr/releases"
+      # Allumé pour une recherche, éteint seul 3 h plus tard (job auto-stop)
+      citadel.auto-stop: "3h"
 
   media-radarr:
     <<: [*defaults, *behind-vpn]
@@ -821,6 +857,8 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-radarr/releases"
+      citadel.auto-stop: "3h"
 
   media-sonarr:
     <<: [*defaults, *behind-vpn]
@@ -847,6 +885,8 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-sonarr/releases"
+      citadel.auto-stop: "3h"
 
   media-bazarr:
     <<: [*defaults, *behind-vpn]
@@ -873,6 +913,8 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/linuxserver/docker-bazarr/releases"
+      citadel.auto-stop: "3h"
 
   media-cross-seed:
     <<: [*defaults, *behind-vpn]
@@ -915,6 +957,9 @@ services:
       citadel.group: "media"
       citadel.mode: "on-demand"
       citadel.controllable: "true"
+      citadel.release-notes: "https://github.com/cross-seed/cross-seed/releases"
+      # Il interroge les *arr : éteint avec eux
+      citadel.auto-stop: "3h"
 
 # --- Réseaux séparés : un conteneur ne joint que ceux de ses réseaux ---
 networks:
@@ -925,11 +970,14 @@ networks:
   # base sur 127.0.0.1, dont DBeaver a besoin
   site: {}
   # Gluetun (qBittorrent et les *arr n'ont pas de réseau à eux, ils utilisent celui de
-  # Gluetun) et la console, qui lit qBittorrent et Gluetun
+  # Gluetun), la console, qui lit qBittorrent et Gluetun, et infra-ops (qbittorrent-stats)
   vpn: {}
   # La console et le filtre Docker. « internal » : aucune sortie vers Internet
   docker-api:
     internal: true
+  # infra-ops et les conteneurs qu'il lance : la sortie vers Internet (Drive,
+  # healthchecks.io, site-check, registres d'images)
+  ops: {}
   # La base et le serveur de la pré-prod, séparés de la prod
   site-preprod: {}
 

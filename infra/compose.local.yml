@@ -25,7 +25,11 @@
 #     ton PC, sans rien configurer ;
 #   - un FAUX Gluetun (voir media-gluetun plus bas) : ni VPN, ni clé sur ton PC ;
 #   - qBittorrent part avec un compte connu, que la console utilise ;
-#   - Jellyfin sans transcodage matériel, Tailscale absent (il n'existe que sur le NAS).
+#   - Jellyfin sans transcodage matériel, Tailscale absent (il n'existe que sur le NAS) ;
+#   - un FAUX Drive pour les sauvegardes : le même chiffrement rclone, sur un volume
+#     Docker, et aucun signal à healthchecks.io.
+# Les jobs se lancent à la main : docker exec infra-ops citadel db-backup (puis
+# db-restore-test, config-backup, config-verify, update-check…).
 # Les valeurs viennent du .env de la racine (identifiants IGDB) et de compose.local.env.
 #
 # `!override` remplace une liste au lieu de la compléter (sinon les ports du NAS
@@ -124,13 +128,33 @@ services:
     build:
       <<: *build
       target: ops
+    environment:
+      # Vide : aucun signal ne part vers healthchecks.io depuis ton PC
+      HEALTHCHECKS_PING_KEY: ""
     volumes:
-      # Le socket de Docker Desktop : vpn-watch pilote les conteneurs de ce test
+      # Le socket de Docker Desktop : les jobs pilotent les conteneurs de ce test
       - /var/run/docker.sock:/var/run/docker.sock
       # À la place de /Volume1/citadel : de quoi poser le verrou
       - ops-state:/Volume1/citadel
       # Et son state/, partagé avec la console comme sur le NAS (relevés pour la console)
       - admin-state:/Volume1/citadel/state
+      # Les sauvegardes, et le faux Drive où rclone les envoie chiffrées
+      - backups:/Volume2/backups
+      - fake-drive:/Volume2/drive
+      # À la place de /Volume1/appdata : les configs de la stack média de ce test,
+      # pour config-backup et config-verify. Un volume vide dessous, où Docker peut
+      # créer leurs points de montage (le bind du NAS, en lecture seule, l'interdirait)
+      - appdata:/Volume1/appdata
+      - qbittorrent-config:/Volume1/appdata/qbittorrent:ro
+      - jellyfin-config:/Volume1/appdata/jellyfin:ro
+      - prowlarr-config:/Volume1/appdata/prowlarr:ro
+      - radarr-config:/Volume1/appdata/radarr:ro
+      - sonarr-config:/Volume1/appdata/sonarr:ro
+      - bazarr-config:/Volume1/appdata/bazarr:ro
+      - cross-seed-config:/Volume1/appdata/cross-seed:ro
+      # Le faux Drive (pas un « config » de Compose : refusé sur un conteneur en
+      # lecture seule)
+      - ./rclone.local.conf:/Volume1/citadel/rclone.conf:ro
 
   infra-admin:
     image: citadel-admin:local
@@ -273,6 +297,9 @@ volumes:
   preprod-db-data:
   ops-state:
   admin-state:
+  backups:
+  fake-drive:
+  appdata:
   media-data:
   qbittorrent-config:
   jellyfin-config:
