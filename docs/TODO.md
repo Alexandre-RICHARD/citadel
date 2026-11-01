@@ -39,15 +39,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 - Sécurité une fois en ligne : savoir qui se connecte et quand, détecter les connexions anormales.
 - Page de maintenance, activable vite sur un des sites.
 - Pouvoir commiter les `.env`, chiffrés.
-- Postman : enregistrer le token de la réponse, pour plusieurs environnements avec chacun son token :
-  ```js
-  pm.test("Save response token in Postman environment variable", function () {
-  	const token = pm.response.headers.get("Authorization");
-  	if (token) {
-  		pm.environment.set("bearerToken", token.replace("Bearer ", ""));
-  	}
-  });
-  ```
 - Stocker des images en base.
 - Faire un bilan des icônes et des SVG.
 - Réunification totale du design system.
@@ -56,18 +47,11 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 
 ## 2. Connexions
 
-Prochain sujet de réflexion.
+Tout le chantier est dans le [cahier des charges de l'authentification](auth/cahier_des_charges.md). Il commence après les phases 6 et 7 de l'hébergement.
 
-- Connexion par utilisateur (comptes).
-- Quand le serveur saura envoyer des mails : un mail de confirmation à la création de compte.
-- À terme, changement de mot de passe, confirmé par mail.
-- Changement d'adresse mail, avec un mail aux deux adresses.
-- Mot de passe oublié, avec envoi d'un lien de récupération.
-- Force du mot de passe : barre de progression en couleur, avec une légende et peut-être une valeur.
-- Inscription : les conditions du mot de passe passent au vert en direct.
-- La perte du focus sur le mot de passe ou sur sa confirmation vérifie les deux.
-- Colorier aussi les champs incorrects à l'envoi.
-- Améliorer `cleanError` pour qu'il n'enlève que l'erreur du bon champ.
+Pour plus tard :
+
+- Thème des mails de l'authentification : gabarit commun (en-tête, code en gros, durée de validité, mention « si tu n'es pas à l'origine de cette demande, ignore ce mail »), aux couleurs du site, en HTML et en texte brut. Le chantier d'auth n'envoie qu'un gabarit minimal ([cahier des charges, §8.3](auth/cahier_des_charges.md)).
 
 ## 3. Backlog
 
@@ -171,9 +155,39 @@ Numéros d'origine gardés.
 - [Docker Credentials Store](https://docs.docker.com/reference/cli/docker/login/#credential-stores) sur le NAS pour les mots de passe et les clés.
 - Console : modifier `.env.prod`. Aujourd'hui elle n'a aucun accès en écriture aux secrets (§14.2) : passer par une demande à `infra-ops`, comme les jobs, suivie du redémarrage des services concernés.
 - Console : ajuster en direct la limite CPU, la priorité CPU et la limite RAM d'un conteneur (`docker update`, à autoriser dans `infra-socket-proxy`). Un déploiement remet les valeurs de `compose.yml` : proposer de les y reporter.
+- Console : afficher proprement `pnpm audit` et `pnpm outdated` (failles et dépendances en retard, par paquet du monorepo).
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
+- Audit du dépôt public, historique compris : aucune donnée personnelle (emails, noms, adresses, utilisateur TOS), aucun détail d'infra exploitable (IP locales, ports, noms de machines, chemins, versions, comptes) au-delà du strict nécessaire ; gitleaks relancé ; idem pour les images publiques de GHCR.
 
 Pour plus tard : [cahier des charges, §17](docs/ci_cd/cahier_des_charges.md#17-pour-plus-tard).
+
+Idées pour la console, en vrac :
+
+- Tableau de bord d'accueil : un voyant par sujet (site, sauvegardes, VPN, disques, mises à jour).
+- Historique des alertes de healthchecks.io.
+- Courbes CPU, RAM, disque et réseau sur 24 h, 7 jours, 30 jours ; par conteneur.
+- Santé SMART des disques, températures, prévision de remplissage des volumes.
+- Taille de la base, des tables, des sauvegardes ; espace occupé par Docker (images, volumes, logs), nettoyage en un clic.
+- Navigateur des sauvegardes : liste, taille, contrôles, téléchargement d'un dump.
+- Requêtes SQL en lecture seule sur la pré-prod.
+- Logs : recherche, filtre par niveau, suivi en direct, plusieurs conteneurs à la fois.
+- Erreurs du serveur (`error_log`) : liste, regroupement, marquées comme vues.
+- Trafic du site : pages vues, codes de réponse, temps de réponse, pays, robots, sans traceur côté visiteur.
+- IP suspectes : liste, bannissement manuel dans Caddy.
+- Comptes du site, en lecture seule (après l'authentification).
+- Jellyfin : bibliothèques, derniers ajouts, transcodages en cours, utilisateurs.
+- *arr : files d'attente, téléchargements en cours, prochains épisodes, erreurs d'indexeurs.
+- qBittorrent : pause et reprise globales, limites de vitesse, torrents en erreur, ratio par tracker.
+- VPN : changer de serveur, test de fuite.
+- Planning des jobs modifiable (activer, désactiver, déplacer).
+- Notifications : Discord ou mail pour les événements de la console (redémarrages en boucle, disque presque plein).
+- Journal des actions de la console : consultation et filtre.
+- Redémarrage et arrêt propre du NAS.
+- Wake-on-LAN des autres machines du réseau.
+- État de la box : IP publique, débit, appareils connectés.
+- Échéances étendues : nom de domaine, abonnements, garantie des disques.
+- Notes et pense-bêtes d'infra : procédures et liens, jamais de secret.
+- Mode sombre, raccourcis clavier, version mobile.
 
 ## 7. Homepage
 

@@ -238,7 +238,7 @@ Sur le NAS :
 /Volume2/backups/        dumps de la base
 ```
 
-Les fichiers d'infra sont commentés abondamment, en français : pourquoi et comment, même si les commentaires dépassent le code. Le détail des choix est dans le [cahier des charges de l'hébergement](ci_cd/cahier_des_charges.md).
+Les fichiers d'infra sont commentés abondamment, en français : pourquoi et comment, même si les commentaires dépassent le code. Le détail des choix est dans ces commentaires ; le [cahier des charges de l'hébergement](ci_cd/cahier_des_charges.md) ne garde que ce qui reste à faire.
 
 ## 9. Particularités des projets
 

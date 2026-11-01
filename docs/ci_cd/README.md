@@ -4,7 +4,7 @@
 
 Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de ton PC : GitHub construit les images, le NAS les télécharge et les déploie après ta confirmation.
 
-La cible, les choix et la roadmap sont dans le [cahier des charges](cahier_des_charges.md).
+Ce qui reste à faire est dans le [cahier des charges](cahier_des_charges.md).
 
 ## Contraintes
 
@@ -42,7 +42,44 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel rollback` | revient à la version précédente |
 | `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) |
 
+Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm release` ; revenir en arrière : `citadel rollback`.
+
 Après une mise à jour de TOS, un conteneur qui ne démarre plus (`Operation not permitted`) se répare en le recréant (`--force-recreate`).
+
+## Accès
+
+Depuis tes appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME`) par Tailscale, même port des deux côtés. Internet n'atteint que ce que la box redirige : 80 et 443, vers Caddy.
+
+| Service | Adresse | Internet | LAN, Tailscale | Connexion |
+|---|---|---|---|---|
+| Site (`www` redirigé) | `https://alexandre-richard.fr`, par Cloudflare | ✅ | ✅ par le domaine | aucune |
+| API | `https://alexandre-richard.fr/api` | ✅ lectures et écritures, comme aujourd'hui | ✅ | aucune (plus bas) |
+| Jellyfin | `https://jellyfin.alexandre-richard.fr` ; `:8096` en direct | ✅ par le domaine | ✅ les deux | comptes Jellyfin |
+| qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | `:8080`, `:9696`, `:7878`, `:8989`, `:6767`, `:2468` | ❌ | ✅ | la leur, inchangée : leurs réglages suivent leurs dossiers |
+| Console | `http://…:8100` | ❌ | ✅ | son mot de passe |
+| Pré-prod (phase 6) | `http://…:8002`, servie par Caddy | ❌ | ✅ | aucune |
+| Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
+| SSH | son port, dans ton `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
+| MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes plus bas |
+| API Docker | socket du NAS | ❌ | ❌ | `infra-ops` ; la console à travers `infra-socket-proxy` |
+
+- API : sans authentification, rien ne distingue ton front d'un script ; n'importe qui peut appeler les routes d'écriture. Accepté jusqu'à ton chantier d'authentification.
+- Console en HTTP, sans certificat à installer sur chaque appareil : par Tailscale, WireGuard chiffre tout ; en LAN, le mot de passe ne traverse que ton réseau domestique. Accepté.
+
+## La base depuis DBeaver
+
+- MariaDB écoute sur `127.0.0.1:3306` du NAS (pré-prod : `3307`) : invisible depuis le réseau, joignable seulement depuis le NAS lui-même, donc par un tunnel SSH.
+- DBeaver, onglet SSH : hôte : son nom Tailscale, port : celui de SSH, ton utilisateur, ta clé. Onglet principal : hôte `127.0.0.1`, port `3306`, base `citadel`, compte `citadel_migrator`.
+- Le SSH de TOS autorise les tunnels : `AllowTcpForwarding` garde sa valeur par défaut.
+
+| Compte | Pour | Droits |
+|---|---|---|
+| `citadel_app` | le serveur | lire et écrire les données |
+| `citadel_migrator` | Flyway, et toi dans DBeaver | structure et données de `citadel`, rien d'autre |
+| `citadel_backup` | les dumps | lecture seule |
+| `root` | dépannage | seulement depuis l'intérieur du conteneur |
+
+Mêmes comptes en pré-prod, avec des droits sur `citadel_preprod` seulement.
 
 ## Réglages hors du dépôt
 
