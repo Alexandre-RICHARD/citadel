@@ -3,6 +3,7 @@ import { type ReactNode, useEffect } from "react";
 import { projectTransitionStore } from "../appNavigation/projectTransition/projectTransitionStore";
 import { useProjectChangeTransition } from "../appNavigation/projectTransition/useProjectChangeTransition";
 import { useAppNavigation } from "../appNavigation/useAppNavigation";
+import { SiteBanner } from "../SiteBanner";
 
 type Props = {
 	children: ReactNode;
@@ -18,5 +19,11 @@ export function AppContainer({ children }: Props) {
 		projectTransitionStore.notifyPageReady();
 	}, []);
 
-	return children;
+	return (
+		<>
+			{children}
+			{/* Sur tous les projets, par-dessus la page */}
+			<SiteBanner />
+		</>
+	);
 }
