@@ -1,8 +1,8 @@
+import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { CalendarClock } from "lucide-react";
 
 import type { DeadlineItem } from "../../../shared/deadlineItem.type";
 import { usePolling } from "../../api/usePolling";
-import { formatBytes } from "../../format/formatBytes";
 import { formatDuration } from "../../format/formatDuration";
 import { formatPercent } from "../../format/formatPercent";
 import { deadlineTone } from "../../status/deadlineTone";
@@ -21,7 +21,7 @@ const CARD_STATUS: Record<string, string> = {
 function describeDeadline(item: DeadlineItem, now: number): string {
 	if (item.problem) return item.problem;
 	if (item.usage)
-		return `${formatBytes(item.usage.usedBytes)} sur ${formatBytes(item.usage.totalBytes)} · ${formatPercent((item.usage.usedBytes / item.usage.totalBytes) * 100)}`;
+		return `${formatFileSize(item.usage.usedBytes)} sur ${formatFileSize(item.usage.totalBytes)} · ${formatPercent((item.usage.usedBytes / item.usage.totalBytes) * 100)}`;
 	if (!item.expiresAt) return "n'expire jamais";
 	const date = new Date(item.expiresAt).toLocaleDateString("fr-FR", {
 		day: "numeric",

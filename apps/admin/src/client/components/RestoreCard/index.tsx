@@ -1,10 +1,10 @@
+import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { DatabaseBackup, Upload } from "lucide-react";
 import { useState } from "react";
 
 import type { BackupItem } from "../../../shared/backupItem.type";
 import type { OperationsStatus } from "../../../shared/operationsStatus.type";
 import { uploadDump } from "../../api/uploadDump";
-import { formatBytes } from "../../format/formatBytes";
 import { formatDateTime } from "../../format/formatDateTime";
 import { parseBackupDate } from "../../format/parseBackupDate";
 import { ActionButton } from "../ActionButton";
@@ -28,7 +28,7 @@ const KIND_LABELS: Record<BackupItem["kind"], string> = {
 
 function backupLabel(backup: BackupItem): string {
 	const date = parseBackupDate(backup.name);
-	return `${date ? formatDateTime(date) : backup.name} · ${KIND_LABELS[backup.kind]} · ${formatBytes(backup.sizeBytes)}`;
+	return `${date ? formatDateTime(date) : backup.name} · ${KIND_LABELS[backup.kind]} · ${formatFileSize(backup.sizeBytes)}`;
 }
 
 // La zone de danger (§11.8) : remettre la base du site d'une sauvegarde du NAS, ou en

@@ -1,8 +1,8 @@
+import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { Server } from "lucide-react";
 
 import type { SystemSnapshot } from "../../../shared/systemSnapshot.type";
 import { usePolling } from "../../api/usePolling";
-import { formatBytes } from "../../format/formatBytes";
 import { formatDuration } from "../../format/formatDuration";
 import { formatPercent } from "../../format/formatPercent";
 import { Card } from "../Card";
@@ -43,14 +43,14 @@ export function SystemCard() {
 			<Meter
 				label="Mémoire"
 				ratio={usedMemory / data.memoryTotalBytes}
-				valueText={`${formatBytes(usedMemory)} / ${formatBytes(data.memoryTotalBytes)}`}
+				valueText={`${formatFileSize(usedMemory, 1024)} / ${formatFileSize(data.memoryTotalBytes, 1024)}`}
 			/>
 			{data.disks.map((disk) => (
 				<Meter
 					key={disk.name}
 					label={disk.name}
 					ratio={(disk.totalBytes - disk.freeBytes) / disk.totalBytes}
-					valueText={`${formatBytes(disk.freeBytes)} libres`}
+					valueText={`${formatFileSize(disk.freeBytes)} libres`}
 				/>
 			))}
 			<div className={styles.footer}>

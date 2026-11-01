@@ -1,10 +1,10 @@
+import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { LoaderCircle, Play, RotateCw, ScrollText, Square } from "lucide-react";
 
 import { isRunningState } from "../../../shared/isRunningState";
 import { ServiceActionEnum } from "../../../shared/serviceAction.enum";
 import type { ServiceItem } from "../../../shared/serviceItem.type";
-import { formatBytes } from "../../format/formatBytes";
 import { formatDuration } from "../../format/formatDuration";
 import { formatPercent } from "../../format/formatPercent";
 import { ACTION_LABELS } from "../../status/actionLabels";
@@ -28,10 +28,10 @@ type Props = {
 
 function memoryText(service: ServiceItem): string {
 	if (service.memoryBytes === null) return "–";
-	const used = formatBytes(service.memoryBytes);
+	const used = formatFileSize(service.memoryBytes, 1024);
 	return service.memoryLimitBytes === null
 		? used
-		: `${used} / ${formatBytes(service.memoryLimitBytes)}`;
+		: `${used} / ${formatFileSize(service.memoryLimitBytes, 1024)}`;
 }
 
 export function ServiceRow({

@@ -1,10 +1,10 @@
+import { formatFileSize } from "@citadel/common/src/universal/number/formatFileSize";
 import { ArrowDown, ArrowUp, HardDriveDownload } from "lucide-react";
 
 import type { TorrentHistory } from "../../../shared/torrentHistory.type";
 import type { TorrentStats } from "../../../shared/torrentStats.type";
 import type { TorrentVolume } from "../../../shared/torrentVolume.type";
 import { usePolling } from "../../api/usePolling";
-import { formatBytes } from "../../format/formatBytes";
 import { Card } from "../Card";
 import { Stat } from "../Stat";
 import styles from "./torrentCard.module.scss";
@@ -15,7 +15,7 @@ const ratioFormat = new Intl.NumberFormat("fr-FR", {
 
 function totals(downloaded: number | null, uploaded: number | null): string {
 	if (downloaded === null || uploaded === null) return "–";
-	return `↓ ${formatBytes(downloaded)} · ↑ ${formatBytes(uploaded)}`;
+	return `↓ ${formatFileSize(downloaded)} · ↑ ${formatFileSize(uploaded)}`;
 }
 
 const dayFormat = new Intl.DateTimeFormat("fr-FR", {
@@ -99,14 +99,14 @@ export function TorrentCard() {
 						size={16}
 						aria-label="Réception"
 					/>
-					{`${formatBytes(data.downloadSpeed)}/s`}
+					{`${formatFileSize(data.downloadSpeed)}/s`}
 				</span>
 				<span className={styles.speed}>
 					<ArrowUp
 						size={16}
 						aria-label="Envoi"
 					/>
-					{`${formatBytes(data.uploadSpeed)}/s`}
+					{`${formatFileSize(data.uploadSpeed)}/s`}
 				</span>
 			</div>
 			<Stat label="Depuis le démarrage">
