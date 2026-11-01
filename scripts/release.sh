@@ -13,12 +13,12 @@
 #   3. Résumé : version en prod (demandée au NAS), commits qui partent, nouvelles
 #      migrations, nom du tag. Puis ta confirmation.
 #   4. Push de main et du tag, d'un seul coup : GitHub lance images.yml.
-#   5. Attente des images, en suivant le workflow par l'API publique de GitHub.
+#   5. Attente des images : publiées sur ghcr.io, ou le workflow en échec.
 #   6. ssh -t nas … citadel deploy <tag> : le NAS montre son plan et te redemande
 #      confirmation. Jusque-là, rien n'a bougé sur le NAS.
 #
 # Pourquoi Git Bash : pnpm lance `bash`, qui sous PowerShell serait celui de WSL, sans tes
-# clés SSH. Le tag suit la date : v2026.10.25, puis v2026.10.25.2 le même jour.
+# clés SSH. Le tag suit la date, numéroté : v2026.10.25.01, puis v2026.10.25.02 le même jour.
 
 set -euo pipefail
 
@@ -27,10 +27,13 @@ REPOSITORY=Alexandre-RICHARD/citadel
 NAS=nas
 NAS_CITADEL=/Volume1/citadel/citadel
 MIGRATIONS_DIR=apps/server/src/sql/migrations
-# Attente des images : un appel à l'API toutes les 30 s, 25 min au plus. GitHub accepte
-# 60 appels par heure sans compte : on reste en dessous.
-POLL_SECONDS=30
-POLL_MAX=50
+# Les images, publiques : ghcr.io/alexandre-richard/citadel-<image>
+GHCR_PATH=alexandre-richard/citadel-
+# Attente des images : ghcr.io toutes les 10 s, 25 min au plus ; l'API de GitHub une
+# fois sur 6 (toutes les minutes). Sans compte, elle accepte 60 appels par heure.
+POLL_SECONDS=10
+POLL_MAX=150
+API_EVERY=6
 
 say() { printf '%s\n' "$*"; }
 step() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
@@ -83,14 +86,15 @@ step "3. Résumé"
 prod_version=$(ssh -o ConnectTimeout=10 "$NAS" "$NAS_CITADEL version" 2>/dev/null || true)
 say "  En prod : ${prod_version:-inconnue (NAS injoignable, ou rien de déployé)}"
 
-# Nom du tag : la date du jour, suffixée .2, .3… s'il existe déjà (ici ou sur GitHub)
+# Nom du tag : la date du jour et un numéro, .01, puis .02… s'il existe déjà (ici ou
+# sur GitHub)
 base_tag="v$(date +%Y.%m.%d)"
-tag=$base_tag
-suffix=2
+number=1
+tag=$(printf '%s.%02d' "$base_tag" "$number")
 while git rev-parse --verify --quiet "refs/tags/$tag" >/dev/null ||
 	[[ -n $(git ls-remote --tags origin "refs/tags/$tag") ]]; do
-	tag="$base_tag.$suffix"
-	suffix=$((suffix + 1))
+	number=$((number + 1))
+	tag=$(printf '%s.%02d' "$base_tag" "$number")
 done
 say "  Tag : $tag"
 
@@ -129,7 +133,42 @@ commit=$(git rev-parse HEAD)
 
 # -------------------------------------------------------------------------------------
 step "5. Construction des images par GitHub"
+# Deux sources, sans compte :
+#   - ghcr.io : les images du tag y sont-elles toutes ? C'est ce qu'attend le NAS, et le
+#     registre répond tout de suite ;
+#   - l'API de GitHub : le lien du workflow, et surtout son échec (sinon on attendrait
+#     25 min des images qui ne viendront pas). Elle garde ses réponses une minute en
+#     cache : le paramètre t= (l'heure) en demande une fraîche à chaque appel.
 api="https://api.github.com/repos/$REPOSITORY/actions/workflows/images.yml/runs?event=push&head_sha=$commit"
+# Les images : la matrice d'images.yml, « image: [client, server, …] »
+images=$(sed -n 's/^ *image: \[\(.*\)\]/\1/p' .github/workflows/images.yml | tr -d ' ' | tr ',' ' ')
+[[ -n $images ]] || die "liste des images introuvable dans .github/workflows/images.yml"
+total=$(wc -w <<<"$images")
+scopes=""
+for image in $images; do scopes+="&scope=repository:$GHCR_PATH$image:pull"; done
+# Ce que le registre peut répondre pour une image (une par plateforme, ou leur index)
+manifest_types="application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json"
+manifest_types+=", application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json"
+
+# Nombre d'images du tag déjà publiées. ghcr.io demande un jeton même pour une image
+# publique : un jeton anonyme, en lecture, pour toutes d'un coup.
+count_published() {
+	local token image count=0
+	# shellcheck disable=SC2016 # du JavaScript
+	token=$(curl --silent --fail "https://ghcr.io/token?service=ghcr.io$scopes" |
+		node -e 'let b = ""; process.stdin.on("data", (c) => (b += c)).on("end", () => console.log(JSON.parse(b).token));') ||
+		{
+			echo 0
+			return
+		}
+	for image in $images; do
+		curl --silent --fail --head --output /dev/null \
+			--header "Authorization: Bearer $token" --header "Accept: $manifest_types" \
+			"https://ghcr.io/v2/$GHCR_PATH$image/manifests/$tag" && count=$((count + 1))
+	done
+	echo "$count"
+}
+
 # Lit la réponse de l'API (JSON) avec Node, présent sur ton PC : « état résultat lien ».
 # Les ${…} sont du JavaScript, pas du bash : d'où les apostrophes (et la directive suivante).
 # shellcheck disable=SC2016
@@ -139,22 +178,30 @@ process.stdin.on("data", (chunk) => (body += chunk)).on("end", () => {
 	const run = (JSON.parse(body).workflow_runs ?? []).find((r) => r.head_branch === process.argv[1]);
 	console.log(run ? `${run.status} ${run.conclusion ?? "-"} ${run.html_url}` : "absent - -");
 });'
-last_status=""
-for ((poll = 1; poll <= POLL_MAX; poll++)); do
-	read -r status conclusion url < <(curl --silent --fail "$api" | node -e "$read_run" "$tag" || echo "erreur - -")
-	[[ $url == - ]] && url=""
-	if [[ $status != "$last_status" ]]; then
-		say "  $(date +%H:%M:%S) $status $url"
-		last_status=$status
-	fi
-	if [[ $status == completed ]]; then
-		[[ $conclusion == success ]] ||
+status="" conclusion="" url="" published=0 last_line="" shown_url=""
+for ((poll = 0; poll < POLL_MAX; poll++)); do
+	published=$(count_published)
+	if ((poll % API_EVERY == 0)); then
+		read -r status conclusion url < <(curl --silent --fail "$api&t=$(date +%s)" | node -e "$read_run" "$tag" || echo "erreur - -")
+		[[ $url == - ]] && url=""
+		if [[ -n $url && $url != "$shown_url" ]]; then
+			say "  $url"
+			shown_url=$url
+		fi
+		[[ $status != completed || $conclusion == success ]] ||
 			die "images.yml a échoué ($conclusion) : $url. Le NAS n'a pas bougé ; corrige, commite, relance pnpm release"
-		break
 	fi
+	line="workflow $status, images publiées : $published/$total"
+	if [[ $line != "$last_line" ]]; then
+		say "  $(date +%H:%M:%S) $line"
+		last_line=$line
+	fi
+	# Toutes les images sont là, ou GitHub dit le workflow réussi
+	if ((published == total)) || [[ $conclusion == success ]]; then break; fi
 	sleep "$POLL_SECONDS"
 done
-[[ $status == completed ]] || die "images.yml toujours pas fini après $((POLL_SECONDS * POLL_MAX / 60)) min : https://github.com/$REPOSITORY/actions"
+((published == total)) || [[ $conclusion == success ]] ||
+	die "images.yml toujours pas fini après $((POLL_SECONDS * POLL_MAX / 60)) min : https://github.com/$REPOSITORY/actions"
 say "  images $tag publiées sur ghcr.io"
 
 # -------------------------------------------------------------------------------------

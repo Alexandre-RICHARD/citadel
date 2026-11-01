@@ -8,7 +8,7 @@ Ce qui reste à faire est dans le [cahier des charges](cahier_des_charges.md).
 
 ## Contraintes
 
-- Le NAS ne reçoit que des images, ni git ni Node. Une version est un tag git (`v2026.10.25`), porté par toutes les images.
+- Le NAS ne reçoit que des images, ni git ni Node. Une version est un tag git (`v2026.10.25.01`), porté par toutes les images.
 - Une migration passée en prod ne se modifie plus, et le code N-1 doit tourner sur le schéma N : un retour arrière ne touche jamais à la base.
 - Aucun secret dans le dépôt, dans une image ou dans une variable `VITE_*`. Bitwarden est la référence ; `.env.prod` vit sur le NAS, dans `/Volume1/citadel/`.
 - Seuls le site, `/api` et Jellyfin sont joignables depuis Internet. Le reste (console sur le port 8100, *arr, SSH sur un port à part, MariaDB par tunnel SSH) passe par le LAN ou Tailscale.
