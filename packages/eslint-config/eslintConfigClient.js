@@ -1,6 +1,13 @@
 import baseConfig from "./eslintConfigBase.js";
 import reactConfig from "./eslintConfigReact.js";
 
+// Le code de packages/common/src/node utilise les modules de Node : jamais dans le navigateur
+const COMMON_NODE_PATTERN = {
+	group: ["@citadel/common/src/node/**"],
+	message:
+		"packages/common/src/node ne tourne que sous Node : le front utilise src/universal ou src/browser.",
+};
+
 export default [
 	...baseConfig,
 	...reactConfig,
@@ -30,9 +37,16 @@ export default [
 							message:
 								"Un appel réseau passe par un hook de la couche api/ du projet.",
 						},
+						COMMON_NODE_PATTERN,
 					],
 				},
 			],
+		},
+	},
+	{
+		files: ["src/projects/*/api/**", "src/common/api/**"],
+		rules: {
+			"no-restricted-imports": ["error", { patterns: [COMMON_NODE_PATTERN] }],
 		},
 	},
 	// Override

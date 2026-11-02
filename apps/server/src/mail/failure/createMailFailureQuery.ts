@@ -1,8 +1,8 @@
+import { daysBefore } from "@citadel/common/src/universal/date/daysBefore.ts";
 import { Op } from "sequelize";
 
 import { DatabaseError } from "../../error/DatabaseError.ts";
 import type { MailKindEnum } from "../mailKind.enum.ts";
-import { daysBefore } from "./daysBefore.ts";
 import { MailFailure } from "./MailFailure.ts";
 import { MAIL_FAILURE_REASON_MAX_LENGTH } from "./mailFailureReasonMaxLength.ts";
 

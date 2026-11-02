@@ -1,4 +1,5 @@
-import { getParisDay } from "../../../mail/quota/getParisDay.ts";
+import { getParisDay } from "@citadel/common/src/universal/date/getParisDay.ts";
+import { createSlidingWindowLimiter } from "@citadel/common/src/universal/limit/createSlidingWindowLimiter.ts";
 
 const HOUR_MS = 3_600_000;
 
@@ -11,35 +12,20 @@ export function createContactLimiter(
 	hourlyLimitPerIp: number,
 	now: () => number = Date.now,
 ) {
-	// Heures d'envoi de la dernière heure, par IP
-	const messageTimesByIp = new Map<string, number[]>();
+	const messagesPerIp = createSlidingWindowLimiter({
+		limit: hourlyLimitPerIp,
+		windowMs: HOUR_MS,
+		now,
+	});
 	let acknowledgementDay = "";
 	let acknowledgedEmails = new Set<string>();
-
-	// Une IP sans message depuis une heure disparaît : la mémoire ne grandit pas avec les visiteurs passés
-	function forgetMessagesBefore(limitTime: number): void {
-		for (const [ip, times] of messageTimesByIp) {
-			const recentTimes = times.filter((time) => time > limitTime);
-			if (recentTimes.length === 0) messageTimesByIp.delete(ip);
-			else messageTimesByIp.set(ip, recentTimes);
-		}
-	}
 
 	/**
 	 * Compte un message de cette IP et renvoie null ; au-delà de la limite, rien n'est compté et la réponse est le délai
 	 * avant de pouvoir réessayer, en millisecondes
 	 */
 	function recordMessage(ip: string): number | null {
-		const currentTime = now();
-		forgetMessagesBefore(currentTime - HOUR_MS);
-
-		const recentTimes = messageTimesByIp.get(ip) ?? [];
-		const [oldestTime] = recentTimes;
-		if (oldestTime !== undefined && recentTimes.length >= hourlyLimitPerIp)
-			return oldestTime + HOUR_MS - currentTime;
-
-		messageTimesByIp.set(ip, [...recentTimes, currentTime]);
-		return null;
+		return messagesPerIp.record(ip);
 	}
 
 	// Vrai la première fois du jour (heure de Paris) pour cette adresse, majuscules comprises : l'accusé peut partir

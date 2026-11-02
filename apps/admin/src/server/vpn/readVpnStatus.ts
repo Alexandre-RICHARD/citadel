@@ -1,6 +1,8 @@
+import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
+
 import type { VpnStatus } from "../../shared/vpnStatus.type.ts";
 import { env } from "../configuration/env.ts";
-import { fetchWithTimeout } from "../http/fetchWithTimeout.ts";
+import { SERVICE_TIMEOUT_MS } from "../http/serviceTimeoutMs.ts";
 
 // Le serveur de contrôle de Gluetun (port 8000, jamais publié) : l'IP de sortie du VPN et
 // le port ouvert par ProtonVPN. Depuis la v3.40, chaque route exige une clé : celle de
@@ -12,9 +14,13 @@ type PublicIpResponse = {
 };
 
 async function getJson<T>(path: string): Promise<T> {
-	const response = await fetchWithTimeout(`${env.GLUETUN_URL}${path}`, {
-		headers: { "X-API-Key": env.GLUETUN_API_KEY },
-	});
+	const response = await fetchWithTimeout(
+		`${env.GLUETUN_URL}${path}`,
+		SERVICE_TIMEOUT_MS,
+		{
+			headers: { "X-API-Key": env.GLUETUN_API_KEY },
+		},
+	);
 	if (response.status === 401 || response.status === 403)
 		throw new Error("clé d'API refusée (GLUETUN_API_KEY)");
 	if (!response.ok) throw new Error(`réponse ${response.status}`);

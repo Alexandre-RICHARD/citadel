@@ -1,4 +1,5 @@
-import { getParisDay } from "./getParisDay.ts";
+import { getParisDay } from "@citadel/common/src/universal/date/getParisDay.ts";
+
 import type { MailQuotaLimits } from "./mailQuotaLimits.type.ts";
 import type { MailStatusBean } from "./mailStatusBean.type.ts";
 import { MailThresholdEnum } from "./mailThreshold.enum.ts";

@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
 import { MailErrorCodeEnum } from "@citadel/specs/src/projects/mail/error/mailErrorCode.enum.ts";
 
 import { BadGatewayError } from "../../error/BadGatewayError.ts";
@@ -90,15 +91,18 @@ export class BrevoClient {
 
 	async #request(path: string, init: RequestInit): Promise<Response> {
 		try {
-			return await fetch(`${BREVO_API_URL}${path}`, {
-				...init,
-				headers: {
-					"api-key": this.#apiKey,
-					"accept": "application/json",
-					"content-type": "application/json",
+			return await fetchWithTimeout(
+				`${BREVO_API_URL}${path}`,
+				REQUEST_TIMEOUT_MS,
+				{
+					...init,
+					headers: {
+						"api-key": this.#apiKey,
+						"accept": "application/json",
+						"content-type": "application/json",
+					},
 				},
-				signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-			});
+			);
 		} catch (error) {
 			throw unavailable(`Brevo did not answer on ${path}`, error);
 		}

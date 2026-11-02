@@ -15,6 +15,7 @@
 		"src",
 		"vitest.config.ts",
 		"vitest.universal.config.ts",
+		"vitest.node.config.ts",
 		"vitest.browser.config.ts",
 		"vitestSetup.ts",
 		"eslint.config.js",

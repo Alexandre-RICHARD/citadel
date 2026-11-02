@@ -1,5 +1,9 @@
+import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
+
 import { env } from "../configuration/env.ts";
 import { HttpError } from "../http/HttpError.ts";
+
+const DOCKER_TIMEOUT_MS = 60_000;
 
 // 304 : déjà démarré, ou déjà arrêté. Pas une erreur pour la console.
 const NOT_MODIFIED = 304;
@@ -14,10 +18,11 @@ export async function dockerRequest(
 ): Promise<Response> {
 	let response: Response;
 	try {
-		response = await fetch(`${env.DOCKER_API_URL}${path}`, {
-			...init,
-			signal: AbortSignal.timeout(60_000),
-		});
+		response = await fetchWithTimeout(
+			`${env.DOCKER_API_URL}${path}`,
+			DOCKER_TIMEOUT_MS,
+			init,
+		);
 	} catch (error) {
 		console.error(`Docker injoignable (${path}) :`, error);
 		throw new HttpError(502, "Docker injoignable (infra-socket-proxy)");

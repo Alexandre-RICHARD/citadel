@@ -16,6 +16,7 @@ export default defineConfig({
 			"apps/server/vitest.config.ts",
 			"apps/server/vitest.integration.config.ts",
 			"packages/common/vitest.universal.config.ts",
+			"packages/common/vitest.node.config.ts",
 			"packages/common/vitest.browser.config.ts",
 			"packages/specs/vitest.config.ts",
 		],

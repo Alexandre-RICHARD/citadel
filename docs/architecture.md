@@ -205,7 +205,7 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 
 ## 6. Paquets partagés
 
-- **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
+- **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node), `node/` (serveur et console, jamais le front). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
 - **Où ranger une fonction** : générique (rien d'un projet ni du métier) dans `common` ; propre à un projet mais partagée par le front et le serveur dans `specs/…/helper/` ; propre à une app dans son `helper/` (ou `common/` de l'app). Une fonction pure ne reste pas dans un composant : elle en sort, testée.
 - **`design-system`** : `atoms/`, `molecules/`, `organisms/`, thème (dont celui de chaque projet) et styles. Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 

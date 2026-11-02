@@ -1,6 +1,8 @@
+import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
+
 import type { JellyfinActivity } from "../../shared/jellyfinActivity.type.ts";
 import { env } from "../configuration/env.ts";
-import { fetchWithTimeout } from "../http/fetchWithTimeout.ts";
+import { SERVICE_TIMEOUT_MS } from "../http/serviceTimeoutMs.ts";
 import type { JellyfinSession } from "./jellyfinSession.type.ts";
 import { parseJellyfinSessions } from "./parseJellyfinSessions.ts";
 
@@ -14,6 +16,7 @@ export async function readJellyfinActivity(): Promise<JellyfinActivity> {
 	try {
 		response = await fetchWithTimeout(
 			`${env.JELLYFIN_URL}/Sessions?activeWithinSeconds=${ACTIVE_WITHIN_SECONDS}`,
+			SERVICE_TIMEOUT_MS,
 			{
 				headers: {
 					Authorization: `MediaBrowser Token="${env.JELLYFIN_API_KEY}"`,

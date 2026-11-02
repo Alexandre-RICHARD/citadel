@@ -14,6 +14,8 @@ export default [
 		},
 		rules: {
 			"import-x/no-nodejs-modules": "off",
+			// Ni DTO ni couche api/ côté serveur, et packages/common/src/node y a sa place
+			"no-restricted-imports": "off",
 		},
 	},
 ];

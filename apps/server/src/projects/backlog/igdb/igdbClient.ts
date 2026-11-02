@@ -1,4 +1,5 @@
 import { wait } from "@citadel/common/src/universal/async/wait.ts";
+import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 
 import { env } from "../../../configuration/env.ts";
@@ -51,15 +52,18 @@ class IgdbClient {
 		const { accessToken } = await this.#getToken();
 		await this.#waitForSlot();
 		try {
-			return await fetch(`${IGDB_API_URL}/${endpoint}`, {
-				method: "POST",
-				headers: {
-					"Client-ID": env.INTERNET_GAME_DATA_BASE_CLIENT_ID,
-					"Authorization": `Bearer ${accessToken}`,
+			return await fetchWithTimeout(
+				`${IGDB_API_URL}/${endpoint}`,
+				REQUEST_TIMEOUT_MS,
+				{
+					method: "POST",
+					headers: {
+						"Client-ID": env.INTERNET_GAME_DATA_BASE_CLIENT_ID,
+						"Authorization": `Bearer ${accessToken}`,
+					},
+					body,
 				},
-				body,
-				signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-			});
+			);
 		} catch (error) {
 			throw unavailable(`IGDB did not answer on ${endpoint}`, error);
 		}
@@ -95,7 +99,7 @@ class IgdbClient {
 	async #requestToken(): Promise<CachedToken> {
 		let response: Response;
 		try {
-			response = await fetch(TWITCH_TOKEN_URL, {
+			response = await fetchWithTimeout(TWITCH_TOKEN_URL, REQUEST_TIMEOUT_MS, {
 				method: "POST",
 				// Dans le corps plutôt que dans l'URL : une URL finit plus facilement dans un log
 				body: new URLSearchParams({
@@ -103,7 +107,6 @@ class IgdbClient {
 					client_secret: env.INTERNET_GAME_DATA_BASE_CLIENT_SECRET,
 					grant_type: "client_credentials",
 				}),
-				signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
 			});
 		} catch (error) {
 			throw unavailable("Twitch did not answer the IGDB token request", error);

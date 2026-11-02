@@ -27,6 +27,8 @@ const UNIVERSAL_MESSAGE =
 	"src/universal tourne sur le serveur et dans le navigateur : ni API navigateur, ni API Node";
 const NOT_NODE_MESSAGE =
 	"src/browser et src/react tournent dans le navigateur : pas d'API Node";
+const NODE_MESSAGE =
+	"src/node ne tourne que sous Node (serveur, console) : pas d'API navigateur";
 
 export default [
 	...baseConfig,
@@ -55,6 +57,7 @@ export default [
 								"node:*",
 								"**/browser/**",
 								"**/react/**",
+								"**/node/**",
 							],
 							message: UNIVERSAL_MESSAGE,
 						},
@@ -73,9 +76,33 @@ export default [
 			"no-restricted-imports": [
 				"error",
 				{
-					patterns: [{ group: ["node:*"], message: NOT_NODE_MESSAGE }],
+					patterns: [
+						{ group: ["node:*", "**/node/**"], message: NOT_NODE_MESSAGE },
+					],
 				},
 			],
+		},
+	},
+	{
+		files: ["src/node/**"],
+		rules: {
+			"no-restricted-globals": [
+				"error",
+				...restrictGlobals(BROWSER_GLOBALS, NODE_MESSAGE),
+			],
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["react", "react-dom", "**/browser/**", "**/react/**"],
+							message: NODE_MESSAGE,
+						},
+					],
+				},
+			],
+			// Les modules de Node (node:crypto…) sont sa raison d'être
+			"import-x/no-nodejs-modules": "off",
 		},
 	},
 ];

@@ -1,7 +1,7 @@
+import { daysBefore } from "@citadel/common/src/universal/date/daysBefore.ts";
 import { Op } from "sequelize";
 
 import { DatabaseError } from "../../error/DatabaseError.ts";
-import { daysBefore } from "./daysBefore.ts";
 import { MailFailure } from "./MailFailure.ts";
 import type { MailFailureSummaryBean } from "./mailFailureSummaryBean.type.ts";
 
