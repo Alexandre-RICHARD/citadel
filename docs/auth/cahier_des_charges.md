@@ -346,7 +346,7 @@ Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `4
 |---|---|
 | Brute force sur un compte | 2 s entre deux essais, bannissement temporaire après 15 échecs, second facteur compris (§7.3) |
 | Un mot de passe essayé sur beaucoup de comptes | Compteur par IP, puis bannissement temporaire |
-| Verrouillage malveillant d'un compte | Le bannissement vise le couple compte + IP : un inconnu ne bloque pas ton compte |
+| Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas ton compte |
 | Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos, eux, sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
 | Spam d'envoi de mails, quota du site épuisé | Délai de renvoi, limites par adresse (comptée en minuscules : les messageries ignorent la casse) et par IP (20 par heure, 40 par jour), seuils du quota (cahier de l'hébergement, §2) |
@@ -362,7 +362,7 @@ Faite avec le formulaire de contact : Caddy écrase `X-Real-IP`, le serveur ne l
 
 ### 7.3 Délai et bannissement
 
-- Succès : immédiat, compteur remis à zéro. Échec : `401`, puis aucun nouvel essai sur ce compte avant 2 s. Après 15 échecs depuis la même IP sur le même compte : 15 minutes de `429` pour ce couple. Compteur remis à zéro après un succès ou 15 minutes de calme. Pendant un délai : `429` + `Retry-After` ; bouton désactivé avec compte à rebours.
+- Succès : immédiat, compteur remis à zéro. Échec : `401`, puis aucun nouvel essai sur ce compte depuis cette IP avant 2 s (un inconnu ne bloque jamais ton compte). Après 15 échecs depuis la même IP sur le même compte : 15 minutes de `429` pour ce couple. Compteur remis à zéro après un succès ou 15 minutes de calme. Pendant un délai : `429` + `Retry-After` ; bouton désactivé avec compte à rebours.
 - Les échecs de l'étape « second facteur » (TOTP, code par mail, code de secours) comptent comme ceux du mot de passe, pour le compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus.
 - Bannissement d'IP : 20 échecs en 10 minutes ou plus de 3 inscriptions par heure → 15 minutes de `429`.
 - Compteurs en mémoire (une seule instance) : remis à zéro à chaque déploiement.
@@ -533,7 +533,7 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 | Couche | Emplacement | Contenu |
 |---|---|---|
 | Specs | `packages/specs/src/projects/auth/` | Registre d'endpoints, `endpoint/<ressource>/<action>/`, `error/authErrorCode.enum.ts`, règles de format |
-| Specs communes | `packages/specs/src/specUtils/` | `ApiPrefixEnum.AUTH`, `429`, `protected` lu par le serveur |
+| Specs communes | `packages/specs/src/specUtils/` | `ApiPrefixEnum.AUTH`, `429`, `protected` lu par le serveur, code technique `AUTHENTICATION_REQUIRED` (le 401 de tout endpoint protégé) |
 | Serveur | `apps/server/src/projects/auth/` | `router.ts`, `controller/`, `service/`, `query/`, `models/`, `bean/`, `mapper/`, `integrationTest/` |
 | Serveur, transverse | `middleware/`, `error/`, `configuration/env.ts` | `requireSession`, IP réelle, `Origin` ; erreurs 401, 403, 429 ; section `auth` |
 | Migrations | `apps/server/src/sql/migrations/V013__…` et suivantes | Tables `mailing_*` renommées, tables `auth_*`, `user_id` des projets |
@@ -785,6 +785,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Avec : `Max-Age` de 7 jours, renvoyé au plus toutes les 5 minutes (onglet Réseau).
 - [ ] Le texte « Reste connecté 7 jours sans visite, 30 jours au plus » est sous la case, à la connexion et à l'inscription.
 - [ ] Un cookie modifié à la main → `401`, retour à `/auth/login`.
+- [ ] Connecté sur le PC et sur le téléphone : se déconnecter sur l'un laisse l'autre connecté.
 - [ ] Déconnexion : `204`, deux fois de suite sans erreur ; les autres onglets renvoient vers la connexion à leur prochain appel ; aucune donnée du compte n'y reste affichée (cache vidé).
 - [ ] Avertissement avant de se déconnecter avec un formulaire modifié, pas sans.
 
@@ -826,6 +827,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Identifiant inconnu et mauvais mot de passe : même message, même durée à l'œil.
 - [ ] Deux essais à moins de 2 s : bouton désactivé avec compte à rebours.
 - [ ] 15 échecs : `429` pour ce compte depuis cette IP ; le même compte s'ouvre depuis le téléphone en 4G.
+- [ ] Un mauvais mot de passe toutes les 2 s depuis le téléphone en 4G : la connexion depuis le PC reste possible, sans compte à rebours.
 - [ ] 20 échecs en 10 minutes sur plusieurs comptes : IP bannie 15 minutes.
 - [ ] Les erreurs de second facteur comptent aussi.
 - [ ] Méthode « par mail » seule : la connexion par mot de passe échoue comme un mauvais mot de passe ; « par pseudo » seule : le lien par mail ne part pas, écran identique.
@@ -887,6 +889,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Restauration en `prod:local` d'un dump envoyé depuis le PC, sans date dans son nom : la date vient du dump, le journal est rejoué.
 - [ ] Après une restauration : toutes les sessions et tous les parcours vidés, bandeau avec sa phrase « mot de passe oublié ».
 - [ ] Purges : un parcours expiré disparaît en 15 minutes ; `auth_event` et `error_log` de plus de 20 jours, en un jour (horloge du serveur avancée en `prod:local`).
+- [ ] `docker stop` du serveur juste après son démarrage (purges en cours) : aucune erreur de purge dans les logs ni dans `error_log`.
+- [ ] Base arrêtée quelques minutes : une erreur par purge dans les logs, puis les purges reprennent seules quand la base revient, et le serveur ne s'arrête pas.
 - [ ] « Données personnelles » : chaque point du §10.6, et un lien `contact@` qui marche.
 - [ ] Aucun cookie posé avant la connexion, hors ceux de Cloudflare listés.
 - [ ] Les nouvelles pages ne déclenchent aucune violation de CSP (console du navigateur).

@@ -1,4 +1,4 @@
-import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import type { NextFunction, Request, Response } from "express";
 
 import { requestSessions } from "../common/routing/requestSessions.ts";
@@ -20,7 +20,7 @@ export async function requireSession(
 		token === undefined ? null : await sessionService.authenticate(token);
 	if (token === undefined || session === null)
 		throw new UnauthorizedError(
-			AuthErrorCodeEnum.AUTHENTICATION_REQUIRED,
+			TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
 			"A valid session is required",
 		);
 

@@ -9,6 +9,8 @@ export enum TechnicalErrorCodeEnum {
 	INVALID_REQUEST = "INVALID_REQUEST",
 	ROUTE_NOT_FOUND = "ROUTE_NOT_FOUND",
 	METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED",
+	// 401 d'un endpoint protégé (tout projet) : pas de session valide. Le front vide son cache et renvoie vers la connexion
+	AUTHENTICATION_REQUIRED = "AUTHENTICATION_REQUIRED",
 	// Requête qui modifie quelque chose, envoyée depuis une page d'un autre site (protection CSRF)
 	FOREIGN_ORIGIN = "FOREIGN_ORIGIN",
 	// Trop de requêtes d'affilée : l'en-tête Retry-After donne le délai avant de réessayer, en secondes

@@ -1,7 +1,5 @@
 // Codes d'erreur métier de l'authentification
 export enum AuthErrorCodeEnum {
-	// 401 d'un endpoint protégé : pas de session valide. Le front vide son cache et renvoie vers la connexion
-	AUTHENTICATION_REQUIRED = "AUTHENTICATION_REQUIRED",
 	// 401 d'une connexion : identifiant inconnu et mauvais mot de passe donnent le même code. Une erreur de formulaire,
 	// jamais une redirection
 	INVALID_CREDENTIALS = "INVALID_CREDENTIALS",

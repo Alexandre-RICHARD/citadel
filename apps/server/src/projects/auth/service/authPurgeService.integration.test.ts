@@ -40,7 +40,7 @@ async function errorLogExists(id: number): Promise<boolean> {
 
 describe("authPurgeService", () => {
 	describe("expired rows", () => {
-		it("SHOULD delete the sessions that ended and keep the others WHEN the frequent purge runs", async () => {
+		it("SHOULD delete the sessions that ended and keep the others WHEN the purge runs", async () => {
 			// Arrange
 			const userId = await insertAuthRows.user();
 			const endedId = await insertAuthRows.session({
@@ -55,27 +55,27 @@ describe("authPurgeService", () => {
 			});
 
 			// Act
-			await authPurgeService.purgeExpired(NOW);
+			await authPurgeService.purgeExpiredSessions(NOW);
 
 			// Assert
 			expect(await selectAuthRows.session(endedId)).toBeNull();
 			expect(await selectAuthRows.session(activeId)).not.toBeNull();
 		});
 
-		it("SHOULD delete the flows that ended and keep the others WHEN the frequent purge runs", async () => {
+		it("SHOULD delete the flows that ended and keep the others WHEN the purge runs", async () => {
 			// Arrange
 			const endedId = await insertAuthRows.flow({ expiresAt: before(1) });
 			const activeId = await insertAuthRows.flow({ expiresAt: after(1) });
 
 			// Act
-			await authPurgeService.purgeExpired(NOW);
+			await authPurgeService.purgeExpiredFlows(NOW);
 
 			// Assert
 			expect(await selectAuthRows.flow(endedId)).toBeNull();
 			expect(await selectAuthRows.flow(activeId)).not.toBeNull();
 		});
 
-		it("SHOULD delete only the factors left unconfirmed for 15 minutes WHEN the frequent purge runs", async () => {
+		it("SHOULD delete only the factors left unconfirmed for 15 minutes WHEN the purge runs", async () => {
 			// Arrange
 			const userId = await insertAuthRows.user();
 			const abandonedId = await insertAuthRows.factor({
@@ -95,7 +95,7 @@ describe("authPurgeService", () => {
 			});
 
 			// Act
-			await authPurgeService.purgeExpired(NOW);
+			await authPurgeService.purgeUnconfirmedFactors(NOW);
 
 			// Assert
 			expect(await selectAuthRows.factor(abandonedId)).toBeNull();
@@ -105,7 +105,7 @@ describe("authPurgeService", () => {
 	});
 
 	describe("old events", () => {
-		it("SHOULD delete the events older than 20 days and keep the others WHEN the daily purge runs", async () => {
+		it("SHOULD delete the events older than 20 days and keep the others WHEN the purge runs", async () => {
 			// Arrange
 			const oldId = await insertAuthRows.event({
 				userId: null,
@@ -124,7 +124,7 @@ describe("authPurgeService", () => {
 			expect(await selectAuthRows.event(recentId)).not.toBeNull();
 		});
 
-		it("SHOULD delete the server errors older than 20 days and keep the others WHEN the daily purge runs", async () => {
+		it("SHOULD delete the server errors older than 20 days and keep the others WHEN the purge runs", async () => {
 			// Arrange
 			const oldId = await insertErrorLog(before(20 * DAY_MS + 1));
 			const recentId = await insertErrorLog(before(19 * DAY_MS));

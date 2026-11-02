@@ -1,4 +1,4 @@
-import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 
 import { UnauthorizedError } from "../../../error/UnauthorizedError.ts";
 import type { MeBean } from "../bean/meBean.type.ts";
@@ -11,7 +11,7 @@ class UserService {
 		const user = await findUserByIdQuery(userId);
 		if (user === null)
 			throw new UnauthorizedError(
-				AuthErrorCodeEnum.AUTHENTICATION_REQUIRED,
+				TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
 				"The account of the session no longer exists",
 			);
 		return fromUserEntityToMeBean(user);

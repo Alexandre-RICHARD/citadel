@@ -1,9 +1,8 @@
+import { DurationMsEnum } from "@citadel/common/src/universal/date/durationMs.enum.ts";
 import { getParisDay } from "@citadel/common/src/universal/date/getParisDay.ts";
 import { createSlidingWindowLimiter } from "@citadel/common/src/universal/limit/createSlidingWindowLimiter.ts";
 
 import { groupIpForLimits } from "../../../common/network/groupIpForLimits.ts";
-
-const HOUR_MS = 3_600_000;
 
 /**
  * Les limites du formulaire, pour la réputation du domaine et le quota de mails : des messages par heure et par IP, et un
@@ -16,7 +15,7 @@ export function createContactLimiter(
 ) {
 	const messagesPerIp = createSlidingWindowLimiter({
 		limit: hourlyLimitPerIp,
-		windowMs: HOUR_MS,
+		windowMs: DurationMsEnum.HOUR,
 		now,
 	});
 	let acknowledgementDay = "";

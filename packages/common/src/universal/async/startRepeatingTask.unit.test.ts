@@ -4,6 +4,16 @@ import { startRepeatingTask } from "./startRepeatingTask.ts";
 
 const INTERVAL_MS = 1000;
 
+// Une tâche qui dure `durationMs` (en temps simulé)
+function createSlowTask(durationMs: number) {
+	return vi.fn(
+		async () =>
+			new Promise<void>((resolve) => {
+				setTimeout(resolve, durationMs);
+			}),
+	);
+}
+
 describe("startRepeatingTask.ts", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
@@ -25,7 +35,7 @@ describe("startRepeatingTask.ts", () => {
 				onError: vi.fn(),
 			});
 			await vi.advanceTimersByTimeAsync(2 * INTERVAL_MS);
-			stop();
+			await stop();
 
 			// Assert
 			expect(task).toHaveBeenCalledTimes(3);
@@ -41,7 +51,7 @@ describe("startRepeatingTask.ts", () => {
 			});
 
 			// Act
-			stop();
+			await stop();
 			await vi.advanceTimersByTimeAsync(3 * INTERVAL_MS);
 
 			// Assert
@@ -50,12 +60,7 @@ describe("startRepeatingTask.ts", () => {
 
 		it("SHOULD skip a run WHEN the previous one is still running", async () => {
 			// Arrange : le premier passage dure deux intervalles et demi
-			const task = vi.fn(
-				async () =>
-					new Promise<void>((resolve) => {
-						setTimeout(resolve, 2.5 * INTERVAL_MS);
-					}),
-			);
+			const task = createSlowTask(2.5 * INTERVAL_MS);
 
 			// Act
 			const stop = startRepeatingTask({
@@ -64,10 +69,37 @@ describe("startRepeatingTask.ts", () => {
 				onError: vi.fn(),
 			});
 			await vi.advanceTimersByTimeAsync(3 * INTERVAL_MS);
-			stop();
+			const stopped = stop();
+			await vi.advanceTimersByTimeAsync(2.5 * INTERVAL_MS);
+			await stopped;
 
 			// Assert
 			expect(task).toHaveBeenCalledTimes(2);
+		});
+	});
+
+	describe("stop", () => {
+		it("SHOULD resolve only after the running pass WHEN stopped during it", async () => {
+			// Arrange
+			const stop = startRepeatingTask({
+				intervalMs: INTERVAL_MS,
+				task: createSlowTask(500),
+				onError: vi.fn(),
+			});
+			let isStopped = false;
+
+			// Act
+			const stopped = stop().then(() => {
+				isStopped = true;
+			});
+			await vi.advanceTimersByTimeAsync(499);
+			const isStoppedDuringRun = isStopped;
+			await vi.advanceTimersByTimeAsync(1);
+			await stopped;
+
+			// Assert
+			expect(isStoppedDuringRun).toBe(false);
+			expect(isStopped).toBe(true);
 		});
 	});
 
@@ -88,10 +120,32 @@ describe("startRepeatingTask.ts", () => {
 				onError,
 			});
 			await vi.advanceTimersByTimeAsync(INTERVAL_MS);
-			stop();
+			await stop();
 
 			// Assert
 			expect(onError).toHaveBeenCalledExactlyOnceWith(failure);
+			expect(task).toHaveBeenCalledTimes(2);
+		});
+
+		it("SHOULD keep repeating WHEN reporting the error fails too", async () => {
+			// Arrange
+			const task = vi
+				.fn<() => Promise<void>>()
+				.mockRejectedValue(new Error("Database down"));
+			const onError = vi
+				.fn<() => Promise<void>>()
+				.mockRejectedValue(new Error("Logger down"));
+
+			// Act
+			const stop = startRepeatingTask({
+				intervalMs: INTERVAL_MS,
+				task,
+				onError,
+			});
+			await vi.advanceTimersByTimeAsync(INTERVAL_MS);
+
+			// Assert : aucune promesse rejetée ne s'échappe (Vitest ferait échouer le test)
+			await expect(stop()).resolves.toBeUndefined();
 			expect(task).toHaveBeenCalledTimes(2);
 		});
 	});

@@ -2,7 +2,6 @@ import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authEr
 
 // Raisons des codes de l'authentification, après « Impossible de … : »
 export const authErrorReasons: Record<AuthErrorCodeEnum, string> = {
-	[AuthErrorCodeEnum.AUTHENTICATION_REQUIRED]: "tu n'es plus connecté",
 	[AuthErrorCodeEnum.INVALID_CREDENTIALS]:
 		"identifiant ou mot de passe incorrect",
 	[AuthErrorCodeEnum.REGISTRATION_CLOSED]:

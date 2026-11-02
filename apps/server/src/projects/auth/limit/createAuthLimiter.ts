@@ -1,12 +1,10 @@
+import { DurationMsEnum } from "@citadel/common/src/universal/date/durationMs.enum.ts";
 import { createBanList } from "@citadel/common/src/universal/limit/createBanList.ts";
 import { createFailureCounter } from "@citadel/common/src/universal/limit/createFailureCounter.ts";
 import { createSlidingWindowLimiter } from "@citadel/common/src/universal/limit/createSlidingWindowLimiter.ts";
 
 import { groupIpForLimits } from "../../../common/network/groupIpForLimits.ts";
 import type { AuthSettings } from "../../../configuration/authSettings.type.ts";
-
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
 
 type Settings = Pick<
 	AuthSettings,
@@ -35,8 +33,9 @@ function longestDelay(...delaysMs: (number | null)[]): number | null {
  * Les limites de l'authentification, en mémoire (une seule instance du serveur, remises à zéro à chaque déploiement).
  * Chaque IP compte avec tout son /64 en IPv6. Rien n'est refusé ici : chaque fonction donne le délai d'attente, en
  * millisecondes (null : accepté), le service répond 429 avec Retry-After
- * - un essai raté (mot de passe ou second facteur) bloque le compte 2 s ;
- * - 15 échecs du même compte depuis la même IP bannissent ce couple 15 minutes : un inconnu ne bloque pas ton compte ;
+ * - un essai raté (mot de passe ou second facteur) bloque le compte 2 s depuis cette IP ;
+ * - 15 échecs du même compte depuis la même IP bannissent ce couple 15 minutes.
+ * Délai et bannissement visent le couple compte + IP : un inconnu ne bloque jamais ton compte depuis chez toi ;
  * - 20 échecs d'une IP en 10 minutes, ou plus de 3 inscriptions en une heure, bannissent l'IP 15 minutes ;
  * - mails : 5 par heure par adresse (sans casse, comme les messageries), 20 par heure et 40 par jour par IP
  */
@@ -44,7 +43,7 @@ export function createAuthLimiter(
 	{ failures, mailLimits, registrationsPerIpPerHour }: Settings,
 	now: () => number = Date.now,
 ) {
-	const accountDelays = createBanList({ now });
+	const pairDelays = createBanList({ now });
 	const pairFailures = createFailureCounter({
 		resetMs: failures.resetMs,
 		now,
@@ -58,22 +57,22 @@ export function createAuthLimiter(
 	const ipBans = createBanList({ now });
 	const registrationsPerIp = createSlidingWindowLimiter({
 		limit: registrationsPerIpPerHour,
-		windowMs: HOUR_MS,
+		windowMs: DurationMsEnum.HOUR,
 		now,
 	});
 	const mailsPerAddress = createSlidingWindowLimiter({
 		limit: mailLimits.perAddressPerHour,
-		windowMs: HOUR_MS,
+		windowMs: DurationMsEnum.HOUR,
 		now,
 	});
 	const mailsPerIpPerHour = createSlidingWindowLimiter({
 		limit: mailLimits.perIpPerHour,
-		windowMs: HOUR_MS,
+		windowMs: DurationMsEnum.HOUR,
 		now,
 	});
 	const mailsPerIpPerDay = createSlidingWindowLimiter({
 		limit: mailLimits.perIpPerDay,
-		windowMs: DAY_MS,
+		windowMs: DurationMsEnum.DAY,
 		now,
 	});
 
@@ -90,14 +89,13 @@ export function createAuthLimiter(
 		return longestDelay(
 			ipBans.getRemainingMs(groupIpForLimits(attempt.ip)),
 			pairBans.getRemainingMs(pairKey(attempt)),
-			accountDelays.getRemainingMs(attempt.accountKey),
+			pairDelays.getRemainingMs(pairKey(attempt)),
 		);
 	}
 
 	function recordFailure(attempt: Attempt): void {
-		accountDelays.ban(attempt.accountKey, failures.delayMs);
-
 		const pair = pairKey(attempt);
+		pairDelays.ban(pair, failures.delayMs);
 		if (pairFailures.record(pair) >= failures.accountFailuresBeforeBan) {
 			pairBans.ban(pair, failures.accountBanMs);
 			pairFailures.reset(pair);

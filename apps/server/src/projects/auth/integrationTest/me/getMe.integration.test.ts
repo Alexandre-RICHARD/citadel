@@ -1,7 +1,7 @@
 import type { MeDto } from "@citadel/specs/src/projects/auth/dto/meDto.type.ts";
 import { LoginMethodEnum } from "@citadel/specs/src/projects/auth/enum/loginMethod.enum.ts";
-import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -39,7 +39,7 @@ async function readOnlySession(userId: number) {
 function expectAuthenticationRequired(response: request.Response): void {
 	expect(response.status).toBe(HttpStatutCodeErrorEnum.NEED_AUTHENTIFICATION);
 	expect(response.body).toStrictEqual({
-		code: AuthErrorCodeEnum.AUTHENTICATION_REQUIRED,
+		code: TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
 		message: "A valid session is required",
 	});
 }

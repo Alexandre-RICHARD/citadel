@@ -4,18 +4,27 @@ import { deleteExpiredFlowsQuery } from "../query/purge/deleteExpiredFlowsQuery.
 import { deleteExpiredSessionsQuery } from "../query/purge/deleteExpiredSessionsQuery.ts";
 import { deleteUnconfirmedFactorsQuery } from "../query/purge/deleteUnconfirmedFactorsQuery.ts";
 
-// Ce que l'authentification ne garde pas : déjà refusé à la lecture, effacé ici pour ne rien conserver de trop (RGPD)
+/**
+ * Ce que l'authentification ne garde pas : déjà refusé à la lecture, effacé ici pour ne rien conserver de trop (RGPD).
+ * Une purge par table : l'échec de l'une ne retarde pas les autres
+ */
 class AuthPurgeService {
-	// Toutes les 15 minutes : parcours et sessions expirés, facteurs jamais confirmés
-	async purgeExpired(now: Date): Promise<void> {
+	async purgeExpiredFlows(now: Date): Promise<void> {
 		await deleteExpiredFlowsQuery(now);
+	}
+
+	async purgeExpiredSessions(now: Date): Promise<void> {
 		await deleteExpiredSessionsQuery(now);
+	}
+
+	// Les facteurs dont le premier code n'a pas été validé à temps
+	async purgeUnconfirmedFactors(now: Date): Promise<void> {
 		await deleteUnconfirmedFactorsQuery(
 			new Date(now.getTime() - authSettings.factorConfirmationMs),
 		);
 	}
 
-	// Une fois par jour : les événements de sécurité de plus de 20 jours (avec les sauvegardes, moins de 3 mois)
+	// Les événements de sécurité de plus de 20 jours : avec les sauvegardes, moins de 3 mois
 	async purgeOldEvents(now: Date): Promise<void> {
 		await deleteAuthEventsBeforeQuery(
 			new Date(now.getTime() - authSettings.retentionMs.authEvent),

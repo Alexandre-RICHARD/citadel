@@ -1,9 +1,8 @@
+import { DurationMsEnum } from "@citadel/common/src/universal/date/durationMs.enum.ts";
 import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 
 import { AppError } from "./AppError.ts";
-
-const SECOND_MS = 1000;
 
 /**
  * Une limite est atteinte (messages par heure…). `globalErrorHandler` pose `retryAfterSeconds` dans l'en-tête
@@ -19,6 +18,9 @@ export class TooManyRequestsError extends AppError {
 
 	constructor(message: string, retryAfterMs: number) {
 		super(message);
-		this.retryAfterSeconds = Math.max(1, Math.ceil(retryAfterMs / SECOND_MS));
+		this.retryAfterSeconds = Math.max(
+			1,
+			Math.ceil(retryAfterMs / DurationMsEnum.SECOND),
+		);
 	}
 }

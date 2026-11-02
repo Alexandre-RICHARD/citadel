@@ -6,7 +6,6 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 
 import { app } from "../../app.ts";
-import type { ErrorCode } from "../../error/errorCode.type.ts";
 import { UnauthorizedError } from "../../error/UnauthorizedError.ts";
 import { countTableRows } from "../../testUtils/integration/countTableRows.ts";
 import { globalErrorHandler } from "../globalErrorHandler.ts";
@@ -16,9 +15,9 @@ const CREATE_GAME_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 // Au-delà de la limite par défaut d'express.json (100 ko)
 const OVERSIZED_NAME = "a".repeat(101 * 1024);
 
-// Aucun endpoint n'exige encore de session : une route de test lève l'erreur, avec un code que l'auth déclarera
+// Une route de test lève l'erreur, sans dépendre d'un endpoint protégé
 const UNAUTHORIZED_URL = "/unauthorized";
-const UNAUTHORIZED_CODE = "AUTHENTICATION_REQUIRED" as ErrorCode;
+const UNAUTHORIZED_CODE = TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED;
 const unauthorizedApp = express();
 unauthorizedApp.get(UNAUTHORIZED_URL, () => {
 	throw new UnauthorizedError(UNAUTHORIZED_CODE, "Session required");

@@ -5,11 +5,12 @@ import { sequelize } from "../configuration/sequelize.ts";
 // Docker laisse 10 s après SIGTERM avant de tuer le processus : on abandonne juste avant
 const SHUTDOWN_TIMEOUT_MS = 9000;
 
-// Arrêt propre, sur SIGTERM (docker stop, redéploiement) ou SIGINT (Ctrl+C) :
-// plus de nouvelle connexion, les requêtes en cours se terminent, puis la base est fermée
+// Arrêt propre, sur SIGTERM (docker stop, redéploiement) ou SIGINT (Ctrl+C) : plus de nouvelle connexion, les requêtes
+// en cours et les tâches de fond (purges) se terminent, puis la base est fermée
 export function shutdownGracefully(
 	server: Server,
 	signal: NodeJS.Signals,
+	backgroundTasksStopped: Promise<void>,
 ): void {
 	/* eslint-disable-next-line no-console */
 	console.log(`${signal} reçu : arrêt du serveur après les requêtes en cours`);
@@ -20,8 +21,8 @@ export function shutdownGracefully(
 	}, SHUTDOWN_TIMEOUT_MS).unref();
 
 	server.close(() => {
-		sequelize
-			.close()
+		backgroundTasksStopped
+			.then(async () => sequelize.close())
 			.then(() => process.exit(0))
 			.catch((error: unknown) => {
 				console.error("Échec de la fermeture de la base :", error);

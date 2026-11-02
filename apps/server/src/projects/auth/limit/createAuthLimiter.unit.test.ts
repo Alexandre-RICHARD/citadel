@@ -78,7 +78,7 @@ describe("createAuthLimiter.ts", () => {
 			expect(createLimiter().limiter.getAttemptRetryAfterMs(ALEX)).toBeNull();
 		});
 
-		it("SHOULD make the account wait 2 seconds from any IP WHEN an attempt failed", () => {
+		it("SHOULD make the account wait 2 seconds from this IP WHEN an attempt failed", () => {
 			// Arrange
 			const { limiter } = createLimiter();
 
@@ -87,9 +87,17 @@ describe("createAuthLimiter.ts", () => {
 
 			// Assert
 			expect(limiter.getAttemptRetryAfterMs(ALEX)).toBe(2 * SECOND_MS);
-			expect(limiter.getAttemptRetryAfterMs(ALEX_FROM_PHONE)).toBe(
-				2 * SECOND_MS,
-			);
+		});
+
+		it("SHOULD leave the account open from another IP WHEN a stranger keeps failing on it", () => {
+			// Arrange
+			const { limiter } = createLimiter();
+
+			// Act
+			limiter.recordFailure(ALEX);
+
+			// Assert
+			expect(limiter.getAttemptRetryAfterMs(ALEX_FROM_PHONE)).toBeNull();
 		});
 
 		it("SHOULD accept the attempt WHEN the 2 seconds are over", () => {

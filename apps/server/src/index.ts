@@ -19,8 +19,7 @@ async function start() {
 
 	for (const signal of ["SIGTERM", "SIGINT"] as const)
 		process.once(signal, () => {
-			stopPurges();
-			shutdownGracefully(server, signal);
+			shutdownGracefully(server, signal, stopPurges());
 		});
 }
 
