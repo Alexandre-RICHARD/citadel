@@ -5,10 +5,11 @@ import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStat
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
 import { fromMailFailureSummaryBeanToMailFailureSummaryDto } from "../../../mail/failure/mapper/fromMailFailureSummaryBeanToMailFailureSummaryDto.ts";
 import { mailService } from "../../../mail/mailService.ts";
+import { authMailService } from "../../auth/service/authMailService.ts";
 
 export const mailController = {
 	getStatus: asyncRequestHandler<GetMailStatus>(async (_request, response) => {
-		const mailStatus = await mailService.getStatus();
+		const mailStatus = await authMailService.getStatus();
 
 		// Toujours l'état du moment : le site rouvre dès que le compteur retombe
 		response.set("Cache-Control", "no-store");
