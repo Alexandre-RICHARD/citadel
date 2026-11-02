@@ -1,11 +1,33 @@
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 
+import { authSettings } from "../../../configuration/authSettings.ts";
 import { ForbiddenError } from "../../../error/ForbiddenError.ts";
 import { logError } from "../../../error/logError.ts";
 import type { Mail } from "../../../mail/mail.type.ts";
 import { mailService } from "../../../mail/mailService.ts";
+import type { MailStatusBean } from "../../../mail/quota/mailStatusBean.type.ts";
 
 class AuthMailService {
+	// L'état des mails tel que le site l'annonce (GET /mail/status) : l'interrupteur d'urgence ferme aussi les inscriptions
+	async getStatus(): Promise<MailStatusBean> {
+		const status = await mailService.getStatus();
+		return {
+			...status,
+			isRegistrationOpen:
+				status.isRegistrationOpen && authSettings.isRegistrationEnabled,
+		};
+	}
+
+	// Les inscriptions s'arrêtent avant le reste des mails : leur seuil du quota est plus bas
+	async assertRegistrationOpen(): Promise<void> {
+		const { isRegistrationOpen } = await this.getStatus();
+		if (!isRegistrationOpen)
+			throw new ForbiddenError(
+				AuthErrorCodeEnum.REGISTRATION_CLOSED,
+				"Registrations are closed for today",
+			);
+	}
+
 	/**
 	 * Les parcours qui envoient un mail (connexion par mail, mot de passe oublié, changement d'email, facteur mail)
 	 * s'arrêtent quand le quota du jour est épuisé, pour tout le monde : la réponse ne dépend donc pas du compte.

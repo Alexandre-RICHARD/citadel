@@ -19,12 +19,14 @@ export const insertAuthRows = {
 			username?: string;
 			passwordHash?: string;
 			passwordChangedAt?: Date;
+			loginMethods?: string;
+			lastLoginAt?: Date | null;
 		} = {},
 	): Promise<number> {
 		const word = buildUniqueWord();
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO auth_user (email, username, password_hash, password_changed_at)
-			VALUES (:email, :username, :passwordHash, :passwordChangedAt)`,
+			`INSERT INTO auth_user (email, username, password_hash, password_changed_at, login_methods, last_login_at)
+			VALUES (:email, :username, :passwordHash, :passwordChangedAt, :loginMethods, :lastLoginAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -32,6 +34,8 @@ export const insertAuthRows = {
 					username: word,
 					passwordHash: "argon2id:m=19456,t=2,p=1:c2Vs:aGFzaA",
 					passwordChangedAt: new Date(),
+					loginMethods: "both",
+					lastLoginAt: null,
 					...row,
 				},
 			},
@@ -65,7 +69,7 @@ export const insertAuthRows = {
 		return insertedId;
 	},
 
-	// Renvoie l'id créé. Par défaut, une inscription (sans compte) qui expire dans 1 h
+	// Renvoie l'id créé. Par défaut, une inscription (sans compte) qui expire dans 1 h, sans code ni lien
 	async flow(
 		row: {
 			kind?: string;
@@ -74,12 +78,21 @@ export const insertAuthRows = {
 			email?: string;
 			payload?: string | null;
 			tokenHash?: Buffer;
+			codeHmac?: Buffer | null;
+			linkTokenHash?: Buffer | null;
+			attempts?: number;
+			remember?: boolean;
+			lastSentAt?: Date | null;
 			expiresAt?: Date;
 		} = {},
 	): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO auth_flow (token_hash, kind, step, user_id, email, payload, expires_at)
-			VALUES (:tokenHash, :kind, :step, :userId, :email, :payload, :expiresAt)`,
+			`INSERT INTO auth_flow
+				(token_hash, kind, step, user_id, email, payload, code_hmac, link_token_hash, attempts, remember,
+				last_sent_at, expires_at)
+			VALUES
+				(:tokenHash, :kind, :step, :userId, :email, :payload, :codeHmac, :linkTokenHash, :attempts, :remember,
+				:lastSentAt, :expiresAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -89,6 +102,11 @@ export const insertAuthRows = {
 					userId: null,
 					email: `${buildUniqueWord()}@example.com`,
 					payload: null,
+					codeHmac: null,
+					linkTokenHash: null,
+					attempts: 0,
+					remember: false,
+					lastSentAt: null,
 					expiresAt: new Date(Date.now() + HOUR_MS),
 					...row,
 				},
