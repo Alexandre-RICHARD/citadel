@@ -14,6 +14,9 @@ export const sequelize = new Sequelize(
 		host: env.DB_HOST,
 		port: env.DB_PORT,
 		timezone: "+00:00",
+		// Le driver recopie sinon les valeurs des paramètres dans le message de ses erreurs, qui finit dans les logs et
+		// error_log : un hash de mot de passe, un email, le corps d'une requête
+		dialectOptions: { logParam: false },
 		// eslint-disable-next-line no-console
 		logging: env.LOG_DB ? console.log : false,
 		define: {
