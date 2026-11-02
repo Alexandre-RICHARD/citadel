@@ -78,12 +78,15 @@ export function Layout() {
 		reducedMotion,
 	);
 
-	// La présentation d'où l'on vient, pour y revenir depuis une page du footer ; la page affichée reste en place
-	// pendant que la vue s'efface
-	const showcaseSlug = selectedProject ? getProjectSlug(selectedProject) : "";
-	const [lastShowcaseSlug, setLastShowcaseSlug] = useState(showcaseSlug);
-	if (!isPage && lastShowcaseSlug !== showcaseSlug)
-		setLastShowcaseSlug(showcaseSlug);
+	// La présentation d'où l'on vient, pour y revenir depuis une page du footer : le projet sélectionné reste celui de la
+	// présentation (masquée) pendant la page. Sans cela, elle repasserait à l'accueil, que la fermeture de la page
+	// ferait apparaître un instant avant le projet
+	const [showcaseProject, setShowcaseProject] = useState(selectedProject);
+	if (!isPage && showcaseProject !== selectedProject)
+		setShowcaseProject(selectedProject);
+	const lastShowcaseSlug = showcaseProject
+		? getProjectSlug(showcaseProject)
+		: "";
 	const page = view.kind === "page" ? view.page : null;
 	const [displayedPage, setDisplayedPage] = useState(page);
 	if (page && page !== displayedPage) setDisplayedPage(page);
@@ -181,7 +184,7 @@ export function Layout() {
 								className={styles.view}
 							>
 								<Showcase
-									selectedProject={selectedProject}
+									selectedProject={showcaseProject}
 									isNarrow={isNarrow}
 									isRevealed={isRevealed}
 									reducedMotion={reducedMotion}
