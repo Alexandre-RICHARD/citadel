@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAuthRows.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
-import { Event } from "../../models/Event.ts";
+import { AuthEvent } from "../../models/AuthEvent.ts";
 
-describe("eventModel", () => {
+describe("authEventModel", () => {
 	describe("columns", () => {
 		it.each([
 			{
@@ -25,8 +25,8 @@ describe("eventModel", () => {
 				};
 
 				// Act
-				const { id } = await Event.create(attributes);
-				const event = await Event.findByPk(id);
+				const { id } = await AuthEvent.create(attributes);
+				const event = await AuthEvent.findByPk(id);
 
 				// Assert : base
 				expect(await selectAuthRows.event(id)).toStrictEqual({
@@ -43,5 +43,23 @@ describe("eventModel", () => {
 				});
 			},
 		);
+
+		it("SHOULD keep the first 255 characters WHEN the user agent is longer than the column", async () => {
+			// Arrange
+			const longUserAgent = `Mozilla/5.0 ${"x".repeat(300)}`;
+
+			// Act
+			const { id } = await AuthEvent.create({
+				userId: null,
+				type: "login_failure",
+				ip: "203.0.113.0",
+				userAgent: longUserAgent,
+			});
+
+			// Assert
+			expect((await selectAuthRows.event(id))?.userAgent).toBe(
+				longUserAgent.slice(0, 255),
+			);
+		});
 	});
 });

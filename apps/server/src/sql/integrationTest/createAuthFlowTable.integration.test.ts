@@ -58,19 +58,23 @@ describe("createAuthFlowTable", () => {
 			await expect(insertion).rejects.toThrow(DatabaseError);
 		});
 
+		// Chacun à une étape qu'il permet : seule l'absence de compte le fait refuser
 		it.each([
-			"login",
-			"mail_login",
-			"password_reset",
-			"email_change",
-			"email_factor",
-		])("SHOULD refuse a %s flow WHEN it has no account", async (kind) => {
-			// Act
-			const insertion = insertAuthRows.flow({ kind, userId: null });
+			{ kind: "login", step: "second_factor" },
+			{ kind: "mail_login", step: "mail_code" },
+			{ kind: "password_reset", step: "mail_code" },
+			{ kind: "email_change", step: "mail_code" },
+			{ kind: "email_factor", step: "mail_code" },
+		])(
+			"SHOULD refuse a $kind flow WHEN it has no account",
+			async ({ kind, step }) => {
+				// Act
+				const insertion = insertAuthRows.flow({ kind, step, userId: null });
 
-			// Assert
-			await expect(insertion).rejects.toThrow(DatabaseError);
-		});
+				// Assert
+				await expect(insertion).rejects.toThrow(DatabaseError);
+			},
+		);
 
 		it("SHOULD delete only the flows of the account WHEN the account is deleted", async () => {
 			// Arrange
@@ -99,6 +103,57 @@ describe("createAuthFlowTable", () => {
 				await selectAuthRows.rowIdsByUserId("auth_flow", otherUserId),
 			).toStrictEqual([otherFlowId]);
 		});
+	});
+
+	describe("steps", () => {
+		const ALLOWED_STEPS_BY_KIND: Record<string, string[]> = {
+			registration: ["mail_code"],
+			login: ["second_factor"],
+			mail_login: ["mail_code", "second_factor"],
+			password_reset: ["mail_code", "second_factor", "new_password"],
+			email_change: ["mail_code"],
+			email_factor: ["mail_code"],
+		};
+		const ALL_STEPS = ["mail_code", "second_factor", "new_password"];
+		const combinations = Object.entries(ALLOWED_STEPS_BY_KIND).flatMap(
+			([kind, allowedSteps]) =>
+				ALL_STEPS.map((step) => ({
+					kind,
+					step,
+					isAllowed: allowedSteps.includes(step),
+				})),
+		);
+
+		async function insertFlowAtStep(
+			kind: string,
+			step: string,
+		): Promise<number> {
+			const userId =
+				kind === "registration" ? null : await insertAuthRows.user();
+			return insertAuthRows.flow({ kind, step, userId });
+		}
+
+		it.each(combinations.filter(({ isAllowed }) => isAllowed))(
+			"SHOULD accept the $step step WHEN a $kind flow goes through it",
+			async ({ kind, step }) => {
+				// Act
+				const id = await insertFlowAtStep(kind, step);
+
+				// Assert
+				expect((await selectAuthRows.flow(id))?.step).toBe(step);
+			},
+		);
+
+		it.each(combinations.filter(({ isAllowed }) => !isAllowed))(
+			"SHOULD refuse the $step step WHEN a $kind flow never goes through it",
+			async ({ kind, step }) => {
+				// Act
+				const insertion = insertFlowAtStep(kind, step);
+
+				// Assert
+				await expect(insertion).rejects.toThrow(DatabaseError);
+			},
+		);
 	});
 
 	describe("rejected values", () => {

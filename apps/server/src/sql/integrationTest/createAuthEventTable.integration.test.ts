@@ -1,4 +1,4 @@
-import { ForeignKeyConstraintError, QueryTypes } from "sequelize";
+import { ForeignKeyConstraintError } from "sequelize";
 import { describe, expect, it } from "vitest";
 
 import { sequelize } from "../../configuration/sequelize.ts";
@@ -7,14 +7,6 @@ import { selectAuthRows } from "../../testUtils/integration/auth/selectAuthRows.
 import { NON_EXISTENT_ID } from "../../testUtils/integration/nonExistentId.ts";
 
 // La migration V019
-async function existsEvent(id: number): Promise<boolean> {
-	const row = await sequelize.query<{ id: number }>(
-		"SELECT id FROM auth_event WHERE id = :id",
-		{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
-	);
-	return row !== null;
-}
-
 describe("createAuthEventTable", () => {
 	describe("account", () => {
 		it("SHOULD accept an event WHEN no account was found", async () => {
@@ -22,7 +14,7 @@ describe("createAuthEventTable", () => {
 			const id = await insertAuthRows.event({ userId: null });
 
 			// Assert
-			expect(await existsEvent(id)).toBe(true);
+			expect(await selectAuthRows.event(id)).not.toBeNull();
 		});
 
 		it("SHOULD refuse an event WHEN its account does not exist", async () => {
@@ -53,7 +45,7 @@ describe("createAuthEventTable", () => {
 			expect(
 				await selectAuthRows.rowIdsByUserId("auth_event", otherUserId),
 			).toStrictEqual([otherEventId]);
-			expect(await existsEvent(anonymousEventId)).toBe(true);
+			expect(await selectAuthRows.event(anonymousEventId)).not.toBeNull();
 		});
 	});
 });

@@ -26,6 +26,15 @@ CREATE TABLE auth_flow (
         ON DELETE CASCADE,
     CONSTRAINT ck_auth_flow_user_id
         CHECK ((kind = 'registration') = (user_id IS NULL)),
+    -- Les étapes par où passe chaque parcours : le second facteur vient après le mot de passe ou le mail, le nouveau
+    -- mot de passe après le mail et l'éventuel second facteur
+    CONSTRAINT ck_auth_flow_step
+        CHECK (
+            (kind IN ('registration', 'email_change', 'email_factor') AND step = 'mail_code')
+            OR (kind = 'login' AND step = 'second_factor')
+            OR (kind = 'mail_login' AND step IN ('mail_code', 'second_factor'))
+            OR kind = 'password_reset'
+        ),
     CONSTRAINT ck_auth_flow_counts
         CHECK (attempts >= 0 AND send_count >= 0)
 ) ENGINE = InnoDB

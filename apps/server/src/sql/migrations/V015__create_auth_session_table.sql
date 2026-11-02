@@ -1,7 +1,8 @@
 -- Session ouverte : seulement le SHA-256 du jeton du cookie, une fuite de la base ne donne aucune session.
 -- Les trois dates sont calculées par le serveur : expires_at glisse avec l'activité sans dépasser absolute_expires_at,
 -- qui ne bouge pas ; la purge n'a donc que expires_at à lire.
--- ip tronquée (/24 en IPv4, /48 en IPv6) ; user_agent NULL quand le navigateur n'en envoie pas
+-- ip tronquée (/24 en IPv4, /48 en IPv6) ; user_agent NULL quand le navigateur n'en envoie pas, tronqué à
+-- 255 caractères par le modèle
 CREATE TABLE auth_session (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

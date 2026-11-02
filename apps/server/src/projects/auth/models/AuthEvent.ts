@@ -1,3 +1,4 @@
+import { truncateCodePoints } from "@citadel/common/src/universal/string/truncateCodePoints.ts";
 import {
 	type CreationOptional,
 	DataTypes,
@@ -9,24 +10,27 @@ import {
 
 import { sequelize } from "../../../configuration/sequelize.ts";
 import { User } from "./User.ts";
+import { USER_AGENT_MAX_LENGTH } from "./userAgentMaxLength.ts";
 
-// Événement du journal de sécurité, purgé à 20 jours. userId null : aucun compte trouvé
-export class Event extends Model<
-	InferAttributes<Event>,
-	InferCreationAttributes<Event>
+// Événement du journal de sécurité, purgé à 20 jours. userId null : aucun compte trouvé.
+// Pas « Event » : le nom masquerait l'Event global de Node
+export class AuthEvent extends Model<
+	InferAttributes<AuthEvent>,
+	InferCreationAttributes<AuthEvent>
 > {
 	declare id: CreationOptional<number>;
 	declare userId: number | null;
 	declare type: string;
 	// Tronquée comme celle d'une session
 	declare ip: string;
+	// Tronqué à la taille de la colonne
 	declare userAgent: string | null;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 	declare user?: NonAttribute<User>;
 }
 
-Event.init(
+AuthEvent.init(
 	{
 		id: {
 			type: DataTypes.INTEGER,
@@ -51,9 +55,17 @@ Event.init(
 			allowNull: false,
 		},
 		userAgent: {
-			type: DataTypes.STRING(255),
+			type: DataTypes.STRING(USER_AGENT_MAX_LENGTH),
 			field: "user_agent",
 			allowNull: true,
+			set(this: AuthEvent, userAgent: string | null) {
+				this.setDataValue(
+					"userAgent",
+					userAgent === null
+						? null
+						: truncateCodePoints(userAgent, USER_AGENT_MAX_LENGTH),
+				);
+			},
 		},
 		createdAt: {
 			type: DataTypes.DATE(3),
@@ -74,4 +86,4 @@ Event.init(
 	},
 );
 
-Event.belongsTo(User, { foreignKey: "userId", as: "user" });
+AuthEvent.belongsTo(User, { foreignKey: "userId", as: "user" });

@@ -10,6 +10,7 @@ import {
 } from "sequelize";
 
 import { sequelize } from "../../../configuration/sequelize.ts";
+import type { FlowPayload } from "./flowPayload.type.ts";
 import { User } from "./User.ts";
 
 // Parcours en plusieurs étapes, lié au navigateur par le SHA-256 du jeton de son cookie. userId null : une inscription,
@@ -25,8 +26,7 @@ export class Flow extends Model<
 	declare userId: number | null;
 	// L'adresse du mail
 	declare email: string;
-	// Inscription : username et passwordHash ; changement d'email : la nouvelle adresse
-	declare payload: CreationOptional<Record<string, string> | null>;
+	declare payload: CreationOptional<FlowPayload | null>;
 	declare codeHmac: CreationOptional<Buffer | null>;
 	declare linkTokenHash: CreationOptional<Buffer | null>;
 	declare attempts: CreationOptional<number>;

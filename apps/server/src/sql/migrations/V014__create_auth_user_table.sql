@@ -1,6 +1,8 @@
 -- Compte d'un utilisateur, partagé par tous les projets.
 -- email : la casse ne compte pas, les accents oui (Alex@ et alex@ sont une seule adresse, josé@ et jose@ deux), comme
--- les messageries ; gardé tel que saisi, c'est l'adresse du mail.
+-- les messageries ; gardé tel que saisi, c'est l'adresse du mail. La collation confond aussi les formes de compatibilité
+-- (ａ pleine chasse et a, ﬁ et fi) et ignore les caractères invisibles et les espaces finaux : la règle de format de
+-- l'email refuse ces caractères, seule la casse reste donc ignorée.
 -- username : identifiant définitif, chaque caractère compte (Alex et alex sont deux comptes).
 -- display_name NULL : le pseudo affiché est le username
 CREATE TABLE auth_user (

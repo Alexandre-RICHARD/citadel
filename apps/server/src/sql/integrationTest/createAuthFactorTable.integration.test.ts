@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { DatabaseError, QueryTypes } from "sequelize";
+import { DatabaseError, UniqueConstraintError } from "sequelize";
 import { describe, expect, it } from "vitest";
 
 import { sequelize } from "../../configuration/sequelize.ts";
@@ -57,15 +57,59 @@ describe("createAuthFactorTable", () => {
 			});
 
 			// Assert
-			const row = await sequelize.query<{ lastUsedStep: number }>(
-				"SELECT last_used_step AS lastUsedStep FROM auth_factor WHERE id = :id",
-				{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
+			expect((await selectAuthRows.factor(id))?.lastUsedStep).toBe(
+				lastUsedStep,
 			);
-			expect(row?.lastUsedStep).toBe(lastUsedStep);
+		});
+
+		it("SHOULD accept several TOTP factors and one email factor WHEN they belong to the same account", async () => {
+			// Arrange
+			const userId = await insertAuthRows.user();
+
+			// Act
+			const ids = [
+				await insertAuthRows.factor({ userId, type: "totp" }),
+				await insertAuthRows.factor({ userId, type: "totp" }),
+				await insertAuthRows.factor({ userId, type: "email" }),
+			];
+
+			// Assert
+			expect(
+				await selectAuthRows.rowIdsByUserId("auth_factor", userId),
+			).toStrictEqual(ids);
+		});
+
+		it("SHOULD accept an email factor per account WHEN two accounts have one", async () => {
+			// Arrange
+			await insertAuthRows.factor({
+				userId: await insertAuthRows.user(),
+				type: "email",
+			});
+			const userId = await insertAuthRows.user();
+
+			// Act
+			const id = await insertAuthRows.factor({ userId, type: "email" });
+
+			// Assert
+			expect(
+				await selectAuthRows.rowIdsByUserId("auth_factor", userId),
+			).toStrictEqual([id]);
 		});
 	});
 
 	describe("rejected factors", () => {
+		it("SHOULD refuse a second email factor WHEN the account already has one", async () => {
+			// Arrange
+			const userId = await insertAuthRows.user();
+			await insertAuthRows.factor({ userId, type: "email" });
+
+			// Act
+			const insertion = insertAuthRows.factor({ userId, type: "email" });
+
+			// Assert
+			await expect(insertion).rejects.toThrow(UniqueConstraintError);
+		});
+
 		it.each([
 			{
 				reason: "an email factor has a secret",

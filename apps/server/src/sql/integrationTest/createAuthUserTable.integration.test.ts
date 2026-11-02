@@ -67,6 +67,47 @@ describe("createAuthUserTable", () => {
 				`Alex${word}@Example.com`,
 			);
 		});
+
+		it("SHOULD accept both emails WHEN they differ by a sharp s and ss", async () => {
+			// Arrange
+			const word = buildLowercaseWord();
+
+			// Act
+			const sharpId = await insertAuthRows.user({
+				email: `straße${word}@example.com`,
+			});
+			const doubleId = await insertAuthRows.user({
+				email: `strasse${word}@example.com`,
+			});
+
+			// Assert
+			expect(sharpId).not.toBe(doubleId);
+		});
+	});
+
+	// Ce que la collation confond en plus de la casse : la règle de format de l'email doit refuser ces caractères
+	describe("characters the email format must refuse", () => {
+		it.each([
+			{ reason: "a fullwidth letter", variant: "ａlex" },
+			{ reason: "a ligature", variant: "ﬁle" },
+			{ reason: "an invisible character", variant: "al​ex" },
+		])(
+			"SHOULD treat the email as an existing one WHEN it differs by $reason",
+			async ({ variant }) => {
+				// Arrange
+				const word = buildLowercaseWord();
+				const plain = variant.normalize("NFKC").replace("​", "");
+				await insertAuthRows.user({ email: `${plain}${word}@example.com` });
+
+				// Act
+				const insertion = insertAuthRows.user({
+					email: `${variant}${word}@example.com`,
+				});
+
+				// Assert
+				await expect(insertion).rejects.toThrow(UniqueConstraintError);
+			},
+		);
 	});
 
 	describe("username", () => {

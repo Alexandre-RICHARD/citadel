@@ -14,6 +14,10 @@ CREATE TABLE auth_factor (
     last_used_at DATETIME(3) NULL,
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    -- Un seul facteur mail par compte (deux seraient interchangeables), autant de TOTP que voulu : rempli pour un
+    -- facteur mail seulement, et un index unique accepte plusieurs NULL. Jamais écrit, ni lu par le modèle
+    email_factor_user_id INT AS (IF(type = 'email', user_id, NULL)) VIRTUAL,
+    CONSTRAINT uq_auth_factor_email_factor_user_id UNIQUE (email_factor_user_id),
     CONSTRAINT fk_auth_factor_user
         FOREIGN KEY (user_id) REFERENCES auth_user (id)
         ON DELETE CASCADE,

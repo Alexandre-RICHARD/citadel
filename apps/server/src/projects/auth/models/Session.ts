@@ -1,3 +1,4 @@
+import { truncateCodePoints } from "@citadel/common/src/universal/string/truncateCodePoints.ts";
 import {
 	type CreationOptional,
 	DataTypes,
@@ -9,6 +10,7 @@ import {
 
 import { sequelize } from "../../../configuration/sequelize.ts";
 import { User } from "./User.ts";
+import { USER_AGENT_MAX_LENGTH } from "./userAgentMaxLength.ts";
 
 // Session ouverte : seulement le SHA-256 du jeton du cookie ; expiresAt glisse sans dépasser absoluteExpiresAt
 export class Session extends Model<
@@ -19,6 +21,7 @@ export class Session extends Model<
 	declare userId: number;
 	declare tokenHash: Buffer;
 	declare remember: boolean;
+	// Tronqué à la taille de la colonne
 	declare userAgent: string | null;
 	// Tronquée : /24 en IPv4, /48 en IPv6
 	declare ip: string;
@@ -55,9 +58,17 @@ Session.init(
 			allowNull: false,
 		},
 		userAgent: {
-			type: DataTypes.STRING(255),
+			type: DataTypes.STRING(USER_AGENT_MAX_LENGTH),
 			field: "user_agent",
 			allowNull: true,
+			set(this: Session, userAgent: string | null) {
+				this.setDataValue(
+					"userAgent",
+					userAgent === null
+						? null
+						: truncateCodePoints(userAgent, USER_AGENT_MAX_LENGTH),
+				);
+			},
 		},
 		ip: {
 			type: DataTypes.STRING(45),

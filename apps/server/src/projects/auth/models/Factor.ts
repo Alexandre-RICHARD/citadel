@@ -61,7 +61,7 @@ Factor.init(
 			allowNull: true,
 		},
 		keyVersion: {
-			type: DataTypes.TINYINT,
+			type: DataTypes.TINYINT.UNSIGNED,
 			field: "key_version",
 			allowNull: true,
 		},

@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { QueryTypes, UniqueConstraintError } from "sequelize";
+import { UniqueConstraintError } from "sequelize";
 import { describe, expect, it } from "vitest";
 
 import { sequelize } from "../../configuration/sequelize.ts";
@@ -19,14 +19,12 @@ describe("createAuthRecoveryCodeTable", () => {
 			const id = await insertAuthRows.recoveryCode({ userId, codeHash });
 
 			// Assert
-			const row = await sequelize.query<{
-				codeHash: Buffer;
-				usedAt: Date | null;
-			}>(
-				"SELECT code_hash AS codeHash, used_at AS usedAt FROM auth_recovery_code WHERE id = :id",
-				{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
-			);
-			expect(row).toStrictEqual({ codeHash, usedAt: null });
+			expect(await selectAuthRows.recoveryCode(id)).toStrictEqual({
+				id,
+				userId,
+				codeHash,
+				usedAt: null,
+			});
 		});
 
 		it("SHOULD refuse a code WHEN the account already has the same one", async () => {

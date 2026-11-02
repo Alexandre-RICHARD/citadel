@@ -62,6 +62,29 @@ describe("sessionModel", () => {
 			expect(session?.remember).toBe(false);
 			expect(session?.userAgent).toBeNull();
 		});
+
+		it("SHOULD keep the first 255 characters WHEN the user agent is longer than the column", async () => {
+			// Arrange
+			const now = new Date();
+			const longUserAgent = `Mozilla/5.0 ${"x".repeat(300)}`;
+
+			// Act
+			const { id } = await Session.create({
+				userId: await insertAuthRows.user(),
+				tokenHash: randomBytes(32),
+				remember: false,
+				userAgent: longUserAgent,
+				ip: "203.0.113.0",
+				lastSeenAt: now,
+				expiresAt: now,
+				absoluteExpiresAt: now,
+			});
+
+			// Assert
+			expect((await selectAuthRows.session(id))?.userAgent).toBe(
+				longUserAgent.slice(0, 255),
+			);
+		});
 	});
 
 	describe("associations", () => {

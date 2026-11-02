@@ -189,10 +189,10 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 | `id` | INT | |
 | `token_hash` | BINARY(32), unique | Jeton du cookie de parcours |
 | `kind` | ENUM | `registration`, `login`, `mail_login`, `password_reset`, `email_change`, `email_factor` |
-| `step` | ENUM | `mail_code`, `second_factor`, `new_password` |
+| `step` | ENUM | `mail_code`, `second_factor`, `new_password` ; un `CHECK` n'accepte que les étapes du parcours |
 | `user_id` | INT, nul | Vide pour une inscription |
 | `email` | VARCHAR(254) | Adresse du mail |
-| `payload` | JSON, nul | Inscription : `username`, `password_hash` ; changement d'email : nouvelle adresse |
+| `payload` | JSON, nul | Inscription : `username`, `passwordHash` ; changement d'email : `newEmail` |
 | `code_hmac` | BINARY(32), nul | Empreinte HMAC du code |
 | `link_token_hash` | BINARY(32), nul | SHA-256 du jeton du lien |
 | `attempts`, `send_count` | INT | |
@@ -200,7 +200,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 | `last_sent_at`, `expires_at` | DATETIME(3) | |
 | `created_at`, `updated_at` | DATETIME(3) | |
 
-**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (INT, nul : suffit jusqu'à l'an 4000, un BIGINT arriverait en chaîne), `last_used_at`, `created_at`, `updated_at`.
+**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (INT, nul : suffit jusqu'à l'an 4000, un BIGINT arriverait en chaîne), `last_used_at`, `created_at`, `updated_at`. Un seul facteur `email` par compte.
 
 **`auth_recovery_code`** : `id`, `user_id`, `code_hash` (BINARY(32)), `used_at` (nul), `created_at`, `updated_at`.
 
@@ -209,7 +209,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 ### 5.3 Collations et types
 
 - Empreintes en `BINARY(32)` : comparaison octet par octet.
-- Email : `utf8mb4_uca1400_as_ci` sur la colonne (et sur `auth_flow.email`), comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie.
+- Email : `utf8mb4_uca1400_as_ci` sur la colonne (et sur `auth_flow.email`), comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie. La collation confond aussi `ａ` (pleine chasse) et `a`, `ﬁ` et `fi`, et ignore les caractères invisibles : la règle de format de l'email les refuse (étape 33).
 - Pseudo : `utf8mb4_bin`, toute différence de caractère compte : `Alex` et `alex` peuvent coexister.
 - Aucune migration de collation sur les tables existantes.
 
@@ -678,7 +678,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 
 31. [moi] Service `auth_flow` : création, cookie `__Host-citadel_flow`, un parcours par navigateur, code HMAC, lien haché, essais remis à zéro au renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
 32. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
-33. [moi] Règles de format dans les specs (pseudo en `A-Z a-z 0-9 _ -`, pseudo affiché libre en NFC, email, mot de passe en NFC, code) ; `GET /auth/usernames/:username/availability`.
+33. [moi] Règles de format dans les specs (pseudo en `A-Z a-z 0-9 _ -`, pseudo affiché libre en NFC, email inchangé par NFKC et sans caractère invisible, mot de passe en NFC, code) ; `GET /auth/usernames/:username/availability`.
 34. [moi] Serveur, inscription : honeypot, interrupteur et quota (`REGISTRATION_CLOSED`), limites, réponse neutre, deux mails, remplacement d'un parcours en attente, pseudo pris à la confirmation, création du compte et de la session. Vérif : critère 1.
 35. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, bandeau et bouton d'inscription fermés selon `GET /mail/status`.
 36. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
@@ -766,7 +766,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] `POST /api/error-log/entries` répond `404` et n'écrit rien dans `error_log`.
 - [ ] Une erreur de base provoquée (inscription avec la base arrêtée) : la ligne de `error_log` et les logs du conteneur n'ont ni mot de passe, ni email, ni valeur de paramètre SQL, mais gardent le message du driver.
 - [ ] Après la release : `mailing_failure` et `mailing_contact_message_unsent` existent, les anciennes tables non ; les deux alertes de la carte « Site » de la console comptent toujours.
-- [ ] `citadel db-restore-test` passe après V013.
+- [ ] `citadel db-restore-test` passe après V013, puis après V019 (contraintes `CHECK`, colonne générée de `auth_factor`).
 - [ ] Le job `contact-retry` renvoie toujours un message en attente.
 - [ ] `MAIL_REGISTRATION_STOP` abaissé en dev : inscriptions fermées au bon seuil ; valeurs remises après.
 - [ ] Le serveur refuse de démarrer sans `AUTH_CODE_HMAC_KEY`, avec une clé qui n'a pas 64 caractères hexadécimaux, ou avec une clé précédente et une version 1, en nommant la variable fautive.
@@ -804,6 +804,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 
 - [ ] `Alex` et `alex` créés tous les deux ; `Alex@…` refusé après `alex@…` ; `josé@…` et `jose@…` acceptés.
 - [ ] Pseudo avec espace, accent ou `.` : refusé avant l'envoi ; 64 caractères acceptés, 65 non.
+- [ ] Email avec une lettre pleine chasse (`ａlex@…`), une ligature (`ﬁ`) ou un caractère invisible collé (U+200B) : refusé avant l'envoi, et par le serveur.
 - [ ] « Vérifier la disponibilité » : juste pour un pseudo pris, libre, ou différent seulement par la casse.
 - [ ] Mot de passe de 11 caractères refusé, 12 accepté, 128 accepté, 129 refusé ; un « é » composé (e + accent) compte pour un caractère.
 - [ ] Barre de force : basse pour `azertyuiop12`, `aaaaaaaaaaaa`, `123456789012` ; le « ? » explique qu'elle surestime `P@ssw0rd!`.
@@ -850,6 +851,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Le secret n'apparaît dans aucune requête après celle qui le crée (onglet Réseau), ni dans les logs.
 - [ ] Un code du pas précédent ou suivant accepté ; deux pas d'écart refusé ; le même code deux fois refusé.
 - [ ] Deux TOTP nommés, puis le facteur mail ; liste avec type, date et dernier usage.
+- [ ] Facteur mail activé depuis deux onglets à la fois : un seul dans la liste, l'autre onglet a un message clair (pas une erreur 500).
 - [ ] Codes de secours : affichés une fois, téléchargés en texte lisible, chacun utilisable une fois, nombre restant juste ; régénération : les anciens ne marchent plus.
 - [ ] Supprimer le dernier facteur désactive la 2FA et efface les codes de secours ; notification reçue.
 - [ ] Rotation de clé (nouvelle clé, version 2, ancienne en clé précédente) : le TOTP marche, puis `key_version` passe à 2 après usage.
@@ -858,6 +860,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 **Sessions et données**
 
 - [ ] Liste : navigateur et système justes (Edge, Firefox, Android, iOS), IP tronquée, « cette session », fin prévue.
+- [ ] Connexion avec un user agent de plus de 255 caractères (`curl -A`) : session ouverte, user agent tronqué dans la liste.
+- [ ] Double clic sur « S'inscrire » : un seul compte créé, et le code du second mail éventuel répond proprement, sans erreur 500.
 - [ ] « Tout déconnecter sauf ici » puis « tout déconnecter ».
 - [ ] Export : le ZIP s'ouvre avec l'explorateur Windows et 7-Zip ; les CSV gardent accents et émojis dans Excel ; aucun hash, empreinte ni secret.
 - [ ] Suppression des données du Backlog seul : GDC intact ; suppression du compte : plus aucune ligne, mail de confirmation, reconnexion impossible.
