@@ -56,7 +56,6 @@ export async function fetchHandler<Spec extends EndpointModel>(
 	// Sans corps, pas de Content-Type : un GET reste une requête simple, sans preflight CORS
 	const headers = new Headers();
 	if (hasBody) headers.set("Content-Type", "application/json");
-	if (request.protected) headers.set("Authorization", `Bearer ${"FakeToken"}`); // TODO TOKEN JWT
 
 	let response: Response;
 	try {

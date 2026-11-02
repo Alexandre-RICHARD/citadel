@@ -110,7 +110,7 @@ describe("fetchHandler.ts", () => {
 			);
 		});
 
-		it("SHOULD send a bearer token WHEN the endpoint is protected", async () => {
+		it("SHOULD send no Authorization header WHEN the endpoint is protected", async () => {
 			// Arrange
 			fetchMock.mockResolvedValueOnce(jsonResponse(200, {}));
 
@@ -121,9 +121,10 @@ describe("fetchHandler.ts", () => {
 			);
 
 			// Assert
-			expect(new Headers(getSentInit().headers).get("Authorization")).toBe(
-				"Bearer FakeToken",
-			);
+			const init = getSentInit();
+			expect(new Headers(init.headers).has("Authorization")).toBe(false);
+			// Le cookie de session part de lui-même : même origine, credentials par défaut
+			expect(init.credentials).toBeUndefined();
 		});
 
 		it("SHOULD pass the abort signal to fetch", async () => {
