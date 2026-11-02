@@ -1,6 +1,6 @@
 # Authentification de Citadel — Cahier des charges
 
-30 octobre 2026 · v5 : dernières réponses intégrées, restauration et sujets d'infra passés au cahier de l'hébergement · v4 : réponses du 30 octobre intégrées · v3 : plus de MVP · v2 : aligné sur le dépôt · v1 : brouillon du 27 octobre
+2 novembre 2026 · v7 : tables `mailing_*`, pseudo en `A-Z a-z 0-9 _ -`, pseudo sensible à chaque caractère, email sans distinction de casse, réglages des mails dans le `.env`, tests partout, modèles par phase · v6 : relecture après les mails (quota, second facteur, restauration, règle des 3 mois), roadmap en fondations, mise en place, correctifs, modèle de Claude par phase · 30 octobre 2026 · v5 : dernières réponses intégrées, restauration et sujets d'infra passés au cahier de l'hébergement · v4 : réponses du 30 octobre intégrées · v3 : plus de MVP · v2 : aligné sur le dépôt · v1 : brouillon du 27 octobre
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
@@ -45,7 +45,7 @@ Des comptes utilisateurs partagés entre tous les projets, pour que la prod soit
 
 ### 1.3 Mode de travail
 
-Je code ; tu relis et valides chaque étape. Design volontairement sommaire (« fonctionnel d'abord »).
+Je code, avec des tests unitaires et d'intégration pour tout ; tu testes à partir de la recette visuelle (§15). Design de l'authentification travaillé comme celui du reste du site.
 
 ### 1.4 Hors périmètre
 
@@ -82,25 +82,24 @@ Je code ; tu relis et valides chaque étape. Design volontairement sommaire (« 
 - **Header de la homepage** : un bouton « Se connecter » existe déjà (il affiche « La connexion arrive bientôt »).
 - **Pages légales** : « Mentions légales » et « Données personnelles » (`apps/client/src/projects/homepage/content/footerPages.ts`).
 - **Node 24.22.1** dans l'image : `argon2id` natif (`crypto.argon2`).
-- **MariaDB 11.8** : collations UCA 14 (`utf8mb4_uca1400_as_ci`, sensible aux accents, pas à la casse).
+- **MariaDB 11.8** : collations `utf8mb4_bin` (chaque caractère compte) et UCA 14 `utf8mb4_uca1400_as_ci` (accents distingués, casse ignorée).
 
 ### 3.2 À corriger dans le chantier
 
 | # | Constat | Correction |
 |---|---|---|
-| 1 | Pas de `trust proxy` : derrière Caddy, tous les visiteurs ont la même IP | IP réelle par un en-tête écrasé par Caddy (§7.2) |
-| 2 | Pas de `429` dans `HttpStatutCodeErrorEnum` ; `ApiError` ne garde pas les en-têtes | `429` + `Retry-After` jusqu'au front |
-| 3 | `scryptSync` dans la console : synchrone, paramètres faibles | `argon2id` asynchrone partagé (§6.3, §11.2) |
-| 4 | Serveur limité à 256 Mo | Concurrence des hashs plafonnée (§6.3) |
-| 5 | `packages/common` sans environnement Node | `src/node/` et son bloc ESLint (§11.2) |
-| 6 | `POST /error-log/entries` public, jamais appelé par le front | Endpoint supprimé avec son interface dans les specs. `logError`, son service et la table `error_log` restent : le serveur y enregistre ses erreurs |
-| 7 | `logError` peut stocker un corps de requête ; `error_log` sans durée | Hygiène (§7.5), purge à 90 jours |
-| 8 | `apps/server/src/todo_folder/` : ancien système JWT | Supprimé |
-| 9 | `protected` à `false` partout, ignoré par le serveur ; faux `Authorization: Bearer FakeToken` dans le `fetchHandler` du front | `protected` lu par le serveur (§6.11) ; faux `Bearer` supprimé |
-| 10 | `AppError` sans 401, 403, 429 | Erreurs créées ; `AuthErrorCodeEnum` ajouté à `ErrorCode` |
-| 11 | Collation `utf8mb4_unicode_520_ci` : casse **et** accents ignorés dans les comparaisons (`=`, `UNIQUE`, `WHERE`) | Voulu ailleurs (chercher « pokemon » trouve « Pokémon ») : aucune migration globale. Colonnes de l'auth réglées une par une (§5.3) |
+| 1 | `scryptSync` dans la console : synchrone, paramètres faibles | `argon2id` asynchrone partagé (§6.3, §11.2) |
+| 2 | Serveur limité à 256 Mo | Concurrence des hashs plafonnée (§6.3) |
+| 3 | `packages/common` sans environnement Node ; code Node et fonctions pures en double entre la console et le serveur | `src/node/` et son bloc ESLint, code commun regroupé (§11.2) |
+| 4 | `POST /error-log/entries` public, jamais appelé par le front | Endpoint supprimé avec son interface dans les specs. `logError`, son service et la table `error_log` restent : le serveur y enregistre ses erreurs |
+| 5 | `logError` peut stocker un corps de requête ; `error_log` sans durée | Hygiène (§7.5), purge à 20 jours (§10.2) |
+| 6 | Tables des mails sans préfixe commun (`mail_failure`, `contact_message_unsent`) | Renommées `mailing_failure` et `mailing_contact_message_unsent` (V013) : un préfixe par sujet (`backlog_`, `gdc_`, `mailing_`, `auth_`) |
+| 7 | Réglages des mails en dur ou commentés dans `.env.example` | Variables du `.env` (§9.2) |
+| 8 | `protected` à `false` partout, ignoré par le serveur ; faux `Authorization: Bearer FakeToken` dans le `fetchHandler` du front | `protected` lu par le serveur (§6.11) ; faux `Bearer` supprimé |
+| 9 | `AppError` sans 401 | Erreur créée ; `AuthErrorCodeEnum` ajouté à `ErrorCode` |
+| 10 | Collation `utf8mb4_unicode_520_ci` : casse **et** accents ignorés dans les comparaisons (`=`, `UNIQUE`, `WHERE`) | Voulu ailleurs (chercher « pokemon » trouve « Pokémon ») : aucune migration globale. Colonnes de l'auth réglées une par une (§5.3) |
 
-Faits par le chantier de l'hébergement, avant celui-ci : CSP, `pnpm audit` et Dependabot, logs à 90 jours (job `log-retention`), restauration depuis la console et bandeau du site. Les mails (fournisseur, DNS, `contact@`) sont son [cahier des charges](../ci_cd/cahier_des_charges.md).
+Faits par le chantier de l'hébergement, avant celui-ci : CSP, `pnpm audit` et Dependabot, logs à 90 jours (job `log-retention`), restauration depuis la console et bandeau du site. Faits par les mails : IP réelle (`realClientIp`), `429` et `Retry-After` jusqu'au front, `ForbiddenError` et `TooManyRequestsError`, `mailService` et son quota (alertes testées par `mailService.integration.test.ts`). Les mails (fournisseur, DNS, `contact@`) sont son [cahier des charges](../ci_cd/cahier_des_charges.md).
 
 ---
 
@@ -155,13 +154,15 @@ CSRF : `SameSite=Lax`, mutations en `POST`/`PATCH`/`DELETE`, contrôle de l'en-t
 | `backlog_done_dlc` | Aucun (cascade par sa version jouée) |
 | `backlog_series` | `user_id` nullable : vide pour une série IGDB commune, rempli pour une série créée à la main (cascade) |
 | Tables IGDB (`backlog_game`, `backlog_version`, `backlog_version_platform`, `backlog_dlc`, `backlog_company`, `backlog_platform`) | Aucun : données communes |
-| `error_log` | Purge à 90 jours |
+| `error_log` | Purge à 20 jours |
 
 Un jeu du backlog ne se range que dans une série IGDB ou une série de son propriétaire.
 
+Les données du Backlog d'un utilisateur (suppression du compte ou du projet) sont supprimées par le serveur, dans une transaction, enfants d'abord : `backlog_user_game`, `backlog_user_version`, puis ses séries. `backlog_user_game.series_id` est en `RESTRICT` et son `CHECK` interdit `SET NULL` : l'ordre des cascades ne doit rien décider.
+
 ### 5.2 Tables de l'auth
 
-Conventions des migrations existantes (V011 et suivantes) : InnoDB, `utf8mb4`, `created_at` et `updated_at` en `DATETIME(3)`, `field` explicite dans Sequelize. Toute table liée à un utilisateur a une clé étrangère `ON DELETE CASCADE` vers `auth_user`.
+Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : V013 renomme les tables des mails, les tables de l'auth suivent. Toutes s'appellent `auth_*`. Conventions des migrations existantes : InnoDB, `utf8mb4`, `created_at` et `updated_at` en `DATETIME(3)`, `field` explicite dans Sequelize. Toute table liée à un utilisateur a une clé étrangère `ON DELETE CASCADE` vers `auth_user`.
 
 **`auth_user`**
 
@@ -169,8 +170,8 @@ Conventions des migrations existantes (V011 et suivantes) : InnoDB, `utf8mb4`, `
 |---|---|---|
 | `id` | INT, auto-incrément | |
 | `email` | VARCHAR(254), unique | Tel que saisi ; jamais d'espace (le front bloque l'envoi, le serveur fait un `trim`) ; collation §5.3 |
-| `username` | VARCHAR(64), unique | Identifiant, définitif ; collation par défaut (casse ignorée) |
-| `display_name` | VARCHAR(64), nul | Pseudo affiché ; vide = `username` ; mêmes règles de format, aucune unicité |
+| `username` | VARCHAR(64), unique | Identifiant, définitif ; collation §5.3 |
+| `display_name` | VARCHAR(64), nul | Pseudo affiché ; vide = `username` ; règles du §6.2, aucune unicité |
 | `password_hash` | VARCHAR(255) | Format auto-descriptif (§6.3) |
 | `password_changed_at` | DATETIME(3) | |
 | `login_methods` | ENUM `mail`, `password`, `both` | Défaut `both` (§6.4) |
@@ -202,13 +203,13 @@ Conventions des migrations existantes (V011 et suivantes) : InnoDB, `utf8mb4`, `
 
 **`auth_recovery_code`** : `id`, `user_id`, `code_hash` (BINARY(32)), `used_at` (nul), `created_at`, `updated_at`.
 
-**`auth_event`** : `id`, `user_id` (nul), `type`, `ip`, `user_agent`, `created_at`, `updated_at`. Purge à 90 jours.
+**`auth_event`** : `id`, `user_id` (nul), `type`, `ip` (tronquée comme dans `auth_session`), `user_agent`, `created_at`, `updated_at`. Purge à 20 jours (§10.2).
 
 ### 5.3 Collations et types
 
 - Empreintes en `BINARY(32)` : comparaison octet par octet.
-- Email : `utf8mb4_uca1400_as_ci` sur la colonne : `Alex@…` et `alex@…` sont la même adresse, `josé@…` et `jose@…` deux adresses. Le mail part à l'adresse telle que saisie.
-- Pseudo : collation par défaut : `Alex` empêche `alex`.
+- Email : `utf8mb4_uca1400_as_ci` sur la colonne, comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie.
+- Pseudo : `utf8mb4_bin`, toute différence de caractère compte : `Alex` et `alex` peuvent coexister.
 - Aucune migration de collation sur les tables existantes.
 
 ---
@@ -217,38 +218,38 @@ Conventions des migrations existantes (V011 et suivantes) : InnoDB, `utf8mb4`, `
 
 ### 6.1 Commun à tous les parcours
 
-- **`auth_flow` + cookie de parcours** : tout parcours en plusieurs étapes (inscription, connexion avec 2FA, connexion par mail, mot de passe oublié, changement d'email, activation du facteur mail) a une ligne `auth_flow` et un cookie `HttpOnly` dédié, valable le temps du parcours.
+- **`auth_flow` + cookie de parcours** : tout parcours en plusieurs étapes (inscription, connexion avec 2FA, connexion par mail, mot de passe oublié, changement d'email, activation du facteur mail) a une ligne `auth_flow` et un cookie `HttpOnly` dédié, valable le temps du parcours : `__Host-citadel_flow` (même règle de préfixe que la session), `SameSite=Lax`, `Path=/`, `Max-Age` = durée du parcours. Un parcours par navigateur : en commencer un autre supprime le précédent.
 - **Reprise** : une page `/auth/...` demande au serveur s'il y a un parcours en cours et se replace à la bonne étape. Les champs tapés (sauf les mots de passe) sont gardés dans le `sessionStorage` de l'onglet. Au retour sur l'onglet (`visibilitychange`), le front redemande l'état : si le lien a été ouvert dans un autre onglet du même navigateur, la page passe d'elle-même à la suite.
 - **Lien et code dans chaque mail** :
-  - le **code** (6 chiffres, empreinte HMAC, usage unique, invalidé par un renvoi) se colle dans la page restée ouverte, y compris sur un autre appareil ;
+  - le **code** (6 chiffres, empreinte HMAC, usage unique, invalidé par un renvoi, qui remet les essais à zéro) se colle dans la page restée ouverte, y compris sur un autre appareil ;
   - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code. Sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
 - **Temps restant** : chaque réponse renvoie `expiresAt` et, pendant un délai, `retryAfter`.
 - **Expiration** : un parcours expiré est refusé à la lecture ; une minuterie du serveur supprime les lignes expirées (`auth_flow`, `auth_session`) toutes les 15 minutes, et les vieilles lignes de `auth_event` et `error_log` une fois par jour.
-- **Réponses neutres** : rien ne dit si un email existe.
+- **Réponses neutres** : rien ne dit si un email existe, ni le contenu, ni la durée (mail envoyé après la réponse, §8.1).
 
 ### 6.2 Inscription
 
 1. **Formulaire** : email, pseudo, mot de passe, confirmation du mot de passe, case « Se souvenir de moi ».
-   - Pseudo : 1 à 64 caractères (lettres sans accent, chiffres, espaces, `_`, `-` ; espaces de début et de fin retirés), définitif. Bouton « Vérifier la disponibilité » à côté du champ.
+   - Pseudo : 1 à 64 caractères parmi `A-Z`, `a-z`, `0-9`, `_` et `-`, sans espace, définitif. Le pseudo affiché (§6.6) est libre : 1 à 64 caractères, accents, espaces et symboles compris, normalisé en NFC, espaces de début et de fin retirés, espaces consécutifs réduits à un, ni caractère de contrôle ni caractère invisible. Bouton « Vérifier la disponibilité » à côté du champ.
    - Mot de passe : barre de force sous le premier champ (§6.3) ; le second signale une différence ; une icône œil affiche ou masque les deux.
    - Messages : « Tu as 30 minutes pour terminer ton inscription, sinon il faudra recommencer. » ; « Utilise un mot de passe différent pour chaque site, idéalement avec un gestionnaire de mots de passe. » ; conditions du mot de passe qui passent au vert en direct.
    - Les champs incorrects sont coloriés à l'envoi.
-2. **Serveur** : pseudo pris → `409` `USERNAME_TAKEN`. Sinon, création d'un `auth_flow` `registration` ; réponse toujours « un email t'a été envoyé ».
+2. **Serveur** : inscriptions fermées par l'interrupteur ou le quota de mails (`MAIL_REGISTRATION_STOP`) → `403` `REGISTRATION_CLOSED` ; le front le sait par `GET /mail/status` (bouton désactivé, bandeau « Les inscriptions sont fermées pour aujourd'hui, elles rouvrent demain. »). Pseudo pris → `409` `USERNAME_TAKEN`. Sinon, création d'un `auth_flow` `registration` ; réponse toujours « un email t'a été envoyé ».
 3. **Mail** :
    - adresse nouvelle : « Confirme ton inscription » + lien + code ;
    - adresse déjà inscrite : « Tu as déjà un compte sur ce site, dernière connexion il y a 3 semaines » + lien vers la connexion, sans code. Durée floue : « aujourd'hui », puis 1 à 7 jours, 1 à 5 semaines, 1 à 12 mois, puis en années.
-4. **Code ou lien validé** : création de `auth_user` (pseudo revérifié), suppression du parcours, session ouverte.
+4. **Code ou lien validé** : création de `auth_user` (pseudo revérifié), suppression du parcours, session ouverte. Pseudo pris entre-temps : `409` `USERNAME_TAKEN`, le parcours reste ouvert et la page redemande un pseudo.
 5. **Étape facultative** : « Protège ton compte avec une application d'authentification » (§6.7), puis retour à la page demandée au départ.
 
 Une nouvelle inscription avec la même adresse remplace le parcours en attente : la personne qui reçoit les mails gagne toujours.
 
 ### 6.3 Mots de passe
 
-- **Règles** (specs, partagées avec le front) : 12 à 128 caractères, aucune règle de composition.
+- **Règles** (specs, partagées avec le front) : 12 à 128 caractères, aucune règle de composition. Normalisé en NFC (front et serveur) avant le contrôle de longueur et le hash.
 - **Barre de force** : petite fonction testée, sans bibliothèque : longueur, variété des caractères, répétitions (`aaaa`), suites (`1234`, `abcd`), rangées de clavier (`azerty`, `qwerty`). Indicative, elle ne bloque rien. Un « ? » à côté explique sa limite : elle surestime un mot du dictionnaire maquillé (`P@ssw0rd!`).
 - **Jamais le même** : changer son mot de passe (profil ou mot de passe oublié) pour le mot de passe actuel est refusé (`400` `PASSWORD_UNCHANGED`).
-- **Hash** : `argon2id` natif, asynchrone, minimum OWASP (19 Mio, 2 passes, parallélisme 1) ; 2 hashs simultanés au plus, les autres attendent.
+- **Hash** : `argon2id` natif, asynchrone, minimum OWASP (19 Mio, 2 passes, parallélisme 1) ; 2 hashs simultanés au plus, 20 en attente au plus ; au-delà, `503` `AUTH_BUSY` + `Retry-After`.
 - **Format auto-descriptif** : algorithme et paramètres dans la chaîne stockée, séparés par `:`, sans `$` (la console garde son hash dans `.env.prod`). Si les paramètres montent, chaque mot de passe est refait à la connexion suivante de son propriétaire (c'est le seul moment où le serveur le connaît) ; les anciens hashs restent valables d'ici là.
 - **Comparaison à temps constant** ; **hash factice** pour un identifiant inconnu (même délai qu'un mauvais mot de passe).
 
@@ -256,22 +257,22 @@ Une nouvelle inscription avec la même adresse remplace le parcours en attente :
 
 - **Page** : identifiant (email ou pseudo ; un pseudo ne contient jamais `@`), mot de passe, case « Se souvenir de moi », lien « Recevoir un lien de connexion par mail » et lien « Mot de passe oublié ».
 - **Par mot de passe** : sans 2FA, session immédiate. Avec 2FA, `auth_flow` `login` à l'étape `second_factor` : l'utilisateur choisit un TOTP, un code reçu par mail ou un code de secours. Aucune session avant la fin.
-- **Par mail** : email ou pseudo → mail (lien + code) → TOTP s'il existe (le mail remplace le mot de passe, jamais le TOTP).
-- **Méthodes** : choisies dans le profil, « Je préfère pouvoir me connecter : Par mail / Par mon pseudo (et mot de passe) / Les deux » (défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans mail pour le lien.
+- **Par mail** : email ou pseudo → mail (lien + code) → TOTP ou code de secours si un TOTP existe (le mail remplace le mot de passe, jamais le TOTP). Le code par mail n'y est jamais proposé comme second facteur : la boîte vient d'être prouvée. Si le seul facteur est le mail, rien de plus n'est demandé : il ne protège que d'un mot de passe volé.
+- **Méthodes** : choisies dans le profil, « Je préfère pouvoir me connecter : Par mail / Par mon pseudo (et mot de passe) / Les deux » (défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans mail pour le lien. « Par mail » seulement : le mot de passe reste exigé pour les actions sensibles (§6.6) ; oublié, il se refait par « Mot de passe oublié », toujours ouvert.
 - **Échec** : même message pour un identifiant inconnu et un mauvais mot de passe.
 - **Déjà connecté** : la page de connexion redirige vers le profil ou la page demandée ; une nouvelle connexion dans le même navigateur supprime l'ancienne session.
 - `last_login_at` à chaque connexion ; `last_seen_at` avec la session.
 
 ### 6.5 Mot de passe oublié
 
-Email ou pseudo → réponse neutre → mail (lien + code) à l'adresse du compte, jamais affichée → TOTP ou code de secours s'il existe (comme GitHub, et comme le recommande OWASP : sinon, une boîte mail compromise suffit à contourner la 2FA) → nouveau mot de passe, deux fois, différent de l'actuel → toutes les sessions supprimées → connecté.
+Email ou pseudo → réponse neutre → mail (lien + code) à l'adresse du compte, jamais affichée → TOTP ou code de secours si un TOTP existe, jamais le code par mail (comme GitHub, et comme le recommande OWASP : sinon, une boîte mail compromise suffit à contourner la 2FA) → nouveau mot de passe, deux fois, différent de l'actuel → toutes les sessions supprimées → connecté.
 
 ### 6.6 Profil
 
 Page `/auth/profile` :
 
 - **Identité** : pseudo (définitif), pseudo affiché (modifiable, vide = pseudo), email.
-- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne.
+- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne. Adresse déjà inscrite : même réponse, et le mail à cette adresse dit qu'un autre compte a voulu la prendre, sans lien ni code. Prise entre la demande et la validation : `409` `EMAIL_TAKEN`.
 - **Mot de passe** : ancien + nouveau deux fois, différent de l'ancien ; toutes les autres sessions supprimées.
 - **Sécurité** : facteurs de 2FA, codes de secours, méthodes de connexion (§6.4).
 - **Sessions actives** (§6.8).
@@ -281,8 +282,8 @@ Page `/auth/profile` :
 ### 6.7 Double authentification
 
 - **Par mail** : un code (+ lien) après le mot de passe. Activation confirmée par un premier code.
-- **TOTP** : secret généré par le serveur ; QR code (`otpauth://`, émetteur « Citadel », email en libellé) généré **dans le navigateur**, plus la clé à saisir à la main. L'utilisateur nomme chaque facteur et peut en avoir plusieurs ; activation après un premier code valide. SHA-1, 6 chiffres, 30 s, ±1 pas. Anti-rejeu : un code accepté ne peut pas resservir, même pendant ses 30 à 90 secondes de validité. Secret chiffré en AES-256-GCM, avec la version de la clé.
-- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères (groupes de 5), hachés. Affichés une seule fois : « Sauvegarde-les en lieu sûr : tu ne pourras plus jamais les revoir ici. », avec téléchargement en texte. Régénérables avec le mot de passe, ce qui invalide les anciens ; le profil affiche le nombre restant.
+- **TOTP** : secret généré par le serveur ; QR code (`otpauth://`, émetteur « Citadel », email en libellé) généré **dans le navigateur**, plus la clé à saisir à la main. L'utilisateur nomme chaque facteur et peut en avoir plusieurs ; activation après un premier code valide. SHA-1, 6 chiffres, 30 s, ±1 pas. Anti-rejeu : un code accepté ne peut pas resservir, même pendant ses 30 à 90 secondes de validité. Secret chiffré en AES-256-GCM, avec la version de la clé et l'identifiant du facteur en donnée associée (AAD). Rotation : nouvelle clé et nouvelle version, l'ancienne gardée dans `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY` ; chaque secret est rechiffré à son prochain usage.
+- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères en Base32 (groupes de 5), hachés. Affichés une seule fois : « Sauvegarde-les en lieu sûr : tu ne pourras plus jamais les revoir ici. », avec téléchargement en texte. Régénérables avec le mot de passe, ce qui invalide les anciens ; le profil affiche le nombre restant.
 - **Gestion** : liste (nom, type, création, dernier usage), ajout, suppression confirmée par le mot de passe. Supprimer le dernier facteur désactive la 2FA et supprime les codes de secours.
 
 ### 6.8 Sessions actives et déconnexion
@@ -308,8 +309,8 @@ Page `/auth/profile` :
 
 - `protected` (specs) est lu par le routeur typé du serveur : `true` → session exigée (`401` sinon, ajouté tout seul aux erreurs possibles de l'endpoint), et le contrôleur reçoit l'identifiant de l'utilisateur.
 - Chaque service et chaque requête sur une table d'utilisateur filtre par `user_id`. La ressource d'un autre utilisateur répond `404`. `user_id` vient toujours de la session, jamais du corps.
-- **Accès des projets** (`ProjectDictionary`) : Homepage, Satisfactory et Angers Irigo publics ; Game Death Counter et Backlog privés. Un projet privé renvoie un visiteur non connecté vers `/auth/login?redirect=…`, puis le ramène.
-- **État connecté** : `useQuery` sur `GET /auth/me` (clé `["auth", "me"]`, `staleTime` de 30 s). Son `401` veut dire « pas connecté ». Un `401` sur toute autre requête vide le cache et redirige vers la connexion (`onError` des caches de requêtes et de mutations).
+- **Accès des projets** (`ProjectDictionary`) : Homepage, Satisfactory et Angers Irigo publics ; Game Death Counter et Backlog privés, tous leurs endpoints `protected` (IGDB compris : son quota est partagé par tous les inscrits). Un projet privé renvoie un visiteur non connecté vers `/auth/login?redirect=…`, puis le ramène.
+- **État connecté** : `useQuery` sur `GET /auth/me` (clé `["auth", "me"]`, `staleTime` de 30 s). Son `401` veut dire « pas connecté ». Un `401` `AUTHENTICATION_REQUIRED` sur toute autre requête (jamais `INVALID_CREDENTIALS`, qui reste une erreur de formulaire) vide le cache et redirige vers la connexion (`onError` des caches de requêtes et de mutations).
 - Erreurs : `authErrorReasons` et `checkInput` avec les schémas zod partagés.
 
 ### 6.12 Endpoints
@@ -327,12 +328,12 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `POST /auth/logout` | `204`, idempotent |
 | `GET /auth/me`, `PATCH /auth/me` | Qui suis-je ; pseudo affiché, méthodes de connexion |
 | `POST /auth/me/password`, `POST /auth/me/email` | Mot de passe ; changement d'email |
-| `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions` | Sessions |
+| `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions`, `DELETE /auth/sessions/others` | Sessions ; tout ; tout sauf ici |
 | `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA |
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
 | `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions |
 
-Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `FLOW_EXPIRED`…), `409` (`USERNAME_TAKEN`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`).
+Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `FLOW_EXPIRED`…), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`).
 
 ---
 
@@ -342,12 +343,12 @@ Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `4
 
 | Menace | Parade |
 |---|---|
-| Brute force sur un compte | 2 s entre deux essais, bannissement temporaire après 15 échecs (§7.3) |
+| Brute force sur un compte | 2 s entre deux essais, bannissement temporaire après 15 échecs, second facteur compris (§7.3) |
 | Un mot de passe essayé sur beaucoup de comptes | Compteur par IP, puis bannissement temporaire |
 | Verrouillage malveillant d'un compte | Le bannissement vise le couple compte + IP : un inconnu ne bloque pas ton compte |
-| Énumération des comptes | Réponses et délais identiques, hash factice, inscription et mot de passe oublié neutres. Les pseudos, eux, sont publics par nature |
+| Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos, eux, sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
-| Spam d'envoi de mails | Délai de renvoi, limites par adresse et par IP (sinon la réputation du domaine d'envoi est ruinée) |
+| Spam d'envoi de mails, quota du site épuisé | Délai de renvoi, limites par adresse (comptée en minuscules : les messageries ignorent la casse) et par IP (20 par heure, 40 par jour), seuils du quota (cahier de l'hébergement, §2) |
 | Rejeu d'un code ou d'un lien | Usage unique, durée courte, essais limités, lien lié au navigateur |
 | Vol de session | Cookie `HttpOnly`/`Secure`, CSP, sessions révocables |
 | CSRF | `SameSite=Lax`, `Origin`, `GET` sans effet |
@@ -356,11 +357,12 @@ Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et p
 
 ### 7.2 IP réelle
 
-Caddy ne croit déjà `CF-Connecting-IP` que venant de Cloudflare (`trusted_proxies cloudflare`). Il **écrase** en plus un en-tête dédié avec l'IP validée (`header_up X-Real-IP {client_ip}` dans `handle_path /api/*`) ; le serveur, joignable seulement par Caddy, ne lit que cet en-tête. Vérifié en `prod:local` (Caddy → serveur), puis une fois en prod (Cloudflare → Caddy). En IPv6, le bannissement vise le `/64`.
+Faite avec le formulaire de contact : Caddy écrase `X-Real-IP`, le serveur ne lit que lui (`realClientIp`). Reste : en IPv6, le bannissement vise le `/64`.
 
 ### 7.3 Délai et bannissement
 
 - Succès : immédiat, compteur remis à zéro. Échec : `401`, puis aucun nouvel essai sur ce compte avant 2 s. Après 15 échecs depuis la même IP sur le même compte : 15 minutes de `429` pour ce couple. Compteur remis à zéro après un succès ou 15 minutes de calme. Pendant un délai : `429` + `Retry-After` ; bouton désactivé avec compte à rebours.
+- Les échecs de l'étape « second facteur » (TOTP, code par mail, code de secours) comptent comme ceux du mot de passe, pour le compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus.
 - Bannissement d'IP : 20 échecs en 10 minutes ou plus de 3 inscriptions par heure → 15 minutes de `429`.
 - Compteurs en mémoire (une seule instance) : remis à zéro à chaque déploiement.
 
@@ -378,7 +380,10 @@ Jamais de mot de passe, jeton, code, lien ni secret TOTP dans un log, un message
 
 ### 8.1 Envoi
 
-- **Fournisseur, adresse `noreply`, DNS, expéditeur réel, en mémoire ou « journal »** : construits avant ce chantier, pour le formulaire de contact ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2, §5 et §6). Ce chantier n'y ajoute que ses gabarits (§8.3).
+- **Fournisseur, adresse `noreply`, DNS, expéditeur réel, en mémoire ou « journal »** : construits avant ce chantier, pour le formulaire de contact ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2, §5 et §6). Ce chantier y ajoute ses gabarits (§8.3), un `MailKindEnum` par mail (envoi et échecs par `mailService` et `mailing_failure`) et les règles ci-dessous.
+- **Après la réponse** : les mails des réponses neutres (inscription, connexion par mail, mot de passe oublié, changement d'email) partent une fois la réponse envoyée, sans être attendus. Ni la durée ni un échec ne disent si le compte existe ; un échec va dans `mailing_failure` et les logs, jamais au visiteur.
+- **Quota épuisé** (`isSendingOpen` faux) : connexion par mail, mot de passe oublié, changement d'email et activation du facteur mail répondent `403` `MAIL_CLOSED` (« Plus aucun mail ne part aujourd'hui, réessaie demain. »), pour tout le monde. À l'étape « second facteur », le code par mail est grisé ; TOTP et codes de secours restent.
+- **Brevo** (offre gratuite) ajoute un pixel d'ouverture et réécrit les liens par `r.mail.` : il voit passer les liens, sans effet grâce au lien lié au navigateur et au clic de confirmation (§6.1).
 
 ### 8.2 Réception : `contact@`
 
@@ -386,7 +391,7 @@ Mise en place avant ce chantier ([cahier de l'hébergement](../ci_cd/cahier_des_
 
 ### 8.3 Mails
 
-HTML et texte brut, en français, gabarit minimal : code en gros, lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore ce mail ». Le thème viendra plus tard (`docs/TODO.md`).
+HTML et texte brut, en français, mise en page de `buildMailBodies` : plusieurs phrases de vrai texte (délivrabilité, cahier de l'hébergement §2), une brique « code en gros » à ajouter, lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore ce mail ». Chaque gabarit a sa story dans le Storybook (`src/mailPreview`).
 
 | Mail | Contenu |
 |---|---|
@@ -395,7 +400,7 @@ HTML et texte brut, en français, gabarit minimal : code en gros, lien, durée d
 | Mot de passe oublié | Lien + code |
 | Connexion par mail | Lien + code |
 | Second facteur par mail, activation du facteur mail | Code + lien |
-| Changement d'email | Lien + code à la nouvelle adresse ; notification à l'ancienne |
+| Changement d'email | Lien + code à la nouvelle adresse ; notification à l'ancienne. Adresse déjà inscrite : « un autre compte a voulu prendre cette adresse », sans lien ni code |
 | Notifications | Mot de passe changé, email changé, 2FA ajoutée ou retirée, compte supprimé |
 
 ---
@@ -404,7 +409,7 @@ HTML et texte brut, en français, gabarit minimal : code en gros, lien, durée d
 
 ### 9.1 Un seul endroit
 
-Toutes les durées et tous les seuils sont des variables d'environnement, déclarées une seule fois dans la section `auth` de `env.ts` (zod), avec leur valeur par défaut. Le code n'y accède que par `authSettings`. `.env.example` les liste toutes avec leur valeur (rien de sensible) ; `.env.test` raccourcit les durées utiles aux tests. Le front ne les connaît pas : le serveur lui renvoie `expiresAt` et `retryAfter`.
+Toutes les durées et tous les seuils sont des variables d'environnement, déclarées une seule fois dans la section `auth` de `env.ts` (zod), avec leur valeur par défaut. Le code n'y accède que par `authSettings`. `.env.example` les liste toutes avec leur valeur (rien de sensible) ; `.env.test` raccourcit les durées utiles aux tests. Le front ne les connaît pas : le serveur lui renvoie `expiresAt` et `retryAfter`. Les réglages des mails suivent la même règle dans leur section `mail` (§9.2).
 
 Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code) vivent dans les schémas zod de `packages/specs`.
 
@@ -426,7 +431,7 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_CODE_MAX_ATTEMPTS` | 5 |
 | `AUTH_MAIL_RESEND_SECONDS` | 60 |
 | `AUTH_MAILS_PER_ADDRESS_PER_HOUR` | 5 |
-| `AUTH_MAILS_PER_IP_PER_HOUR` | 20 |
+| `AUTH_MAILS_PER_IP_PER_HOUR`, `AUTH_MAILS_PER_IP_PER_DAY` | 20, 40 |
 | `AUTH_FAILURE_DELAY_SECONDS` | 2 |
 | `AUTH_ACCOUNT_FAILURES_BEFORE_BAN` | 15 |
 | `AUTH_ACCOUNT_BAN_MINUTES` | 15 |
@@ -436,16 +441,28 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_IP_BAN_MINUTES` | 15 |
 | `AUTH_REGISTRATIONS_PER_IP_PER_HOUR` | 3 |
 | `AUTH_ARGON2_MEMORY_KIB`, `AUTH_ARGON2_PASSES`, `AUTH_ARGON2_PARALLELISM` | 19456, 2, 1 |
-| `AUTH_HASH_CONCURRENCY` | 2 |
+| `AUTH_HASH_CONCURRENCY`, `AUTH_HASH_QUEUE_MAX` | 2, 20 |
 | `AUTH_TOTP_ISSUER` | `Citadel` |
 | `AUTH_TOTP_DRIFT_STEPS` | 1 |
 | `AUTH_RECOVERY_CODES_COUNT` | 10 |
-| `AUTH_EVENT_RETENTION_DAYS`, `ERROR_LOG_RETENTION_DAYS` | 90 |
+| `AUTH_EVENT_RETENTION_DAYS`, `ERROR_LOG_RETENTION_DAYS` | 20 |
+| `AUTH_RESTORE_JOURNAL_DAYS` | 70 |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |
+
+Mails (section existante, valeurs écrites et non plus commentées dans `.env.example` et `.env.test`) :
+
+| Variable | Valeur |
+|---|---|
+| `MAIL_REGISTRATION_STOP`, `MAIL_CONTACT_STOP`, `MAIL_DAILY_LIMIT` | 250, 280, 300 (existent déjà) |
+| `CONTACT_HOURLY_LIMIT_PER_IP` | 5 (existe déjà) |
+| `BREVO_DAILY_CREDITS` | 300 (crédits de l'offre gratuite, en dur dans `brevoClient.ts`) |
+| `MAIL_QUOTA_READING_SECONDS` | 60 (relevé du compteur de Brevo, en dur dans `createMailQuota.ts`) |
+| `MAIL_FAILURE_RETENTION_DAYS` | 90 (en dur dans `createMailFailureQuery.ts`) |
+| `MAIL_FAILURE_WINDOW_DAYS` | 7 (échecs résumés pour la console, en dur dans `mailService.ts`) |
 
 ### 9.3 Secrets (`.env.prod` + Bitwarden, créés avant d'être écrits)
 
-`AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version. Valeurs quelconques dans `.env.test`. La clé du fournisseur de mails existe déjà (cahier de l'hébergement). Chaque variable va dans `.env.example` (bonne section, `[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`).
+`AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version ; `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY`, vide hors rotation (§6.7). Valeurs quelconques dans `.env.test`. La clé du fournisseur de mails existe déjà (cahier de l'hébergement). Chaque variable va dans `.env.example` (bonne section, `[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`).
 
 ---
 
@@ -464,10 +481,11 @@ Aucune donnée personnelle temporaire ou supprimée ne survit plus de **3 mois**
 | Email, pseudo, pseudo affiché, hash du mot de passe, dates de connexion, facteurs 2FA, codes de secours | Tant que le compte existe |
 | Sessions (empreinte, user agent, IP tronquée, dates) | 30 jours au plus, puis purge |
 | Parcours (`auth_flow`) | Quelques minutes, puis purge |
-| `auth_event`, `error_log` | 90 jours |
+| `auth_event` (IP tronquée), `error_log` | 20 jours : avec les 10 semaines des sauvegardes, moins de 3 mois |
 | Logs de Caddy et des conteneurs | 90 jours (job `log-retention` d'`infra/citadel`) |
 | Sauvegardes de la base | Moins de 10 semaines (rétention dans `infra/citadel`) |
-| Journal des comptes supprimés (identifiant, date) | 90 jours |
+| Journal de restauration (§10.5) | 10 semaines, l'âge de la plus vieille sauvegarde |
+| Mails chez Brevo (adresse, objet, ouvertures) | Durée de ses journaux, vérifiée avant la release (§15) |
 | Données des projets | Tant que le compte existe |
 
 Les fichiers dérivés (historiques déposés pour la console) suivent la même règle.
@@ -486,20 +504,22 @@ Les lignes directrices de la CNIL (délibération n° 2020-091) dispensent de co
 | Cookie de parcours | Étape en cours d'une inscription, d'une connexion, etc. |
 | `localStorage` : thème clair ou sombre, favoris et réglages d'Angers Irigo, colonnes du Backlog, bandeau du site fermé | Choix d'interface de l'utilisateur |
 | `sessionStorage` : champs d'un parcours en cours ; intro déjà vue | Reprise après rechargement ; intro jouée une fois par session |
+| Pixel d'ouverture de Brevo dans les mails (« suivi anonyme ») | Statistiques d'envoi du fournisseur |
 
-Tous dispensés de bandeau, à condition d'être décrits dans « Données personnelles ». Une étape de la roadmap vérifie ce point sur le site de la CNIL avant la release, ainsi que l'absence de cookie ajouté par Cloudflare hors sécurité [nous].
+Tous dispensés de bandeau, à condition d'être décrits dans « Données personnelles ». Une étape de la roadmap vérifie ce point sur le site de la CNIL avant la release, ainsi que l'absence de cookie ajouté par Cloudflare hors sécurité et la position de la CNIL sur les pixels dans les mails : si elle exige un consentement, Brevo est remplacé [nous].
 
 ### 10.5 Sauvegardes et restauration
 
 - **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
 - **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur, lancée avec la date de la sauvegarde :
-  - **rejouer les suppressions** : les comptes supprimés après la date de la sauvegarde sont supprimés de nouveau, d'après un journal en lignes JSON (identifiant, date) tenu dans un volume du serveur, hors de la base (sinon il serait restauré avec elle), purgé à 90 jours ;
+  - **le journal** : lignes JSON (identifiant du compte, action, date ; nouvelle adresse pour un changement d'email) pour chaque suppression de compte ou des données d'un projet, changement d'email et changement de sécurité (mot de passe, facteur, codes de secours). Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/` (donc dans `config-backup`), purgé à 10 semaines ;
+  - **rejouer le journal** après la date de la sauvegarde : suppressions refaites, changements d'email remis ; un compte qui a changé sa sécurité voit son mot de passe invalidé (à refaire par « Mot de passe oublié ») ;
   - **vider toutes les sessions et tous les parcours** : sinon, une session révoquée après la sauvegarde redevient valide.
-- **Bandeau** : le message automatique de restauration gagne la phrase « Si tu as changé de mot de passe ou d'email pendant cette période, refais-le. »
+- **Bandeau** : le message automatique de restauration gagne la phrase « Si tu as changé de mot de passe ou de double authentification pendant cette période, passe par « Mot de passe oublié ». »
 
 ### 10.6 Pages légales
 
-- « Données personnelles » : données des comptes, finalités, durées (§10.2) et règle des 3 mois, IP tronquées dans les sessions, sauvegardes, droits (export et suppression en libre-service, plus `contact@`), cookies et stockage (§10.4).
+- « Données personnelles » : responsable du traitement (toi, joignable par `contact@`) ; données des comptes, finalités et bases légales (exécution du service ; intérêt légitime pour la sécurité et les journaux) ; durées (§10.2) et règle des 3 mois ; IP tronquées dans les sessions et `auth_event` ; sauvegardes ; sous-traitants (Brevo, en France ; Cloudflare, aux États-Unis, sous le cadre de transfert UE–États-Unis) ; droits (export et suppression en libre-service, plus `contact@`) et réclamation auprès de la CNIL ; cookies, stockage et pixel (§10.4).
 - Pas de conditions d'utilisation pour l'instant.
 
 ---
@@ -514,18 +534,18 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 | Specs communes | `packages/specs/src/specUtils/` | `ApiPrefixEnum.AUTH`, `429`, `protected` lu par le serveur |
 | Serveur | `apps/server/src/projects/auth/` | `router.ts`, `controller/`, `service/`, `query/`, `models/`, `bean/`, `mapper/`, `integrationTest/` |
 | Serveur, transverse | `middleware/`, `error/`, `configuration/env.ts` | `requireSession`, IP réelle, `Origin` ; erreurs 401, 403, 429 ; section `auth` |
-| Migrations | `apps/server/src/sql/migrations/V011__…` et suivantes | Tables `auth_*`, `user_id` des projets |
+| Migrations | `apps/server/src/sql/migrations/V013__…` et suivantes | Tables `mailing_*` renommées, tables `auth_*`, `user_id` des projets |
 | Front | `apps/client/src/projects/auth/` | `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/verify`, `/auth/profile` ; `useMe` ; `authErrorReasons.ts`, `authFieldLabels.ts` |
 | Front, transverse | `react/appNavigation/`, homepage, Backlog, GDC | `ProjectsEnum.Auth` (thème de la homepage, `showcase: null`), accès de chaque projet, gestion du `401`, bouton du header, icône de profil ; plus de faux `Bearer` |
 
 ### 11.2 Code Node partagé : `packages/common/src/node/`
 
-Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintConfigCommon.js`), interdit aux dossiers du navigateur. Contenu : hash et vérification de mot de passe, comparaison à temps constant, jeton aléatoire, empreintes. Ce qui ne sert qu'au serveur (TOTP, chiffrement, parcours) reste dans le serveur. La console passe au même `argon2id` : `ADMIN_PASSWORD_HASH` à régénérer (`citadel admin-password`).
+Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintConfigCommon.js`), interdit aux dossiers du navigateur. Contenu : hash et vérification de mot de passe, comparaison à temps constant, jeton aléatoire (la console en tire déjà dans `sessionStore` et `newRequestId`), empreintes. Les fonctions pures en double entre la console et le serveur vont, elles, dans `src/universal/` : `fetchWithTimeout` (console, clients Brevo et IGDB), limiteur en mémoire à fenêtre glissante (`loginThrottle` de la console, limiteur du formulaire de contact, limiteurs de l'auth), contrôle d'origine (`requireSameOrigin` de la console, §4.2), `getParisDay` et `daysBefore` (mails). Chacune avec ses tests unitaires. Ce qui ne sert qu'au serveur (TOTP, chiffrement, parcours) reste dans le serveur. La console passe au même `argon2id` : `ADMIN_PASSWORD_HASH` à régénérer (`citadel admin-password`).
 
 ### 11.3 Bibliothèques
 
-- **Natif** : `crypto.argon2`, `randomBytes`, `randomInt`, `createHash`, `createHmac`, `timingSafeEqual`, `createCipheriv` (AES-256-GCM) ; TOTP (RFC 6238, testé avec ses vecteurs officiels) et Base32 écrits à la main ; `readCookieValue` + `response.cookie` ; `fetch` vers le fournisseur de mails ; CSV et ZIP sans compression (`zlib.crc32`).
-- **Une bibliothèque** : QR code côté front, petite et sans dépendance. `nodemailer` seulement si le fournisseur n'a pas d'API HTTP.
+- **Natif** : `crypto.argon2`, `randomBytes`, `randomInt`, `createHash`, `createHmac`, `timingSafeEqual`, `createCipheriv` (AES-256-GCM) ; TOTP (RFC 6238, testé avec ses vecteurs officiels) et Base32 écrits à la main ; `readCookieValue` + `response.cookie` ; CSV et ZIP sans compression (`zlib.crc32`).
+- **Une bibliothèque** : QR code côté front, petite et sans dépendance.
 
 ---
 
@@ -533,26 +553,20 @@ Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintCo
 
 ### 12.1 Ordre
 
-Après les mails du cahier de l'hébergement, sur une branche dédiée :
+Après les mails du cahier de l'hébergement, sur une branche dédiée, en trois parties puis la release :
 
-1. **Prérequis** : `packages/common/src/node` ; erreur 401 (IP réelle, `403`, `429` et `Retry-After` jusqu'à `ApiError` faits avec le formulaire de contact) ; suppression de `POST /error-log/entries` et de `todo_folder`.
-2. **Base** : tables `auth_*` ; `user_id` et cascades des projets.
-3. **Socle serveur** : `authSettings`, hash, sessions, `requireSession` piloté par `protected`, filtrage par `user_id` dans tous les services de GDC et du Backlog (avec leurs tests), purges, `auth_event`, limiteurs.
-4. **Mail** : fournisseur, DNS, expéditeur réel et simulé, gabarits minimaux.
-5. **Parcours** : `auth_flow`, inscription, connexion (mot de passe, mail), déconnexion, `me`, mot de passe oublié.
-6. **2FA** : TOTP, mail, codes de secours.
-7. **Profil** : identité, mot de passe, email, sessions, export, suppressions.
-8. **Front** : projet `auth`, accès des projets, gestion du `401`, header de la homepage, icônes de profil, avertissement de déconnexion. (En pratique, chaque parcours se fait serveur puis front.)
-9. **RGPD** : pages légales, commande après restauration et phrase du bandeau, vérification CNIL.
-10. **Recette et release** : critères §12.2 en `prod:local`, fusion de la branche, `pnpm release`.
+1. **Fondations** : nettoyage, `packages/common/src/node`, tables `auth_*`, socle serveur (sessions, `protected`, purges, `auth_event`, limiteurs). Rien de visible ; les projets existants marchent comme avant.
+2. **Mise en place** : mails, parcours, 2FA, profil, chacun serveur puis front. L'authentification marche seule ; GDC et Backlog restent publics.
+3. **Correctifs** : l'existant passe aux comptes. Migration `user_id` et services filtrés dans le même commit, projet par projet ; accès des projets et `401` côté front ; données des projets dans l'export et les suppressions ; header et icônes ; restauration ; pages légales ; revue de sécurité.
+4. **Recette et release** : critères §12.2 en `prod:local`, fusion de la branche, `pnpm release`.
 
 ### 12.2 Critères de fin
 
-Tests d'intégration sur la vraie MariaDB de test (expirations comprises : dates calculées par Node, jamais par `NOW()` en SQL, et horloge avancée par Vitest), plus un passage manuel en `pnpm prod:local` :
+Tests unitaires pour chaque fonction pure (serveur, `packages/common`, front), tests d'intégration sur la vraie MariaDB de test pour chaque endpoint, chaque cas d'erreur et chaque migration (expirations comprises : dates calculées par Node, jamais par `NOW()` en SQL, et horloge avancée par Vitest), plus un passage manuel en `pnpm prod:local` :
 
-1. Inscription : aucune ligne `auth_user` avant confirmation ; lien et code marchent ; une adresse déjà inscrite reçoit le bon mail ; écran identique dans les deux cas ; parcours refusé puis purgé après le délai ; disponibilité du pseudo exacte.
-2. Connexion : identifiant inconnu et mauvais mot de passe donnent le même `401`, le même message, des délais comparables ; 2FA exigée quand elle existe ; la connexion par mail ne contourne pas le TOTP.
-3. Délai et bannissement : `429` + `Retry-After` ; 2 s entre deux essais ; couple compte + IP banni après 15 échecs, compte toujours ouvert depuis une autre IP ; mot de passe correct de nouveau accepté après l'attente ; compteur par IP ; `/64` en IPv6.
+1. Inscription : aucune ligne `auth_user` avant confirmation ; `Alex` et `alex`, `jose@` et `josé@` acceptés ensemble, `Alex@` refusé après `alex@` ; pseudo hors `A-Z a-z 0-9 _ -` refusé ; lien et code marchent ; une adresse déjà inscrite reçoit le bon mail ; écran identique dans les deux cas ; parcours refusé puis purgé après le délai ; disponibilité du pseudo exacte.
+2. Connexion : identifiant inconnu et mauvais mot de passe donnent le même `401`, le même message, des délais comparables ; 2FA exigée quand elle existe ; ni la connexion par mail ni le mot de passe oublié ne contournent le TOTP, et le code par mail n'y est jamais proposé.
+3. Délai et bannissement : `429` + `Retry-After` ; 2 s entre deux essais ; couple compte + IP banni après 15 échecs, compte toujours ouvert depuis une autre IP ; mot de passe correct de nouveau accepté après l'attente ; compteur par IP ; `/64` en IPv6 ; les échecs du second facteur comptés aussi.
 4. Parcours : un rechargement reprend à la bonne étape ; un lien ouvert dans un autre navigateur est refusé ; la page d'arrivée exige un clic ; un code ne sert qu'une fois.
 5. Cookie en `prod:local` : `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, pas de `Domain`, préfixe `__Host-`.
 6. Aucun mot de passe, jeton, code ni secret en clair en base, dans les logs ou dans `error_log`.
@@ -562,9 +576,10 @@ Tests d'intégration sur la vraie MariaDB de test (expirations comprises : dates
 10. Isolation : jamais d'accès aux données d'un autre (`404`) ; tous les endpoints `protected` renvoient `401` sans session.
 11. Suppression du compte et des données d'un projet : plus aucune ligne concernée. Export : toutes les lignes, aucun secret.
 12. IP réelle : celle du client.
-13. Mails en boîte de réception chez Gmail et Outlook.
-14. Restauration en `prod:local` : suppressions rejouées, sessions vidées, bandeau affiché avec sa phrase.
+13. Mails en boîte de réception chez Gmail et Outlook ; au moins 7/10 sur mail-tester.
+14. Restauration en `prod:local` : suppressions et changements d'email rejoués, mot de passe invalidé après un changement de sécurité, sessions vidées, bandeau affiché avec sa phrase.
 15. `pnpm validate-all` passe (types, lint, tests, builds, audit).
+16. Quota : 40 mails par IP et par jour au plus ; quota épuisé, `MAIL_CLOSED`, inscriptions fermées et code par mail grisé ; mails des réponses neutres envoyés après la réponse, sans erreur visible en cas d'échec.
 
 ---
 
@@ -573,12 +588,12 @@ Tests d'intégration sur la vraie MariaDB de test (expirations comprises : dates
 Hors de la définition de « fini » :
 
 - **Console, en lecture seule** : comptes (métadonnées, jamais un secret), IP bannies, événements de sécurité ; compte MariaDB limité ou API interne, jamais depuis Internet. Les compteurs de bannissement passeraient alors en base.
-- **Turnstile et limitation de débit de Cloudflare, CrowdSec** : si des abus apparaissent.
+- **Turnstile et limitation de débit de Cloudflare, CrowdSec** : si des abus apparaissent ; Turnstile sur les formulaires qui envoient un mail dès qu'un robot épuise le quota.
 - **Complétion de profil** : `missingFields` dans `GET /auth/me` quand un champ obligatoire s'ajoutera ; `terms_accepted_version` si des conditions d'utilisation arrivent.
 - **File d'envoi des mails** en base, si l'envoi pendant la requête pose problème.
 - **Notification « nouvelle connexion »**.
 - **Remontée des plantages du front**, protégée par session et limitée par IP, si le besoin apparaît.
-- Dans `docs/TODO.md` : thème des mails ; `pnpm audit` et `pnpm outdated` dans la console.
+- Dans `docs/TODO.md` : `pnpm audit` et `pnpm outdated` dans la console.
 
 ---
 
@@ -591,126 +606,147 @@ Hors de la définition de « fini » :
 | Mémoire du serveur | 2 hashs simultanés au plus |
 | Mails en indésirables | Fournisseur, SPF, DKIM, DMARC, tests Gmail et Outlook |
 | Spam d'envoi de mails | Limites par adresse et par IP |
+| Quota de 300 mails épuisé par quelques IP | 40 mails par IP et par jour, seuils et alertes du quota ; Turnstile si ça arrive (§13) |
+| Quota d'IGDB partagé | Endpoints IGDB réservés aux connectés |
 | Lien de connexion détourné | Lien lié au navigateur, clic de confirmation |
 | Données personnelles dans les logs | Hygiène, purges |
-| Restauration qui ressuscite comptes ou sessions | Rejeu des suppressions, sessions vidées, bandeau |
+| Restauration qui ressuscite comptes, données, sessions ou anciens mots de passe | Rejeu du journal, mots de passe invalidés, sessions vidées, bandeau |
 | Calibrage des valeurs | Variables d'environnement, ajustables sans release |
 
 ---
 
 ## 15. Roadmap
 
-Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce qui prouve que l'étape est finie, en plus des tests.
+Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'intégration (§12.2) ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce que les tests doivent prouver en plus. Avant la recette visuelle (étape 71), j'enchaîne sans test de ta part : les tests font foi. Trois parties (§12.1) : les **fondations**, puis la **mise en place** de l'authentification, seule, puis les **correctifs** qui font passer l'existant aux comptes ; enfin la recette et la release.
+
+**Modèle de Claude Code**, effort medium, une session par phase :
+
+- **Opus 5.5** : phases 0 à 3, 5, 6, 8 et 9 (sécurité, données, parcours) ;
+- **Sonnet 5.5** : phases 4, 7 et 10 (gabarits, profil sur un socle déjà testé, docs), suivies d'une revue par Opus (`/code-review` sur le diff de la phase).
+
+### Partie A — Fondations
 
 **Phase 0 — Départ**
 
-1. [nous] Mails de l'hébergement en place ; branche `feat/auth` depuis `main` à jour. Vérif : `pnpm validate-all`.
+1. [moi] Branche `feat/auth` depuis `main` à jour. Vérif : `pnpm validate-all`.
 2. [moi] Relecture du cahier contre le code du moment (écarts du §3.2, hook de `citadel restore-db`, bandeau) ; corrections du cahier si besoin, relues par toi.
 
 **Phase 1 — Nettoyage et socle transverse**
 
-3. [moi] Suppression de `apps/server/src/todo_folder/`.
-4. [moi] Suppression de `POST /error-log/entries` (endpoint, specs, tests) ; `logError` et `error_log` restent.
-5. [moi] `logError` n'enregistre jamais de corps de requête (§7.5).
-6. [moi] Front : faux `Authorization: Bearer` retiré du `fetchHandler`.
-7. [moi] Serveur : erreur 401 dans `AppError` et `globalErrorHandler` (`ForbiddenError` et `TooManyRequestsError` existent déjà).
-8. [moi] `packages/common/src/node/` et son bloc ESLint. Vérif : un import depuis le front échoue au lint.
-9. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant.
-10. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », 2 hashs simultanés au plus.
-11. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console en `prod:local` avec un nouveau hash.
-12. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
-13. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres.
-14. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées courtes, secrets de test) ; outil de test pour avancer l'horloge.
-15. [moi] Chiffrement AES-256-GCM avec version de clé.
+3. [moi] Suppression de `POST /error-log/entries` (endpoint, specs, tests) ; `logError` et `error_log` restent.
+4. [moi] `logError` n'enregistre jamais de corps de requête (§7.5).
+5. [moi] Front : faux `Authorization: Bearer` retiré du `fetchHandler`.
+6. [moi] Serveur : erreur 401 dans `AppError` et `globalErrorHandler` (`ForbiddenError` et `TooManyRequestsError` existent déjà).
+7. [moi] Migration V013 : `mail_failure` → `mailing_failure`, `contact_message_unsent` → `mailing_contact_message_unsent`, index compris ; modèles, `countTableRows`, tests, textes de la console, `infra/citadel`, cahier de l'hébergement. Non rétrocompatible : sort avec la release, dont le retour arrière passe déjà par `citadel restore-db pre-deploy` (étape 81). Vérif : en tests, la migration garde les lignes.
+8. [moi] Réglages des mails en variables (§9.2) : nouvelles variables dans `env.ts`, toutes écrites avec leur valeur dans `.env.example` et `.env.test`.
+9. [moi] `packages/common/src/node/` et son bloc ESLint. Dans `universal/`, les fonctions pures en double (§11.2) : `fetchWithTimeout`, limiteur à fenêtre glissante, contrôle d'origine, `getParisDay`, `daysBefore`, avec la console et le serveur passés dessus. Vérif : un import de `node/` depuis le front échoue au lint ; console et formulaire de contact se comportent comme avant, en tests.
+10. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant ; la console (`sessionStore`, `newRequestId`) passe sur le jeton commun.
+11. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », normalisation NFC, 2 hashs simultanés et 20 en attente au plus (`AUTH_BUSY`).
+12. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console avec un hash `argon2id`, en tests.
+13. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
+14. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres, avec la fonction commune de l'étape 9.
+15. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées courtes, secrets de test) ; outil de test pour avancer l'horloge.
+16. [moi] Chiffrement AES-256-GCM avec version de clé, identifiant en donnée associée, clé précédente pour la rotation (§6.7).
 
-**Phase 2 — Base de données**
+**Phase 2 — Base de l'authentification**
 
-16. [moi] Migration `auth_user`, collation de l'email. Vérif : `Alex@` et `alex@` refusés ensemble, `josé@` et `jose@` acceptés.
-17. [moi] Migrations `auth_session` et `auth_flow`.
-18. [moi] Migrations `auth_factor`, `auth_recovery_code`, `auth_event`.
-19. [moi] Modèles Sequelize des tables `auth_*`.
-20. [moi] Migration `user_id` de `gdc_game` (lignes existantes supprimées : rien à garder, §1.2) ; données de test GDC rattachées à un utilisateur.
-21. [moi] Migration `user_id` du Backlog (`backlog_user_game`, `backlog_user_version`, `backlog_series`) ; données de test rattachées.
+17. [moi] Migration `auth_user`, collations de l'email (`utf8mb4_uca1400_as_ci`) et du pseudo (`utf8mb4_bin`). Vérif : `Alex@` et `alex@` refusés ensemble, `josé@` et `jose@` acceptés ; `Alex` et `alex` acceptés, `Alex` en double refusé.
+18. [moi] Migrations `auth_session` et `auth_flow`.
+19. [moi] Migrations `auth_factor`, `auth_recovery_code`, `auth_event`.
+20. [moi] Modèles Sequelize des tables `auth_*`.
 
 **Phase 3 — Socle serveur**
 
-22. [moi] Projet `auth` : `ApiPrefixEnum.AUTH`, registre d'endpoints, `router.ts`, `AuthErrorCodeEnum`, `authErrorReasons` côté front.
-23. [moi] Service des sessions : création, lecture avec les trois expirations, prolongation toutes les 5 minutes, suppression.
-24. [moi] Cookie de session : nom, attributs, `Max-Age` selon « se souvenir de moi ».
-25. [moi] `protected` lu par le routeur typé : session exigée, `401` ajouté aux erreurs de l'endpoint, identifiant de l'utilisateur passé au contrôleur.
-26. [moi] `GET /auth/me` et `POST /auth/logout`. Vérif : critère 7.
-27. [moi] GDC, jeux : endpoints `protected`, filtrage par `user_id`, `404` chez un autre.
-28. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
-29. [moi] Backlog, jeux suivis et versions : `protected`, filtrage par `user_id`.
-30. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
-31. [moi] Purges : parcours et sessions toutes les 15 minutes, `auth_event` et `error_log` à 90 jours chaque jour.
-32. [moi] Écriture des `auth_event` (§7.4).
-33. [moi] Limiteurs en mémoire : 2 s par compte, couple compte + IP banni après 15 échecs, bannissement d'IP, limites d'inscriptions et de mails. Vérif : critère 3 en tests.
+21. [moi] Projet `auth` : `ApiPrefixEnum.AUTH`, registre d'endpoints, `router.ts`, `AuthErrorCodeEnum`, `authErrorReasons` côté front.
+22. [moi] Service des sessions : création, lecture avec les trois expirations, prolongation toutes les 5 minutes, suppression.
+23. [moi] Cookie de session : nom, attributs, `Max-Age` selon « se souvenir de moi ».
+24. [moi] `protected` lu par le routeur typé : session exigée, `401` ajouté aux erreurs de l'endpoint, identifiant de l'utilisateur passé au contrôleur.
+25. [moi] `GET /auth/me` et `POST /auth/logout`. Vérif : critère 7.
+26. [moi] Purges : parcours et sessions toutes les 15 minutes, `auth_event` et `error_log` à 20 jours chaque jour.
+27. [moi] Écriture des `auth_event` (§7.4), IP tronquée.
+28. [moi] Limiteurs en mémoire : 2 s par compte, couple compte + IP banni après 15 échecs, bannissement d'IP, limites d'inscriptions et de mails (20 par heure et 40 par jour par IP). Vérif : critère 3 en tests.
+
+### Partie B — Mise en place
 
 **Phase 4 — Mail**
 
-34. [moi] Gabarits minimaux de tous les mails (§8.3), chacun avec sa story dans le Storybook du design system (`src/mailPreview`, cahier de l'hébergement §6), durée floue de la dernière connexion.
-35. [nous] Chaque gabarit envoyé depuis le dev vers Gmail et Outlook. Vérif : critère 13.
+29. [moi] Gabarits de tous les mails (§8.3) sur `buildMailBodies`, avec la brique « code en gros » et un `MailKindEnum` par mail, chacun avec sa story dans le Storybook du design system (`src/mailPreview`, cahier de l'hébergement §6), durée floue de la dernière connexion.
+30. [moi] Mails des réponses neutres envoyés après la réponse, échec dans `mailing_failure` sans erreur visible ; `403` `MAIL_CLOSED` quand le quota est épuisé (§8.1).
 
 **Phase 5 — Parcours**
 
-36. [moi] Service `auth_flow` : création, cookie de parcours, code HMAC, lien haché, essais, renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
-37. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
-38. [moi] Règles de format dans les specs (pseudo, email, mot de passe, code) ; `GET /auth/usernames/:username/availability`.
-39. [moi] Serveur, inscription : honeypot, interrupteur (fermée aussi par le quota de mails du site, voir le cahier de l'hébergement), limites, réponse neutre, deux mails, remplacement d'un parcours en attente, création du compte et de la session. Vérif : critère 1.
-40. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, gestion du `401`, accès des projets avec retour à la page demandée.
-41. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
-42. [moi] Front : reprise des parcours (`GET /auth/flow` au chargement et au retour sur l'onglet, `sessionStorage`).
-43. [moi] Page d'inscription.
-44. [moi] Étape « code ou lien » commune et page `/auth/verify`. Vérif : critère 4.
-45. [moi] Serveur, connexion par mot de passe : hash factice, délais, rehash, méthodes fermées, `last_login_at`, passage au second facteur s'il existe.
-46. [moi] Serveur, connexion par mail.
-47. [moi] Page de connexion (mot de passe, lien par mail), déjà connecté redirigé. Vérif : critère 2 sans 2FA.
-48. [moi] Serveur, mot de passe oublié : parcours, `/flow/new-password`, même mot de passe refusé, sessions supprimées, notification.
-49. [moi] Page « mot de passe oublié ».
+31. [moi] Service `auth_flow` : création, cookie `__Host-citadel_flow`, un parcours par navigateur, code HMAC, lien haché, essais remis à zéro au renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
+32. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
+33. [moi] Règles de format dans les specs (pseudo en `A-Z a-z 0-9 _ -`, pseudo affiché libre en NFC, email, mot de passe en NFC, code) ; `GET /auth/usernames/:username/availability`.
+34. [moi] Serveur, inscription : honeypot, interrupteur et quota (`REGISTRATION_CLOSED`), limites, réponse neutre, deux mails, remplacement d'un parcours en attente, pseudo pris à la confirmation, création du compte et de la session. Vérif : critère 1.
+35. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, bandeau et bouton d'inscription fermés selon `GET /mail/status`.
+36. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
+37. [moi] Front : reprise des parcours (`GET /auth/flow` au chargement et au retour sur l'onglet, `sessionStorage`).
+38. [moi] Page d'inscription.
+39. [moi] Étape « code ou lien » commune et page `/auth/verify`. Vérif : critère 4.
+40. [moi] Serveur, connexion par mot de passe : hash factice, délais, rehash, méthodes fermées, `last_login_at`, passage au second facteur s'il existe.
+41. [moi] Serveur, connexion par mail : TOTP ou code de secours ensuite, jamais le code par mail.
+42. [moi] Page de connexion (mot de passe, lien par mail), déjà connecté redirigé. Vérif : critère 2 sans 2FA.
+43. [moi] Serveur, mot de passe oublié : parcours, `/flow/new-password`, même mot de passe refusé, sessions supprimées, notification.
+44. [moi] Page « mot de passe oublié ».
 
 **Phase 6 — Double authentification**
 
-50. [moi] TOTP et Base32 écrits à la main. Vérif : vecteurs officiels de la RFC 6238, dérive de ±1 pas, anti-rejeu.
-51. [moi] Facteur TOTP : `POST /auth/factors/totp` et `/confirm`, secret chiffré.
-52. [moi] Facteur mail : `POST /auth/factors/email` (parcours `email_factor`).
-53. [moi] Codes de secours : création au premier facteur, usage unique, `POST /auth/recovery-codes`.
-54. [moi] `/flow/second-factor` (TOTP, code par mail, code de secours) dans la connexion et le mot de passe oublié ; `GET` et `DELETE /auth/factors` ; notifications.
-55. [moi] Front : étape « second facteur » de la connexion et du mot de passe oublié. Vérif : critère 2 avec 2FA, la connexion par mail ne contourne pas le TOTP.
+45. [moi] TOTP et Base32 écrits à la main. Vérif : vecteurs officiels de la RFC 6238, dérive de ±1 pas, anti-rejeu.
+46. [moi] Facteur TOTP : `POST /auth/factors/totp` et `/confirm`, secret chiffré.
+47. [moi] Facteur mail : `POST /auth/factors/email` (parcours `email_factor`).
+48. [moi] Codes de secours : création au premier facteur, usage unique, `POST /auth/recovery-codes`.
+49. [moi] `/flow/second-factor` (TOTP, code par mail, code de secours) dans la connexion et le mot de passe oublié, échecs comptés par les limiteurs, code par mail grisé quand le quota est épuisé ; `GET` et `DELETE /auth/factors` ; notifications.
+50. [moi] Front : étape « second facteur » de la connexion et du mot de passe oublié. Vérif : critère 2 avec 2FA.
 
 **Phase 7 — Profil**
 
-56. [moi] Serveur : `PATCH /auth/me` (pseudo affiché, méthodes de connexion).
-57. [moi] Page de profil : structure, identité, méthodes de connexion.
-58. [moi] Serveur : `POST /auth/me/password`.
-59. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse).
-60. [moi] Profil : mot de passe et email. Vérif : critère 9.
-61. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables.
-62. [moi] Étape facultative « Protège ton compte » après l'inscription.
-63. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions).
-64. [moi] Profil : sessions actives. Vérif : critère 8.
-65. [moi] Serveur : export ZIP de CSV, sans aucun secret.
-66. [moi] Serveur : `DELETE /auth/me/projects/:project`.
-67. [moi] Serveur : `DELETE /auth/me`, journal des suppressions, mail.
-68. [moi] Profil : mes données (export, suppression d'un projet, suppression du compte). Vérif : critère 11.
+51. [moi] Serveur : `PATCH /auth/me` (pseudo affiché, méthodes de connexion).
+52. [moi] Page de profil : structure, identité, méthodes de connexion.
+53. [moi] Serveur : `POST /auth/me/password`.
+54. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse, adresse déjà prise, `EMAIL_TAKEN`).
+55. [moi] Profil : mot de passe et email. Vérif : critère 9.
+56. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables.
+57. [moi] Étape facultative « Protège ton compte » après l'inscription.
+58. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions, `DELETE /auth/sessions/others`).
+59. [moi] Profil : sessions actives. Vérif : critère 8.
+60. [moi] Serveur : export ZIP de CSV des tables de l'auth, sans aucun secret.
+61. [moi] Serveur : `DELETE /auth/me`, mail.
+62. [moi] Profil : mes données (export, suppression du compte).
 
-**Phase 8 — Interface et RGPD**
+### Partie C — Correctifs : l'existant passe aux comptes
 
-69. [moi] Header de la homepage (bouton, icône et pseudo affiché, déconnexion) ; icône de profil dans le Backlog et GDC ; avertissement de déconnexion, cache vidé.
-70. [toi] Recette visuelle de toutes les pages en dev.
-71. [moi] Commande « après restauration » du serveur, branchée dans `citadel restore-db` ; volume du journal dans `compose.yml` ; phrase ajoutée au message du bandeau.
-72. [moi] Page « Données personnelles » (§10.6).
-73. [nous] Vérification CNIL (§10.4) et cookies posés par Cloudflare.
-74. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
+**Phase 8 — Game Death Counter et Backlog**
 
-**Phase 9 — Recette et release**
+63. [moi] GDC, jeux, dans un seul commit : migration `user_id` de `gdc_game` (lignes existantes supprimées : rien à garder, §1.2), données de test rattachées à un utilisateur, endpoints `protected`, filtrage par `user_id`, `404` chez un autre.
+64. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
+65. [moi] Backlog, dans un seul commit : migration `user_id` (`backlog_user_game`, `backlog_user_version`, `backlog_series`), données de test rattachées, tous les endpoints `protected` (IGDB compris), jeux suivis et versions filtrés par `user_id`.
+66. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
+67. [moi] Serveur : suppression ordonnée du Backlog (§5.1) dans `DELETE /auth/me`, `DELETE /auth/me/projects/:project`, export étendu aux tables des projets.
+68. [moi] Front : accès des projets avec retour à la page demandée, gestion du `401` `AUTHENTICATION_REQUIRED`.
+69. [moi] Profil : suppression des données d'un projet. Vérif : critère 11.
 
-75. [moi] Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
-76. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH`.
-77. [nous] Recette en `pnpm prod:local` : les 15 critères du §12.2, un par un.
-78. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
-79. [toi] En prod : inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
-80. [toi] Deux semaines plus tard : aucun mail de l'authentification en indésirables, rapports DMARC propres.
+**Phase 9 — Interface, restauration et RGPD**
+
+70. [moi] Header de la homepage (bouton, icône et pseudo affiché, déconnexion) ; icône de profil dans le Backlog et GDC ; avertissement de déconnexion, cache vidé.
+71. [toi] Recette visuelle de toutes les pages en dev.
+72. [nous] Chaque gabarit envoyé depuis le dev vers Gmail et Outlook, et à mail-tester. Vérif : critère 13.
+73. [moi] Journal de restauration (§10.5) écrit par chaque suppression, changement d'email et changement de sécurité ; volume dans `compose.yml`, purge à 10 semaines.
+74. [moi] Commande « après restauration » du serveur (journal rejoué, mots de passe invalidés, sessions et parcours vidés), branchée dans `citadel restore-db` ; phrase ajoutée au message du bandeau.
+75. [moi] Page « Données personnelles » (§10.6).
+76. [nous] Vérification CNIL (§10.4) : cookies posés par Cloudflare, pixel de Brevo ; durée des journaux de Brevo (§10.2).
+77. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
+
+### Partie D — Recette et release
+
+**Phase 10 — Recette et release**
+
+78. [moi] Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
+79. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH` (fait en local par `pnpm admin:password` : l'image de la nouvelle version n'existe pas encore).
+80. [nous] Recette en `pnpm prod:local` : les 16 critères du §12.2, un par un.
+81. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
+82. [toi] En prod : inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
+83. [toi] Deux semaines plus tard : aucun mail de l'authentification en indésirables, rapports DMARC propres.
 
 ---
 

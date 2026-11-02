@@ -48,10 +48,6 @@ Tout ce qui reste à faire dans le dépôt, par projet, et les idées repoussée
 
 Tout le chantier est dans le [cahier des charges de l'authentification](auth/cahier_des_charges.md). Il commence après les mails de l'hébergement.
 
-Pour plus tard :
-
-- Thème des mails de l'authentification : la mise en page commune existe (`buildMailBodies`, aux couleurs du site, HTML et texte brut). Reste une brique « code en gros », la durée de validité et la mention « si tu n'es pas à l'origine de cette demande, ignore ce mail ». Le chantier d'auth n'envoie qu'un gabarit minimal ([cahier des charges, §8.3](auth/cahier_des_charges.md)).
-
 ## 3. Backlog
 
 - Fusionner les composants d'interface du backlog (`apps/client/src/projects/backlog/components/` : Button, Modal, Select…) avec le design system, sans changer, ou à peine, l'apparence des endroits qui utilisent déjà le design system. La feuille de styles partagée `backlog.module.scss` sera découpée à ce moment-là.
