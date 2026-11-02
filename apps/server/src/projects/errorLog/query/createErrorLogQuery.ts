@@ -4,14 +4,13 @@ import { ErrorLog } from "../models/ErrorLog.ts";
 
 export async function createErrorLogQuery(
 	createErrorLogBean: CreateErrorLogBean,
-): Promise<ErrorLog> {
+): Promise<void> {
 	try {
-		const newErrorLog = await ErrorLog.create({
+		await ErrorLog.create({
 			errorType: createErrorLogBean.errorType,
 			message: createErrorLogBean.message,
 			stack: createErrorLogBean.stack,
 		});
-		return newErrorLog;
 	} catch (error) {
 		throw new DatabaseError("Failed to insert new error log", {
 			cause: error,
