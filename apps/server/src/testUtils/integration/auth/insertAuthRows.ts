@@ -96,4 +96,54 @@ export const insertAuthRows = {
 		);
 		return insertedId;
 	},
+
+	// Renvoie l'id créé. Par défaut, un facteur mail
+	async factor(row: {
+		userId: number;
+		type?: string;
+		secretEncrypted?: Buffer | null;
+		keyVersion?: number | null;
+		lastUsedStep?: number | null;
+	}): Promise<number> {
+		const [insertedId] = await sequelize.query(
+			`INSERT INTO auth_factor (user_id, type, name, secret_encrypted, key_version, last_used_step)
+			VALUES (:userId, :type, 'Mon facteur', :secretEncrypted, :keyVersion, :lastUsedStep)`,
+			{
+				type: QueryTypes.INSERT,
+				replacements: {
+					type: "email",
+					secretEncrypted: null,
+					keyVersion: null,
+					lastUsedStep: null,
+					...row,
+				},
+			},
+		);
+		return insertedId;
+	},
+
+	// Renvoie l'id créé. Code tiré au hasard par défaut
+	async recoveryCode(row: {
+		userId: number;
+		codeHash?: Buffer;
+	}): Promise<number> {
+		const [insertedId] = await sequelize.query(
+			"INSERT INTO auth_recovery_code (user_id, code_hash) VALUES (:userId, :codeHash)",
+			{
+				type: QueryTypes.INSERT,
+				replacements: { codeHash: randomBytes(TOKEN_HASH_BYTES), ...row },
+			},
+		);
+		return insertedId;
+	},
+
+	// Renvoie l'id créé
+	async event(row: { userId: number | null }): Promise<number> {
+		const [insertedId] = await sequelize.query(
+			`INSERT INTO auth_event (user_id, type, ip, user_agent)
+			VALUES (:userId, 'login_failure', '203.0.113.0', NULL)`,
+			{ type: QueryTypes.INSERT, replacements: row },
+		);
+		return insertedId;
+	},
 };
