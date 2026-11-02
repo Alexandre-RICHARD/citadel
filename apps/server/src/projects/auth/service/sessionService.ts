@@ -22,7 +22,10 @@ class SessionService {
 		userId,
 		remember,
 		client,
+		replacedToken,
 	}: CreateSessionBean): Promise<SessionCookieBean> {
+		if (replacedToken !== undefined) await this.delete(replacedToken);
+
 		const token = createRandomToken();
 		const now = new Date();
 		const absoluteExpiresAt = new Date(
