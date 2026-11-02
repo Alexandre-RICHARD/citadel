@@ -143,6 +143,14 @@
 			}
 		}
 
+		# /api/internal/… : les routes du serveur réservées à la console du NAS (le nombre de
+		# mails qui n'ont pas pu partir…). La console appelle le serveur directement, par le
+		# réseau Docker, sans passer par ici : depuis Internet, ces routes n'existent pas. Le
+		# serveur les refuse aussi de son côté, à toute requête qui porte le X-Real-IP de Caddy.
+		handle /api/internal/* {
+			respond 404
+		}
+
 		# /api/… va au serveur, préfixe retiré : /api/health arrive en /health.
 		# Les routes du serveur ne changent donc pas, et le front appelle /api partout.
 		handle_path /api/* {
@@ -163,6 +171,11 @@
 # comme la console. Arrêtée la plupart du temps : Caddy répond alors 502.
 http://:8002 {
 	encode zstd gzip
+	# Comme en prod : les routes internes ne passent pas par Caddy. Ce `handle`, plus précis
+	# que /api/*, passe avant lui (Caddy trie les `handle` par longueur de chemin)
+	handle /api/internal/* {
+		respond 404
+	}
 	handle_path /api/* {
 		reverse_proxy site-preprod-server:3000 {
 			import real_ip
