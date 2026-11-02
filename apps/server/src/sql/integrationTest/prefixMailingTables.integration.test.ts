@@ -1,5 +1,5 @@
 import { QueryTypes } from "sequelize";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 
 import { sequelize } from "../../configuration/sequelize.ts";
 import { buildUniqueWord } from "../../testUtils/integration/buildUniqueWord.ts";
@@ -49,6 +49,22 @@ async function selectFailureIndexNames(): Promise<string[]> {
 	return rows.map((row) => row.indexName);
 }
 
+// Après le test, quoi qu'il arrive : la base retrouve l'état de V013, sans quoi les tests suivants (contact, mails)
+// échoueraient tous et masqueraient la vraie panne. Sans effet si la migration rejouée a réussi
+async function restoreTablesAfterMigration(): Promise<void> {
+	await sequelize.query(
+		"RENAME TABLE IF EXISTS mail_failure TO mailing_failure",
+	);
+	await sequelize.query(
+		"RENAME TABLE IF EXISTS contact_message_unsent TO mailing_contact_message_unsent",
+	);
+	const oldIndexNames = await selectFailureIndexNames();
+	if (oldIndexNames.includes("idx_mail_failure_created_at"))
+		await sequelize.query(
+			"ALTER TABLE mailing_failure RENAME INDEX idx_mail_failure_created_at TO idx_mailing_failure_created_at",
+		);
+}
+
 describe("prefixMailingTables", () => {
 	describe("existing rows", () => {
 		it("SHOULD keep every row and rename the index WHEN the mail tables are renamed", async () => {
@@ -56,6 +72,7 @@ describe("prefixMailingTables", () => {
 			const reason = buildUniqueWord();
 			const subject = buildUniqueWord();
 			await restoreTablesBeforeMigration();
+			onTestFinished(restoreTablesAfterMigration);
 			await sequelize.query(
 				"INSERT INTO mail_failure (kind, reason) VALUES ('contact-notification', :reason)",
 				{ replacements: { reason } },

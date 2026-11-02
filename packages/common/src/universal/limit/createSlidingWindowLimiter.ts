@@ -17,18 +17,26 @@ export function createSlidingWindowLimiter({
 }: Options) {
 	// Heures des événements de la fenêtre, par clé, de la plus ancienne à la plus récente
 	const eventTimesByKey = new Map<string, number[]>();
+	let lastSweepTime = -Infinity;
 
-	function forgetEventsBefore(limitTime: number): void {
-		for (const [key, times] of eventTimesByKey) {
-			const recentTimes = times.filter((time) => time > limitTime);
-			if (recentTimes.length === 0) eventTimesByKey.delete(key);
-			else eventTimesByKey.set(key, recentTimes);
-		}
+	// Les clés sans événement récent disparaissent, en un passage par fenêtre au plus : pas à chaque appel
+	function sweepOldKeys(currentTime: number): void {
+		if (currentTime - lastSweepTime < windowMs) return;
+		lastSweepTime = currentTime;
+		for (const [key, times] of eventTimesByKey)
+			if (times.every((time) => time <= currentTime - windowMs))
+				eventTimesByKey.delete(key);
 	}
 
+	// Seule la clé demandée est relue et élaguée
 	function readRecentTimes(currentTime: number, key: string): number[] {
-		forgetEventsBefore(currentTime - windowMs);
-		return eventTimesByKey.get(key) ?? [];
+		sweepOldKeys(currentTime);
+		const recentTimes = (eventTimesByKey.get(key) ?? []).filter(
+			(time) => time > currentTime - windowMs,
+		);
+		if (recentTimes.length === 0) eventTimesByKey.delete(key);
+		else eventTimesByKey.set(key, recentTimes);
+		return recentTimes;
 	}
 
 	// La limite est atteinte quand la fenêtre est pleine : on attend que son plus vieil événement en sorte

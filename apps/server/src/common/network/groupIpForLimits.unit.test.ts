@@ -16,6 +16,12 @@ describe("groupIpForLimits.ts", () => {
 			);
 		});
 
+		it("SHOULD keep each IPv4 apart WHEN they arrive written as IPv6", () => {
+			expect(groupIpForLimits("::FFFF:203.0.113.1")).not.toBe(
+				groupIpForLimits("::ffff:203.0.113.2"),
+			);
+		});
+
 		it("SHOULD keep each IPv4 apart WHEN two IPv4 share their /24", () => {
 			expect(groupIpForLimits("203.0.113.1")).not.toBe(
 				groupIpForLimits("203.0.113.2"),

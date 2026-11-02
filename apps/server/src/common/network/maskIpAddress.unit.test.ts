@@ -15,6 +15,13 @@ describe("maskIpAddress.ts", () => {
 			expect(maskIpAddress("203.0.113.42", TRUNCATED)).toBe("203.0.113.0/24");
 		});
 
+		it.each(["::ffff:203.0.113.42", "::FFFF:203.0.113.42", "::ffff:cb00:712a"])(
+			"SHOULD mask it as an IPv4 WHEN the address is the IPv4-mapped %s",
+			(ip) => {
+				expect(maskIpAddress(ip, TRUNCATED)).toBe("203.0.113.0/24");
+			},
+		);
+
 		it("SHOULD cut inside a byte WHEN the prefix is not a multiple of 8", () => {
 			expect(
 				maskIpAddress("203.0.113.255", { ...FULL, ipv4PrefixLength: 28 }),

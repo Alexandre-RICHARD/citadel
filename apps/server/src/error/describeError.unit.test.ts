@@ -51,6 +51,39 @@ describe("describeError.ts", () => {
 			);
 		});
 
+		it("SHOULD follow the driver error WHEN Sequelize keeps it in original", () => {
+			// Arrange
+			const driverError = new Error("Duplicate entry for key 'email'");
+			const sequelizeError = Object.assign(new Error("Validation error"), {
+				original: driverError,
+			});
+
+			// Act
+			const description = describeError(sequelizeError);
+
+			// Assert
+			expect(description).toContain(
+				"Caused by: Error: Duplicate entry for key 'email'",
+			);
+		});
+
+		it("SHOULD list the message of each field without its value WHEN Sequelize reports field errors", () => {
+			// Arrange
+			const error = Object.assign(new Error("Validation error"), {
+				name: "SequelizeUniqueConstraintError",
+				errors: [{ message: "email must be unique", value: SECRET }],
+			});
+
+			// Act
+			const description = describeError(error);
+
+			// Assert
+			expect(description).toContain(
+				"SequelizeUniqueConstraintError: Validation error\n  - email must be unique",
+			);
+			expect(description).not.toContain(SECRET);
+		});
+
 		it("SHOULD stop after five causes WHEN the causes loop", () => {
 			// Arrange
 			const error = new Error("Loop");

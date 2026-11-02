@@ -85,6 +85,14 @@ function formatIpv6(groups: number[]): string {
 	return `${head}::${tail}`;
 }
 
+// Une IPv4 écrite en IPv6 (::ffff:203.0.113.5, en majuscules ou non) : ses 4 octets, à masquer comme une IPv4
+function readMappedIpv4(groups: number[]): number[] | null {
+	const [high = 0, low = 0] = groups.slice(6);
+	const isMapped =
+		groups.slice(0, 5).every((group) => group === 0) && groups[5] === 0xffff;
+	return isMapped ? [high >> 8, high & 0xff, low >> 8, low & 0xff] : null;
+}
+
 function withPrefix(address: string, prefixLength: number, fullLength: number) {
 	return prefixLength >= fullLength ? address : `${address}/${prefixLength}`;
 }
@@ -97,7 +105,8 @@ export function maskIpAddress(
 	ip: string,
 	{ ipv4PrefixLength, ipv6PrefixLength }: Prefixes,
 ): string {
-	const ipv4 = parseIpv4(ip);
+	const ipv6 = parseIpv6(ip);
+	const ipv4 = parseIpv4(ip) ?? (ipv6 === null ? null : readMappedIpv4(ipv6));
 	if (ipv4 !== null)
 		return withPrefix(
 			keepPrefix(ipv4, 8, ipv4PrefixLength).join("."),
@@ -105,7 +114,6 @@ export function maskIpAddress(
 			IPV4_BITS,
 		);
 
-	const ipv6 = parseIpv6(ip);
 	if (ipv6 !== null)
 		return withPrefix(
 			formatIpv6(keepPrefix(ipv6, GROUP_BITS, ipv6PrefixLength)),
