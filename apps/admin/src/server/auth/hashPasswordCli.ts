@@ -1,4 +1,5 @@
-import { hashPassword } from "./hashPassword.ts";
+import { hashPassword } from "@citadel/common/src/node/password/hashPassword.ts";
+import { OWASP_ARGON2_PARAMETERS } from "@citadel/common/src/node/password/owaspArgon2Parameters.ts";
 
 // Fabrique ADMIN_PASSWORD_HASH, à coller dans .env.prod :
 //   sur le NAS : citadel admin-password
@@ -81,7 +82,7 @@ async function main(): Promise<void> {
 		}
 	}
 	process.stdout.write(
-		`\nÀ mettre dans /Volume1/citadel/.env.prod (et dans Bitwarden) :\nADMIN_PASSWORD_HASH=${hashPassword(password)}\n`,
+		`\nÀ mettre dans /Volume1/citadel/.env.prod (et dans Bitwarden) :\nADMIN_PASSWORD_HASH=${await hashPassword(password, OWASP_ARGON2_PARAMETERS)}\n`,
 	);
 }
 

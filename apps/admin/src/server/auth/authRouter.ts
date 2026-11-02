@@ -1,3 +1,4 @@
+import { verifyPassword } from "@citadel/common/src/node/password/verifyPassword.ts";
 import { readCookieValue } from "@citadel/common/src/universal/cookie/readCookieValue.ts";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
@@ -10,7 +11,6 @@ import { loginThrottle } from "./loginThrottle.ts";
 import { requireSession } from "./requireSession.ts";
 import { SESSION_COOKIE_NAME } from "./sessionCookieName.ts";
 import { sessionStore } from "./sessionStore.ts";
-import { verifyPassword } from "./verifyPassword.ts";
 
 const loginBodySchema = z.object({ password: z.string().min(1).max(200) });
 
@@ -33,14 +33,14 @@ function setSessionCookie(
 
 export const authRouter = Router();
 
-authRouter.post("/api/login", (request, response) => {
+authRouter.post("/api/login", async (request, response) => {
 	const ip = request.ip ?? "inconnue";
 	loginThrottle.assertAllowed(ip);
 
 	const body = loginBodySchema.safeParse(request.body);
 	if (
 		!body.success ||
-		!verifyPassword(body.data.password, env.ADMIN_PASSWORD_HASH)
+		!(await verifyPassword(body.data.password, env.ADMIN_PASSWORD_HASH))
 	) {
 		loginThrottle.recordFailure(ip);
 		writeAuditLog({ event: "login", result: "refusé", ip });

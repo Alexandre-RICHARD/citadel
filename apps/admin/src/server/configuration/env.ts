@@ -5,8 +5,13 @@ const envSchema = z.object({
 	ADMIN_PORT: z.coerce.number().int().positive(),
 	// Gravée dans l'image à sa construction (tag git) ; « dev » hors de Docker
 	APP_VERSION: z.string().min(1).default("dev"),
-	// Fabriqué par `citadel admin-password` (ou `pnpm admin:password` sur ton PC)
-	ADMIN_PASSWORD_HASH: z.string().startsWith("scrypt:"),
+	// Fabriqué par `citadel admin-password` (ou `pnpm admin:password` sur ton PC). Un ancien hash scrypt est refusé
+	ADMIN_PASSWORD_HASH: z
+		.string()
+		.startsWith(
+			"argon2id:",
+			"hash argon2id attendu : à refaire avec citadel admin-password",
+		),
 
 	// Le filtre devant Docker (infra-socket-proxy), jamais le socket lui-même
 	DOCKER_API_URL: z.url(),
