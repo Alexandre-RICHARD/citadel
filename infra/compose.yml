@@ -601,6 +601,10 @@ services:
       # certificats (lues en HTTPS, sans accès à ses fichiers ni à ses clés)
       CADDY_CONTAINER: infra-caddy
       SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
+      # Le serveur du site, joint directement par le réseau edge (pas par Caddy, qui refuse
+      # /api/internal depuis Internet) : le nombre de mails qui n'ont pas pu partir cette
+      # semaine. Pas de préfixe /api : c'est Caddy qui le retire, et on ne passe pas par lui
+      SITE_API_URL: http://site-prod-server:3000
       # Ce qu'écrivent citadel et infra-ops : version en service, historique des
       # déploiements, jobs, sauvegardes, résultats des demandes
       STATE_DIR: /state
@@ -625,7 +629,7 @@ services:
       - docker-api
       # Gluetun, donc qBittorrent
       - vpn
-      # Caddy et Jellyfin ; et la sortie vers Internet, pour Twitch
+      # Caddy, Jellyfin et le serveur du site ; et la sortie vers Internet, pour Twitch
       - edge
     depends_on:
       - infra-socket-proxy
@@ -980,7 +984,8 @@ services:
 
 # --- Réseaux séparés : un conteneur ne joint que ceux de ses réseaux ---
 networks:
-  # Caddy et ce qu'il sert, plus la console, qui lit Jellyfin et les certificats de Caddy.
+  # Caddy et ce qu'il sert, plus la console, qui lit Jellyfin, les certificats de Caddy et
+  # les échecs de mails du serveur du site.
   # Sort sur Internet : certificats, relais du front (Irigo), appels du serveur à IGDB
   edge: {}
   # Le serveur et sa base. Pas « internal » : Docker ne publierait plus le port de la

@@ -34,3 +34,26 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+// Des mails n'ont pas pu partir : rien à faire ici, seulement aller voir
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.8rem 1.2rem;
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius-s);
+  background: var(--warn-subtle);
+  font-size: 1.3rem;
+}
+
+.hint {
+  color: var(--text-subtle);
+  font-size: 1.2rem;
+}
+
+// Un visiteur attend une réponse : plus visible qu'un simple mail perdu
+.urgent {
+  border-left-color: var(--danger);
+  background: var(--danger-subtle);
+}

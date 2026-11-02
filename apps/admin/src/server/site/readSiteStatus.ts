@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import type { SiteStatus } from "../../shared/siteStatus.type.ts";
 import { env } from "../configuration/env.ts";
 import { parseDeployHistory } from "./parseDeployHistory.ts";
+import { readMailFailureSummary } from "./readMailFailureSummary.ts";
+import { readUnsentContactCount } from "./readUnsentContactCount.ts";
 
 const HISTORY_LIMIT = 15;
 
@@ -15,14 +17,20 @@ async function readOptional(fileName: string): Promise<string> {
 	}
 }
 
-// Ce que citadel écrit à chaque déploiement, dans /Volume1/citadel/state
+// Ce que citadel écrit à chaque déploiement, dans /Volume1/citadel/state, et ce que le serveur du site n'a pas pu envoyer :
+// des mails, et des messages de contact (gardés en base)
 export async function readSiteStatus(): Promise<SiteStatus> {
-	const [currentVersion, history] = await Promise.all([
-		readOptional("current-version"),
-		readOptional("deploy-history.log"),
-	]);
+	const [currentVersion, history, mailFailures, unsentContactMessages] =
+		await Promise.all([
+			readOptional("current-version"),
+			readOptional("deploy-history.log"),
+			readMailFailureSummary(),
+			readUnsentContactCount(),
+		]);
 	return {
 		currentVersion: currentVersion.trim() || null,
 		history: parseDeployHistory(history, HISTORY_LIMIT),
+		mailFailures,
+		unsentContactMessages,
 	};
 }

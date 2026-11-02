@@ -22,6 +22,8 @@ const envSchema = z.object({
 	// domaine du site, son www. et jellyfin.
 	CADDY_CONTAINER: z.string().min(1),
 	SITE_DOMAIN: z.string().min(1),
+	// Le serveur Express du site, par le réseau Docker : le nombre de mails qui n'ont pas pu partir
+	SITE_API_URL: z.url(),
 
 	// /Volume1/citadel/state du NAS, en lecture seule : version en service, historique,
 	// jobs, sauvegardes, résultats des demandes
