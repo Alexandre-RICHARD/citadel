@@ -8,11 +8,12 @@ import type { HttpMethodEnum } from "../../../../../specUtils/httpMethod.enum.ts
 import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatutCodeError.enum.ts";
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { MailErrorCodeEnum } from "../../../../mail/error/mailErrorCode.enum.ts";
+import type { ContactMessageReceiptDto } from "../../../dto/contactMessageReceiptDto.type.ts";
 import type { ContactErrorCodeEnum } from "../../../error/contactErrorCode.enum.ts";
 import type { SendContactMessageBodyDto } from "./sendContactMessageBodyDto.type.ts";
 
 // Le formulaire de contact : une notification à `contact`, et un accusé de réception au visiteur s'il a donné son
-// adresse (un par adresse et par jour). Rien n'est gardé en base
+// adresse (un par adresse et par jour). Rien n'est gardé en base ; la réponse dit ce qu'il est advenu de l'accusé
 export interface SendContactMessage extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.CONTACT}/messages`;
@@ -21,8 +22,8 @@ export interface SendContactMessage extends EndpointModel {
 		body: SendContactMessageBodyDto;
 	};
 	response: {
-		status: HttpStatutCodeSuccessEnum.NO_CONTENT;
-		data: null;
+		status: HttpStatutCodeSuccessEnum.SUCCESS;
+		data: ContactMessageReceiptDto;
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;

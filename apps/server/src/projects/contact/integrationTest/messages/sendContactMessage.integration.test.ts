@@ -1,3 +1,5 @@
+import { ContactAcknowledgementEnum } from "@citadel/specs/src/projects/contact/contactAcknowledgement.enum.ts";
+import type { ContactMessageReceiptDto } from "@citadel/specs/src/projects/contact/dto/contactMessageReceiptDto.type.ts";
 import type { SendContactMessageBodyDto } from "@citadel/specs/src/projects/contact/endpoint/messages/sendContactMessage/sendContactMessageBodyDto.type.ts";
 import { ContactErrorCodeEnum } from "@citadel/specs/src/projects/contact/error/contactErrorCode.enum.ts";
 import { MailErrorCodeEnum } from "@citadel/specs/src/projects/mail/error/mailErrorCode.enum.ts";
@@ -18,6 +20,7 @@ import { MailKindEnum } from "../../../../mail/mailKind.enum.ts";
 import { mailService } from "../../../../mail/mailService.ts";
 import { memoryMailSender } from "../../../../mail/sender/memoryMailSender.ts";
 import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWord.ts";
+import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 
@@ -63,7 +66,7 @@ async function collectSentMails(send: () => Promise<unknown>): Promise<Mail[]> {
 }
 
 describe("sendContactMessage", () => {
-	describe("204 No Content", () => {
+	describe("200 OK", () => {
 		it("SHOULD notify contact with the whole message and acknowledge the visitor with the subject only WHEN an email is given", async () => {
 			// Arrange
 			const body = buildBody();
@@ -75,7 +78,10 @@ describe("sendContactMessage", () => {
 			});
 
 			// Assert
-			expect(response?.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(response?.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response?.body as ContactMessageReceiptDto).toStrictEqual({
+				acknowledgement: ContactAcknowledgementEnum.SENT,
+			});
 			const [notification, acknowledgement] = sentMails;
 			expect(sentMails).toHaveLength(2);
 
@@ -104,12 +110,18 @@ describe("sendContactMessage", () => {
 		});
 
 		it("SHOULD only notify contact, without reply address, WHEN no email is given", async () => {
+			// Arrange
+			let response: request.Response | undefined;
+
 			// Act
-			const sentMails = await collectSentMails(async () =>
-				postMessage(buildBody({ email: null, name: null })),
-			);
+			const sentMails = await collectSentMails(async () => {
+				response = await postMessage(buildBody({ email: null, name: null }));
+			});
 
 			// Assert
+			expect(response?.body as ContactMessageReceiptDto).toStrictEqual({
+				acknowledgement: ContactAcknowledgementEnum.NO_EMAIL,
+			});
 			expect(sentMails).toHaveLength(1);
 			expect(sentMails[0]).toMatchObject({
 				kind: MailKindEnum.CONTACT_NOTIFICATION,
@@ -121,13 +133,17 @@ describe("sendContactMessage", () => {
 			// Arrange
 			const email = `${buildUniqueWord().toLowerCase()}@example.com`;
 			await postMessage(buildBody({ email }));
+			let response: request.Response | undefined;
 
 			// Act
-			const sentMails = await collectSentMails(async () =>
-				postMessage(buildBody({ email: email.toUpperCase() })),
-			);
+			const sentMails = await collectSentMails(async () => {
+				response = await postMessage(buildBody({ email: email.toUpperCase() }));
+			});
 
 			// Assert
+			expect(response?.body as ContactMessageReceiptDto).toStrictEqual({
+				acknowledgement: ContactAcknowledgementEnum.ALREADY_SENT_TODAY,
+			});
 			expect(sentMails.map((mail) => mail.kind)).toStrictEqual([
 				MailKindEnum.CONTACT_NOTIFICATION,
 			]);
@@ -145,13 +161,14 @@ describe("sendContactMessage", () => {
 			});
 
 			// Assert
-			expect(response?.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(response?.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 			expect(sentMails).toStrictEqual([]);
 		});
 
-		it("SHOULD still succeed and log the failure WHEN only the acknowledgement fails", async () => {
+		it("SHOULD still succeed, say the acknowledgement failed, and record and log the failure WHEN only the acknowledgement fails", async () => {
 			// Arrange
 			const { expectLogged } = await watchErrorLogs();
+			const failuresBefore = await countTableRows("mail_failure");
 			vi.spyOn(memoryMailSender, "send")
 				.mockResolvedValueOnce()
 				.mockRejectedValueOnce(
@@ -165,7 +182,11 @@ describe("sendContactMessage", () => {
 			const response = await postMessage(buildBody());
 
 			// Assert
-			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response.body as ContactMessageReceiptDto).toStrictEqual({
+				acknowledgement: ContactAcknowledgementEnum.FAILED,
+			});
+			expect(await countTableRows("mail_failure")).toBe(failuresBefore + 1);
 			await expectLogged({
 				errorType: "BadGatewayError",
 				message:
@@ -260,14 +281,15 @@ describe("sendContactMessage", () => {
 			const response = await postMessage(buildBody());
 
 			// Assert
-			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 		});
 	});
 
 	describe("502 Bad Gateway", () => {
-		it("SHOULD answer MAIL_UNAVAILABLE and log the failure WHEN the notification cannot be sent", async () => {
+		it("SHOULD answer MAIL_UNAVAILABLE, and record and log the failure WHEN the notification cannot be sent", async () => {
 			// Arrange
 			const { expectLogged } = await watchErrorLogs();
+			const failuresBefore = await countTableRows("mail_failure");
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
@@ -284,6 +306,7 @@ describe("sendContactMessage", () => {
 				code: MailErrorCodeEnum.MAIL_UNAVAILABLE,
 				message: "Brevo did not answer on /smtp/email",
 			});
+			expect(await countTableRows("mail_failure")).toBe(failuresBefore + 1);
 			await expectLogged({
 				errorType: "BadGatewayError",
 				message: `[POST ${SEND_CONTACT_MESSAGE_URL}] Brevo did not answer on /smtp/email`,

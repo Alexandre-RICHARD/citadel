@@ -1,3 +1,4 @@
+import { ContactAcknowledgementEnum } from "@citadel/specs/src/projects/contact/contactAcknowledgement.enum.ts";
 import { ContactErrorCodeEnum } from "@citadel/specs/src/projects/contact/error/contactErrorCode.enum.ts";
 
 import { env } from "../../../configuration/env.ts";
@@ -13,8 +14,13 @@ import { buildContactNotificationMail } from "../template/buildContactNotificati
 class ContactService {
 	readonly #limiter = createContactLimiter(env.CONTACT_HOURLY_LIMIT_PER_IP);
 
-	async sendMessage(contactMessage: ContactMessageBean): Promise<void> {
-		if (contactMessage.isHoneypotFilled) return;
+	// Le message est arrivé ; la réponse dit ce qu'il est advenu de l'accusé de réception
+	async sendMessage(
+		contactMessage: ContactMessageBean,
+	): Promise<ContactAcknowledgementEnum> {
+		// Un robot reçoit la réponse d'un message sans adresse
+		if (contactMessage.isHoneypotFilled)
+			return ContactAcknowledgementEnum.NO_EMAIL;
 
 		const { isContactOpen } = await mailService.getStatus();
 		if (!isContactOpen)
@@ -36,16 +42,23 @@ class ContactService {
 		);
 
 		const { email, subject } = contactMessage;
-		if (email !== null && this.#limiter.claimAcknowledgement(email))
-			await this.#sendAcknowledgement(email, subject);
+		if (email === null) return ContactAcknowledgementEnum.NO_EMAIL;
+		if (!this.#limiter.claimAcknowledgement(email))
+			return ContactAcknowledgementEnum.ALREADY_SENT_TODAY;
+		return this.#sendAcknowledgement(email, subject);
 	}
 
-	// Le message est arrivé : un accusé qui échoue n'est que loggé, sans son adresse ni son sujet
-	async #sendAcknowledgement(email: string, subject: string): Promise<void> {
+	// Le message est arrivé : un accusé qui échoue est loggé, sans son adresse ni son sujet, et le visiteur le sait
+	async #sendAcknowledgement(
+		email: string,
+		subject: string,
+	): Promise<ContactAcknowledgementEnum> {
 		try {
 			await mailService.send(buildContactAcknowledgementMail(email, subject));
+			return ContactAcknowledgementEnum.SENT;
 		} catch (error) {
 			await logError(error, "Accusé de réception du formulaire de contact");
+			return ContactAcknowledgementEnum.FAILED;
 		}
 	}
 }

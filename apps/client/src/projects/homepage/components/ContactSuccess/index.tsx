@@ -1,15 +1,22 @@
+import type { ContactAcknowledgementEnum } from "@citadel/specs/src/projects/contact/contactAcknowledgement.enum";
 import { Check } from "lucide-react";
 
+import { describeAcknowledgement } from "../../helper/describeAcknowledgement";
 import styles from "./contactSuccess.module.scss";
 
 type Props = {
 	// L'adresse donnée dans le formulaire ; null : aucune
 	email: string | null;
+	acknowledgement: ContactAcknowledgementEnum;
 	onWriteAgain: () => void;
 };
 
-// À la place du formulaire, une fois la notification partie
-export function ContactSuccess({ email, onWriteAgain }: Props) {
+// À la place du formulaire, une fois la notification partie, avec ce qu'il est advenu de l'accusé de réception
+export function ContactSuccess({
+	email,
+	acknowledgement,
+	onWriteAgain,
+}: Props) {
 	return (
 		<div
 			className={styles.success}
@@ -24,9 +31,7 @@ export function ContactSuccess({ email, onWriteAgain }: Props) {
 			<h2 className={styles.title}>Message envoyé</h2>
 			<p>Merci ! Il est bien arrivé, je le lis dès que possible.</p>
 			<p className={styles.detail}>
-				{email === null
-					? "Sans adresse, je ne pourrai pas vous répondre."
-					: `Un accusé de réception part vers ${email}, sauf si vous en avez déjà reçu un aujourd’hui.`}
+				{describeAcknowledgement(acknowledgement, email)}
 			</p>
 			<button
 				type="button"

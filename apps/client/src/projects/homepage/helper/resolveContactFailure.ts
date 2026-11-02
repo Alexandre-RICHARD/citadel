@@ -3,6 +3,7 @@ import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatut
 import { ApiError } from "../../../common/api/error/ApiError";
 import { buildFailureMessage } from "../../../common/api/error/buildFailureMessage";
 import { getErrorReason } from "../../../common/api/error/getErrorReason";
+import { isTransientApiError } from "../../../common/api/error/isTransientApiError";
 import { contactErrorReasons } from "../api/contact/contactErrorReasons";
 import { contactFieldLabels } from "../api/contact/contactFieldLabels";
 import type { ContactFailure } from "./contactFailure.type";
@@ -29,5 +30,6 @@ export function resolveContactFailure(
 				fieldLabels: contactFieldLabels,
 			}),
 		),
+		isRetryable: isTransientApiError(error),
 	};
 }

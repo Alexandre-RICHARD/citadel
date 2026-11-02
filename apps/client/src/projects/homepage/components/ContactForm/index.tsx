@@ -1,14 +1,19 @@
 import { useNow } from "@citadel/common/src/react/hooks/useNow";
 import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
+import { ToastVariantEnum } from "@citadel/design-system/src/organisms/Toaster/toastVariant.enum";
+import { ContactAcknowledgementEnum } from "@citadel/specs/src/projects/contact/contactAcknowledgement.enum";
 import { ContactFieldMaxLengthEnum } from "@citadel/specs/src/projects/contact/contactFieldMaxLength.enum";
 import { sendContactMessageBodySchema } from "@citadel/specs/src/projects/contact/endpoint/messages/sendContactMessage/sendContactMessageBodySchema";
 import { Mail, Send } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 
 import { useIsContactOpen } from "../../../../common/api/mail/useIsContactOpen";
+import { notifyMutationFailure } from "../../../../common/api/mutation/notifyMutationFailure";
+import { toastStore } from "../../../../common/toast/toastStore";
 import { checkInput } from "../../../../common/validation/checkInput";
 import { contactFieldLabels } from "../../api/contact/contactFieldLabels";
 import { useSendContactMessage } from "../../api/contact/useSendContactMessage";
+import type { ContactMessageFm } from "../../api/model/contactMessageFm.type";
 import { CONTACT_MAIL_LINK } from "../../content/contactMailLink";
 import { formatWaitDelay } from "../../helper/formatWaitDelay";
 import { resolveContactFailure } from "../../helper/resolveContactFailure";
@@ -34,18 +39,24 @@ const EMPTY_FIELDS: ContactFields = {
 };
 const COUNTDOWN_REFRESH_MS = 1000;
 
-// Le formulaire de la page Contact. Un échec garde le texte saisi ; une 429 bloque le bouton le temps annoncé par le
-// serveur ; fermé par le quota de mails, il reste visible mais désactivé, avec l'adresse pour écrire directement
+// Ce que le visiteur voit une fois son message arrivé
+type Receipt = {
+	email: string | null;
+	acknowledgement: ContactAcknowledgementEnum;
+};
+
+// Le formulaire de la page Contact. Un échec garde le texte saisi et part en toast ; une 429 bloque le bouton le temps
+// annoncé par le serveur ; un accusé de réception qui n'a pas pu partir est signalé par un toast ; fermé par le quota
+// de mails, il reste visible mais désactivé, avec l'adresse pour écrire directement
 export function ContactForm() {
 	const fieldId = useId();
 	const isContactOpen = useIsContactOpen();
 	const { mutate, isPending } = useSendContactMessage();
 	const [fields, setFields] = useState(EMPTY_FIELDS);
 	const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
-	const [failureMessage, setFailureMessage] = useState<string | null>(null);
 	const [retryAt, setRetryAt] = useState<number | null>(null);
-	// undefined : pas encore envoyé ; sinon l'adresse donnée (null : aucune)
-	const [sentEmail, setSentEmail] = useState<string | null | undefined>();
+	// null : pas encore envoyé
+	const [receipt, setReceipt] = useState<Receipt | null>(null);
 	const now = useNow(retryAt === null ? null : COUNTDOWN_REFRESH_MS);
 
 	const check = checkInput(
@@ -60,32 +71,45 @@ export function ContactForm() {
 		setFields((current) => ({ ...current, [field]: value }));
 	}
 
-	function handleSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		setHasTriedSubmit(true);
-		if (!check.isValid || isWaiting || isPending || !isContactOpen) return;
-
-		setFailureMessage(null);
-		const body = check.data;
+	function send(body: ContactMessageFm) {
 		mutate(body, {
-			onSuccess: () => {
-				setSentEmail(body.email);
+			onSuccess: ({ acknowledgement }) => {
+				setReceipt({ email: body.email, acknowledgement });
+				if (acknowledgement === ContactAcknowledgementEnum.FAILED)
+					toastStore.push({
+						variant: ToastVariantEnum.ERROR,
+						message:
+							"Votre message est bien arrivé, mais l’accusé de réception n’a pas pu partir.",
+					});
 				setFields(EMPTY_FIELDS);
 				setHasTriedSubmit(false);
 			},
 			onError: (error) => {
 				const failure = resolveContactFailure(error, Date.now());
 				if (failure.kind === "wait") setRetryAt(failure.retryAt);
-				else setFailureMessage(failure.message);
+				else
+					notifyMutationFailure({
+						message: failure.message,
+						...(failure.isRetryable && { retry: () => send(body) }),
+					});
 			},
 		});
 	}
 
-	if (sentEmail !== undefined)
+	function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		setHasTriedSubmit(true);
+		if (!check.isValid || isWaiting || isPending || !isContactOpen) return;
+
+		send(check.data);
+	}
+
+	if (receipt !== null)
 		return (
 			<ContactSuccess
-				email={sentEmail}
-				onWriteAgain={() => setSentEmail(undefined)}
+				email={receipt.email}
+				acknowledgement={receipt.acknowledgement}
+				onWriteAgain={() => setReceipt(null)}
 			/>
 		);
 
@@ -233,14 +257,6 @@ export function ContactForm() {
 							<p>
 								Trop de messages envoyés depuis votre connexion : vous pourrez
 								réessayer dans {formatWaitDelay(waitMs)}.
-							</p>
-						)}
-						{failureMessage !== null && (
-							<p
-								className={styles.error}
-								role="alert"
-							>
-								{failureMessage}
 							</p>
 						)}
 						{hasTriedSubmit && !check.isValid && (

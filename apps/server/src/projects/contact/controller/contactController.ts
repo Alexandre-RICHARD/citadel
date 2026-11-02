@@ -14,9 +14,12 @@ export const contactController = {
 				request.ip ?? "unknown",
 			);
 
-			await contactService.sendMessage(contactMessageBean);
+			const acknowledgement =
+				await contactService.sendMessage(contactMessageBean);
 
-			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json({ acknowledgement });
 		},
 	),
 };

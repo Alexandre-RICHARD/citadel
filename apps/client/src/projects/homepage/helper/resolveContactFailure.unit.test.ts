@@ -34,6 +34,7 @@ describe("resolveContactFailure.ts", () => {
 				}),
 				message:
 					"Impossible d'envoyer le message : le formulaire est fermé pour aujourd'hui.",
+				isRetryable: false,
 			},
 			{
 				reason: "the mail provider failed",
@@ -43,6 +44,7 @@ describe("resolveContactFailure.ts", () => {
 				}),
 				message:
 					"Impossible d'envoyer le message : le service d'envoi de mails ne répond pas, réessayez plus tard.",
+				isRetryable: true,
 			},
 			{
 				reason: "a 429 came without delay",
@@ -52,18 +54,24 @@ describe("resolveContactFailure.ts", () => {
 				}),
 				message:
 					"Impossible d'envoyer le message : trop de demandes d'affilée, réessayez dans un moment.",
+				isRetryable: false,
 			},
 			{
 				reason: "the server is unreachable",
 				error: new ApiError({ status: null, code: null }),
 				message:
 					"Impossible d'envoyer le message : le serveur est injoignable.",
+				isRetryable: true,
 			},
-		])("SHOULD explain the failure WHEN $reason", ({ error, message }) => {
-			expect(resolveContactFailure(error, NOW)).toStrictEqual({
-				kind: "message",
-				message,
-			});
-		});
+		])(
+			"SHOULD explain the failure, retryable only if passing, WHEN $reason",
+			({ error, message, isRetryable }) => {
+				expect(resolveContactFailure(error, NOW)).toStrictEqual({
+					kind: "message",
+					message,
+					isRetryable,
+				});
+			},
+		);
 	});
 });
