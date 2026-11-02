@@ -649,7 +649,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests ; `pnpm validate-all
 
 **Phase 4 — Mail**
 
-34. [moi] Gabarits minimaux de tous les mails (§8.3), durée floue de la dernière connexion.
+34. [moi] Gabarits minimaux de tous les mails (§8.3), chacun avec sa story dans le Storybook du design system (`src/mailPreview`, cahier de l'hébergement §6), durée floue de la dernière connexion.
 35. [nous] Chaque gabarit envoyé depuis le dev vers Gmail et Outlook. Vérif : critère 13.
 
 **Phase 5 — Parcours**
