@@ -1,0 +1,5 @@
+.button {
+  @include vars.button-ghost;
+
+  font-variant-numeric: tabular-nums;
+}

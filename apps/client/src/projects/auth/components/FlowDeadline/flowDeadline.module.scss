@@ -1,0 +1,35 @@
+.deadline {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: vars.$muted;
+  font-size: 1.35rem;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: none;
+  }
+
+  strong {
+    color: vars.$text;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.expired {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  border-left: 3px solid vars.$danger;
+  border-radius: 0.6rem;
+  background: vars.$danger-subtle;
+  font-size: 1.4rem;
+}
+
+.restart {
+  @include vars.button-ghost;
+}

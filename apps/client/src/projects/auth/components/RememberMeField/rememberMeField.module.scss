@@ -1,0 +1,30 @@
+.field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.2rem 1rem;
+}
+
+.checkbox {
+  width: 1.9rem;
+  height: 1.9rem;
+  margin: 0;
+  accent-color: vars.$accent;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include vars.focus-ring;
+  }
+}
+
+.label {
+  font-size: 1.45rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.hint {
+  grid-column: 2;
+  color: vars.$muted;
+  font-size: 1.3rem;
+}

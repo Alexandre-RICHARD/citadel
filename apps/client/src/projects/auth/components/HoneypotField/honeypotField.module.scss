@@ -1,0 +1,8 @@
+// Hors de l'écran, mais pas en display: none, que certains robots repèrent
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
