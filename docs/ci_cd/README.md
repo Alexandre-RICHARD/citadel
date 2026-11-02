@@ -43,7 +43,7 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) |
 | `citadel maintenance on\|off` | page de maintenance (503) à la place du site, ou plus |
 | `citadel banner "<message>"\|off` | le bandeau du site, ou plus de bandeau |
-| `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `vpn-leak-test`, `update-check`, `storage-stats`, `qbittorrent-stats`, `auto-stop`, `log-retention` |
+| `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `vpn-leak-test`, `update-check`, `storage-stats`, `qbittorrent-stats`, `auto-stop`, `log-retention`, `contact-retry` |
 
 Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm release` ; revenir en arrière : `citadel rollback`.
 

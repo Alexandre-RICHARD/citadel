@@ -15,17 +15,17 @@ describe("describeUnsentContactMessages.ts", () => {
 	describe("alert", () => {
 		it("SHOULD speak in the plural WHEN several messages wait", () => {
 			expect(describeUnsentContactMessages(2)).toStrictEqual({
-				status: "2 messages à lire",
+				status: "2 messages en attente",
 				message:
-					"2 messages de contact n'ont pas pu être notifiés et attendent en base (contact_message_unsent). À supprimer une fois lus.",
+					"2 messages de contact n'ont pas pu être notifiés et attendent en base (contact_message_unsent) : renvoyés chaque soir à 23 h 50.",
 			});
 		});
 
 		it("SHOULD speak in the singular WHEN one message waits", () => {
 			expect(describeUnsentContactMessages(1)).toStrictEqual({
-				status: "1 message à lire",
+				status: "1 message en attente",
 				message:
-					"1 message de contact n'a pas pu être notifié et attend en base (contact_message_unsent). À supprimer une fois lu.",
+					"1 message de contact n'a pas pu être notifié et attend en base (contact_message_unsent) : renvoyé chaque soir à 23 h 50.",
 			});
 		});
 	});

@@ -69,4 +69,11 @@ export const JOB_DEFINITIONS = [
 		description: "Vide les logs dont la plus vieille ligne a plus de 90 jours",
 		monitored: false,
 	},
+	{
+		name: "contact-retry",
+		label: "Messages de contact en attente",
+		description:
+			"Renvoie ceux dont le mail n'était pas parti, tant que le quota le permet",
+		monitored: false,
+	},
 ] as const;

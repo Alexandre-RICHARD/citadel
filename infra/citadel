@@ -31,6 +31,7 @@
 #   citadel qbittorrent-stats          compteurs de qBittorrent, pour la console
 #   citadel auto-stop                  arrête ce qui tourne depuis trop longtemps
 #   citadel log-retention              vide les logs dont la plus vieille ligne a plus de 90 jours
+#   citadel contact-retry              renvoie les messages de contact dont le mail n'était pas parti
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
 #   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #
@@ -1899,6 +1900,39 @@ job_log_retention() {
 		"$checked conteneurs vérifiés, ${#emptied[@]} vidés${emptied:+ : ${emptied[*]}}"
 }
 
+# --- contact-retry : chaque soir à 23 h 50 ---
+# Un message du formulaire de contact dont la notification n'a pas pu partir (Brevo en panne, quota épuisé…) est gardé
+# dans la base du site (table contact_message_unsent) : la personne qui a écrit n'est pas perdue. Chaque soir, le
+# serveur du site renvoie ces messages, du plus ancien au plus récent, tant que le quota de mails du jour le permet :
+# la notification (même contenu, sujet suivi de « (différé) »), puis l'accusé de réception avec sa mention du retard.
+# 23 h 50, c'est avant la remise à zéro des crédits de Brevo (entre minuit et 1 h) : ce qui reste attend le soir suivant.
+# Ce qui est renvoyé est supprimé de la table ; ces relances n'ajoutent rien à mail_failure.
+#
+# Le serveur n'est joignable que par Caddy (qui ne laisse pas passer /api/internal) et le réseau Docker, et il refuse
+# tout appel qui porte le X-Real-IP de Caddy. Le job l'appelle donc de l'intérieur de son conteneur (docker exec), sans
+# ouvrir aucun réseau à infra-ops. Pas de curl dans l'image du serveur : node, qui y est, fait la requête, comme son
+# healthcheck. Le serveur répond « renvoyés restants raison », lu ici.
+job_contact_retry() {
+	local server=site-prod-server report sent remaining stopped
+	report=$(docker exec "$server" node -e "
+		fetch('http://127.0.0.1:3000/internal/contact/unsent/retry', { method: 'POST' }).then(async (response) => {
+			if (!response.ok) process.exit(2);
+			const { sentCount, remainingCount, stoppedBecause } = await response.json();
+			console.log(sentCount, remainingCount, stoppedBecause ?? 'none');
+		}, () => process.exit(3));
+	") || check_fail "le serveur du site répond" "docker exec $server a échoué (serveur arrêté, ou route refusée)"
+	read -r sent remaining stopped <<<"$report"
+
+	# Un refus du fournisseur est un échec du job, donc visible dans la console : des visiteurs attendent encore
+	[[ $stopped != SEND_FAILED ]] ||
+		check_fail "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base : le fournisseur de mails refuse les envois"
+	if [[ $stopped == QUOTA_REACHED ]]; then
+		check_ok "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base : quota du jour atteint, suite demain soir"
+	else
+		check_ok "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base"
+	fi
+}
+
 # --- auto-stop : toutes les 5 minutes ---
 # Les services étiquetés citadel.auto-stop (« 3h » dans compose.yml) s'arrêtent quand
 # ils tournent depuis plus longtemps : allumés pour une recherche, ils s'éteignent seuls.
@@ -1945,7 +1979,7 @@ write_schedule() {
 # conteneur ops à part, détaché : un déploiement recrée infra-ops sans s'interrompre.
 # Leur sortie va dans state/requests/<id>.log, leur code de sortie dans <id>.exit.
 
-CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop log-retention "
+CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop log-retention contact-retry "
 VERSION_PATTERN='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
 
 # Termine une demande : son message dans le log, son code de sortie
@@ -2140,9 +2174,9 @@ ops_main() {
 		version) current_version ;;
 		maintenance) cmd_maintenance "$@" ;;
 		banner) cmd_banner "$@" ;;
-		# Les jobs qui touchent aux bases ou aux services attendent leur tour derrière un
-		# déploiement ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
-		db-backup | db-restore-test | config-backup | config-verify) run_job "$command" wait ;;
+		# Les jobs qui touchent aux bases ou aux services (et contact-retry, qui appelle le serveur du
+		# site) attendent leur tour derrière un déploiement ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
+		db-backup | db-restore-test | config-backup | config-verify | contact-retry) run_job "$command" wait ;;
 		auto-stop) run_job "$command" skip ;;
 		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats | log-retention) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;

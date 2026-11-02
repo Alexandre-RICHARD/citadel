@@ -46,3 +46,7 @@
 
 # Chaque lundi à 3 h : archive des configs, puis son contrôle
 0 3 * * 1 citadel config-backup; citadel config-verify
+
+# Chaque soir à 23 h 50 : les messages de contact dont le mail n'était pas parti sont renvoyés, tant que le quota
+# du jour le permet (avant la remise à zéro des crédits de Brevo, entre minuit et 1 h)
+50 23 * * * citadel contact-retry

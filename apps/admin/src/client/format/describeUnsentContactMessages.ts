@@ -6,8 +6,8 @@ type UnsentContactMessagesDescription = {
 	message: string;
 };
 
-// L'alerte de la carte Site quand des messages de contact attendent en base : quelqu'un attend une réponse. null s'il n'y en
-// a aucun
+// L'alerte de la carte Site quand des messages de contact attendent en base : quelqu'un attend une réponse, et la relance
+// du soir (job contact-retry) les renvoie. null s'il n'y en a aucun
 export function describeUnsentContactMessages(
 	count: number | null,
 ): UnsentContactMessagesDescription | null {
@@ -15,7 +15,7 @@ export function describeUnsentContactMessages(
 
 	const isPlural = count > 1;
 	return {
-		status: `${pluralize(count, "message")} à lire`,
-		message: `${pluralize(count, "message")} de contact ${isPlural ? "n'ont" : "n'a"} pas pu être notifié${isPlural ? "s" : ""} et ${isPlural ? "attendent" : "attend"} en base (contact_message_unsent). À supprimer une fois lu${isPlural ? "s" : ""}.`,
+		status: `${pluralize(count, "message")} en attente`,
+		message: `${pluralize(count, "message")} de contact ${isPlural ? "n'ont" : "n'a"} pas pu être notifié${isPlural ? "s" : ""} et ${isPlural ? "attendent" : "attend"} en base (contact_message_unsent) : renvoyé${isPlural ? "s" : ""} chaque soir à 23 h 50.`,
 	};
 }
