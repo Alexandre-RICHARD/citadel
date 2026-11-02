@@ -12,6 +12,8 @@ import { buildMailBodies } from "../../../mail/template/buildMailBodies.ts";
 export function buildContactAcknowledgementMail(
 	email: string,
 	subject: string,
+	// Relance du soir : l'accusé n'était pas parti, ou pas son message. Il le dit
+	{ isDelayed }: { isDelayed: boolean } = { isDelayed: false },
 ): Mail {
 	return {
 		kind: MailKindEnum.CONTACT_ACKNOWLEDGEMENT,
@@ -22,6 +24,11 @@ export function buildContactAcknowledgementMail(
 			paragraphs: [
 				"Bonjour,",
 				`Votre message « ${subject} », envoyé depuis le formulaire de contact d'alexandre-richard.fr, est bien arrivé. Je le lis et vous réponds dès que possible, à cette adresse.`,
+				...(isDelayed
+					? [
+							"Cet accusé de réception vous parvient avec du retard : un incident technique l'a empêché de partir plus tôt. Votre message, lui, n'a pas été perdu.",
+						]
+					: []),
 				`Pour le compléter, répondez simplement à ce mail, ou écrivez à ${CONTACT_EMAIL}.`,
 				"Alexandre\nhttps://alexandre-richard.fr",
 			],

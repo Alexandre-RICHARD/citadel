@@ -38,11 +38,15 @@ class MailService {
 		},
 	});
 
-	async send(mail: Mail): Promise<void> {
+	// `isFailureRecorded: false` : la relance du soir des messages de contact, dont un échec n'ajoute rien à mail_failure
+	async send(
+		mail: Mail,
+		{ isFailureRecorded = true }: { isFailureRecorded?: boolean } = {},
+	): Promise<void> {
 		try {
 			await mailSender.send(mail);
 		} catch (error) {
-			await this.#recordFailure(mail, error);
+			if (isFailureRecorded) await this.#recordFailure(mail, error);
 			throw error;
 		}
 		this.#quota.recordSend();

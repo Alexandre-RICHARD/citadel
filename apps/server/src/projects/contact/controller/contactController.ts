@@ -1,8 +1,10 @@
 import type { SendContactMessage } from "@citadel/specs/src/projects/contact/endpoint/messages/sendContactMessage/sendContactMessageEndpoint.interface.ts";
 import type { GetContactUnsentCount } from "@citadel/specs/src/projects/contact/endpoint/unsent/getContactUnsentCount/getContactUnsentCountEndpoint.interface.ts";
+import type { RetryContactUnsent } from "@citadel/specs/src/projects/contact/endpoint/unsent/retryContactUnsent/retryContactUnsentEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { fromContactUnsentRetryBeanToContactUnsentRetryDto } from "../mapper/beanDto/fromContactUnsentRetryBeanToContactUnsentRetryDto.ts";
 import { fromSendContactMessageDtoToContactMessageBean } from "../mapper/dtoBean/fromSendContactMessageDtoToContactMessageBean.ts";
 import { contactService } from "../service/contactService.ts";
 
@@ -29,6 +31,16 @@ export const contactController = {
 			const count = await contactService.countUnsentMessages();
 
 			return response.status(HttpStatutCodeSuccessEnum.SUCCESS).json({ count });
+		},
+	),
+
+	retryUnsent: asyncRequestHandler<RetryContactUnsent>(
+		async (_request, response) => {
+			const retry = await contactService.retryUnsentMessages();
+
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromContactUnsentRetryBeanToContactUnsentRetryDto(retry));
 		},
 	),
 };

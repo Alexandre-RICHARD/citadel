@@ -10,16 +10,28 @@ const parisDateTimeFormat = new Intl.DateTimeFormat("fr-FR", {
 	timeStyle: "short",
 });
 
-// À `contact`, donc dans ta boîte : tout le message, et le visiteur en Reply-To pour lui répondre d'un clic
+type NotificationOptions = {
+	// Relance du soir d'un message dont l'envoi avait échoué : même contenu, sujet suivi de « (différé) »
+	isDelayed: boolean;
+};
+
+// À `contact`, donc dans ta boîte : tout le message, et le visiteur en Reply-To pour lui répondre d'un clic.
+// `sentAt` : la date où le visiteur a écrit
 export function buildContactNotificationMail(
-	{ subject, message, email, name }: ContactMessageBean,
+	{
+		subject,
+		message,
+		email,
+		name,
+	}: Pick<ContactMessageBean, "subject" | "message" | "email" | "name">,
 	sentAt: Date,
+	{ isDelayed }: NotificationOptions = { isDelayed: false },
 ): Mail {
 	return {
 		kind: MailKindEnum.CONTACT_NOTIFICATION,
 		to: CONTACT_ADDRESS,
 		replyTo: email === null ? null : { email, name },
-		subject: `[Contact] ${subject}`,
+		subject: `[Contact] ${subject}${isDelayed ? " (différé)" : ""}`,
 		...buildMailBodies({
 			paragraphs: [
 				"Nouveau message depuis le formulaire de contact d'alexandre-richard.fr.",

@@ -23,5 +23,10 @@ typedRouter.GET(
 	contactController.getUnsentCount,
 	internalOnly,
 );
+typedRouter.POST(
+	`${ApiPrefixEnum.INTERNAL}${ApiPrefixEnum.CONTACT}/unsent/retry`,
+	contactController.retryUnsent,
+	internalOnly,
+);
 
 export const contactRouter = expressRouter;
