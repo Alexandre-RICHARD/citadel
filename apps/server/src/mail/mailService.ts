@@ -12,8 +12,7 @@ import type { MailThresholdEnum } from "./quota/mailThreshold.enum.ts";
 import { mailSender } from "./sender/mailSender.ts";
 import { buildQuotaAlertMail } from "./template/buildQuotaAlertMail.ts";
 
-// La fenêtre de l'alerte de la console : un échec y reste visible une semaine
-const FAILURE_WINDOW_DAYS = 7;
+const SECOND_MS = 1000;
 
 const limits: MailQuotaLimits = {
 	registrationStop: env.MAIL_REGISTRATION_STOP,
@@ -29,6 +28,7 @@ const limits: MailQuotaLimits = {
 class MailService {
 	readonly #quota = createMailQuota({
 		limits,
+		readingLifetimeMs: env.MAIL_QUOTA_READING_SECONDS * SECOND_MS,
 		readSentToday: async () => activeBrevoClient?.getSentToday() ?? null,
 		onThresholdCrossed: (threshold, sentToday) => {
 			this.#sendQuotaAlert(threshold, sentToday);
@@ -57,7 +57,7 @@ class MailService {
 	}
 
 	async getFailureSummary(): Promise<MailFailureSummaryBean> {
-		return summarizeMailFailuresQuery(FAILURE_WINDOW_DAYS, new Date());
+		return summarizeMailFailuresQuery(env.MAIL_FAILURE_WINDOW_DAYS, new Date());
 	}
 
 	// Ni adresse ni contenu : le type du mail et le message de l'erreur, que le client de Brevo écrit sans eux. Un
@@ -65,7 +65,12 @@ class MailService {
 	async #recordFailure(mail: Mail, error: unknown): Promise<void> {
 		const reason = error instanceof Error ? error.message : String(error);
 		try {
-			await createMailFailureQuery(mail.kind, reason, new Date());
+			await createMailFailureQuery(
+				mail.kind,
+				reason,
+				new Date(),
+				env.MAIL_FAILURE_RETENTION_DAYS,
+			);
 		} catch (recordError) {
 			await logError(
 				recordError,

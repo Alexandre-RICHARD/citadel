@@ -26,6 +26,7 @@ function createQuota({ providerCounts = [null] }: Setup = {}) {
 	const onReadFailed = vi.fn();
 	const quota = createMailQuota({
 		limits: LIMITS,
+		readingLifetimeMs: MINUTE_MS,
 		readSentToday,
 		onThresholdCrossed,
 		onReadFailed,

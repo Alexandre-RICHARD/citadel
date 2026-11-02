@@ -33,6 +33,14 @@ const envSchema = z.object({
 	MAIL_DAILY_LIMIT: z.coerce.number().int().positive().default(300),
 	// Messages du formulaire de contact par heure et par IP
 	CONTACT_HOURLY_LIMIT_PER_IP: z.coerce.number().int().positive().default(5),
+	// Crédits quotidiens de l'offre de Brevo (300 sur l'offre gratuite) : Brevo ne donne que ce qu'il en reste
+	BREVO_DAILY_CREDITS: z.coerce.number().int().positive().default(300),
+	// Le compteur de Brevo est relu au plus une fois par cette durée
+	MAIL_QUOTA_READING_SECONDS: z.coerce.number().int().positive().default(60),
+	// Un échec d'envoi (mailing_failure) est effacé après cette durée
+	MAIL_FAILURE_RETENTION_DAYS: z.coerce.number().int().positive().default(90),
+	// Les échecs des derniers jours, résumés pour la console du NAS
+	MAIL_FAILURE_WINDOW_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 // Les règles entre variables, une fois chacune valide

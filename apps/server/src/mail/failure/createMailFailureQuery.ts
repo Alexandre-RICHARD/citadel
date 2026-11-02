@@ -6,13 +6,12 @@ import { daysBefore } from "./daysBefore.ts";
 import { MailFailure } from "./MailFailure.ts";
 import { MAIL_FAILURE_REASON_MAX_LENGTH } from "./mailFailureReasonMaxLength.ts";
 
-// Au-delà, un échec n'a plus rien à signaler : la règle des 3 mois de conservation
-const RETENTION_DAYS = 90;
-// Enregistre un échec, et efface au passage ceux qui ont dépassé la durée de conservation
+// Enregistre un échec, et efface au passage ceux qui ont plus de `retentionDays` jours
 export async function createMailFailureQuery(
 	kind: MailKindEnum,
 	reason: string,
 	now: Date,
+	retentionDays: number,
 ): Promise<void> {
 	try {
 		await MailFailure.create({
@@ -21,7 +20,7 @@ export async function createMailFailureQuery(
 		});
 		await MailFailure.destroy({
 			where: {
-				createdAt: { [Op.lt]: daysBefore(now, RETENTION_DAYS) },
+				createdAt: { [Op.lt]: daysBefore(now, retentionDays) },
 			},
 		});
 	} catch (error) {

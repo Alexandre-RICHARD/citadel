@@ -8,9 +8,7 @@ import type { BrevoAccount } from "./brevoAccount.type.ts";
 
 const BREVO_API_URL = "https://api.brevo.com/v3";
 const REQUEST_TIMEOUT_MS = 10_000;
-// L'offre gratuite : 300 envois par jour, remis à zéro chaque jour. Indépendant de MAIL_DAILY_LIMIT, qu'on abaisse en dev
 const DAILY_SEND_LIMIT_CREDITS = "sendLimit";
-const FREE_PLAN_DAILY_CREDITS = 300;
 
 function unavailable(message: string, cause?: unknown): BadGatewayError {
 	return new BadGatewayError(MailErrorCodeEnum.MAIL_UNAVAILABLE, message, {
@@ -41,8 +39,12 @@ async function readErrorCode(response: Response): Promise<string> {
 export class BrevoClient {
 	readonly #apiKey: string;
 
-	constructor(apiKey: string) {
+	// Crédits de l'offre par jour, remis à zéro chaque jour. Indépendants de MAIL_DAILY_LIMIT, qu'on abaisse en dev
+	readonly #dailyCredits: number;
+
+	constructor(apiKey: string, dailyCredits: number) {
 		this.#apiKey = apiKey;
+		this.#dailyCredits = dailyCredits;
 	}
 
 	async sendEmail(mail: Mail): Promise<void> {
@@ -83,7 +85,7 @@ export class BrevoClient {
 		);
 		if (dailyPlan === undefined)
 			throw unavailable("Brevo account has no daily send limit");
-		return Math.max(0, FREE_PLAN_DAILY_CREDITS - dailyPlan.credits);
+		return Math.max(0, this.#dailyCredits - dailyPlan.credits);
 	}
 
 	async #request(path: string, init: RequestInit): Promise<Response> {

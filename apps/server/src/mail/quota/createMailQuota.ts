@@ -3,13 +3,13 @@ import type { MailQuotaLimits } from "./mailQuotaLimits.type.ts";
 import type { MailStatusBean } from "./mailStatusBean.type.ts";
 import { MailThresholdEnum } from "./mailThreshold.enum.ts";
 
-// Le compteur du fournisseur est relu au plus une fois par minute
-const READING_LIFETIME_MS = 60_000;
 // Le dernier mail du jour est gardé pour l'alerte de fermeture totale
 const ALERT_RESERVE = 1;
 
 type Options = {
 	limits: MailQuotaLimits;
+	// Le compteur du fournisseur est relu au plus une fois par cette durée
+	readingLifetimeMs: number;
 	// Mails envoyés aujourd'hui selon le fournisseur ; null sans compteur (journal, tests) : le serveur compte seul
 	readSentToday: () => Promise<number | null>;
 	// Au premier franchissement de chaque seuil du jour, une seule fois
@@ -32,6 +32,7 @@ type Reading = {
  */
 export function createMailQuota({
 	limits,
+	readingLifetimeMs,
 	readSentToday,
 	onThresholdCrossed,
 	onReadFailed,
@@ -63,7 +64,7 @@ export function createMailQuota({
 
 	function isReadingStale(): boolean {
 		if (reading?.day !== today()) return true;
-		return now() - reading.readAt >= READING_LIFETIME_MS;
+		return now() - reading.readAt >= readingLifetimeMs;
 	}
 
 	function startReading(sent: number, readAt: number): void {
