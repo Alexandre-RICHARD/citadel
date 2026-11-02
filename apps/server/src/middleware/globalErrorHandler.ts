@@ -8,6 +8,7 @@ import { AppError } from "../error/AppError.ts";
 import { BadRequestError } from "../error/BadRequestError.ts";
 import type { ErrorCode } from "../error/errorCode.type.ts";
 import { logError } from "../error/logError.ts";
+import { ServiceUnavailableError } from "../error/ServiceUnavailableError.ts";
 import { TooManyRequestsError } from "../error/TooManyRequestsError.ts";
 
 // Type que body-parser (express.json) donne à un corps JSON illisible
@@ -104,7 +105,10 @@ export function globalErrorHandler(
 		return;
 	}
 
-	if (error instanceof TooManyRequestsError)
+	if (
+		error instanceof TooManyRequestsError ||
+		error instanceof ServiceUnavailableError
+	)
 		response.set("Retry-After", String(error.retryAfterSeconds));
 
 	response.status(statusCode).json(buildErrorResponse(error, statusCode));
