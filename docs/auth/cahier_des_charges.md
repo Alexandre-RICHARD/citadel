@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 29 de la roadmap (§15), phase 4.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 31 de la roadmap (§15), phase 5.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -256,10 +256,10 @@ Une nouvelle inscription avec la même adresse remplace le parcours en attente :
 
 ### 6.4 Connexion
 
-- **Page** : identifiant (email ou pseudo ; un pseudo ne contient jamais `@`), mot de passe, case « Se souvenir de moi », lien « Recevoir un lien de connexion par mail » et lien « Mot de passe oublié ».
+- **Page** : identifiant (email ou pseudo ; un pseudo ne contient jamais `@`), mot de passe, case « Se souvenir de moi », lien « Recevoir un lien de connexion par email » et lien « Mot de passe oublié ».
 - **Par mot de passe** : sans 2FA, session immédiate. Avec 2FA, `auth_flow` `login` à l'étape `second_factor` : l'utilisateur choisit un TOTP, un code reçu par mail ou un code de secours. Aucune session avant la fin.
 - **Par mail** : email ou pseudo → mail (lien + code) → TOTP ou code de secours si un TOTP existe (le mail remplace le mot de passe, jamais le TOTP). Le code par mail n'y est jamais proposé comme second facteur : la boîte vient d'être prouvée. Si le seul facteur est le mail, rien de plus n'est demandé : il ne protège que d'un mot de passe volé.
-- **Méthodes** : choisies dans le profil, « Je préfère pouvoir me connecter : Par mail / Par mon pseudo (et mot de passe) / Les deux » (défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans mail pour le lien. « Par mail » seulement : le mot de passe reste exigé pour les actions sensibles (§6.6) ; oublié, il se refait par « Mot de passe oublié », toujours ouvert.
+- **Méthodes** : choisies dans le profil, « Je préfère pouvoir me connecter : Par email / Par mon pseudo (et mot de passe) / Les deux » (défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans mail pour le lien. « Par email » seulement : le mot de passe reste exigé pour les actions sensibles (§6.6) ; oublié, il se refait par « Mot de passe oublié », toujours ouvert.
 - **Échec** : même message pour un identifiant inconnu et un mauvais mot de passe.
 - **Déjà connecté** : la page de connexion redirige vers le profil ou la page demandée ; une nouvelle connexion dans le même navigateur supprime l'ancienne session.
 - `last_login_at` à chaque connexion ; `last_seen_at` avec la session.
@@ -383,7 +383,7 @@ Jamais de mot de passe, jeton, code, lien ni secret TOTP dans un log, un message
 
 - **Fournisseur, adresse `noreply`, DNS, expéditeur réel, en mémoire ou « journal »** : construits avant ce chantier, pour le formulaire de contact ([cahier de l'hébergement](../ci_cd/cahier_des_charges.md), §2, §5 et §6). Ce chantier y ajoute ses gabarits (§8.3), un `MailKindEnum` par mail (envoi et échecs par `mailService` et `mailing_failure`) et les règles ci-dessous.
 - **Après la réponse** : les mails des réponses neutres (inscription, connexion par mail, mot de passe oublié, changement d'email) partent une fois la réponse envoyée, sans être attendus. Ni la durée ni un échec ne disent si le compte existe ; un échec va dans `mailing_failure` et les logs, jamais au visiteur.
-- **Quota épuisé** (`isSendingOpen` faux) : connexion par mail, mot de passe oublié, changement d'email et activation du facteur mail répondent `403` `MAIL_CLOSED` (« Plus aucun mail ne part aujourd'hui, réessaie demain. »), pour tout le monde. À l'étape « second facteur », le code par mail est grisé ; TOTP et codes de secours restent.
+- **Quota épuisé** (`isSendingOpen` faux) : connexion par mail, mot de passe oublié, changement d'email et activation du facteur mail répondent `403` `MAIL_CLOSED` (« Plus aucun email ne part aujourd'hui, réessaie demain. »), pour tout le monde. À l'étape « second facteur », le code par mail est grisé ; TOTP et codes de secours restent.
 - **Brevo** (offre gratuite) ajoute un pixel d'ouverture et réécrit les liens par `r.mail.` : il voit passer les liens, sans effet grâce au lien lié au navigateur et au clic de confirmation (§6.1).
 
 ### 8.2 Réception : `contact@`
@@ -392,7 +392,7 @@ Mise en place avant ce chantier ([cahier de l'hébergement](../ci_cd/cahier_des_
 
 ### 8.3 Mails
 
-HTML et texte brut, en français, mise en page de `buildMailBodies` : plusieurs phrases de vrai texte (délivrabilité, cahier de l'hébergement §2), une brique « code en gros » à ajouter, lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore ce mail ». Chaque gabarit a sa story dans le Storybook (`src/mailPreview`).
+HTML et texte brut, en français, mise en page de `buildMailBodies` : plusieurs phrases de vrai texte (délivrabilité, cahier de l'hébergement §2), une brique « code en gros » à ajouter, lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore cet email ». Chaque gabarit a sa story dans le Storybook (`src/mailPreview`).
 
 | Mail | Contenu |
 |---|---|
@@ -401,7 +401,7 @@ HTML et texte brut, en français, mise en page de `buildMailBodies` : plusieurs 
 | Mot de passe oublié | Lien + code |
 | Connexion par mail | Lien + code |
 | Second facteur par mail, activation du facteur mail | Code + lien |
-| Changement d'email | Lien + code à la nouvelle adresse ; notification à l'ancienne. Adresse déjà inscrite : « un autre compte a voulu prendre cette adresse », sans lien ni code |
+| Changement d'email | Lien + code à la nouvelle adresse ; notification à l'ancienne. Adresse déjà inscrite : « un autre compte a voulu prendre cette adresse email », sans lien ni code |
 | Notifications | Mot de passe changé, email changé, 2FA ajoutée ou retirée, compte supprimé |
 
 ---
@@ -593,6 +593,7 @@ Hors de la définition de « fini » :
 - **Turnstile et limitation de débit de Cloudflare, CrowdSec** : si des abus apparaissent ; Turnstile sur les formulaires qui envoient un mail dès qu'un robot épuise le quota.
 - **Complétion de profil** : `missingFields` dans `GET /auth/me` quand un champ obligatoire s'ajoutera ; `terms_accepted_version` si des conditions d'utilisation arrivent.
 - **File d'envoi des mails** en base, si l'envoi pendant la requête pose problème.
+- **Blocage temporaire d'un compte, par la console** : un bouton « bloquer » et « débloquer » dans la fiche d'un compte (suite de la console en lecture seule). Un compte bloqué refuse toute action : connexion, parcours, mails, endpoints `protected` ; ses sessions sont supprimées au blocage. Il suppose une colonne `blocked_at` dans `auth_user` et un contrôle dans le service des sessions, et lève la mention « toute action de la console sur les comptes » du §1.4. Les mails de sécurité (§8.3) renvoient déjà vers `contact@` pour ce cas : c'est le recours d'un compte détourné.
 - **Notification « nouvelle connexion »**.
 - **Remontée des plantages du front**, protégée par session et limitée par IP, si le besoin apparaît.
 - Dans `docs/TODO.md` : `pnpm audit` et `pnpm outdated` dans la console.
@@ -830,7 +831,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Un mauvais mot de passe toutes les 2 s depuis le téléphone en 4G : la connexion depuis le PC reste possible, sans compte à rebours.
 - [ ] 20 échecs en 10 minutes sur plusieurs comptes : IP bannie 15 minutes.
 - [ ] Les erreurs de second facteur comptent aussi.
-- [ ] Méthode « par mail » seule : la connexion par mot de passe échoue comme un mauvais mot de passe ; « par pseudo » seule : le lien par mail ne part pas, écran identique.
+- [ ] Méthode « par email » seule : la connexion par mot de passe échoue comme un mauvais mot de passe ; « par pseudo » seule : le lien par mail ne part pas, écran identique.
 - [ ] Déjà connecté : `/auth/login` renvoie vers le profil ; une nouvelle connexion dans le même navigateur fait disparaître l'ancienne session de la liste.
 - [ ] Connexion par mail avec un TOTP : le TOTP est demandé, jamais le code par mail ; avec seulement le facteur mail : rien de plus.
 - [ ] Paramètres argon2 montés dans `.env` : le hash d'un compte change à sa connexion suivante, l'ancien marchait encore.
