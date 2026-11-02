@@ -14,7 +14,7 @@ import type { FlowPayload } from "./flowPayload.type.ts";
 import { User } from "./User.ts";
 
 // Parcours en plusieurs étapes, lié au navigateur par le SHA-256 du jeton de son cookie. userId null : une inscription,
-// dont le compte attend dans payload
+// dont le compte attend dans payload, ou un parcours leurre (connexion par mail, mot de passe oublié d'un inconnu)
 export class Flow extends Model<
 	InferAttributes<Flow>,
 	InferCreationAttributes<Flow>
