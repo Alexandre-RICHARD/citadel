@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 1 de la roadmap (§15), après les mails de l'hébergement.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 17 de la roadmap (§15), phase 2.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -129,7 +129,7 @@ Jeton : 32 octets de `randomBytes` en `base64url`. En base, seulement son SHA-25
 | `Path` / `Domain` | `/` / absent |
 | `Max-Age` | avec « se souvenir de moi » seulement |
 
-CSRF : `SameSite=Lax`, mutations en `POST`/`PATCH`/`DELETE`, contrôle de l'en-tête `Origin` sur les requêtes non sûres.
+CSRF : `SameSite=Lax`, mutations en `POST`/`PATCH`/`DELETE`, contrôle de l'en-tête `Origin` sur les requêtes non sûres : un autre hôte → `403` ; absent, accepté (un navigateur l'envoie toujours sur ces requêtes ; la console et les jobs du NAS, non).
 
 ### 4.3 Durées
 
@@ -511,7 +511,7 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 ### 10.5 Sauvegardes et restauration
 
 - **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
-- **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur, lancée avec la date de la sauvegarde :
+- **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur, lancée une fois le serveur relancé, avec la date de la sauvegarde (son nom, sinon la ligne `-- Dump completed on` du dump : un dump envoyé depuis le PC n'a pas forcément de date dans son nom) :
   - **le journal** : lignes JSON (identifiant du compte, action, date ; nouvelle adresse pour un changement d'email) pour chaque suppression de compte ou des données d'un projet, changement d'email et changement de sécurité (mot de passe, facteur, codes de secours). Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/` (donc dans `config-backup`), purgé à 10 semaines ;
   - **rejouer le journal** après la date de la sauvegarde : suppressions refaites, changements d'email remis ; un compte qui a changé sa sécurité voit son mot de passe invalidé (à refaire par « Mot de passe oublié ») ;
   - **vider toutes les sessions et tous les parcours** : sinon, une session révoquée après la sauvegarde redevient valide.
@@ -641,7 +641,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 8. [moi] Réglages des mails en variables (§9.2) : nouvelles variables dans `env.ts`, toutes écrites avec leur valeur dans `.env.example` et `.env.test`.
 9. [moi] `packages/common/src/node/` et son bloc ESLint. Dans `universal/`, les fonctions pures en double (§11.2) : `fetchWithTimeout`, limiteur à fenêtre glissante, contrôle d'origine, `getParisDay`, `daysBefore`, avec la console et le serveur passés dessus. Vérif : un import de `node/` depuis le front échoue au lint ; console et formulaire de contact se comportent comme avant, en tests.
 10. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant ; la console (`sessionStore`, `newRequestId`) passe sur le jeton commun.
-11. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », normalisation NFC, 2 hashs simultanés et 20 en attente au plus (`AUTH_BUSY`).
+11. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », normalisation NFC, 2 hashs simultanés et 20 en attente au plus (file pleine : une erreur que le serveur traduit en `503` `AUTH_BUSY` à l'étape 40, `common` ne connaissant pas les codes des specs).
 12. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console avec un hash `argon2id`, en tests.
 13. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
 14. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres, avec la fonction commune de l'étape 9.
