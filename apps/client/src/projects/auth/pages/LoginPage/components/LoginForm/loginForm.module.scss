@@ -1,0 +1,43 @@
+.form {
+  display: grid;
+  gap: 2rem;
+}
+
+.inlineLink {
+  @include vars.text-link;
+
+  font-size: 1.3rem;
+}
+
+.feedback {
+  display: grid;
+  gap: 1rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+// « ou », entre deux filets
+.separator {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  color: vars.$subtle;
+  font-size: 1.3rem;
+
+  &::before,
+  &::after {
+    flex: 1;
+    height: 1px;
+    background: vars.$border-soft;
+    content: "";
+  }
+}
+
+.switchButton {
+  @include vars.button-ghost;
+
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+}
