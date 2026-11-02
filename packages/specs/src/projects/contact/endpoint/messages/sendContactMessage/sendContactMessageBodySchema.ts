@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { ValidationIssueCodeEnum } from "../../../../../specUtils/error/validationIssueCode.enum.ts";
+import { honeypotSchema } from "../../../../../specUtils/schemaValidator/string/honeypotSchema.ts";
 import { nullableStringSchema } from "../../../../../specUtils/schemaValidator/string/nullableStringSchema.ts";
 import { requiredStringSchema } from "../../../../../specUtils/schemaValidator/string/requiredStringSchema.ts";
 import { ContactFieldMaxLengthEnum } from "../../../contactFieldMaxLength.enum.ts";
@@ -19,10 +20,6 @@ export const sendContactMessageBodySchema = z.object({
 		},
 	),
 	name: nullableStringSchema("Name", ContactFieldMaxLengthEnum.NAME),
-	// Champ piège, caché aux humains et toujours vide pour eux : un robot qui le remplit reçoit un succès, et rien ne part
-	website: z
-		.string({ message: "Website should be a string" })
-		.max(ContactFieldMaxLengthEnum.HONEYPOT, {
-			message: `Website should contain at most ${ContactFieldMaxLengthEnum.HONEYPOT} characters`,
-		}),
+	// Un robot qui le remplit reçoit un succès, et rien ne part
+	website: honeypotSchema("Website"),
 });
