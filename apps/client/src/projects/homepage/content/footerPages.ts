@@ -1,6 +1,8 @@
-import { CONTACT_EMAIL } from "@citadel/specs/src/projects/contact/contactEmail";
-
+import { CONTACT_MAIL_LINK } from "./contactMailLink";
 import type { FooterPage } from "./footerPage.type";
+
+// Le texte des pages s'écrit avec des liens « [texte](clé) » : la clé est celle du dictionnaire des liens externes
+// (common/links/externalLinks.ts)
 
 // Les pages du footer, dans l'ordre de ses liens
 export const footerPages: FooterPage[] = [
@@ -14,28 +16,28 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Le site",
 				paragraphs: [
-					"Chaque projet est né d’un besoin à moi : compter mes morts dans les Souls, suivre mon backlog, savoir quand passe le tram. Cette page d’accueil les rassemble et les présente.",
+					"Chaque projet est né d’un besoin à moi : compter mes morts dans les jeux Souls, suivre mon backlog, savoir quand passe le tram. Cette page d’accueil les rassemble et les présente.",
 					"C’est aussi mon terrain d’essai : architecture du front, design system, mise en production. Le site évolue au fil de mes envies, sans calendrier.",
 				],
 			},
 			{
 				title: "La stack",
 				paragraphs: [
-					"Le front est en React et TypeScript, construit avec Vite ; l’API en Node, avec Express ; la base en MariaDB. Le tout tient dans un monorepo pnpm, avec un design system partagé entre les projets.",
-					"Une grande partie du code est écrite avec Claude, l’assistant d’Anthropic. Les idées, l’architecture et les choix sont les miens.",
+					"Le front est en [React](react) et [TypeScript](typescript), construit avec [Vite](vite) ; l’API en [Node](nodejs), avec [Express](express) ; la base en [MariaDB](mariadb). Le tout tient dans un monorepo [pnpm](pnpm), avec un design system partagé entre les projets.",
+					"Une grande partie du code est écrite avec [Claude](claude), l’assistant d’[Anthropic](anthropic). Les idées, l’architecture et les choix sont les miens.",
 				],
 			},
 			{
 				title: "L’hébergement",
 				paragraphs: [
-					"Le site tourne chez moi, sur un NAS, dans des conteneurs Docker. Caddy reçoit les requêtes et s’occupe du HTTPS ; Cloudflare se place devant, pour protéger et accélérer le site.",
-					"Chaque version est construite par GitHub, puis déployée sur le NAS après ma confirmation.",
+					"Le site est auto-hébergé, dans des conteneurs [Docker](docker). [Caddy](caddy) reçoit les requêtes et s’occupe du HTTPS ; [Cloudflare](cloudflare) se place devant, pour protéger et accélérer le site.",
+					"Chaque version est construite par [GitHub Actions](githubActions), puis déployée après ma confirmation.",
 				],
 			},
 			{
 				title: "Le code source",
 				paragraphs: [
-					"Le code est public, sur GitHub : le lien est dans le pied de page. Il est sous licence MIT : libre de réutilisation, à condition de garder la mention de son auteur.",
+					"Le code est public, [sur GitHub](repository). Il est sous [licence MIT](repositoryLicense) : libre de réutilisation, à condition de garder la mention de son auteur.",
 				],
 			},
 		],
@@ -57,28 +59,28 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Éditeur du site",
 				paragraphs: [
-					`Alexandre RICHARD, particulier, Angers (49100), France. Contact : ${CONTACT_EMAIL}.`,
+					`Alexandre RICHARD, particulier, Angers (49100), France. Contact : ${CONTACT_MAIL_LINK}.`,
 					"Directeur de la publication : Alexandre RICHARD.",
 				],
 			},
 			{
 				title: "Hébergement",
 				paragraphs: [
-					`Le site est auto-hébergé par son éditeur, Alexandre RICHARD, sur un serveur personnel situé à Angers (49100), France. Contact : ${CONTACT_EMAIL}.`,
+					`Le site est auto-hébergé : son éditeur, Alexandre RICHARD, en assure lui-même l’hébergement. Contact : ${CONTACT_MAIL_LINK}.`,
 				],
 			},
 			{
 				title: "Nom de domaine et réseau",
 				paragraphs: [
-					"Le nom de domaine alexandre-richard.fr est enregistré chez O2Switch (France).",
-					"Le trafic passe par Cloudflare, Inc. (États-Unis), qui gère le DNS du domaine et protège le site.",
+					"Le nom de domaine alexandre-richard.fr est enregistré chez [O2Switch](o2switch) (France).",
+					"Le trafic passe par [Cloudflare, Inc.](cloudflare) (États-Unis), qui gère le DNS du domaine et protège le site.",
 				],
 			},
 			{
 				title: "Propriété intellectuelle",
 				paragraphs: [
-					"Le code du site est publié sous licence MIT : on peut le réutiliser, le modifier et le redistribuer, à condition de conserver la mention de son auteur et la licence.",
-					"Les noms, logos et images des jeux et du réseau de transport cités appartiennent à leurs détenteurs. Les données des jeux viennent d’IGDB, celles du réseau Irigo de ses données ouvertes, et le fond de carte des contributeurs d’OpenStreetMap.",
+					"Le code du site est publié sous [licence MIT](repositoryLicense) : on peut le réutiliser, le modifier et le redistribuer, à condition de conserver la mention de son auteur et la licence.",
+					"Les noms, logos et images des jeux et du réseau de transport cités appartiennent à leurs détenteurs. Les données des jeux viennent d’[IGDB](igdb), celles du réseau [Irigo](irigo) de ses [données ouvertes](irigoOpenData), et le fond de carte des contributeurs d’[OpenStreetMap](openStreetMapCopyright).",
 				],
 			},
 		],
@@ -88,7 +90,7 @@ export const footerPages: FooterPage[] = [
 		slug: "donnees-personnelles",
 		title: "Données personnelles",
 		intro:
-			"Ce que le site garde sur vous, où, et pourquoi. En bref : pas de compte, pas de publicité, pas de mesure d’audience.",
+			"Ce que le site garde sur vous, où, et pourquoi. En bref : pas de publicité, pas de mesure d’audience.",
 		sections: [
 			{
 				title: "Ce que le navigateur garde",
@@ -98,43 +100,43 @@ export const footerPages: FooterPage[] = [
 				],
 			},
 			{
-				title: "Le cookie de connexion",
+				title: "Les cookies",
 				paragraphs: [
-					"Il n’y a pas encore de comptes, donc aucun cookie. Quand la connexion arrivera, un cookie gardera votre session ouverte : il ne servira qu’à ça, et cette page sera mise à jour.",
+					"Le site ne dépose lui-même aucun cookie. Seul [Cloudflare](cloudflare) peut en poser un, technique, pour reconnaître les robots (voir plus bas).",
 				],
 			},
 			{
 				title: "Le formulaire de contact",
 				paragraphs: [
-					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse. Il n’est enregistré nulle part sur le site, et je l’efface de ma boîte dans la semaine. Votre adresse ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
+					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse mail. Il n’est enregistré nulle part sur le site, et je l’efface de ma boîte dans la semaine. Votre adresse mail ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
 					"Pour limiter les abus, le serveur garde en mémoire, sans les écrire nulle part, votre adresse IP pendant une heure (un nombre de messages par heure) et votre adresse mail jusqu’au soir (un seul accusé de réception par jour). Base légale : votre demande de contact, et l’intérêt légitime à protéger le site.",
-					"Les mails du site partent par Brevo, une société française, qui les voit donc passer. Brevo ajoute à chaque mail un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
+					"Les mails du site sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer : voir [sa politique de confidentialité](brevoPrivacy). Brevo ajoute à chaque mail un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
 				],
 			},
 			{
 				title: "Les journaux du serveur",
 				paragraphs: [
 					"Chaque requête laisse une ligne dans les journaux du serveur : adresse IP, pays, date, page demandée et réponse. Ils servent à repérer les pannes et les accès suspects ; je suis seul à les lire.",
-					"Ils sont effacés au bout de 90 jours au plus, et plus tôt pour un journal très bavard : le serveur ne garde que quelques dizaines de mégaoctets de chacun. Base légale : l’intérêt légitime à faire fonctionner et à protéger le site.",
+					"Ils sont effacés au bout de 90 jours au plus, et plus tôt pour un journal très fourni : le serveur ne garde que quelques dizaines de mégaoctets de chacun. Base légale : l’intérêt légitime à faire fonctionner et à protéger le site.",
 				],
 			},
 			{
 				title: "Cloudflare",
 				paragraphs: [
-					"Le site passe par Cloudflare, qui le protège des attaques et accélère son affichage. Cloudflare voit donc votre adresse IP et les pages demandées, et peut poser un cookie technique pour reconnaître les robots. Une partie de ses serveurs est aux États-Unis ; sa politique de confidentialité est sur cloudflare.com.",
+					"Le site passe par [Cloudflare](cloudflare), qui le protège des attaques et accélère son affichage. Cloudflare voit donc votre adresse IP et les pages demandées, et peut poser un cookie technique pour reconnaître les robots. Une partie de ses serveurs est aux États-Unis ; ce qu’il en fait est détaillé dans [sa politique de confidentialité](cloudflarePrivacy).",
 				],
 			},
 			{
 				title: "Les ressources tierces",
 				paragraphs: [
-					"Deux projets affichent des images venues d’autres sites, qui voient alors votre adresse IP : le Backlog charge ses jaquettes depuis IGDB, Angers Irigo son fond de carte depuis OpenStreetMap.",
-					"Les données temps réel d’Irigo, elles, passent par le serveur du site : leur fournisseur ne voit pas votre adresse.",
+					"Deux projets affichent des images venues d’autres sites, qui voient alors votre adresse IP : le Backlog charge ses jaquettes depuis [IGDB](igdb), un service de Twitch ([politique de confidentialité de Twitch](twitchPrivacy)), et Angers Irigo son fond de carte depuis [OpenStreetMap](openStreetMapCopyright) ([politique de confidentialité de la fondation OpenStreetMap](openStreetMapPrivacy)).",
+					"Les données temps réel d’[Irigo](irigo), elles, passent par le serveur du site : leur fournisseur ne voit pas votre adresse.",
 				],
 			},
 			{
 				title: "Vos droits",
 				paragraphs: [
-					`Le responsable du traitement est Alexandre RICHARD. Pour accéder à vos données, les corriger ou les faire effacer, écrivez à ${CONTACT_EMAIL}. En cas de désaccord, vous pouvez saisir la CNIL, sur cnil.fr.`,
+					`Le responsable du traitement est Alexandre RICHARD. Pour accéder à vos données, les corriger ou les faire effacer, écrivez à ${CONTACT_MAIL_LINK}. En cas de désaccord, vous pouvez adresser une [réclamation à la CNIL](cnilComplaint), le régulateur français, directement en ligne.`,
 				],
 			},
 		],

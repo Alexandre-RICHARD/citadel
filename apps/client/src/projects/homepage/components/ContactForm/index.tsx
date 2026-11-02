@@ -1,5 +1,4 @@
 import { useNow } from "@citadel/common/src/react/hooks/useNow";
-import { CONTACT_EMAIL } from "@citadel/specs/src/projects/contact/contactEmail";
 import { ContactFieldMaxLengthEnum } from "@citadel/specs/src/projects/contact/contactFieldMaxLength.enum";
 import { sendContactMessageBodySchema } from "@citadel/specs/src/projects/contact/endpoint/messages/sendContactMessage/sendContactMessageBodySchema";
 import { Mail, Send } from "lucide-react";
@@ -9,9 +8,11 @@ import { useIsContactOpen } from "../../../../common/api/mail/useIsContactOpen";
 import { checkInput } from "../../../../common/validation/checkInput";
 import { contactFieldLabels } from "../../api/contact/contactFieldLabels";
 import { useSendContactMessage } from "../../api/contact/useSendContactMessage";
+import { CONTACT_MAIL_LINK } from "../../content/contactMailLink";
 import { formatWaitDelay } from "../../helper/formatWaitDelay";
 import { resolveContactFailure } from "../../helper/resolveContactFailure";
 import { ContactSuccess } from "../ContactSuccess";
+import { LinkedText } from "../LinkedText";
 import styles from "./contactForm.module.scss";
 
 type ContactFields = {
@@ -244,8 +245,9 @@ export function ContactForm() {
 				</div>
 			</fieldset>
 			<p className={styles.direct}>
-				Vous pouvez aussi écrire directement à{" "}
-				<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+				<LinkedText
+					text={`Vous pouvez aussi écrire directement à ${CONTACT_MAIL_LINK}.`}
+				/>
 			</p>
 		</form>
 	);

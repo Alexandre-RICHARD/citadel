@@ -2,6 +2,7 @@ import { ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router";
 
 import { ContactForm } from "../../components/ContactForm";
+import { LinkedText } from "../../components/LinkedText";
 import type { FooterPage as FooterPageContent } from "../../content/footerPage.type";
 import styles from "./footerPage.module.scss";
 
@@ -37,7 +38,7 @@ export function FooterPage({ page, backPath }: Props) {
 			<div className={styles.content}>
 				<h1 className={styles.title}>{page.title}</h1>
 				<p className={styles.intro}>
-					{page.intro}
+					<LinkedText text={page.intro} />
 				</p>
 				{page.kind === "contact" ? (
 					<ContactForm />
@@ -50,7 +51,7 @@ export function FooterPage({ page, backPath }: Props) {
 									key={paragraph}
 									className={styles.paragraph}
 								>
-									{paragraph}
+									<LinkedText text={paragraph} />
 								</p>
 							))}
 						</section>

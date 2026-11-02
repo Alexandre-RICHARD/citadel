@@ -211,18 +211,6 @@
   margin-top: 2.4rem;
   font-size: 1.4rem;
   color: vars.$muted;
-
-  a {
-    color: vars.$text;
-    text-decoration-color: vars.$accent;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 3px;
-
-    &:hover,
-    &:focus-visible {
-      color: vars.$accent;
-    }
-  }
 }
 
 @keyframes badge-float {

@@ -1,11 +1,10 @@
 import { NavLink } from "react-router";
 
+import { externalLinks } from "../../../../common/links/externalLinks";
 import { footerPages } from "../../content/footerPages";
 import { buildHomepagePath } from "../../routing/buildHomepagePath";
 import { GitHubMark } from "../GitHubMark";
 import styles from "./footer.module.scss";
-
-const REPOSITORY_URL = "https://github.com/Alexandre-RICHARD/citadel";
 
 // Toujours en bas : le copyright, le dépôt du site, et ses pages (dont Contact), en verre dépoli
 export function Footer() {
@@ -28,7 +27,7 @@ export function Footer() {
 			>
 				<a
 					className={styles.gitHub}
-					href={REPOSITORY_URL}
+					href={externalLinks.repository}
 					target="_blank"
 					rel="noopener noreferrer"
 					aria-label="Code source sur GitHub"

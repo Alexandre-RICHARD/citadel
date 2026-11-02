@@ -15,6 +15,7 @@ import {
 	ZoomControl,
 } from "react-leaflet";
 
+import { externalLinks } from "../../../common/links/externalLinks";
 import { MAP_CENTER, MAP_ZOOM } from "../config";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { StopFocusRequest, StopGroup } from "../types/stop";
@@ -30,8 +31,7 @@ import { VehicleFollower } from "./VehicleFollower";
 import { VehicleMarker } from "./VehicleMarker";
 
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILE_ATTRIBUTION =
-	'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const TILE_ATTRIBUTION = `&copy; <a href="${externalLinks.openStreetMapCopyright}">OpenStreetMap</a> contributors`;
 /** Marge entre une popup recentrée et le bord de la carte ou les panneaux */
 const POPUP_PAN_PADDING_PX = 8;
 
