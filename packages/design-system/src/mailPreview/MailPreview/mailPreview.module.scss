@@ -39,9 +39,10 @@
   display: grid;
   flex: 1;
   grid-template-columns: 3fr 2fr;
+  align-items: start;
   gap: 16px;
 
-  @media (width <= 900px) {
+  @media (width <= 1100px) {
     grid-template-columns: 1fr;
   }
 }
@@ -53,8 +54,16 @@
   min-width: 0;
 }
 
+.paneHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-height: 30px;
+}
+
 .paneTitle {
-  margin: 0;
+  margin: 0 auto 0 0;
   color: #6b7280;
   font-size: 12px;
   font-weight: 600;
@@ -62,16 +71,60 @@
   text-transform: uppercase;
 }
 
+.toggle {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: #e5e7eb;
+}
+
+.toggleButton {
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #4b5563;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: #111827;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #6b3fd4;
+    outline-offset: 1px;
+  }
+}
+
+.toggleButtonActive {
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+  color: #111827;
+}
+
+// Le fond derrière le cadre suit le mode choisi : un mail étroit ne flotte pas sur du gris clair en sombre
+.stage {
+  display: flex;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f5f1ea;
+  overflow: hidden;
+}
+
+.stageDark {
+  background: #0b0915;
+}
+
 .frame {
-  flex: 1;
+  display: block;
   min-height: 480px;
   border: 0;
-  border-radius: 8px;
-  background: #fff;
 }
 
 .text {
-  flex: 1;
   margin: 0;
   padding: 16px;
   border-radius: 8px;

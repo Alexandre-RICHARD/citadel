@@ -50,7 +50,7 @@ Tout le chantier est dans le [cahier des charges de l'authentification](auth/cah
 
 Pour plus tard :
 
-- Thème des mails de l'authentification : gabarit commun (en-tête, code en gros, durée de validité, mention « si tu n'es pas à l'origine de cette demande, ignore ce mail »), aux couleurs du site, en HTML et en texte brut. Le chantier d'auth n'envoie qu'un gabarit minimal ([cahier des charges, §8.3](auth/cahier_des_charges.md)).
+- Thème des mails de l'authentification : la mise en page commune existe (`buildMailBodies`, aux couleurs du site, HTML et texte brut). Reste une brique « code en gros », la durée de validité et la mention « si tu n'es pas à l'origine de cette demande, ignore ce mail ». Le chantier d'auth n'envoie qu'un gabarit minimal ([cahier des charges, §8.3](auth/cahier_des_charges.md)).
 
 ## 3. Backlog
 
