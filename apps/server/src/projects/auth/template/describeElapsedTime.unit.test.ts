@@ -23,6 +23,16 @@ describe("describeElapsedTime.ts", () => {
 			).toBe("il y a 1 jour");
 		});
 
+		it("SHOULD count whole days WHEN the dates are on both sides of the end of daylight saving time", () => {
+			// Le changement d'heure du 25 octobre 2026 : un jour de 25 h ne doit pas retirer un jour
+			expect(
+				describeElapsedTime(
+					new Date("2026-10-24T12:00:00.000Z"),
+					new Date("2026-10-27T12:00:00.000Z"),
+				),
+			).toBe("il y a 3 jours");
+		});
+
 		it.each([
 			[2, "il y a 2 jours"],
 			[7, "il y a 7 jours"],

@@ -18,13 +18,14 @@ const parisDateTimeFormat = new Intl.DateTimeFormat("fr-FR", {
 
 const MISSING = "non donné";
 
+const PREVIEW_MAX_LENGTH = 140;
+
 const DELAY_CALLOUT: MailBlock = {
 	kind: "callout",
 	accent: MailAccentEnum.ORANGE,
 	title: "Une notification en retard",
 	text: "Cette notification te parvient avec du retard : un incident technique l'a empêchée de partir plus tôt. La date ci-dessous est celle où le visiteur a écrit.",
 };
-const PREVIEW_MAX_LENGTH = 140;
 
 type NotificationOptions = {
 	// Relance du soir d'un message dont l'envoi avait échoué : même contenu, sujet suivi de « (différé) »

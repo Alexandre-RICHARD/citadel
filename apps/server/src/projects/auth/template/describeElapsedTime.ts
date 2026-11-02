@@ -7,7 +7,6 @@ const DAYS_PER_MONTH = 30;
 const DAYS_PER_YEAR = 365;
 const LAST_DAY_COUNTED_IN_DAYS = 7;
 const LAST_DAY_COUNTED_IN_WEEKS = 35;
-const MONTHS_MAX = 12;
 
 // Les jours de calendrier à Paris, pas les tranches de 24 h : une connexion d'hier soir date d'hier, à 8 h du matin
 function countParisDays(from: Date, to: Date): number {
@@ -30,8 +29,7 @@ export function describeElapsedTime(from: Date, now: Date): string {
 	if (days <= LAST_DAY_COUNTED_IN_WEEKS)
 		return `il y a ${pluralize(Math.floor(days / DAYS_PER_WEEK), "semaine")}`;
 	if (days < DAYS_PER_YEAR) {
-		const months = Math.min(MONTHS_MAX, Math.floor(days / DAYS_PER_MONTH));
-		return `il y a ${months} mois`;
+		return `il y a ${Math.floor(days / DAYS_PER_MONTH)} mois`;
 	}
 	return `il y a ${pluralize(Math.floor(days / DAYS_PER_YEAR), "an")}`;
 }

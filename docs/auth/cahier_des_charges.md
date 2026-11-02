@@ -884,6 +884,14 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Quota épuisé : `MAIL_CLOSED` et son message pour la connexion par mail, le mot de passe oublié, le changement d'email, l'activation du facteur mail.
 - [ ] Brevo coupé (mauvaise clé) : l'inscription répond comme d'habitude, l'échec est dans `mailing_failure` et la console.
 - [ ] 40 mails par IP et par jour au plus.
+- [ ] Répondre à un email de l'authentification (envoyé de `noreply`, sans adresse de réponse) : rien n'arrive nulle part ; Brevo accepte bien l'envoi sans adresse de réponse. Seuls l'accusé de réception et la notification du contact se répondent.
+- [ ] Brevo refuse un email (adresse email invalide) : ni `error_log` ni `mailing_failure` ne contiennent l'adresse.
+- [ ] Une seule place restante au quota, deux demandes de lien en même temps : les deux répondent pareil, l'échec éventuel est dans `mailing_failure`, rien ne casse.
+- [ ] « Ta dernière connexion » (compte déjà inscrit) : « aujourd'hui », jours, semaines, mois et années justes, autour de minuit à Paris et d'un changement d'heure.
+- [ ] Phrase « tu peux aussi saisir ce code sur la page restée ouverte » : juste dans chaque email à code, y compris le changement d'email et l'activation du facteur mail.
+- [ ] Le bouton « Réinitialiser mon mot de passe » des notifications mène à la vraie page (`/auth/forgot-password` est provisoire, étape 44).
+- [ ] Tutoiement des emails face au vouvoiement du site (formulaire de contact, écran « Message envoyé », pages du pied de page) : décider d'harmoniser ou non.
+- [ ] Aucun « mail » ni « adresse » seul pour l'email dans les textes visibles des interfaces et des emails : « email » et « adresse email » partout.
 
 **Restauration, RGPD, sécurité**
 
