@@ -93,6 +93,8 @@ const envSchema = z.object({
 	AUTH_IP_FAILURE_WINDOW_MINUTES: positiveInteger(10),
 	AUTH_IP_BAN_MINUTES: positiveInteger(15),
 	AUTH_REGISTRATIONS_PER_IP_PER_HOUR: positiveInteger(3),
+	// « Vérifier la disponibilité » d'un pseudo, par heure et par IP : un robot ne liste pas tous les pseudos
+	AUTH_USERNAME_CHECKS_PER_IP_PER_HOUR: positiveInteger(60),
 	// Coût d'un hash de mot de passe (minimum OWASP), et hashs simultanés puis en attente au plus
 	AUTH_ARGON2_MEMORY_KIB: positiveInteger(19_456),
 	AUTH_ARGON2_PASSES: positiveInteger(2),

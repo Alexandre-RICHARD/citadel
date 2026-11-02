@@ -20,6 +20,7 @@ const SETTINGS = {
 	},
 	mailLimits: { perAddressPerHour: 5, perIpPerHour: 20, perIpPerDay: 40 },
 	registrationsPerIpPerHour: 3,
+	usernameChecksPerIpPerHour: 60,
 };
 
 const ALEX = { accountKey: "12", ip: "203.0.113.1" };
@@ -375,6 +376,38 @@ describe("createAuthLimiter.ts", () => {
 
 			// Assert
 			expect(new Set(retryAfterList)).toStrictEqual(new Set([null]));
+		});
+	});
+
+	describe("username checks", () => {
+		it("SHOULD accept 60 checks an hour, then make the 61st wait for the oldest to leave the hour WHEN they come from one IP", () => {
+			// Arrange
+			const clock = createLimiter();
+			const acceptedList = Array.from({ length: 60 }, () => {
+				const retryAfterMs = clock.limiter.claimUsernameCheck(ALEX.ip);
+				clock.advance(MINUTE_MS / 2);
+				return retryAfterMs;
+			});
+
+			// Act
+			const retryAfterMs = clock.limiter.claimUsernameCheck(ALEX.ip);
+
+			// Assert
+			expect(new Set(acceptedList)).toStrictEqual(new Set([null]));
+			expect(retryAfterMs).toBe(HOUR_MS / 2);
+		});
+
+		it("SHOULD keep checks open WHEN another IP used all of its own", () => {
+			// Arrange
+			const clock = createLimiter();
+			for (let index = 0; index < 61; index++)
+				clock.limiter.claimUsernameCheck(ALEX_FROM_PHONE.ip);
+
+			// Act
+			const retryAfterMs = clock.limiter.claimUsernameCheck(ALEX.ip);
+
+			// Assert
+			expect(retryAfterMs).toBeNull();
 		});
 	});
 });

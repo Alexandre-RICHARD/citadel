@@ -43,6 +43,7 @@ export function buildAuthSettings(variables: typeof env) {
 			ipBanMs: variables.AUTH_IP_BAN_MINUTES * DurationMsEnum.MINUTE,
 		},
 		registrationsPerIpPerHour: variables.AUTH_REGISTRATIONS_PER_IP_PER_HOUR,
+		usernameChecksPerIpPerHour: variables.AUTH_USERNAME_CHECKS_PER_IP_PER_HOUR,
 		passwordHashing: {
 			parameters: {
 				memoryKib: variables.AUTH_ARGON2_MEMORY_KIB,
