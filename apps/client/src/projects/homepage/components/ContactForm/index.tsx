@@ -9,13 +9,13 @@ import { type FormEvent, useId, useState } from "react";
 
 import { useIsContactOpen } from "../../../../common/api/mail/useIsContactOpen";
 import { notifyMutationFailure } from "../../../../common/api/mutation/notifyMutationFailure";
+import { formatWaitDelay } from "../../../../common/format/formatWaitDelay";
 import { toastStore } from "../../../../common/toast/toastStore";
 import { checkInput } from "../../../../common/validation/checkInput";
 import { contactFieldLabels } from "../../api/contact/contactFieldLabels";
 import { useSendContactMessage } from "../../api/contact/useSendContactMessage";
 import type { ContactMessageFm } from "../../api/model/contactMessageFm.type";
 import { CONTACT_MAIL_LINK } from "../../content/contactMailLink";
-import { formatWaitDelay } from "../../helper/formatWaitDelay";
 import { resolveContactFailure } from "../../helper/resolveContactFailure";
 import { ContactSuccess } from "../ContactSuccess";
 import { LinkedText } from "../LinkedText";
