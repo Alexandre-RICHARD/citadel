@@ -357,6 +357,9 @@ importers:
       '@citadel/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@citadel/server':
+        specifier: workspace:*
+        version: link:../../apps/server
       '@citadel/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

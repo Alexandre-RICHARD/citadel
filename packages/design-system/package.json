@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@citadel/eslint-config": "workspace:*",
+    "@citadel/server": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
     "@storybook/react-vite": "^10.6.5",
     "@types/react": "catalog:",
