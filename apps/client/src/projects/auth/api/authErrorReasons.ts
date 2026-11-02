@@ -11,6 +11,10 @@ export const authErrorReasons: Record<AuthErrorCodeEnum, string> = {
 	[AuthErrorCodeEnum.PASSWORD_UNCHANGED]:
 		"le nouveau mot de passe doit être différent de l'actuel",
 	[AuthErrorCodeEnum.INVALID_CODE]: "ce code n'est pas valable",
+	[AuthErrorCodeEnum.CODE_ATTEMPTS_EXHAUSTED]:
+		"tous les essais de ce code sont faits, demande un nouvel email",
+	[AuthErrorCodeEnum.LINK_OTHER_BROWSER]:
+		"ce lien a été ouvert dans un autre navigateur que celui où tu as commencé, saisis plutôt le code de l'email sur la page restée ouverte",
 	[AuthErrorCodeEnum.FLOW_EXPIRED]: "le délai est dépassé, il faut recommencer",
 	[AuthErrorCodeEnum.USERNAME_TAKEN]: "ce pseudo est déjà pris",
 	[AuthErrorCodeEnum.EMAIL_TAKEN]: "cette adresse email est déjà utilisée",

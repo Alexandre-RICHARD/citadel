@@ -1,0 +1,53 @@
+.alert {
+  --alert-color: #{vars.$accent};
+  --alert-background: #{vars.$accent-subtle};
+
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  border-left: 3px solid var(--alert-color);
+  border-radius: 0.6rem;
+  background: var(--alert-background);
+  font-size: 1.4rem;
+  line-height: 1.5;
+
+  &[data-tone="error"] {
+    --alert-color: #{vars.$danger};
+    --alert-background: #{vars.$danger-subtle};
+  }
+
+  > svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--alert-color);
+  }
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+
+  p + p {
+    margin-top: 0.4rem;
+  }
+
+  a,
+  button {
+    @include vars.text-link;
+
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+  }
+}
+
+.retry {
+  @include vars.button-ghost;
+
+  padding: 0.5rem 1rem;
+  font-size: 1.3rem;
+}

@@ -9,4 +9,5 @@ export const projectLoaders = {
 		import("../../projects/gameDeathCounter"),
 	[ProjectsEnum.Backlog]: () => import("../../projects/backlog"),
 	[ProjectsEnum.AngersIrigo]: () => import("../../projects/angersIrigo"),
+	[ProjectsEnum.Auth]: () => import("../../projects/auth"),
 } satisfies Record<ProjectsEnum, () => Promise<unknown>>;

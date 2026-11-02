@@ -1,0 +1,29 @@
+// Invisible les 300 premières millisecondes, puis une carte qui respire
+.loading {
+  width: 100%;
+  max-width: 48rem;
+  height: 36rem;
+  border: 1px solid vars.$border-soft;
+  border-radius: calc(#{vars.$radius} + 0.6rem);
+  background: color-mix(in srgb, vars.$surface 70%, transparent);
+  opacity: 0;
+  animation:
+    appear 0.2s 0.3s forwards,
+    breathe 1.6s 0.5s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: appear 0.2s 0.3s forwards;
+  }
+}
+
+@keyframes appear {
+  to {
+    opacity: 0.7;
+  }
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.4;
+  }
+}

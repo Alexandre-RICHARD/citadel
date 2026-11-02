@@ -77,6 +77,19 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 		} satisfies RouteMeta,
 		index: true,
 	},
+	[ProjectsEnum.Auth]: {
+		path: `${projects[ProjectsEnum.Auth].path}/*`,
+		lazy: async () => {
+			const { Auth } = await projectLoaders[ProjectsEnum.Auth]();
+			return { Component: Auth };
+		},
+		handle: {
+			project: ProjectsEnum.Auth,
+			documentTitle: projects[ProjectsEnum.Auth].documentTitle,
+			favicon: projects[ProjectsEnum.Auth].favicon,
+			basePath: projects[ProjectsEnum.Auth].path,
+		} satisfies RouteMeta,
+	},
 };
 
 export const router = createBrowserRouter([

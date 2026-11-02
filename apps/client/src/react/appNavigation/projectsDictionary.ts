@@ -64,4 +64,15 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		theme: angersIrigoTheme,
 		showcase: angersIrigoShowcase,
 	},
+	// Les comptes, partagés par tous les projets : dans l'ambiance de la homepage, ni dans la roue ni dans le pied de page
+	[ProjectsEnum.Auth]: {
+		id: ProjectsEnum.Auth,
+		path: "/auth",
+		name: "Compte",
+		documentTitle: "Compte · La Citadel d’Alex",
+		favicon: "/favicon/home.ico",
+		illustration: "/favicon/home.ico",
+		theme: citadelTheme,
+		showcase: null,
+	},
 };

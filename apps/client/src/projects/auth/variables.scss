@@ -1,0 +1,197 @@
+// Jetons et mixins des pages du compte. Injecté dans chaque .scss du projet sous le nom `vars` (vite.config.ts).
+// Les valeurs viennent du thème de la Citadel (design system, projectThemes/citadelTheme.ts), en clair ou en sombre
+
+// ---------- Couleurs ----------
+
+$background: var(--theme-colorBackground);
+$surface: var(--theme-colorSurface);
+$surface-raised: var(--theme-colorSurfaceRaised);
+$surface-sunken: var(--theme-colorSurfaceSunken);
+$border: var(--theme-colorBorder);
+$border-soft: var(--theme-colorBorderSoft);
+$text: var(--theme-colorText);
+$muted: var(--theme-colorTextMuted);
+$subtle: var(--theme-colorTextSubtle);
+$accent: var(--theme-colorPrimaryHue);
+$accent-strong: var(--theme-colorPrimaryStrong);
+$accent-subtle: var(--theme-colorPrimarySubtle);
+$accent-content: var(--theme-colorPrimaryContent);
+$danger: var(--theme-colorDestructiveHue);
+$danger-subtle: var(--theme-colorDestructiveSubtle);
+$success: var(--theme-colorConstructiveHue);
+$success-subtle: var(--theme-colorConstructiveSubtle);
+$decoration-1: var(--theme-colorDecoration1);
+$decoration-2: var(--theme-colorDecoration2);
+$decoration-3: var(--theme-colorDecoration3);
+$decoration-4: var(--theme-colorDecoration4);
+
+// ---------- Typographie et formes (1rem = 10px) ----------
+
+$font-body: var(--theme-fontFamilyPrimary);
+$font-display: var(--theme-fontFamilySecondary);
+$font-mono: var(--theme-fontFamilyMono);
+$radius: var(--theme-radiusL);
+$radius-field: min(var(--theme-radiusL), 1rem);
+
+// ---------- Téléphone ----------
+
+@mixin phone {
+  @media (max-width: 600px) {
+    @content;
+  }
+}
+
+// ---------- Mixins ----------
+
+@mixin display-font {
+  font-family: $font-display;
+  font-weight: var(--theme-fontWeightDisplay);
+  letter-spacing: var(--theme-letterSpacingDisplay);
+}
+
+// Le contour du focus au clavier, partout le même
+@mixin focus-ring {
+  outline: 2px solid $accent;
+  outline-offset: 2px;
+}
+
+// Champ de saisie : fond creusé, bordure qui s'éclaire au survol, halo au focus ; rouge s'il a été refusé à l'envoi
+@mixin field {
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  border: 1px solid $border;
+  border-radius: $radius-field;
+  background: color-mix(in srgb, $surface-sunken 60%, $surface);
+  color: $text;
+  font: inherit;
+  font-size: 1.5rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+
+  &::placeholder {
+    color: $subtle;
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, $accent 45%, $border);
+  }
+
+  &:focus-visible {
+    border-color: $accent;
+    outline: none;
+    background: $surface;
+    box-shadow: 0 0 0 3px $accent-subtle;
+  }
+
+  &[aria-invalid="true"] {
+    border-color: $danger;
+    box-shadow: 0 0 0 3px $danger-subtle;
+  }
+}
+
+// Bouton principal : plein, couleur de la Citadel
+@mixin button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1.3rem 2rem;
+  border: 1px solid $accent;
+  border-radius: $radius-field;
+  background: $accent;
+  color: $accent-content;
+  font: inherit;
+  font-size: 1.55rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.25s,
+    transform 0.25s;
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex: none;
+  }
+
+  &:hover:not(:disabled) {
+    background: $accent-strong;
+    box-shadow: 0 10px 24px -14px $accent;
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+// Bouton secondaire : un contour, pour les actions à côté de la principale
+@mixin button-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.9rem 1.4rem;
+  border: 1px solid $border;
+  border-radius: $radius-field;
+  background: transparent;
+  color: $text;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: none;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $accent;
+    background: $accent-subtle;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+// Lien dans le texte : souligné discrètement, plus franchement au survol
+@mixin text-link {
+  color: $accent;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, $accent 35%, transparent);
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration-color: $accent;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+
+    border-radius: 0.3rem;
+  }
+}
