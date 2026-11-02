@@ -20,6 +20,7 @@ describe("factorModel", () => {
 				keyVersion: 2,
 				lastUsedStep: 59_330_000,
 				lastUsedAt: new Date("2026-11-02T10:00:00.001Z"),
+				confirmedAt: new Date("2026-11-02T10:00:00.002Z"),
 			};
 
 			// Act
@@ -41,7 +42,7 @@ describe("factorModel", () => {
 			});
 		});
 
-		it("SHOULD leave the secret, the key version and the usage empty WHEN an email factor is created", async () => {
+		it("SHOULD leave the secret, the key version, the usage and the confirmation empty WHEN an email factor is created", async () => {
 			// Act
 			const { id } = await Factor.create({
 				userId: await insertAuthRows.user(),
@@ -56,6 +57,7 @@ describe("factorModel", () => {
 				keyVersion: null,
 				lastUsedStep: null,
 				lastUsedAt: null,
+				confirmedAt: null,
 			});
 		});
 	});

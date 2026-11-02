@@ -200,7 +200,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 | `last_sent_at`, `expires_at` | DATETIME(3) | |
 | `created_at`, `updated_at` | DATETIME(3) | |
 
-**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (INT, nul : suffit jusqu'à l'an 4000, un BIGINT arriverait en chaîne), `last_used_at`, `created_at`, `updated_at`. Un seul facteur `email` par compte.
+**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (INT, nul : suffit jusqu'à l'an 4000, un BIGINT arriverait en chaîne), `last_used_at`, `confirmed_at` (nul tant que le premier code n'est pas validé : facteur inactif, purgé après 15 minutes), `created_at`, `updated_at`. Un seul facteur `email` par compte.
 
 **`auth_recovery_code`** : `id`, `user_id`, `code_hash` (BINARY(32)), `used_at` (nul), `created_at`, `updated_at`.
 
@@ -226,7 +226,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
   - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code. Sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
 - **Temps restant** : chaque réponse renvoie `expiresAt` et, pendant un délai, `retryAfter`.
-- **Expiration** : un parcours expiré est refusé à la lecture ; une minuterie du serveur supprime les lignes expirées (`auth_flow`, `auth_session`) toutes les 15 minutes, et les vieilles lignes de `auth_event` et `error_log` une fois par jour.
+- **Expiration** : un parcours expiré est refusé à la lecture ; une minuterie du serveur supprime les lignes expirées (`auth_flow`, `auth_session`) et les facteurs non confirmés depuis plus de 15 minutes toutes les 15 minutes, et les vieilles lignes de `auth_event` et `error_log` une fois par jour.
 - **Réponses neutres** : rien ne dit si un email existe, ni le contenu, ni la durée (mail envoyé après la réponse, §8.1).
 
 ### 6.2 Inscription

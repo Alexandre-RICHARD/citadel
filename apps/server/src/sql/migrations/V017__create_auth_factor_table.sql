@@ -3,6 +3,8 @@
 -- après l'insertion, d'où un secret NULL toléré) ; last_used_step, le pas de 30 s du dernier code accepté (anti-rejeu),
 -- tient en INT jusqu'à l'an 4000 (un BIGINT arriverait en chaîne).
 -- email : ni secret ni pas, le code part par mail
+-- confirmed_at NULL : le facteur n'est pas encore actif (le premier code n'est pas validé). Un facteur non confirmé
+-- n'est jamais compté comme second facteur, et la purge des 15 minutes efface ceux qui restent ainsi
 CREATE TABLE auth_factor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -12,6 +14,7 @@ CREATE TABLE auth_factor (
     key_version TINYINT UNSIGNED NULL,
     last_used_step INT NULL,
     last_used_at DATETIME(3) NULL,
+    confirmed_at DATETIME(3) NULL,
     created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     -- Un seul facteur mail par compte (deux seraient interchangeables), autant de TOTP que voulu : rempli pour un

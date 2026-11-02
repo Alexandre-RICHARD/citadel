@@ -104,10 +104,11 @@ export const insertAuthRows = {
 		secretEncrypted?: Buffer | null;
 		keyVersion?: number | null;
 		lastUsedStep?: number | null;
+		confirmedAt?: Date | null;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO auth_factor (user_id, type, name, secret_encrypted, key_version, last_used_step)
-			VALUES (:userId, :type, 'Mon facteur', :secretEncrypted, :keyVersion, :lastUsedStep)`,
+			`INSERT INTO auth_factor (user_id, type, name, secret_encrypted, key_version, last_used_step, confirmed_at)
+			VALUES (:userId, :type, 'Mon facteur', :secretEncrypted, :keyVersion, :lastUsedStep, :confirmedAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -115,6 +116,7 @@ export const insertAuthRows = {
 					secretEncrypted: null,
 					keyVersion: null,
 					lastUsedStep: null,
+					confirmedAt: null,
 					...row,
 				},
 			},

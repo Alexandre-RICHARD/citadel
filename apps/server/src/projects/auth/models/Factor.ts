@@ -26,6 +26,8 @@ export class Factor extends Model<
 	// Pas de 30 s du dernier code accepté : un code ne resert jamais
 	declare lastUsedStep: CreationOptional<number | null>;
 	declare lastUsedAt: CreationOptional<Date | null>;
+	// Null tant que le premier code n'a pas été validé : le facteur n'est pas actif
+	declare confirmedAt: CreationOptional<Date | null>;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 	declare user?: NonAttribute<User>;
@@ -73,6 +75,11 @@ Factor.init(
 		lastUsedAt: {
 			type: DataTypes.DATE(3),
 			field: "last_used_at",
+			allowNull: true,
+		},
+		confirmedAt: {
+			type: DataTypes.DATE(3),
+			field: "confirmed_at",
 			allowNull: true,
 		},
 		createdAt: {

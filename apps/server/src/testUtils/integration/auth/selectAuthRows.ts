@@ -53,6 +53,7 @@ type FactorRow = {
 	keyVersion: number | null;
 	lastUsedStep: number | null;
 	lastUsedAt: Date | null;
+	confirmedAt: Date | null;
 };
 
 type RecoveryCodeRow = {
@@ -104,7 +105,7 @@ export const selectAuthRows = {
 	async factor(id: number): Promise<FactorRow | null> {
 		return sequelize.query<FactorRow>(
 			`SELECT id, user_id AS userId, type, name, secret_encrypted AS secretEncrypted, key_version AS keyVersion,
-				last_used_step AS lastUsedStep, last_used_at AS lastUsedAt
+				last_used_step AS lastUsedStep, last_used_at AS lastUsedAt, confirmed_at AS confirmedAt
 			FROM auth_factor
 			WHERE id = :id`,
 			{ type: QueryTypes.SELECT, plain: true, replacements: { id } },

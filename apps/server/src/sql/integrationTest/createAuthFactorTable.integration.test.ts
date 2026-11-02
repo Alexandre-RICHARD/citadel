@@ -43,6 +43,34 @@ describe("createAuthFactorTable", () => {
 			).toStrictEqual([id]);
 		});
 
+		it("SHOULD keep a TOTP factor unconfirmed WHEN its first code is not validated yet", async () => {
+			// Arrange
+			const userId = await insertAuthRows.user();
+
+			// Act
+			const id = await insertAuthRows.factor({ userId, type: "totp" });
+
+			// Assert
+			expect((await selectAuthRows.factor(id))?.confirmedAt).toBeNull();
+		});
+
+		it("SHOULD keep the confirmation date WHEN the factor is confirmed", async () => {
+			// Arrange
+			const confirmedAt = new Date("2026-11-02T10:00:00.003Z");
+
+			// Act
+			const id = await insertAuthRows.factor({
+				userId: await insertAuthRows.user(),
+				type: "totp",
+				confirmedAt,
+			});
+
+			// Assert
+			expect((await selectAuthRows.factor(id))?.confirmedAt).toStrictEqual(
+				confirmedAt,
+			);
+		});
+
 		it("SHOULD keep the last used step WHEN it is the step of the end of year 3999", async () => {
 			// Arrange
 			const lastUsedStep = Math.floor(
