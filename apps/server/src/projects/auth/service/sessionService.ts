@@ -24,8 +24,6 @@ class SessionService {
 		client,
 		replacedToken,
 	}: CreateSessionBean): Promise<SessionCookieBean> {
-		if (replacedToken !== undefined) await this.delete(replacedToken);
-
 		const token = createRandomToken();
 		const now = new Date();
 		const absoluteExpiresAt = new Date(
@@ -45,6 +43,8 @@ class SessionService {
 			seenAt: now,
 			expiresAt,
 			absoluteExpiresAt,
+			replacedTokenHash:
+				replacedToken === undefined ? null : hashSha256(replacedToken),
 		});
 		return { token, remember, expiresAt };
 	}

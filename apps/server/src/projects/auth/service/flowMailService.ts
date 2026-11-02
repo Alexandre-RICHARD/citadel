@@ -2,6 +2,8 @@ import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enu
 
 import type { Mail } from "../../../mail/mail.type.ts";
 import type { FlowSecretsBean } from "../bean/flowSecretsBean.type.ts";
+import { isDecoyFlow } from "../helper/flow/isDecoyFlow.ts";
+import type { FlowPayload } from "../models/flowPayload.type.ts";
 import { findUserByEmailQuery } from "../query/user/findUserByEmailQuery.ts";
 import { buildEmailChangeMail } from "../template/buildEmailChangeMail.ts";
 import { buildEmailFactorActivationMail } from "../template/buildEmailFactorActivationMail.ts";
@@ -17,6 +19,7 @@ type FlowFacts = {
 	kind: FlowKindEnum;
 	userId: number | null;
 	email: string;
+	payload: FlowPayload | null;
 };
 
 // Ce que reçoit la boîte d'un parcours à son étape « lien et code »
@@ -47,11 +50,11 @@ class FlowMailService {
 	}
 
 	// Décidé à chaque envoi : une adresse peut avoir été inscrite entre un mail et son renvoi
-	async plan({ kind, userId, email }: FlowFacts): Promise<StepMail> {
-		if (kind !== FlowKindEnum.REGISTRATION)
-			return userId === null
-				? { hasSecrets: false, existingAccountLastLoginAt: null }
-				: { hasSecrets: true };
+	async plan(facts: FlowFacts): Promise<StepMail> {
+		const { kind, email } = facts;
+		if (isDecoyFlow(facts))
+			return { hasSecrets: false, existingAccountLastLoginAt: null };
+		if (kind !== FlowKindEnum.REGISTRATION) return { hasSecrets: true };
 
 		const existingUser = await findUserByEmailQuery(email);
 		return existingUser === null

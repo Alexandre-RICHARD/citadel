@@ -321,6 +321,27 @@ describe("submitFlowCode", () => {
 			);
 		});
 
+		it("SHOULD refuse with FLOW_EXPIRED, without session, WHEN the account closed mail login since the mail", async () => {
+			// Arrange
+			const account = await insertTestAccount({ loginMethods: "password" });
+			const flow = await openTestFlow({
+				kind: "mail_login",
+				userId: account.userId,
+				email: account.email,
+			});
+
+			// Act
+			const response = await submitCode({ code: flow.code }, flow.cookie);
+
+			// Assert
+			expectRejected(
+				response,
+				AuthErrorCodeEnum.FLOW_EXPIRED,
+				"The account no longer accepts mail login",
+			);
+			expect(readSetCookie(response, sessionCookie.name)).toBeUndefined();
+		});
+
 		it("SHOULD refuse with FLOW_EXPIRED WHEN the flow expired", async () => {
 			// Arrange
 			const clock = useFakeClock();

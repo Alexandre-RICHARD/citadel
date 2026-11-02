@@ -70,5 +70,14 @@ export function createSlidingWindowLimiter({
 		eventTimesByKey.delete(key);
 	}
 
-	return { getRetryAfterMs, record, forget };
+	// Rend le dernier événement compté : la demande qu'il comptait n'a pas abouti
+	function release(key: string): void {
+		const times = eventTimesByKey.get(key);
+		if (times === undefined) return;
+		const remainingTimes = times.slice(0, -1);
+		if (remainingTimes.length === 0) eventTimesByKey.delete(key);
+		else eventTimesByKey.set(key, remainingTimes);
+	}
+
+	return { getRetryAfterMs, record, forget, release };
 }

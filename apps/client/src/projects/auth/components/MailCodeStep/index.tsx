@@ -10,6 +10,7 @@ import { useAbandonFlow } from "../../api/flow/useAbandonFlow";
 import { useResendFlowMail } from "../../api/flow/useResendFlowMail";
 import { useSubmitFlowCode } from "../../api/flow/useSubmitFlowCode";
 import type { FlowFm } from "../../api/model/flowFm.type";
+import { pickLaterTime } from "../../helper/pickLaterTime";
 import { useAuthFailure } from "../../hooks/useAuthFailure";
 import { AuthCard } from "../AuthCard";
 import { CodeInput } from "../CodeInput";
@@ -202,7 +203,11 @@ export function MailCodeStep({
 				/>
 				<div className={styles.secondaryActions}>
 					<ResendButton
-						availableAt={flow.resendAvailableAt}
+						// Un 429 ou un 503 du renvoi impose son attente, même avant le délai entre deux mails
+						availableAt={pickLaterTime(
+							flow.resendAvailableAt,
+							resendFailure.waitUntil,
+						)}
 						isPending={resend.isPending}
 						onResend={handleResend}
 					/>

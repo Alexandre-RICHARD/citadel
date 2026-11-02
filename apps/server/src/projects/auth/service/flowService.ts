@@ -18,6 +18,8 @@ import type { StartFlowBean } from "../bean/startFlowBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { countRemainingMinutes } from "../helper/flow/countRemainingMinutes.ts";
 import { createFlowSecrets } from "../helper/flow/createFlowSecrets.ts";
+import { isDecoyFlow } from "../helper/flow/isDecoyFlow.ts";
+import { readMailLimitAddress } from "../helper/flow/readMailLimitAddress.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
 import { fromFlowEntityToFlowBean } from "../mapper/beanEntity/flow/fromFlowEntityToFlowBean.ts";
 import type { Flow } from "../models/Flow.ts";
@@ -78,7 +80,7 @@ class FlowService {
 	 */
 	async start(start: StartFlowBean): Promise<FlowOutcomeBean> {
 		await flowMailService.assertOpen(start.kind);
-		this.#claimMail(start.email, start.browser.client.ip);
+		this.#claimMail(readMailLimitAddress(start), start.browser.client.ip);
 
 		const stepMail = await flowMailService.plan(start);
 		const secrets = stepMail.hasSecrets
@@ -103,8 +105,11 @@ class FlowService {
 			},
 			{
 				browserTokenHash: this.#hashOrNull(start.browser.flowToken),
+				// Un leurre ne remplace pas l'inscription en attente d'un autre à cette adresse
 				registrationEmail:
-					start.kind === FlowKindEnum.REGISTRATION ? start.email : null,
+					start.kind === FlowKindEnum.REGISTRATION && !isDecoyFlow(start)
+						? start.email
+						: null,
 			},
 		);
 
@@ -174,7 +179,7 @@ class FlowService {
 			resendAvailableAt === null ? 0 : resendAvailableAt.getTime() - Date.now();
 		if (waitMs > 0)
 			throw new TooManyRequestsError("The mail was sent too recently", waitMs);
-		this.#claimMail(flow.email, browser.client.ip);
+		this.#claimMail(readMailLimitAddress(flow), browser.client.ip);
 
 		const stepMail = await flowMailService.plan(flow);
 		const secrets = stepMail.hasSecrets
@@ -239,7 +244,7 @@ class FlowService {
 				AuthErrorCodeEnum.INVALID_CODE,
 				"Wrong, used or replaced code",
 			);
-		return { flow, flowToken };
+		return { flow, flowToken, proofKind: "code" };
 	}
 
 	/**
@@ -263,7 +268,7 @@ class FlowService {
 				AuthErrorCodeEnum.LINK_OTHER_BROWSER,
 				"The link belongs to a flow started in another browser",
 			);
-		return { flow, flowToken };
+		return { flow, flowToken, proofKind: "link" };
 	}
 
 	// Le compte d'un parcours dont le mail a été validé. Un leurre n'a ni code ni lien : il n'arrive jamais ici
@@ -275,10 +280,11 @@ class FlowService {
 
 	/**
 	 * Passe l'étape du mail, une seule fois : le code et le lien sont effacés dans la transaction de la suite (`work`).
-	 * Si la suite échoue (pseudo pris entre-temps), tout est annulé et ils restent valables
+	 * Si la suite échoue (pseudo pris entre-temps), tout est annulé et ils restent valables. Un renvoi arrivé entre la
+	 * vérification et ici a remplacé le code : il est faux, mais le parcours continue
 	 */
 	async consumeMailStep<Result>(
-		flow: Flow,
+		{ flow, proofKind }: VerifiedFlowBean,
 		work: (transaction: Transaction) => Promise<Result>,
 	): Promise<Result> {
 		const { linkTokenHash } = flow;
@@ -289,7 +295,12 @@ class FlowService {
 					linkTokenHash === null ||
 					!(await claimFlowMailStepQuery(flow.id, linkTokenHash, transaction))
 				)
-					throw flowExpired("The code or the link was already used");
+					throw proofKind === "code"
+						? new RejectedRequestError(
+								AuthErrorCodeEnum.INVALID_CODE,
+								"The code was used or replaced in the meantime",
+							)
+						: flowExpired("The link was used or replaced in the meantime");
 				return work(transaction);
 			},
 		);
@@ -316,8 +327,8 @@ class FlowService {
 		return flowToken;
 	}
 
-	#claimMail(email: string, ip: string): void {
-		const retryAfterMs = authLimiter.claimMail({ email, ip });
+	#claimMail(address: string, ip: string): void {
+		const retryAfterMs = authLimiter.claimMail({ email: address, ip });
 		if (retryAfterMs !== null)
 			throw new TooManyRequestsError(
 				"Too many authentication mails for this address or this IP",

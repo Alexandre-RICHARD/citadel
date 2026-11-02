@@ -1,6 +1,4 @@
-import { createRandomToken } from "@citadel/common/src/node/crypto/createRandomToken.ts";
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
-import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 
 import { authSettings } from "../../../configuration/authSettings.ts";
@@ -9,17 +7,18 @@ import { TooManyRequestsError } from "../../../error/TooManyRequestsError.ts";
 import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { RegistrationBean } from "../bean/registrationBean.type.ts";
+import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
 import { readRegistrationPayload } from "../helper/flow/readRegistrationPayload.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
-import type { Flow } from "../models/Flow.ts";
+import type { RegistrationPayload } from "../models/registrationPayload.type.ts";
 import { deleteFlowQuery } from "../query/flow/deleteFlowQuery.ts";
 import { createUserQuery } from "../query/user/createUserQuery.ts";
 import { authEventService } from "./authEventService.ts";
 import { authMailService } from "./authMailService.ts";
 import { flowService } from "./flowService.ts";
+import { loginService } from "./loginService.ts";
 import { passwordService } from "./passwordService.ts";
-import { sessionService } from "./sessionService.ts";
 import { userService } from "./userService.ts";
 
 /**
@@ -27,42 +26,52 @@ import { userService } from "./userService.ts";
  * parcours (pseudo et hash du mot de passe), et la réponse est la même que l'adresse soit nouvelle ou déjà inscrite
  */
 class RegistrationService {
+	/**
+	 * Le pseudo est vérifié avant tout, dans la limite de questions par IP (sinon cette route listerait les pseudos sans
+	 * limite). Une inscription qui n'aboutit pas (serveur occupé, limite de mails) ne compte pas dans celles de l'IP
+	 */
 	async start(
 		registration: RegistrationBean,
 		browser: BrowserContextBean,
 	): Promise<FlowOutcomeBean> {
+		const { ip } = browser.client;
 		await authMailService.assertRegistrationOpen();
-		if (registration.isHoneypotFilled) return this.#decoyOutcome();
-
-		if (await userService.isUsernameTaken(registration.username))
+		if (
+			!registration.isHoneypotFilled &&
+			!(await userService.isUsernameAvailable(registration.username, ip))
+		)
 			throw new ConflictError(
 				AuthErrorCodeEnum.USERNAME_TAKEN,
 				"The username is already taken",
 			);
-		const retryAfterMs = authLimiter.claimRegistration(browser.client.ip);
+		const retryAfterMs = authLimiter.claimRegistration(ip);
 		if (retryAfterMs !== null)
 			throw new TooManyRequestsError(
 				"Too many registrations from this IP",
 				retryAfterMs,
 			);
 
-		// Le mot de passe est hashé dès maintenant, adresse nouvelle ou non : même durée de réponse dans les deux cas
-		const passwordHash = await passwordService.hash(registration.password);
-		const outcome = await flowService.start({
-			kind: FlowKindEnum.REGISTRATION,
-			userId: null,
-			email: registration.email,
-			payload: { username: registration.username, passwordHash },
-			remember: registration.remember,
-			durationMs: authSettings.flowDurationMs.registration,
-			browser,
-		});
-		await authEventService.record({
-			type: AuthEventTypeEnum.REGISTRATION_STARTED,
-			userId: null,
-			client: browser.client,
-		});
-		return outcome;
+		try {
+			const outcome = await flowService.start({
+				kind: FlowKindEnum.REGISTRATION,
+				userId: null,
+				email: registration.email,
+				payload: await this.#buildPayload(registration),
+				remember: registration.remember,
+				durationMs: authSettings.flowDurationMs.registration,
+				browser,
+			});
+			if (!registration.isHoneypotFilled)
+				await authEventService.record({
+					type: AuthEventTypeEnum.REGISTRATION_STARTED,
+					userId: null,
+					client: browser.client,
+				});
+			return outcome;
+		} catch (error) {
+			authLimiter.releaseRegistration(ip);
+			throw error;
+		}
 	}
 
 	/**
@@ -70,13 +79,14 @@ class RegistrationService {
 	 * entre-temps (409 sinon, et le code reste valable). Puis la session s'ouvre
 	 */
 	async completeMailStep(
-		flow: Flow,
+		verified: VerifiedFlowBean,
 		browser: BrowserContextBean,
 		replacingUsername: string | undefined,
 	): Promise<FlowOutcomeBean> {
+		const { flow } = verified;
 		const { username, passwordHash } = readRegistrationPayload(flow.payload);
 		const userId = await flowService.consumeMailStep(
-			flow,
+			verified,
 			async (transaction) => {
 				const createdUserId = await createUserQuery(
 					{
@@ -91,38 +101,26 @@ class RegistrationService {
 				return createdUserId;
 			},
 		);
-
-		const sessionCookie = await sessionService.create({
+		return loginService.openSession(
 			userId,
-			remember: flow.remember,
-			client: browser.client,
-			replacedToken: browser.sessionToken,
-		});
-		await authEventService.record({
-			type: AuthEventTypeEnum.REGISTRATION_COMPLETED,
-			userId,
-			client: browser.client,
-		});
-		return { isCompleted: true, sessionCookie };
+			flow.remember,
+			browser,
+			AuthEventTypeEnum.REGISTRATION_COMPLETED,
+		);
 	}
 
-	// Ce qu'un robot qui a rempli le champ piège reçoit : une inscription en apparence, sans rien en base ni mail
-	#decoyOutcome(): FlowOutcomeBean {
-		const expiresAt = new Date(
-			Date.now() + authSettings.flowDurationMs.registration,
-		);
+	/**
+	 * Le compte qui attend dans le parcours. Le mot de passe est hashé dès maintenant, adresse nouvelle ou non : même
+	 * durée de réponse dans les deux cas. Un robot qui a rempli le champ piège n'a pas de compte en attente : son parcours
+	 * est un leurre, avec cookie, état et limites d'une vraie inscription, mais ni code, ni lien, ni mail
+	 */
+	async #buildPayload(
+		registration: RegistrationBean,
+	): Promise<RegistrationPayload | null> {
+		if (registration.isHoneypotFilled) return null;
 		return {
-			isCompleted: false,
-			flow: {
-				kind: FlowKindEnum.REGISTRATION,
-				step: FlowStepEnum.MAIL_CODE,
-				expiresAt,
-				resendAvailableAt: new Date(
-					Date.now() + authSettings.code.resendDelayMs,
-				),
-				remainingAttempts: authSettings.code.maxAttempts,
-			},
-			flowCookie: { token: createRandomToken(), expiresAt },
+			username: registration.username,
+			passwordHash: await passwordService.hash(registration.password),
 		};
 	}
 }

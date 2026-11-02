@@ -47,7 +47,7 @@ class PasswordResetService {
 			kind: FlowKindEnum.PASSWORD_RESET,
 			userId: user?.id ?? null,
 			email: user?.email ?? identifier,
-			payload: null,
+			payload: { identifier },
 			remember: false,
 			durationMs: authSettings.flowDurationMs.passwordReset,
 			browser,
@@ -55,16 +55,14 @@ class PasswordResetService {
 	}
 
 	// La boîte est prouvée : le TOTP s'il existe, sinon le nouveau mot de passe
-	async completeMailStep({
-		flow,
-		flowToken,
-	}: VerifiedFlowBean): Promise<FlowOutcomeBean> {
+	async completeMailStep(verified: VerifiedFlowBean): Promise<FlowOutcomeBean> {
+		const { flow, flowToken } = verified;
 		const userId = flowService.requireAccount(flow);
 		const hasTotp = (await findConfirmedFactorTypesQuery(userId)).includes(
 			FactorTypeEnum.TOTP,
 		);
 		const nextFlow = await flowService.consumeMailStep(
-			flow,
+			verified,
 			async (transaction) =>
 				hasTotp
 					? flowService.advance(
@@ -130,11 +128,13 @@ class PasswordResetService {
 			userId: user.id,
 			client: browser.client,
 		});
-		return loginService.openSession(user.id, flow.remember, {
-			...browser,
+		return loginService.openSession(
+			user.id,
+			flow.remember,
 			// Déjà supprimée avec les autres
-			sessionToken: undefined,
-		});
+			{ ...browser, sessionToken: undefined },
+			AuthEventTypeEnum.LOGIN_SUCCEEDED,
+		);
 	}
 }
 

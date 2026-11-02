@@ -40,7 +40,8 @@ function longestDelay(...delaysMs: (number | null)[]): number | null {
  * - 15 échecs du même compte depuis la même IP bannissent ce couple 15 minutes.
  * Délai et bannissement visent le couple compte + IP : un inconnu ne bloque jamais ton compte depuis chez toi ;
  * - 20 échecs d'une IP en 10 minutes, ou plus de 3 inscriptions en une heure, bannissent l'IP 15 minutes ;
- * - mails : 5 par heure par adresse (sans casse, comme les messageries), 20 par heure et 40 par jour par IP ;
+ * - mails : 5 par heure par adresse ou identifiant tapé (sans casse, comme les messageries), 20 par heure et 40 par
+ *   jour par IP ;
  * - disponibilité d'un pseudo : 60 questions par heure par IP
  */
 export function createAuthLimiter(
@@ -141,6 +142,11 @@ export function createAuthLimiter(
 		return failures.ipBanMs;
 	}
 
+	// L'inscription comptée n'a pas abouti (serveur occupé, limite de mails) : elle ne compte pas
+	function releaseRegistration(ip: string): void {
+		registrationsPerIp.release(groupIpForLimits(ip));
+	}
+
 	// Compte une question et renvoie null ; au-delà de la limite, rien n'est compté et la réponse est le délai d'attente
 	function claimUsernameCheck(ip: string): number | null {
 		return usernameChecksPerIp.record(groupIpForLimits(ip));
@@ -168,6 +174,7 @@ export function createAuthLimiter(
 		recordFailure,
 		recordSuccess,
 		claimRegistration,
+		releaseRegistration,
 		claimUsernameCheck,
 		claimMail,
 	};

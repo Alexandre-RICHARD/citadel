@@ -6,6 +6,7 @@ import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authEr
 import { acceptsLoginMethod } from "@citadel/specs/src/projects/auth/helper/acceptsLoginMethod.ts";
 
 import { authSettings } from "../../../configuration/authSettings.ts";
+import { RejectedRequestError } from "../../../error/RejectedRequestError.ts";
 import { ServiceUnavailableError } from "../../../error/ServiceUnavailableError.ts";
 import { TooManyRequestsError } from "../../../error/TooManyRequestsError.ts";
 import { UnauthorizedError } from "../../../error/UnauthorizedError.ts";
@@ -18,6 +19,7 @@ import { authLimiter } from "../limit/authLimiter.ts";
 import type { User } from "../models/User.ts";
 import { findConfirmedFactorTypesQuery } from "../query/factor/findConfirmedFactorTypesQuery.ts";
 import { deleteFlowQuery } from "../query/flow/deleteFlowQuery.ts";
+import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
 import { rehashUserPasswordQuery } from "../query/user/rehashUserPasswordQuery.ts";
 import { authEventService } from "./authEventService.ts";
 import { flowService } from "./flowService.ts";
@@ -84,7 +86,12 @@ class LoginService {
 				remember,
 				browser,
 			});
-		return this.openSession(user.id, remember, browser);
+		return this.openSession(
+			user.id,
+			remember,
+			browser,
+			AuthEventTypeEnum.LOGIN_SUCCEEDED,
+		);
 	}
 
 	/**
@@ -105,7 +112,7 @@ class LoginService {
 			kind: FlowKindEnum.MAIL_LOGIN,
 			userId: account?.id ?? null,
 			email: account?.email ?? identifier,
-			payload: null,
+			payload: { identifier },
 			remember,
 			durationMs: authSettings.flowDurationMs.mailLogin,
 			browser,
@@ -118,13 +125,15 @@ class LoginService {
 	 * s'ouvre, un facteur mail seul ne protégeant que d'un mot de passe volé
 	 */
 	async completeMailStep(
-		{ flow, flowToken }: VerifiedFlowBean,
+		verified: VerifiedFlowBean,
 		browser: BrowserContextBean,
 	): Promise<FlowOutcomeBean> {
+		const { flow, flowToken } = verified;
 		const userId = flowService.requireAccount(flow);
+		await this.#assertStillAcceptsMail(userId);
 		const factorTypes = await findConfirmedFactorTypesQuery(userId);
 		const secondFactorFlow = await flowService.consumeMailStep(
-			flow,
+			verified,
 			async (transaction) => {
 				if (factorTypes.includes(FactorTypeEnum.TOTP))
 					return flowService.advance(
@@ -144,14 +153,20 @@ class LoginService {
 				flow: secondFactorFlow,
 				flowCookie: { token: flowToken, expiresAt: secondFactorFlow.expiresAt },
 			};
-		return this.openSession(userId, flow.remember, browser);
+		return this.openSession(
+			userId,
+			flow.remember,
+			browser,
+			AuthEventTypeEnum.LOGIN_SUCCEEDED,
+		);
 	}
 
-	// Remplace la session que ce navigateur avait déjà
+	// Toute session qui s'ouvre (connexion, inscription, nouveau mot de passe) : remplace celle que ce navigateur avait déjà
 	async openSession(
 		userId: number,
 		remember: boolean,
 		browser: BrowserContextBean,
+		eventType: AuthEventTypeEnum,
 	): Promise<FlowOutcomeBean> {
 		const sessionCookie = await sessionService.create({
 			userId,
@@ -160,11 +175,24 @@ class LoginService {
 			replacedToken: browser.sessionToken,
 		});
 		await authEventService.record({
-			type: AuthEventTypeEnum.LOGIN_SUCCEEDED,
+			type: eventType,
 			userId,
 			client: browser.client,
 		});
 		return { isCompleted: true, sessionCookie };
+	}
+
+	// Le compte a pu fermer la connexion par email depuis l'envoi du mail : le lien et le code ne valent plus
+	async #assertStillAcceptsMail(userId: number): Promise<void> {
+		const user = await findUserByIdQuery(userId);
+		if (
+			user === null ||
+			!acceptsLoginMethod(user.loginMethods, LoginMethodEnum.MAIL)
+		)
+			throw new RejectedRequestError(
+				AuthErrorCodeEnum.FLOW_EXPIRED,
+				"The account no longer accepts mail login",
+			);
 	}
 
 	/**

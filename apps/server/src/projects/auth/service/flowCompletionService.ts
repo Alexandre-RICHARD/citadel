@@ -28,7 +28,7 @@ class FlowCompletionService {
 		switch (verified.flow.kind) {
 			case FlowKindEnum.REGISTRATION:
 				return registrationService.completeMailStep(
-					verified.flow,
+					verified,
 					browser,
 					replacingUsername,
 				);

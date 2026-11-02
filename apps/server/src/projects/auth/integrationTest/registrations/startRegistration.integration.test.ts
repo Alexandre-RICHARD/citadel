@@ -133,8 +133,9 @@ describe("startRegistration", () => {
 		});
 
 		it("SHOULD answer exactly the same and mail a warning without code WHEN the address already has an account, whatever its case", async () => {
-			// Arrange : l'horloge figée, la durée du cookie se lit à la seconde près
-			useFakeClock(new Date());
+			// Arrange : l'horloge figée, la durée du cookie se lit à la seconde près. Un midi, loin d'un changement d'heure :
+			// les jours se comptent au calendrier de Paris
+			useFakeClock(new Date("2026-12-15T11:00:00.000Z"));
 			const word = buildUniqueWord().toLowerCase();
 			const userId = await insertAuthRows.user({
 				email: `${word}@example.com`,
@@ -211,7 +212,7 @@ describe("startRegistration", () => {
 			);
 		});
 
-		it("SHOULD answer like a registration, without row nor mail, WHEN a robot filled the honeypot", async () => {
+		it("SHOULD answer like a registration, with a decoy flow but no account waiting nor mail, WHEN a robot filled the honeypot", async () => {
 			// Arrange
 			const body = buildBody({ website: "https://spam.example" });
 			const mails = watchSentMails();
@@ -224,8 +225,50 @@ describe("startRegistration", () => {
 			expect(response.body as FlowStatusDto).toStrictEqual(
 				PENDING_REGISTRATION,
 			);
-			expect(await selectAuthRows.flowIdsByEmail(body.email)).toStrictEqual([]);
+			const [flowId] = await selectAuthRows.flowIdsByEmail(body.email);
+			expect(await selectAuthRows.flow(flowId ?? 0)).toMatchObject({
+				payload: null,
+				codeHmac: null,
+				linkTokenHash: null,
+			});
 			await mails.expectNone();
+		});
+
+		it("SHOULD keep showing the registration WHEN the robot comes back after the honeypot", async () => {
+			// Arrange
+			const started = await startRegistration(
+				buildBody({ website: "https://spam.example" }),
+			);
+
+			// Act
+			const response = await request(app)
+				.get(`${ApiPrefixEnum.AUTH}/flow`)
+				.set("Cookie", readCookieHeader(started, flowCookie.name) ?? "");
+
+			// Assert
+			expect(response.body as FlowStatusDto).toMatchObject({
+				flow: { kind: FlowKindEnum.REGISTRATION, step: FlowStepEnum.MAIL_CODE },
+			});
+		});
+
+		it("SHOULD leave the registration waiting at the same address WHEN a robot filled the honeypot", async () => {
+			// Arrange
+			const email = `${buildUniqueWord().toLowerCase()}@example.com`;
+			await startRegistration(buildBody({ email }));
+
+			// Act
+			await startRegistration(
+				buildBody({ email, website: "https://spam.example" }),
+			);
+
+			// Assert
+			const flowIds = await selectAuthRows.flowIdsByEmail(email);
+			const flows = await Promise.all(
+				flowIds.map(async (flowId) => selectAuthRows.flow(flowId)),
+			);
+			expect(flows.map((flow) => flow?.payload ?? null)).toContainEqual(
+				expect.objectContaining({ passwordHash: expect.any(String) as string }),
+			);
 		});
 	});
 
@@ -372,6 +415,45 @@ describe("startRegistration", () => {
 				code: TechnicalErrorCodeEnum.TOO_MANY_REQUESTS,
 				message: "Too many registrations from this IP",
 			});
+		});
+
+		it("SHOULD count the username in the checks of the IP WHEN the registration asks for it", async () => {
+			// Arrange
+			const ip = buildUniqueIp();
+			for (let index = 0; index < 60; index++)
+				// eslint-disable-next-line no-await-in-loop
+				await request(app)
+					.get(
+						`${ApiPrefixEnum.AUTH}/usernames/${buildUniqueWord()}/availability`,
+					)
+					.set("X-Real-IP", ip);
+
+			// Act
+			const response = await startRegistration(buildBody(), { ip });
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
+			expect(response.body).toMatchObject({
+				message: "Too many username checks from this IP",
+			});
+		});
+
+		it("SHOULD not count the registrations of the IP WHEN the mail limit refused them", async () => {
+			// Arrange : l'adresse a déjà reçu ses 5 mails de l'heure, depuis d'autres IP
+			const ip = buildUniqueIp();
+			const email = `${buildUniqueWord().toLowerCase()}@example.com`;
+			for (let index = 0; index < 5; index++)
+				// eslint-disable-next-line no-await-in-loop
+				await startRegistration(buildBody({ email }));
+			for (let index = 0; index < 3; index++)
+				// eslint-disable-next-line no-await-in-loop
+				await startRegistration(buildBody({ email }), { ip });
+
+			// Act
+			const response = await startRegistration(buildBody(), { ip });
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 		});
 
 		it("SHOULD refuse a 6th mail an hour WHEN it goes to the same address", async () => {

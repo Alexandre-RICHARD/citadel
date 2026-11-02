@@ -280,6 +280,19 @@ describe("createAuthLimiter.ts", () => {
 			expect(limiter.getAttemptRetryAfterMs(ALEX)).toBe(15 * MINUTE_MS);
 		});
 
+		it("SHOULD not count a registration WHEN it is released", () => {
+			// Arrange
+			const { limiter } = createLimiter();
+			[1, 2, 3].forEach(() => limiter.claimRegistration(ALEX.ip));
+
+			// Act
+			limiter.releaseRegistration(ALEX.ip);
+
+			// Assert
+			expect(limiter.claimRegistration(ALEX.ip)).toBeNull();
+			expect(limiter.getAttemptRetryAfterMs(ALEX)).toBeNull();
+		});
+
 		it("SHOULD accept registrations again WHEN the ban is over", () => {
 			// Arrange
 			const clock = createLimiter();

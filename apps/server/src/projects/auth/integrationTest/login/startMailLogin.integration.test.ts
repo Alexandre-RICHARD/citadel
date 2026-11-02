@@ -154,6 +154,20 @@ describe("startMailLogin", () => {
 			expect(response.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
 		});
 
+		it("SHOULD count the username and the address of one account apart, like two unknown identifiers, WHEN the username used up its mails", async () => {
+			// Arrange : un compteur commun dirait que ce pseudo et cette adresse vont ensemble
+			const account = await insertTestAccount();
+			for (let index = 0; index < 5; index++)
+				// eslint-disable-next-line no-await-in-loop
+				await startMailLogin(account.username);
+
+			// Act
+			const response = await startMailLogin(account.email);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+		});
+
 		it("SHOULD count an unknown identifier like an address WHEN it is asked 6 times an hour", async () => {
 			// Arrange
 			const identifier = buildUniqueWord();

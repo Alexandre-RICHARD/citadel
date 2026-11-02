@@ -92,6 +92,38 @@ describe("createSlidingWindowLimiter.ts", () => {
 		});
 	});
 
+	describe("release", () => {
+		it("SHOULD accept one more event WHEN the last one is released", () => {
+			const { limiter } = createLimiter();
+			limiter.record(KEY);
+			limiter.record(KEY);
+
+			limiter.release(KEY);
+
+			expect(limiter.record(KEY)).toBeNull();
+			expect(limiter.record(KEY)).not.toBeNull();
+		});
+
+		it("SHOULD keep the wait of the oldest event WHEN a later one is released", () => {
+			const { limiter, advance } = createLimiter();
+			limiter.record(KEY);
+			advance(10 * MINUTE_MS);
+			limiter.record(KEY);
+			limiter.release(KEY);
+			limiter.record(KEY);
+
+			expect(limiter.getRetryAfterMs(KEY)).toBe(50 * MINUTE_MS);
+		});
+
+		it("SHOULD do nothing WHEN the key has no event", () => {
+			const { limiter } = createLimiter();
+
+			limiter.release(KEY);
+
+			expect(limiter.record(KEY)).toBeNull();
+		});
+	});
+
 	describe("forget", () => {
 		it("SHOULD accept the key again WHEN its events are forgotten", () => {
 			const { limiter } = createLimiter();

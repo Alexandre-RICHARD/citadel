@@ -11,12 +11,19 @@ type SessionRow = {
 	seenAt: Date;
 	expiresAt: Date;
 	absoluteExpiresAt: Date;
+	// La session que ce navigateur avait déjà, supprimée seulement si la nouvelle est bien créée
+	replacedTokenHash: Buffer | null;
 };
 
 // Crée la session et note la connexion du compte, ensemble : une session ne s'ouvre qu'à une connexion (ou à
 // l'inscription, qui connecte)
 export async function createSessionQuery(row: SessionRow): Promise<Session> {
 	return runInTransaction("Failed to create session", async (transaction) => {
+		if (row.replacedTokenHash !== null)
+			await Session.destroy({
+				where: { tokenHash: row.replacedTokenHash },
+				transaction,
+			});
 		const session = await Session.create(
 			{
 				userId: row.userId,

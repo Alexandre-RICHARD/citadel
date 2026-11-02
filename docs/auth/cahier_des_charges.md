@@ -226,7 +226,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
   - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code (`LINK_OTHER_BROWSER`). Sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté. Le jeton voyage dans le fragment (`/auth/verify#…`), jamais envoyé à un serveur ni écrit dans un journal ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
 - **Temps restant** : chaque réponse renvoie `expiresIn` et, pendant le délai de renvoi, `resendRetryAfter`, en secondes (jamais une date : l'horloge du navigateur peut différer), et les essais restants.
-- **Parcours leurre** : connexion par mail et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020) : même cookie, même état, mêmes limites, aucun mail.
+- **Parcours leurre** : connexion par mail et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020), comme une inscription au champ piège rempli (sans compte en attente) : même cookie, même état, mêmes limites, aucun mail.
 - **Expiration** : un parcours expiré est refusé à la lecture ; une minuterie du serveur supprime les lignes expirées (`auth_flow`, `auth_session`) et les facteurs non confirmés depuis plus de 15 minutes toutes les 15 minutes, et les vieilles lignes de `auth_event` et `error_log` une fois par jour.
 - **Réponses neutres** : rien ne dit si un email existe, ni le contenu, ni la durée (mail envoyé après la réponse, §8.1).
 
@@ -352,7 +352,7 @@ Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `4
 | Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas ton compte |
 | Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos, eux, sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
-| Spam d'envoi de mails, quota du site épuisé | Délai de renvoi, limites par adresse (comptée en minuscules : les messageries ignorent la casse) et par IP (20 par heure, 40 par jour), seuils du quota (cahier de l'hébergement, §2) |
+| Spam d'envoi de mails, quota du site épuisé | Délai de renvoi, limites par adresse ou identifiant tapé (en minuscules : les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux) et par IP (20 par heure, 40 par jour), seuils du quota (cahier de l'hébergement, §2) |
 | Rejeu d'un code ou d'un lien | Usage unique, durée courte, essais limités, lien lié au navigateur |
 | Vol de session | Cookie `HttpOnly`/`Secure`, CSP, sessions révocables |
 | CSRF | `SameSite=Lax`, `Origin`, `GET` sans effet |
@@ -805,6 +805,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] 5 mauvais codes → refus, le renvoi remet les essais à zéro.
 - [ ] Renvoi : bouton grisé 60 s avec compte à rebours ; le temps restant du parcours défile et la page dit quoi faire à zéro.
 - [ ] Commencer un autre parcours dans le même navigateur abandonne le premier.
+- [ ] Renvoi refusé par une limite de mails (`429`) : le bouton « Renvoyer » affiche l'attente imposée, pas seulement les 60 s.
+- [ ] Code tapé pendant qu'un autre onglet renvoie l'email : « code faux », le parcours continue (jamais « recommence »).
 - [ ] Le lien réécrit par Brevo (`r.mail.`) mène bien à `/auth/verify`.
 
 **Inscription**
@@ -822,7 +824,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Adresse déjà inscrite : même écran, mail « Tu as déjà un compte… » avec une durée floue juste (aujourd'hui, jours, semaines, mois, années).
 - [ ] Deux inscriptions avec la même adresse : seule la dernière se confirme.
 - [ ] Pseudo pris entre l'envoi et la confirmation : la page redemande un pseudo, le code reste valable.
-- [ ] Champ piège rempli (console du navigateur) : réponse normale, aucun compte.
+- [ ] Champ piège rempli (console du navigateur) : réponse normale, aucun compte ni mail, l'écran du code tient au rechargement ; une vraie inscription en attente à la même adresse reste valable.
+- [ ] 6e inscription à la même adresse dans l'heure (refusée par la limite de mails) : l'IP n'est pas bannie pour autant.
 - [ ] Inscriptions fermées (interrupteur, puis quota) : bouton désactivé, bandeau « …elles rouvrent demain. ».
 - [ ] Après l'inscription : étape « Protège ton compte » passable, puis retour à la page demandée au départ.
 
@@ -838,6 +841,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Méthode « par email » seule : la connexion par mot de passe échoue comme un mauvais mot de passe ; « par pseudo » seule : le lien par mail ne part pas, écran identique.
 - [ ] Déjà connecté : `/auth/login` renvoie vers le profil ; une nouvelle connexion dans le même navigateur fait disparaître l'ancienne session de la liste.
 - [ ] Connexion par mail avec un TOTP : le TOTP est demandé, jamais le code par mail ; avec seulement le facteur mail : rien de plus.
+- [ ] Connexion par mail commencée, puis « par mot de passe » seule choisie dans le profil (autre onglet) : le lien et le code ne connectent plus.
+- [ ] Mauvais mot de passe par pseudo, puis essai immédiat par une adresse devinée : le compte à rebours de 2 s (compté par compte) dit si les deux vont ensemble. Décider : garder (alterner pseudo et email ne double pas les essais) ou compter le texte tapé, comme les mails.
 - [ ] Paramètres argon2 montés dans `.env` : le hash d'un compte change à sa connexion suivante, l'ancien marchait encore.
 
 **Mot de passe oublié**
@@ -888,6 +893,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Quota épuisé : `MAIL_CLOSED` et son message pour la connexion par mail, le mot de passe oublié, le changement d'email, l'activation du facteur mail.
 - [ ] Brevo coupé (mauvaise clé) : l'inscription répond comme d'habitude, l'échec est dans `mailing_failure` et la console.
 - [ ] 40 mails par IP et par jour au plus.
+- [ ] 5 liens de connexion demandés par pseudo, puis 1 par l'adresse du même compte : il part (5 par heure et par forme d'identifiant, donc 10 au plus pour un compte).
 - [ ] Répondre à un email de l'authentification (envoyé de `noreply`, sans adresse de réponse) : rien n'arrive nulle part ; Brevo accepte bien l'envoi sans adresse de réponse. Seuls l'accusé de réception et la notification du contact se répondent.
 - [ ] Brevo refuse un email (adresse email invalide) : ni `error_log` ni `mailing_failure` ne contiennent l'adresse.
 - [ ] Une seule place restante au quota, deux demandes de lien en même temps : les deux répondent pareil, l'échec éventuel est dans `mailing_failure`, rien ne casse.

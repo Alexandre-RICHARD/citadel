@@ -8,8 +8,9 @@ export type StartFlowBean = {
 	kind: FlowKindEnum;
 	// null : une inscription, ou un parcours leurre (identifiant inconnu, méthode fermée) : aucun mail ne part
 	userId: number | null;
-	// L'adresse du mail ; pour un leurre, l'identifiant tapé, qui compte dans les limites comme une adresse
+	// L'adresse du mail ; pour un leurre, l'identifiant tapé
 	email: string;
+	// null pour une inscription : un leurre (le champ piège rempli), aucun mail ne part
 	payload: FlowPayload | null;
 	remember: boolean;
 	durationMs: number;
