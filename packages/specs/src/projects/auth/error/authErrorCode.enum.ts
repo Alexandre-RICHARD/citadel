@@ -11,6 +11,10 @@ export enum AuthErrorCodeEnum {
 	PASSWORD_UNCHANGED = "PASSWORD_UNCHANGED",
 	// Code faux, déjà utilisé ou remplacé par un renvoi
 	INVALID_CODE = "INVALID_CODE",
+	// Tous les essais du code sont faits : seul un nouveau mail en redonne
+	CODE_ATTEMPTS_EXHAUSTED = "CODE_ATTEMPTS_EXHAUSTED",
+	// Le lien a été ouvert dans un autre navigateur que celui du parcours : il faut y saisir le code
+	LINK_OTHER_BROWSER = "LINK_OTHER_BROWSER",
 	// Parcours expiré ou abandonné : il faut recommencer
 	FLOW_EXPIRED = "FLOW_EXPIRED",
 	USERNAME_TAKEN = "USERNAME_TAKEN",
