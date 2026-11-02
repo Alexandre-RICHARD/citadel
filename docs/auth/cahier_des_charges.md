@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 31 de la roadmap (§15), phase 5.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 45 de la roadmap (§15), phase 6.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -223,9 +223,10 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 - **Reprise** : une page `/auth/...` demande au serveur s'il y a un parcours en cours et se replace à la bonne étape. Les champs tapés (sauf les mots de passe) sont gardés dans le `sessionStorage` de l'onglet. Au retour sur l'onglet (`visibilitychange`), le front redemande l'état : si le lien a été ouvert dans un autre onglet du même navigateur, la page passe d'elle-même à la suite.
 - **Lien et code dans chaque mail** :
   - le **code** (6 chiffres, empreinte HMAC, usage unique, invalidé par un renvoi, qui remet les essais à zéro) se colle dans la page restée ouverte, y compris sur un autre appareil ;
-  - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code. Sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté ;
+  - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code (`LINK_OTHER_BROWSER`). Sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté. Le jeton voyage dans le fragment (`/auth/verify#…`), jamais envoyé à un serveur ni écrit dans un journal ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
-- **Temps restant** : chaque réponse renvoie `expiresAt` et, pendant un délai, `retryAfter`.
+- **Temps restant** : chaque réponse renvoie `expiresIn` et, pendant le délai de renvoi, `resendRetryAfter`, en secondes (jamais une date : l'horloge du navigateur peut différer), et les essais restants.
+- **Parcours leurre** : connexion par mail et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020) : même cookie, même état, mêmes limites, aucun mail.
 - **Expiration** : un parcours expiré est refusé à la lecture ; une minuterie du serveur supprime les lignes expirées (`auth_flow`, `auth_session`) et les facteurs non confirmés depuis plus de 15 minutes toutes les 15 minutes, et les vieilles lignes de `auth_event` et `error_log` une fois par jour.
 - **Réponses neutres** : rien ne dit si un email existe, ni le contenu, ni la durée (mail envoyé après la réponse, §8.1).
 
@@ -325,7 +326,7 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `POST /auth/login/password`, `POST /auth/login/mail` | Connexion |
 | `POST /auth/password-resets` | Mot de passe oublié |
 | `GET /auth/flow`, `DELETE /auth/flow` | État du parcours, abandon |
-| `POST /auth/flow/code`, `/link`, `/second-factor`, `/new-password`, `/resend` | Étapes d'un parcours |
+| `POST /auth/flow/code`, `/link`, `/second-factor`, `/new-password`, `/resend` | Étapes d'un parcours ; `code` et `link` acceptent un `username` qui remplace un pseudo pris entre-temps |
 | `POST /auth/logout` | `204`, idempotent |
 | `GET /auth/me`, `PATCH /auth/me` | Qui suis-je ; pseudo affiché, méthodes de connexion |
 | `POST /auth/me/password`, `POST /auth/me/email` | Mot de passe ; changement d'email |
@@ -334,7 +335,9 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
 | `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions |
 
-Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `FLOW_EXPIRED`…), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`).
+Chaque étape répond `{ flow }` : l'état du parcours, ou `null` quand il est terminé (session ouverte).
+
+Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`).
 
 ---
 
@@ -441,6 +444,7 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_IP_FAILURE_WINDOW_MINUTES` | 10 |
 | `AUTH_IP_BAN_MINUTES` | 15 |
 | `AUTH_REGISTRATIONS_PER_IP_PER_HOUR` | 3 |
+| `AUTH_USERNAME_CHECKS_PER_IP_PER_HOUR` | 60 (« Vérifier la disponibilité ») |
 | `AUTH_ARGON2_MEMORY_KIB`, `AUTH_ARGON2_PASSES`, `AUTH_ARGON2_PARALLELISM` | 19456, 2, 1 |
 | `AUTH_HASH_CONCURRENCY`, `AUTH_HASH_QUEUE_MAX` | 2, 20 |
 | `AUTH_TOTP_ISSUER` | `Citadel` |
@@ -768,7 +772,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] `POST /api/error-log/entries` répond `404` et n'écrit rien dans `error_log`.
 - [ ] Une erreur de base provoquée (inscription avec la base arrêtée) : la ligne de `error_log` et les logs du conteneur n'ont ni mot de passe, ni email, ni valeur de paramètre SQL, mais gardent le message du driver.
 - [ ] Après la release : `mailing_failure` et `mailing_contact_message_unsent` existent, les anciennes tables non ; les deux alertes de la carte « Site » de la console comptent toujours.
-- [ ] `citadel db-restore-test` passe après V013, puis après V019 (contraintes `CHECK`, colonne générée de `auth_factor`).
+- [ ] `citadel db-restore-test` passe après V013, puis après V020 (contraintes `CHECK`, colonne générée de `auth_factor`).
 - [ ] Le job `contact-retry` renvoie toujours un message en attente.
 - [ ] `MAIL_REGISTRATION_STOP` abaissé en dev : inscriptions fermées au bon seuil ; valeurs remises après.
 - [ ] Le serveur refuse de démarrer sans `AUTH_CODE_HMAC_KEY`, avec une clé qui n'a pas 64 caractères hexadécimaux, ou avec une clé précédente et une version 1, en nommant la variable fautive.
@@ -889,7 +893,9 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Une seule place restante au quota, deux demandes de lien en même temps : les deux répondent pareil, l'échec éventuel est dans `mailing_failure`, rien ne casse.
 - [ ] « Ta dernière connexion » (compte déjà inscrit) : « aujourd'hui », jours, semaines, mois et années justes, autour de minuit à Paris et d'un changement d'heure.
 - [ ] Phrase « tu peux aussi saisir ce code sur la page restée ouverte » : juste dans chaque email à code, y compris le changement d'email et l'activation du facteur mail.
-- [ ] Le bouton « Réinitialiser mon mot de passe » des notifications mène à la vraie page (`/auth/forgot-password` est provisoire, étape 44).
+- [ ] Le bouton « Réinitialiser mon mot de passe » des notifications mène à la page `/auth/forgot-password`.
+- [ ] Une fois connecté sans page demandée, retour à l'accueil : à remplacer par le profil quand il existera (étape 52, `useAuthRedirect`).
+- [ ] L'étape « second facteur » affiche un message d'attente (`SecondFactorPending`) : remplacée à l'étape 50.
 - [ ] Tutoiement des emails face au vouvoiement du site (formulaire de contact, écran « Message envoyé », pages du pied de page) : décider d'harmoniser ou non.
 - [ ] Aucun « mail » ni « adresse » seul pour l'email dans les textes visibles des interfaces et des emails : « email » et « adresse email » partout.
 
