@@ -82,7 +82,7 @@ class ContactService {
 	 * le contact ouvert. Pour chacun, la notification d'origine (la date où le visiteur a écrit, sujet suivi de
 	 * « (différé) »), puis l'accusé de réception avec la mention du retard : on ne sait pas s'il était parti. Une
 	 * notification partie supprime la ligne. Un refus du fournisseur arrête tout, inutile d'insister ce soir-là. Aucun
-	 * échec n'est ajouté à mail_failure : ces messages y figurent déjà. Le job qui l'appelle tient le verrou
+	 * échec n'est ajouté à mailing_failure : ces messages y figurent déjà. Le job qui l'appelle tient le verrou
 	 * d'infra-ops : deux relances ne tournent jamais ensemble
 	 */
 	async retryUnsentMessages(): Promise<ContactUnsentRetryBean> {

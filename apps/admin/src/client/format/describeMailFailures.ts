@@ -25,6 +25,6 @@ export function describeMailFailures(
 		detail:
 			lastFailedAt === null
 				? null
-				: `Dernier échec : ${formatDateTime(new Date(lastFailedAt))}. Détail en base : mail_failure, error_log.`,
+				: `Dernier échec : ${formatDateTime(new Date(lastFailedAt))}. Détail en base : mailing_failure, error_log.`,
 	};
 }

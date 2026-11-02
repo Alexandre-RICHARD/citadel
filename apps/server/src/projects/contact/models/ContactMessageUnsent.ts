@@ -57,7 +57,7 @@ ContactMessageUnsent.init(
 	},
 	{
 		sequelize,
-		tableName: "contact_message_unsent",
+		tableName: "mailing_contact_message_unsent",
 		modelName: "ContactMessageUnsent",
 		timestamps: true,
 		updatedAt: false,

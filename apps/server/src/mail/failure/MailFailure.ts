@@ -45,7 +45,7 @@ MailFailure.init(
 	},
 	{
 		sequelize,
-		tableName: "mail_failure",
+		tableName: "mailing_failure",
 		modelName: "MailFailure",
 		timestamps: true,
 		updatedAt: false,

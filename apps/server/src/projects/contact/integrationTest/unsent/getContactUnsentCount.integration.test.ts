@@ -22,7 +22,9 @@ describe("getContactUnsentCount", () => {
 				name: null,
 				email: null,
 			});
-			const expectedCount = await countTableRows("contact_message_unsent");
+			const expectedCount = await countTableRows(
+				"mailing_contact_message_unsent",
+			);
 
 			// Act
 			const response = await request(app).get(GET_CONTACT_UNSENT_COUNT_URL);

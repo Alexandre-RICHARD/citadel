@@ -29,7 +29,7 @@ describe("describeMailFailures.ts", () => {
 			).toStrictEqual({
 				status: "3 mails non partis",
 				message: "3 mails du site n'ont pas pu partir ces 7 derniers jours.",
-				detail: `Dernier échec : ${formatDateTime(new Date(LAST_FAILED_AT))}. Détail en base : mail_failure, error_log.`,
+				detail: `Dernier échec : ${formatDateTime(new Date(LAST_FAILED_AT))}. Détail en base : mailing_failure, error_log.`,
 			});
 		});
 

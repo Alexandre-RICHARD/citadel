@@ -23,7 +23,7 @@ const limits: MailQuotaLimits = {
 
 /**
  * Tout mail du site passe ici : l'expéditeur choisi par MAIL_SENDER l'envoie, et le quota du jour le compte. Un envoi
- * qui échoue est enregistré en base (mail_failure), puis son erreur repart vers l'appelant.
+ * qui échoue est enregistré en base (mailing_failure), puis son erreur repart vers l'appelant.
  * Avant d'envoyer, l'appelant vérifie que `getStatus` laisse sa fonction ouverte
  */
 class MailService {
@@ -38,7 +38,7 @@ class MailService {
 		},
 	});
 
-	// `isFailureRecorded: false` : la relance du soir des messages de contact, dont un échec n'ajoute rien à mail_failure
+	// `isFailureRecorded: false` : la relance du soir des messages de contact, dont un échec n'ajoute rien à mailing_failure
 	async send(
 		mail: Mail,
 		{ isFailureRecorded = true }: { isFailureRecorded?: boolean } = {},

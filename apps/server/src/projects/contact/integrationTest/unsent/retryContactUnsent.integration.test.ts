@@ -94,7 +94,7 @@ describe("retryContactUnsent", () => {
 			expect(notification?.text).toContain("Date : dimanche 1 novembre 2026");
 			expect(acknowledgement?.to.email).toBe(seed.email);
 			expect(acknowledgement?.text).toContain("avec du retard");
-			expect(await countTableRows("contact_message_unsent")).toBe(0);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(0);
 		});
 
 		it("SHOULD acknowledge an address once and send no acknowledgement without address WHEN several messages wait", async () => {
@@ -154,7 +154,7 @@ describe("retryContactUnsent", () => {
 				stoppedBecause: ContactRetryStopEnum.QUOTA_REACHED,
 			});
 			expect(sentMails).toStrictEqual([]);
-			expect(await countTableRows("contact_message_unsent")).toBe(2);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(2);
 		});
 
 		it("SHOULD keep the rows, stop, and record no mail failure WHEN the provider refuses the notification", async () => {
@@ -162,7 +162,7 @@ describe("retryContactUnsent", () => {
 			vi.spyOn(console, "error").mockImplementation(() => undefined);
 			await seedUnsent();
 			await seedUnsent();
-			const failuresBefore = await countTableRows("mail_failure");
+			const failuresBefore = await countTableRows("mailing_failure");
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(refuseOnce());
 
 			// Act
@@ -174,8 +174,8 @@ describe("retryContactUnsent", () => {
 				remainingCount: 2,
 				stoppedBecause: ContactRetryStopEnum.SEND_FAILED,
 			});
-			expect(await countTableRows("contact_message_unsent")).toBe(2);
-			expect(await countTableRows("mail_failure")).toBe(failuresBefore);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(2);
+			expect(await countTableRows("mailing_failure")).toBe(failuresBefore);
 		});
 
 		it("SHOULD still delete the row WHEN only the acknowledgement is refused", async () => {
@@ -195,7 +195,7 @@ describe("retryContactUnsent", () => {
 				remainingCount: 0,
 				stoppedBecause: null,
 			});
-			expect(await countTableRows("contact_message_unsent")).toBe(0);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(0);
 		});
 	});
 
@@ -215,7 +215,7 @@ describe("retryContactUnsent", () => {
 				TechnicalErrorCodeEnum.ROUTE_NOT_FOUND,
 				`Route not handled by the server: POST ${RETRY_CONTACT_UNSENT_URL}`,
 			);
-			expect(await countTableRows("contact_message_unsent")).toBe(1);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(1);
 		});
 	});
 });

@@ -71,7 +71,7 @@ describe("getMailFailureSummary", () => {
 			// Arrange
 			const { count: countBefore } = await getSummary();
 			await sequelize.query(
-				`INSERT INTO mail_failure (kind, reason, created_at)
+				`INSERT INTO mailing_failure (kind, reason, created_at)
 				VALUES ('quota-alert', 'Old failure', NOW(3) - INTERVAL ${WINDOW_DAYS + 1} DAY)`,
 			);
 

@@ -1902,11 +1902,11 @@ job_log_retention() {
 
 # --- contact-retry : chaque soir à 23 h 50 ---
 # Un message du formulaire de contact dont la notification n'a pas pu partir (Brevo en panne, quota épuisé…) est gardé
-# dans la base du site (table contact_message_unsent) : la personne qui a écrit n'est pas perdue. Chaque soir, le
+# dans la base du site (table mailing_contact_message_unsent) : la personne qui a écrit n'est pas perdue. Chaque soir, le
 # serveur du site renvoie ces messages, du plus ancien au plus récent, tant que le quota de mails du jour le permet :
 # la notification (même contenu, sujet suivi de « (différé) »), puis l'accusé de réception avec sa mention du retard.
 # 23 h 50, c'est avant la remise à zéro des crédits de Brevo (entre minuit et 1 h) : ce qui reste attend le soir suivant.
-# Ce qui est renvoyé est supprimé de la table ; ces relances n'ajoutent rien à mail_failure.
+# Ce qui est renvoyé est supprimé de la table ; ces relances n'ajoutent rien à mailing_failure.
 #
 # Le serveur n'est joignable que par Caddy (qui ne laisse pas passer /api/internal) et le réseau Docker, et il refuse
 # tout appel qui porte le X-Real-IP de Caddy. Le job l'appelle donc de l'intérieur de son conteneur (docker exec), sans

@@ -171,7 +171,7 @@ describe("sendContactMessage", () => {
 		it("SHOULD still succeed, say the acknowledgement failed, and record and log the failure WHEN only the acknowledgement fails", async () => {
 			// Arrange
 			const { expectLogged } = await watchErrorLogs();
-			const failuresBefore = await countTableRows("mail_failure");
+			const failuresBefore = await countTableRows("mailing_failure");
 			vi.spyOn(memoryMailSender, "send")
 				.mockResolvedValueOnce()
 				.mockRejectedValueOnce(
@@ -189,7 +189,7 @@ describe("sendContactMessage", () => {
 			expect(response.body as ContactMessageReceiptDto).toStrictEqual({
 				acknowledgement: ContactAcknowledgementEnum.FAILED,
 			});
-			expect(await countTableRows("mail_failure")).toBe(failuresBefore + 1);
+			expect(await countTableRows("mailing_failure")).toBe(failuresBefore + 1);
 			await expectLogged({
 				errorType: "BadGatewayError",
 				message:
@@ -202,7 +202,7 @@ describe("sendContactMessage", () => {
 				name: "Alex",
 				message: "Un message à ne pas perdre.\nAvec deux lignes.",
 			});
-			const unsentBefore = await countTableRows("contact_message_unsent");
+			const unsentBefore = await countTableRows("mailing_contact_message_unsent");
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
@@ -215,11 +215,11 @@ describe("sendContactMessage", () => {
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
-			expect(await countTableRows("contact_message_unsent")).toBe(
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(
 				unsentBefore + 1,
 			);
 			const [keptMessage] = await sequelize.query(
-				"SELECT subject, message, name, email FROM contact_message_unsent WHERE subject = :subject",
+				"SELECT subject, message, name, email FROM mailing_contact_message_unsent WHERE subject = :subject",
 				{ type: QueryTypes.SELECT, replacements: { subject: body.subject } },
 			);
 			expect(keptMessage).toStrictEqual({
@@ -325,7 +325,7 @@ describe("sendContactMessage", () => {
 		it("SHOULD answer MAIL_UNAVAILABLE and keep nothing WHEN the notification cannot be sent and the database cannot keep the message", async () => {
 			// Arrange
 			vi.spyOn(console, "error").mockImplementation(() => undefined);
-			const unsentBefore = await countTableRows("contact_message_unsent");
+			const unsentBefore = await countTableRows("mailing_contact_message_unsent");
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
@@ -345,7 +345,7 @@ describe("sendContactMessage", () => {
 				code: MailErrorCodeEnum.MAIL_UNAVAILABLE,
 				message: "Brevo did not answer on /smtp/email",
 			});
-			expect(await countTableRows("contact_message_unsent")).toBe(unsentBefore);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(unsentBefore);
 		});
 	});
 });
