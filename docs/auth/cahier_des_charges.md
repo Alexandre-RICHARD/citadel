@@ -759,7 +759,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 
 ## 16. Questions
 
-Aucune.
+1. **[Important, à trancher au début de la phase 6]** Le délai de 2 s (et le bannissement) après un mauvais mot de passe est compté par compte : un échec par pseudo puis un essai immédiat par une adresse devinée dit, par le compte à rebours, si les deux vont ensemble. Garder (alterner pseudo et email ne double pas les essais) ou compter le texte tapé, comme les mails (§7) ? La réponse vaut aussi pour les erreurs de second facteur.
 
 ---
 
@@ -842,7 +842,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Déjà connecté : `/auth/login` renvoie vers le profil ; une nouvelle connexion dans le même navigateur fait disparaître l'ancienne session de la liste.
 - [ ] Connexion par mail avec un TOTP : le TOTP est demandé, jamais le code par mail ; avec seulement le facteur mail : rien de plus.
 - [ ] Connexion par mail commencée, puis « par mot de passe » seule choisie dans le profil (autre onglet) : le lien et le code ne connectent plus.
-- [ ] Mauvais mot de passe par pseudo, puis essai immédiat par une adresse devinée : le compte à rebours de 2 s (compté par compte) dit si les deux vont ensemble. Décider : garder (alterner pseudo et email ne double pas les essais) ou compter le texte tapé, comme les mails.
+- [ ] Mauvais mot de passe par pseudo, puis essai immédiat par une adresse devinée : comportement conforme à la réponse de la question 1 (§16).
 - [ ] Paramètres argon2 montés dans `.env` : le hash d'un compte change à sa connexion suivante, l'ancien marchait encore.
 
 **Mot de passe oublié**
