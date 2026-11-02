@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createRandomToken } from "@citadel/common/src/node/crypto/createRandomToken.ts";
 
 // Sessions en mémoire : un redémarrage de la console déconnecte, rien n'est écrit sur disque
 const SESSION_DURATION_MS = 12 * 60 * 60 * 1000;
@@ -15,7 +15,7 @@ export const sessionStore = {
 	create(): string {
 		const now = Date.now();
 		forgetExpired(now);
-		const token = randomBytes(32).toString("base64url");
+		const token = createRandomToken();
 		sessions.set(token, now + SESSION_DURATION_MS);
 		return token;
 	},
