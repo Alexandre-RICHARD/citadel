@@ -4,6 +4,7 @@ export enum ApiPrefixEnum {
 	SATISFACTORY = "/satisfactory",
 	MAIL = "/mail",
 	CONTACT = "/contact",
+	AUTH = "/auth",
 	// Hors d'Internet : Caddy ne transmet pas /api/internal, seule la console du NAS l'appelle, par le réseau Docker
 	INTERNAL = "/internal",
 }

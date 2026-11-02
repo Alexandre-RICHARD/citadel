@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 21 de la roadmap (§15), phase 3.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 29 de la roadmap (§15), phase 4.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -446,6 +446,7 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_TOTP_ISSUER` | `Citadel` |
 | `AUTH_TOTP_DRIFT_STEPS` | 1 |
 | `AUTH_RECOVERY_CODES_COUNT` | 10 |
+| `AUTH_FACTOR_CONFIRMATION_MINUTES` | 15 (facteur non confirmé, purgé ensuite) |
 | `AUTH_EVENT_RETENTION_DAYS`, `ERROR_LOG_RETENTION_DAYS` | 20 |
 | `AUTH_RESTORE_JOURNAL_DAYS` | 70 |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |

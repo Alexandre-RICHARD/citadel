@@ -1,3 +1,4 @@
+import type { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 import type { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import type { ContactErrorCodeEnum } from "@citadel/specs/src/projects/contact/error/contactErrorCode.enum.ts";
 import type { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameDeathCounter/error/gameDeathCounterErrorCode.enum.ts";
@@ -10,4 +11,5 @@ export type ErrorCode =
 	| GameDeathCounterErrorCodeEnum
 	| BacklogErrorCodeEnum
 	| MailErrorCodeEnum
-	| ContactErrorCodeEnum;
+	| ContactErrorCodeEnum
+	| AuthErrorCodeEnum;
