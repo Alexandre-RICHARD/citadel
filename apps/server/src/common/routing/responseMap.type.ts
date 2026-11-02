@@ -1,4 +1,5 @@
 import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type.ts";
+import type { EndpointErrorMap } from "@citadel/specs/src/specUtils/error/endpointErrorMap.type.ts";
 
 // Statut de succès -> données : chaque statut garde les siennes quand la réponse en prévoit plusieurs (200 avec corps, 204 sans)
 type SuccessResponseMap<Response extends EndpointModel["response"]> = {
@@ -13,7 +14,4 @@ type SuccessResponseMap<Response extends EndpointModel["response"]> = {
 };
 
 export type ResponseMap<Endpoint extends EndpointModel> =
-	(Endpoint["error"] extends Record<number, unknown>
-		? Endpoint["error"]
-		: object) &
-		SuccessResponseMap<Endpoint["response"]>;
+	EndpointErrorMap<Endpoint> & SuccessResponseMap<Endpoint["response"]>;

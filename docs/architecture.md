@@ -106,15 +106,16 @@ src/
 │   │   ├── dtoBean/<entité>/      from<X>DtoTo<X>Bean.ts, from<X>BeanTo<X>Dto.ts
 │   │   └── beanEntity/<entité>/   from<X>EntityTo<X>Bean.ts
 │   └── integrationTest/<ressource>/<endpoint>.integration.test.ts
-├── common/                 routeur typé, asyncRequestHandler, runInTransaction
+├── common/                 routeur typé, asyncRequestHandler, protectedRequestHandler, runInTransaction
 ├── error/                  AppError et ses filles (BadRequest, NotFound, Conflict, BadGateway, Database…)
-├── middleware/             requestValidator, notFound, unhandledMethod, globalErrorHandler
+├── middleware/             requestValidator, requireSession, notFound, unhandledMethod, globalErrorHandler
 ├── configuration/          env.ts (variables lues et vérifiées au démarrage), sequelize.ts
 ├── sql/migrations/         migrations Flyway
 └── testUtils/              insertions et lectures directes en base pour les tests d'intégration
 ```
 
 - **Pipeline** : router → controller → service → query. Seuls les contrôleurs voient des DTO ; services et requêtes travaillent en Beans.
+- **Endpoint protégé** (`protected: true` dans les specs) : son contrôleur est un `protectedRequestHandler`, qui reçoit la session (l'id de l'utilisateur vient toujours d'elle) ; le routeur typé refuse tout autre contrôleur et place `requireSession` devant, d'où un 401 avant toute validation.
 - **Validation** : `requestValidator` applique les schémas des specs aux params, à la query et au corps ; le contrôleur reçoit des données propres.
 - **Erreurs** : un service lève une `AppError` avec son code ; `globalErrorHandler` la traduit en réponse. Une erreur inattendue sort en 500, sans détail.
 - **Base** :

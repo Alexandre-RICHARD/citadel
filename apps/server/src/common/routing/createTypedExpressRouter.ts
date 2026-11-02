@@ -2,7 +2,8 @@ import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.t
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum.ts";
 import type { RequestHandler, Router as ExpressRouter } from "express";
 
-import type { CustomEndpointHandler } from "./customEndpointHandler.type.ts";
+import { requireSession } from "../../middleware/requireSession.ts";
+import type { EndpointHandler } from "./endpointHandler.type.ts";
 
 type EndpointUrlByMethod<
 	EndpointRegistry extends EndpointModel,
@@ -14,9 +15,7 @@ type TypedRouterShape<Registry extends EndpointModel> = {
 		Url extends EndpointUrlByMethod<Registry, Method>,
 	>(
 		path: Url,
-		handler: CustomEndpointHandler<
-			EndpointByMethodAndUrl<Registry, Method, Url>
-		>,
+		handler: EndpointHandler<EndpointByMethodAndUrl<Registry, Method, Url>>,
 		validator?: RequestHandler,
 	) => void;
 };
@@ -27,6 +26,14 @@ type EndpointByMethodAndUrl<
 	Url extends EndpointUrlByMethod<Registry, Method>,
 > = Extract<Registry, { request: { method: Method; url: Url } }>;
 
+function isSessionRequired(handler: unknown): boolean {
+	return (
+		typeof handler === "function" &&
+		"isSessionRequired" in handler &&
+		handler.isSessionRequired === true
+	);
+}
+
 export function createTypedExpressRouter<
 	EndpointRegistry extends EndpointModel,
 >(expressRouter: ExpressRouter): TypedRouterShape<EndpointRegistry> {
@@ -36,9 +43,12 @@ export function createTypedExpressRouter<
 		handler: unknown,
 		validator?: RequestHandler,
 	) {
-		const handlers = validator
-			? [validator, handler as RequestHandler]
-			: [handler as RequestHandler];
+		// La session d'abord : un visiteur non connecté reçoit 401, jamais le détail d'une validation
+		const handlers = [
+			...(isSessionRequired(handler) ? [requireSession] : []),
+			...(validator ? [validator] : []),
+			handler as RequestHandler,
+		];
 
 		switch (method) {
 			case HttpMethodEnum.GET:
@@ -66,7 +76,7 @@ export function createTypedExpressRouter<
 	return {
 		GET<Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.GET>>(
 			path: Url,
-			handler: CustomEndpointHandler<
+			handler: EndpointHandler<
 				EndpointByMethodAndUrl<EndpointRegistry, HttpMethodEnum.GET, Url>
 			>,
 			validator?: RequestHandler,
@@ -77,7 +87,7 @@ export function createTypedExpressRouter<
 			Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.POST>,
 		>(
 			path: Url,
-			handler: CustomEndpointHandler<
+			handler: EndpointHandler<
 				EndpointByMethodAndUrl<EndpointRegistry, HttpMethodEnum.POST, Url>
 			>,
 			validator?: RequestHandler,
@@ -86,7 +96,7 @@ export function createTypedExpressRouter<
 		},
 		PUT<Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.PUT>>(
 			path: Url,
-			handler: CustomEndpointHandler<
+			handler: EndpointHandler<
 				EndpointByMethodAndUrl<EndpointRegistry, HttpMethodEnum.PUT, Url>
 			>,
 			validator?: RequestHandler,
@@ -97,7 +107,7 @@ export function createTypedExpressRouter<
 			Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.PATCH>,
 		>(
 			path: Url,
-			handler: CustomEndpointHandler<
+			handler: EndpointHandler<
 				EndpointByMethodAndUrl<EndpointRegistry, HttpMethodEnum.PATCH, Url>
 			>,
 			validator?: RequestHandler,
@@ -108,7 +118,7 @@ export function createTypedExpressRouter<
 			Url extends EndpointUrlByMethod<EndpointRegistry, HttpMethodEnum.DELETE>,
 		>(
 			path: Url,
-			handler: CustomEndpointHandler<
+			handler: EndpointHandler<
 				EndpointByMethodAndUrl<EndpointRegistry, HttpMethodEnum.DELETE, Url>
 			>,
 			validator?: RequestHandler,
