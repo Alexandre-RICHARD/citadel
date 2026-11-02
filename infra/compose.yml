@@ -180,6 +180,15 @@ services:
       # seuils du quota quotidien gardent leurs valeurs par défaut (env.ts du serveur)
       MAIL_SENDER: brevo
       BREVO_API_KEY: ${BREVO_API_KEY:?manque dans .env.prod}
+      # Clés de l'authentification (secrets de .env.prod, rangés dans Bitwarden) : sans elles,
+      # le serveur refuse de démarrer (env.ts). HMAC : empreintes des codes envoyés par mail ;
+      # TOTP : chiffrement des secrets de double authentification, avec la version de la clé.
+      # La clé précédente ne sert que pendant une rotation : vide sinon, d'où « :- » (vide
+      # accepté) au lieu de « :? »
+      AUTH_CODE_HMAC_KEY: ${AUTH_CODE_HMAC_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY: ${AUTH_TOTP_ENCRYPTION_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY_VERSION: ${AUTH_TOTP_ENCRYPTION_KEY_VERSION:?manque dans .env.prod}
+      AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY: ${AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY:-}
     networks:
       - site
       # edge : Caddy, qui lui envoie /api, et la sortie vers Internet (IGDB, Twitch, Brevo)
@@ -333,6 +342,15 @@ services:
       # Jamais de vrai mail depuis la pré-prod : elle lit le même .env.prod que la prod, mais
       # le « journal » écrit seulement dans son log qu'un mail serait parti. Pas de clé Brevo
       MAIL_SENDER: journal
+      # Les mêmes clés que la prod (même .env.prod). Clés de l'authentification (secrets de .env.prod, rangés dans Bitwarden) : sans elles,
+      # le serveur refuse de démarrer (env.ts). HMAC : empreintes des codes envoyés par mail ;
+      # TOTP : chiffrement des secrets de double authentification, avec la version de la clé.
+      # La clé précédente ne sert que pendant une rotation : vide sinon, d'où « :- » (vide
+      # accepté) au lieu de « :? »
+      AUTH_CODE_HMAC_KEY: ${AUTH_CODE_HMAC_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY: ${AUTH_TOTP_ENCRYPTION_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY_VERSION: ${AUTH_TOTP_ENCRYPTION_KEY_VERSION:?manque dans .env.prod}
+      AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY: ${AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY:-}
     networks:
       - site-preprod
       - edge
