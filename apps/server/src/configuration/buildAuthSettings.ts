@@ -64,6 +64,8 @@ export function buildAuthSettings(variables: typeof env) {
 					: variables.AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY,
 		},
 		recoveryCodesCount: variables.AUTH_RECOVERY_CODES_COUNT,
+		factorConfirmationMs:
+			variables.AUTH_FACTOR_CONFIRMATION_MINUTES * MINUTE_MS,
 		retentionMs: {
 			authEvent: variables.AUTH_EVENT_RETENTION_DAYS * DAY_MS,
 			errorLog: variables.ERROR_LOG_RETENTION_DAYS * DAY_MS,

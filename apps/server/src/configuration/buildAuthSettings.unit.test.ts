@@ -43,6 +43,7 @@ const AUTH_VARIABLES = {
 	AUTH_TOTP_ISSUER: "Citadel",
 	AUTH_TOTP_DRIFT_STEPS: 1,
 	AUTH_RECOVERY_CODES_COUNT: 10,
+	AUTH_FACTOR_CONFIRMATION_MINUTES: 15,
 	AUTH_EVENT_RETENTION_DAYS: 20,
 	ERROR_LOG_RETENTION_DAYS: 20,
 	AUTH_RESTORE_JOURNAL_DAYS: 70,
@@ -93,6 +94,7 @@ describe("buildAuthSettings.ts", () => {
 				restoreJournal: 70 * DAY_MS,
 			});
 			expect(settings.purgeIntervalMs).toBe(15 * MINUTE_MS);
+			expect(settings.factorConfirmationMs).toBe(15 * MINUTE_MS);
 		});
 	});
 

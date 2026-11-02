@@ -105,10 +105,13 @@ export const insertAuthRows = {
 		keyVersion?: number | null;
 		lastUsedStep?: number | null;
 		confirmedAt?: Date | null;
+		createdAt?: Date;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO auth_factor (user_id, type, name, secret_encrypted, key_version, last_used_step, confirmed_at)
-			VALUES (:userId, :type, 'Mon facteur', :secretEncrypted, :keyVersion, :lastUsedStep, :confirmedAt)`,
+			`INSERT INTO auth_factor
+				(user_id, type, name, secret_encrypted, key_version, last_used_step, confirmed_at, created_at)
+			VALUES
+				(:userId, :type, 'Mon facteur', :secretEncrypted, :keyVersion, :lastUsedStep, :confirmedAt, :createdAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -117,6 +120,7 @@ export const insertAuthRows = {
 					keyVersion: null,
 					lastUsedStep: null,
 					confirmedAt: null,
+					createdAt: new Date(),
 					...row,
 				},
 			},
@@ -139,12 +143,18 @@ export const insertAuthRows = {
 		return insertedId;
 	},
 
-	// Renvoie l'id créé
-	async event(row: { userId: number | null }): Promise<number> {
+	// Renvoie l'id créé. Écrit maintenant par défaut
+	async event(row: {
+		userId: number | null;
+		createdAt?: Date;
+	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO auth_event (user_id, type, ip, user_agent)
-			VALUES (:userId, 'login_failure', '203.0.113.0', NULL)`,
-			{ type: QueryTypes.INSERT, replacements: row },
+			`INSERT INTO auth_event (user_id, type, ip, user_agent, created_at)
+			VALUES (:userId, 'login_failure', '203.0.113.0', NULL, :createdAt)`,
+			{
+				type: QueryTypes.INSERT,
+				replacements: { createdAt: new Date(), ...row },
+			},
 		);
 		return insertedId;
 	},

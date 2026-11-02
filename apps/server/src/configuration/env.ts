@@ -103,11 +103,13 @@ const envSchema = z.object({
 	AUTH_TOTP_ISSUER: z.string().min(1).default("Citadel"),
 	AUTH_TOTP_DRIFT_STEPS: z.coerce.number().int().nonnegative().default(1),
 	AUTH_RECOVERY_CODES_COUNT: positiveInteger(10),
+	// Un facteur ajouté dont le premier code n'est pas validé dans ce délai est effacé par la purge
+	AUTH_FACTOR_CONFIRMATION_MINUTES: positiveInteger(15),
 	// Conservation : événements de sécurité et erreurs du serveur, journal de restauration
 	AUTH_EVENT_RETENTION_DAYS: positiveInteger(20),
 	ERROR_LOG_RETENTION_DAYS: positiveInteger(20),
 	AUTH_RESTORE_JOURNAL_DAYS: positiveInteger(70),
-	// Intervalle de la purge des parcours et des sessions expirés
+	// Intervalle de la purge des parcours, des sessions et des facteurs non confirmés expirés
 	AUTH_PURGE_INTERVAL_MINUTES: positiveInteger(15),
 	// [secret] Clé des empreintes HMAC des codes reçus par mail
 	AUTH_CODE_HMAC_KEY: z.string().regex(HEX_KEY_32_BYTES, HEX_KEY_MESSAGE),

@@ -110,6 +110,7 @@ src/
 ├── error/                  AppError et ses filles (BadRequest, NotFound, Conflict, BadGateway, Database…)
 ├── middleware/             requestValidator, requireSession, notFound, unhandledMethod, globalErrorHandler
 ├── configuration/          env.ts (variables lues et vérifiées au démarrage), sequelize.ts
+├── purge/                  purges répétées, lancées au démarrage
 ├── sql/migrations/         migrations Flyway
 └── testUtils/              insertions et lectures directes en base pour les tests d'intégration
 ```
