@@ -21,12 +21,12 @@ describe("describeAcknowledgement.ts", () => {
 			{
 				acknowledgement: ContactAcknowledgementEnum.FAILED,
 				email: EMAIL,
-				line: "L’accusé de réception n’a pas pu partir vers sam@example.com, mais je vous répondrai bien à cette adresse.",
+				line: "L’accusé de réception n’a pas pu partir vers sam@example.com, mais je vous répondrai bien à cette adresse email.",
 			},
 			{
 				acknowledgement: ContactAcknowledgementEnum.NO_EMAIL,
 				email: null,
-				line: "Sans adresse, je ne pourrai pas vous répondre.",
+				line: "Sans adresse email, je ne pourrai pas vous répondre.",
 			},
 		])(
 			"SHOULD tell what became of the acknowledgement WHEN it is $acknowledgement",

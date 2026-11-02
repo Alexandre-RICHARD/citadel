@@ -109,7 +109,7 @@ describe("sendContactMessage", () => {
 			expect(acknowledgement?.text).not.toContain(body.message);
 			expect(acknowledgement?.text).not.toContain("Sam");
 			expect(acknowledgement?.text).toContain(
-				"vous ne recevrez pas d'autre accusé de réception",
+				"tu ne recevras pas d'autre accusé de réception",
 			);
 		});
 

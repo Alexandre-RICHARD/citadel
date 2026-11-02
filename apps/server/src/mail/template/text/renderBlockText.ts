@@ -17,6 +17,8 @@ export function renderBlockText(block: MailBlock): string {
 			return `${block.title}\n${block.text}`;
 		case "button":
 			return `${block.label} : ${describeHref(block.href)}`;
+		case "code":
+			return `${block.label} : ${block.code}`;
 		case "meter":
 			return `${block.value} / ${block.max} ${block.caption} (${meterPercent(block.value, block.max)} %)`;
 		case "statuses":

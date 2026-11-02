@@ -43,7 +43,7 @@ describe("resolveContactFailure.ts", () => {
 					code: MailErrorCodeEnum.MAIL_UNAVAILABLE,
 				}),
 				message:
-					"Impossible d'envoyer le message : le service d'envoi de mails ne répond pas, réessayez plus tard.",
+					"Impossible d'envoyer le message : le service d'envoi d'emails ne répond pas, réessayez plus tard.",
 				isRetryable: true,
 			},
 			{

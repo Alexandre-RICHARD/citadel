@@ -29,9 +29,9 @@ const WORDINGS: Record<MailThresholdEnum, ThresholdWording> = {
 	},
 	[MailThresholdEnum.DAILY]: {
 		subject: "plus aucun envoi",
-		title: "Plus aucun mail ne part aujourd'hui",
+		title: "Plus aucun email ne part aujourd'hui",
 		closedFeature:
-			"plus aucun mail ne part, connexion comprise. Celui-ci est le dernier",
+			"plus aucun email ne part, connexion comprise. Celui-ci est le dernier",
 		accent: MailAccentEnum.RED,
 	},
 };
@@ -48,24 +48,24 @@ export function buildQuotaAlertMail(
 		kind: MailKindEnum.QUOTA_ALERT,
 		to: CONTACT_ADDRESS,
 		replyTo: null,
-		subject: `[Citadel] Quota de mails : ${subject} pour aujourd'hui`,
+		subject: `[Citadel] Quota d'emails : ${subject} pour aujourd'hui`,
 		...buildMailBodies({
-			preview: `${sentToday} mails envoyés sur ${dailyLimit} : ${closedFeature}.`,
+			preview: `${sentToday} emails envoyés sur ${dailyLimit} : ${closedFeature}.`,
 			accent,
-			kicker: "Quota de mails",
+			kicker: "Quota d'emails",
 			title,
 			lead: "Un seuil du quota quotidien de Brevo vient d'être franchi.",
 			blocks: [
 				{ kind: "paragraph", text: "Bonjour," },
 				{
 					kind: "paragraph",
-					text: `Le site a envoyé ${sentToday} mails aujourd'hui, sur les ${dailyLimit} que permet le quota quotidien de Brevo (tes réponses depuis Gmail comprises) : ${closedFeature}.`,
+					text: `Le site a envoyé ${sentToday} emails aujourd'hui, sur les ${dailyLimit} que permet le quota quotidien de Brevo (tes réponses depuis Gmail comprises) : ${closedFeature}.`,
 				},
 				{
 					kind: "meter",
 					value: sentToday,
 					max: dailyLimit,
-					caption: "mails aujourd'hui",
+					caption: "emails aujourd'hui",
 					marks: [limits.registrationStop, limits.contactStop],
 				},
 				{
@@ -74,7 +74,7 @@ export function buildQuotaAlertMail(
 				},
 				{
 					kind: "paragraph",
-					text: "Tout rouvre seul quand Brevo remet son compteur à zéro, demain. Le bandeau du site prévient les visiteurs en attendant, et l'adresse de contact reste affichée.",
+					text: "Tout rouvre seul quand Brevo remet son compteur à zéro, demain. Le bandeau du site prévient les visiteurs en attendant, et l'adresse email de contact reste affichée.",
 				},
 				{
 					kind: "paragraph",

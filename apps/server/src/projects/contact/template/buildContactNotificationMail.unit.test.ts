@@ -28,7 +28,7 @@ describe("buildContactNotificationMail.ts", () => {
 			expect(mail.text).toContain("Date : dimanche 1 novembre 2026 à 19:30");
 		});
 
-		it("SHOULD only add a suffix to the subject, with the same content and the original date, WHEN the mail is a delayed one", () => {
+		it("SHOULD add a suffix to the subject and a late notice, keeping the original date, WHEN the mail is a delayed one", () => {
 			// Arrange
 			const immediate = buildContactNotificationMail(MESSAGE, WRITTEN_AT);
 
@@ -39,9 +39,9 @@ describe("buildContactNotificationMail.ts", () => {
 
 			// Assert
 			expect(delayed.subject).toBe("[Contact] Question (différé)");
-			expect({ ...delayed, subject: immediate.subject }).toStrictEqual(
-				immediate,
-			);
+			expect(delayed.text).toContain("Une notification en retard");
+			expect(immediate.text).not.toContain("Une notification en retard");
+			expect(delayed.text).toContain("Date : dimanche 1 novembre 2026 à 19:30");
 		});
 	});
 

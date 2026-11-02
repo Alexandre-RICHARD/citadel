@@ -9,9 +9,9 @@ const LINES: Record<
 	[ContactAcknowledgementEnum.ALREADY_SENT_TODAY]: (email) =>
 		`${email} a déjà reçu un accusé de réception aujourd’hui : pas de nouveau pour ce message.`,
 	[ContactAcknowledgementEnum.FAILED]: (email) =>
-		`L’accusé de réception n’a pas pu partir vers ${email}, mais je vous répondrai bien à cette adresse.`,
+		`L’accusé de réception n’a pas pu partir vers ${email}, mais je vous répondrai bien à cette adresse email.`,
 	[ContactAcknowledgementEnum.NO_EMAIL]: () =>
-		"Sans adresse, je ne pourrai pas vous répondre.",
+		"Sans adresse email, je ne pourrai pas vous répondre.",
 };
 
 // La ligne de l'écran « Message envoyé » sur l'accusé de réception. `email` : l'adresse donnée, null sans adresse

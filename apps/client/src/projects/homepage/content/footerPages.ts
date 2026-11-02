@@ -114,9 +114,9 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Le formulaire de contact",
 				paragraphs: [
-					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse mail. Il n’est pas enregistré sur le site, sauf si l’envoi du mail échoue : il est alors gardé dans la base du site, avec ce que vous avez saisi mais sans votre adresse IP. Son envoi est retenté chaque soir, et il en est effacé dès qu’il est parti. Je l’efface aussi de ma boîte dans la semaine. Votre adresse mail ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
-					"Pour limiter les abus, le serveur garde en mémoire, sans les écrire nulle part, votre adresse IP pendant une heure (un nombre de messages par heure) et votre adresse mail jusqu’au soir (un seul accusé de réception par jour). Base légale : votre demande de contact, et l’intérêt légitime à protéger le site.",
-					"Les mails du site sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer : voir [sa politique de confidentialité](brevoPrivacy). Brevo ajoute à chaque mail un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
+					"Un message envoyé depuis la page Contact part par email vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse email. Il n’est pas enregistré sur le site, sauf si l’envoi de l’email échoue : il est alors gardé dans la base du site, avec ce que vous avez saisi mais sans votre adresse IP. Son envoi est retenté chaque soir, et il en est effacé dès qu’il est parti. Je l’efface aussi de ma boîte dans la semaine. Votre adresse mail ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
+					"Pour limiter les abus, le serveur garde en mémoire, sans les écrire nulle part, votre adresse IP pendant une heure (un nombre de messages par heure) et votre adresse email jusqu’au soir (un seul accusé de réception par jour). Base légale : votre demande de contact, et l’intérêt légitime à protéger le site.",
+					"Les emails du site sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer : voir [sa politique de confidentialité](brevoPrivacy). Brevo ajoute à chaque email un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
 				],
 			},
 			{
@@ -136,7 +136,7 @@ export const footerPages: FooterPage[] = [
 				title: "Les ressources tierces",
 				paragraphs: [
 					"Deux projets affichent des images venues d’autres sites, qui voient alors votre adresse IP : le Backlog charge ses jaquettes depuis [IGDB](igdb), un service de Twitch ([politique de confidentialité de Twitch](twitchPrivacy)), et Angers Irigo son fond de carte depuis [OpenStreetMap](openStreetMapCopyright) ([politique de confidentialité de la fondation OpenStreetMap](openStreetMapPrivacy)).",
-					"Les données temps réel d’[Irigo](irigo), elles, passent par le serveur du site : leur fournisseur ne voit pas votre adresse.",
+					"Les données temps réel d’[Irigo](irigo), elles, passent par le serveur du site : leur fournisseur ne voit pas votre adresse IP.",
 				],
 			},
 			{

@@ -61,9 +61,9 @@ describe("mailService", () => {
 			for (const alert of alerts)
 				expect(alert.to).toStrictEqual(CONTACT_ADDRESS);
 			expect(alerts.map((alert) => alert.subject)).toStrictEqual([
-				"[Citadel] Quota de mails : inscriptions fermées pour aujourd'hui",
-				"[Citadel] Quota de mails : formulaire de contact fermé pour aujourd'hui",
-				"[Citadel] Quota de mails : plus aucun envoi pour aujourd'hui",
+				"[Citadel] Quota d'emails : inscriptions fermées pour aujourd'hui",
+				"[Citadel] Quota d'emails : formulaire de contact fermé pour aujourd'hui",
+				"[Citadel] Quota d'emails : plus aucun envoi pour aujourd'hui",
 			]);
 			expect(memoryMailSender.sentMails).toHaveLength(env.MAIL_DAILY_LIMIT);
 			expect(memoryMailSender.sentMails.at(-1)?.kind).toBe(

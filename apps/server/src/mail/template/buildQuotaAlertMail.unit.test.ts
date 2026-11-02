@@ -21,7 +21,7 @@ describe("buildQuotaAlertMail.ts", () => {
 				to: CONTACT_ADDRESS,
 				replyTo: null,
 				subject:
-					"[Citadel] Quota de mails : inscriptions fermées pour aujourd'hui",
+					"[Citadel] Quota d'emails : inscriptions fermées pour aujourd'hui",
 			});
 		});
 
@@ -32,7 +32,7 @@ describe("buildQuotaAlertMail.ts", () => {
 				LIMITS,
 			);
 
-			expect(text).toContain("280 / 300 mails aujourd'hui (93 %)");
+			expect(text).toContain("280 / 300 emails aujourd'hui (93 %)");
 			expect(text).toContain(
 				"- Formulaire de contact (Ferme à 280 envois) : Fermé",
 			);

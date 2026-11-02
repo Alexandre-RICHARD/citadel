@@ -12,7 +12,7 @@ const DELAY_CALLOUT: MailBlock = {
 	kind: "callout",
 	accent: MailAccentEnum.ORANGE,
 	title: "Un accusé de réception en retard",
-	text: "Cet accusé de réception vous parvient avec du retard : un incident technique l'a empêché de partir plus tôt. Votre message, lui, n'a pas été perdu.",
+	text: "Cet accusé de réception te parvient avec du retard : un incident technique l'a empêché de partir plus tôt. Ton message, lui, n'a pas été perdu.",
 };
 
 /**
@@ -31,7 +31,7 @@ export function buildContactAcknowledgementMail(
 		replyTo: CONTACT_ADDRESS,
 		subject: `Message bien reçu : ${subject}`,
 		...buildMailBodies({
-			preview: `Votre message « ${subject} » est bien arrivé : je vous réponds dès que possible.`,
+			preview: `Ton message « ${subject} » est bien arrivé : je te réponds dès que possible.`,
 			accent: MailAccentEnum.MAGENTA,
 			kicker: "Formulaire de contact",
 			title: "Message bien reçu",
@@ -40,18 +40,18 @@ export function buildContactAcknowledgementMail(
 				{ kind: "paragraph", text: "Bonjour," },
 				{
 					kind: "paragraph",
-					text: "Votre message, envoyé depuis le formulaire de contact du site, est bien arrivé. Je le lis et vous réponds dès que possible, à cette adresse.",
+					text: "Ton message, envoyé depuis le formulaire de contact du site, est bien arrivé. Je le lis et te réponds dès que possible, à cette adresse email.",
 				},
 				{
 					kind: "quote",
-					label: "Votre message",
+					label: "Le sujet de ta demande",
 					text: subject,
 					isProminent: true,
 				},
 				...(isDelayed ? [DELAY_CALLOUT] : []),
 				{
 					kind: "paragraph",
-					text: `Pour le compléter, répondez simplement à ce mail, ou écrivez à ${CONTACT_EMAIL}. En attendant, les projets du site restent ouverts à tous.`,
+					text: `Pour le compléter, réponds simplement à cet email, ou écris à ${CONTACT_EMAIL}.`,
 				},
 				{
 					kind: "button",
@@ -61,8 +61,8 @@ export function buildContactAcknowledgementMail(
 				{ kind: "signature", name: "Alexandre", href: MAIL_SITE.url },
 			],
 			note: [
-				"Vous recevez ce mail parce que cette adresse a été donnée dans le formulaire de contact du site. Si ce n'est pas vous, ignorez-le : rien d'autre ne vous sera envoyé.",
-				"Si vous remplissez un autre formulaire de contact dans la même journée, vous ne recevrez pas d'autre accusé de réception.",
+				"Tu reçois cet email parce que cette adresse email a été donnée dans le formulaire de contact du site. Si ce n'est pas toi, ignore-le : rien d'autre ne te sera envoyé.",
+				"Si tu remplis un autre formulaire de contact dans la même journée, tu ne recevras pas d'autre accusé de réception.",
 			].join("\n"),
 		}),
 	};

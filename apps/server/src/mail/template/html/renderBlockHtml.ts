@@ -101,6 +101,16 @@ function buttonHtml(
 	);
 }
 
+// Le seul élément du mail qu'on recopie : centré, en gros, sur un panneau. Le `padding-left` rend à l'espacement des
+// chiffres ce que `letter-spacing` ajoute après le dernier, pour que le code paraisse centré
+function codeHtml({ label, code }: BlockOf<"code">): string {
+	const codeStyle = `${fontStyle({ family: "code", size: 34, weight: 700, lineHeight: 1.2, color: light.text })}letter-spacing:0.22em;`;
+	return presentationTable(
+		`<tr><td class="cdl-panel cdl-line" align="center" style="padding:22px 20px;background-color:${light.panel};border:1px solid ${light.border};border-radius:14px;"><p class="cdl-subtle" style="margin:0 0 10px;${LABEL_STYLE}">${escapeHtml(label)}</p><p class="cdl-text" style="margin:0;padding-left:0.22em;${codeStyle}${BREAK_ANYWHERE}">${escapeHtml(code)}</p></td></tr>`,
+		{ width: "100%" },
+	);
+}
+
 // Le vide entre deux morceaux de jauge, de la couleur de la carte
 const METER_GAP = `<td class="cdl-card" width="4" style="width:4px;background-color:${light.surface};${EMPTY_CELL}">&nbsp;</td>`;
 
@@ -227,6 +237,8 @@ export function renderBlockHtml(
 			return calloutHtml(block);
 		case "button":
 			return buttonHtml(block, accent);
+		case "code":
+			return codeHtml(block);
 		case "meter":
 			return meterHtml(block, accent);
 		case "statuses":

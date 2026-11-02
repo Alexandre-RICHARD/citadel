@@ -38,6 +38,15 @@ describe("buildMailBodies.ts", () => {
 			expect(text).toContain("Merci.\n\n---\nUne seule fois par jour.\n\n");
 		});
 
+		it("SHOULD write a code block on one line, without any spacing between the digits", () => {
+			const { text } = buildMailBodies({
+				...LAYOUT,
+				blocks: [{ kind: "code", label: "Ton code", code: "482913" }],
+			});
+
+			expect(text).toContain("Ton code : 482913");
+		});
+
 		it("SHOULD end with the site name and address", () => {
 			const { text } = buildMailBodies(LAYOUT);
 
@@ -68,6 +77,16 @@ describe("buildMailBodies.ts", () => {
 			expect(html).toContain("&lt;i&gt;aperçu&lt;/i&gt;");
 			expect(html).toContain("&lt;script&gt;x&lt;/script&gt;");
 			expect(html).not.toContain("<script>");
+		});
+
+		it("SHOULD show the code in a monospace font and keep its digits contiguous WHEN a block has one", () => {
+			const { html } = buildMailBodies({
+				...LAYOUT,
+				blocks: [{ kind: "code", label: "Ton code", code: "482913" }],
+			});
+
+			expect(html).toContain("ui-monospace");
+			expect(html).toContain(">482913</p>");
 		});
 
 		it("SHOULD load nothing from outside WHEN rendered, neither image nor stylesheet", () => {

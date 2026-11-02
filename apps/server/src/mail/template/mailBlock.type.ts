@@ -16,6 +16,8 @@ export type MailBlock =
 	| { kind: "fields"; fields: MailField[] }
 	| { kind: "callout"; accent: MailAccentEnum; title: string; text: string }
 	| { kind: "button"; label: string; href: string }
+	// Un code à recopier, en gros et à part
+	| { kind: "code"; label: string; code: string }
 	| {
 			kind: "meter";
 			value: number;

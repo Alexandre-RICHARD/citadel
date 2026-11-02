@@ -2,7 +2,7 @@
 export const contactFieldLabels: Readonly<Record<string, string>> = {
 	subject: "le sujet",
 	message: "le message",
-	email: "l'adresse mail",
+	email: "l'adresse email",
 	name: "le nom",
 	website: "le champ caché",
 };

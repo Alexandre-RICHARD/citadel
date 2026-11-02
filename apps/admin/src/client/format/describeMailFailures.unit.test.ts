@@ -27,8 +27,8 @@ describe("describeMailFailures.ts", () => {
 					lastFailedAt: LAST_FAILED_AT,
 				}),
 			).toStrictEqual({
-				status: "3 mails non partis",
-				message: "3 mails du site n'ont pas pu partir ces 7 derniers jours.",
+				status: "3 emails non partis",
+				message: "3 emails du site n'ont pas pu partir ces 7 derniers jours.",
 				detail: `Dernier échec : ${formatDateTime(new Date(LAST_FAILED_AT))}. Détail en base : mailing_failure, error_log.`,
 			});
 		});
@@ -41,8 +41,8 @@ describe("describeMailFailures.ts", () => {
 					lastFailedAt: LAST_FAILED_AT,
 				}),
 			).toMatchObject({
-				status: "1 mail non parti",
-				message: "1 mail du site n'a pas pu partir ces 7 derniers jours.",
+				status: "1 email non parti",
+				message: "1 email du site n'a pas pu partir ces 7 derniers jours.",
 			});
 		});
 	});

@@ -8,5 +8,5 @@ export const contactErrorReasons: ErrorReasons = {
 	[ContactErrorCodeEnum.CONTACT_CLOSED]:
 		"le formulaire est fermé pour aujourd'hui",
 	[MailErrorCodeEnum.MAIL_UNAVAILABLE]:
-		"le service d'envoi de mails ne répond pas, réessayez plus tard",
+		"le service d'envoi d'emails ne répond pas, réessayez plus tard",
 };

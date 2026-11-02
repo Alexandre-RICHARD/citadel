@@ -73,7 +73,7 @@ export const JOB_DEFINITIONS = [
 		name: "contact-retry",
 		label: "Messages de contact en attente",
 		description:
-			"Renvoie ceux dont le mail n'était pas parti, tant que le quota le permet",
+			"Renvoie ceux dont l'email n'était pas parti, tant que le quota le permet",
 		monitored: false,
 	},
 ] as const;

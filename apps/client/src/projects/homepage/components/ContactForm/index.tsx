@@ -137,8 +137,8 @@ export function ContactForm() {
 					role="status"
 				>
 					Le formulaire est fermé pour aujourd’hui : le site a atteint son quota
-					quotidien de mails. Il rouvre demain ; en attendant, écrivez
-					directement à l’adresse ci-dessous.
+					quotidien d’emails. Il rouvre demain ; en attendant, écrivez
+					directement à l’adresse email ci-dessous.
 				</p>
 			)}
 			<fieldset
@@ -169,7 +169,7 @@ export function ContactForm() {
 						htmlFor={`${fieldId}-email`}
 					>
 						<span className={styles.label}>
-							Adresse mail{" "}
+							Adresse email{" "}
 							<span className={styles.optional}>pour vous répondre</span>
 						</span>
 						<input

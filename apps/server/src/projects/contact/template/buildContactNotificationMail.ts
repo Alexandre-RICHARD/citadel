@@ -17,6 +17,13 @@ const parisDateTimeFormat = new Intl.DateTimeFormat("fr-FR", {
 });
 
 const MISSING = "non donné";
+
+const DELAY_CALLOUT: MailBlock = {
+	kind: "callout",
+	accent: MailAccentEnum.ORANGE,
+	title: "Une notification en retard",
+	text: "Cette notification te parvient avec du retard : un incident technique l'a empêchée de partir plus tôt. La date ci-dessous est celle où le visiteur a écrit.",
+};
 const PREVIEW_MAX_LENGTH = 140;
 
 type NotificationOptions = {
@@ -65,6 +72,7 @@ export function buildContactNotificationMail(
 			title: subject,
 			lead: `${author} a écrit depuis le formulaire de contact d'${MAIL_SITE.host}.`,
 			blocks: [
+				...(isDelayed ? [DELAY_CALLOUT] : []),
 				{
 					kind: "fields",
 					fields: [
@@ -84,8 +92,8 @@ export function buildContactNotificationMail(
 			],
 			note:
 				email === null
-					? "Le visiteur n'a pas laissé d'adresse : ce message n'appelle pas de réponse."
-					: "Répondre à ce mail écrit directement au visiteur, depuis contact.",
+					? "Le visiteur n'a pas laissé d'adresse email : ce message n'appelle pas de réponse."
+					: "Répondre à cet email écrit directement au visiteur, depuis contact.",
 		}),
 	};
 }

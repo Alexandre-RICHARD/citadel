@@ -20,8 +20,8 @@ export function describeMailFailures(
 	const { count, windowDays, lastFailedAt } = summary;
 	const isPlural = count > 1;
 	return {
-		status: `${pluralize(count, "mail")} non ${isPlural ? "partis" : "parti"}`,
-		message: `${pluralize(count, "mail")} du site ${isPlural ? "n'ont" : "n'a"} pas pu partir ces ${windowDays} derniers jours.`,
+		status: `${pluralize(count, "email")} non ${isPlural ? "partis" : "parti"}`,
+		message: `${pluralize(count, "email")} du site ${isPlural ? "n'ont" : "n'a"} pas pu partir ces ${windowDays} derniers jours.`,
 		detail:
 			lastFailedAt === null
 				? null
