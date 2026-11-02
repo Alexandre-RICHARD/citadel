@@ -100,6 +100,12 @@ export const footerPages: FooterPage[] = [
 				],
 			},
 			{
+				title: "Les polices de caractères",
+				paragraphs: [
+					"Les polices du site sont servies par son propre serveur : votre navigateur ne les télécharge pas chez un hébergeur de polices externe, et n’envoie donc pas votre adresse IP à un tiers pour les afficher.",
+				],
+			},
+			{
 				title: "Les cookies",
 				paragraphs: [
 					"Le site ne dépose lui-même aucun cookie. Seul [Cloudflare](cloudflare) peut en poser un, technique, pour reconnaître les robots (voir plus bas).",
