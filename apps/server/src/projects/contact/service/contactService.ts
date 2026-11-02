@@ -8,6 +8,8 @@ import { TooManyRequestsError } from "../../../error/TooManyRequestsError.ts";
 import { mailService } from "../../../mail/mailService.ts";
 import type { ContactMessageBean } from "../bean/contactMessageBean.type.ts";
 import { createContactLimiter } from "../limit/createContactLimiter.ts";
+import { countContactMessagesUnsentQuery } from "../query/countContactMessagesUnsentQuery.ts";
+import { createContactMessageUnsentQuery } from "../query/createContactMessageUnsentQuery.ts";
 import { buildContactAcknowledgementMail } from "../template/buildContactAcknowledgementMail.ts";
 import { buildContactNotificationMail } from "../template/buildContactNotificationMail.ts";
 
@@ -36,16 +38,37 @@ class ContactService {
 				retryAfterMs,
 			);
 
-		// Son échec arrête tout : le visiteur voit l'erreur et garde son texte
-		await mailService.send(
-			buildContactNotificationMail(contactMessage, new Date()),
-		);
+		await this.#notify(contactMessage);
 
 		const { email, subject } = contactMessage;
 		if (email === null) return ContactAcknowledgementEnum.NO_EMAIL;
 		if (!this.#limiter.claimAcknowledgement(email))
 			return ContactAcknowledgementEnum.ALREADY_SENT_TODAY;
 		return this.#sendAcknowledgement(email, subject);
+	}
+
+	// Notification qui ne part pas : le message complet est gardé en base, et le visiteur n'a rien à refaire. Si la base
+	// échoue aussi, rien n'est gardé : l'erreur d'envoi repart vers le visiteur, qui garde son texte
+	async #notify(contactMessage: ContactMessageBean): Promise<void> {
+		try {
+			await mailService.send(
+				buildContactNotificationMail(contactMessage, new Date()),
+			);
+		} catch (sendError) {
+			try {
+				await createContactMessageUnsentQuery(contactMessage);
+			} catch (keepError) {
+				await logError(
+					keepError,
+					"Conservation du message de contact non envoyé",
+				);
+				throw sendError;
+			}
+		}
+	}
+
+	async countUnsentMessages(): Promise<number> {
+		return countContactMessagesUnsentQuery();
 	}
 
 	// Le message est arrivé : un accusé qui échoue est loggé, sans son adresse ni son sujet, et le visiteur le sait

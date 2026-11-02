@@ -1,4 +1,5 @@
-// Un message du formulaire de contact, validé. N'existe que le temps de la requête : rien n'est gardé en base
+// Un message du formulaire de contact, validé. N'existe que le temps de la requête, sauf si sa notification ne peut pas
+// partir : il est alors gardé en base (contact_message_unsent)
 export type ContactMessageBean = {
 	subject: string;
 	message: string;

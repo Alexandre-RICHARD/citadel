@@ -13,7 +13,8 @@ export async function countTableRows(
 		| "gdc_boss"
 		| "gdc_death"
 		| "error_log"
-		| "mail_failure",
+		| "mail_failure"
+		| "contact_message_unsent",
 ): Promise<number> {
 	const countRow = await sequelize.query<CountRow>(
 		`SELECT COUNT(*) AS rowCount FROM \`${tableName}\``,

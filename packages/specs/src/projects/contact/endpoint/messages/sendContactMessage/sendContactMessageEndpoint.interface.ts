@@ -13,7 +13,8 @@ import type { ContactErrorCodeEnum } from "../../../error/contactErrorCode.enum.
 import type { SendContactMessageBodyDto } from "./sendContactMessageBodyDto.type.ts";
 
 // Le formulaire de contact : une notification à `contact`, et un accusé de réception au visiteur s'il a donné son
-// adresse (un par adresse et par jour). Rien n'est gardé en base ; la réponse dit ce qu'il est advenu de l'accusé
+// adresse (un par adresse et par jour). Si la notification ne peut pas partir, le message est gardé en base (le visiteur
+// a une réponse 200) ; la réponse dit aussi ce qu'il est advenu de l'accusé
 export interface SendContactMessage extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.CONTACT}/messages`;
@@ -32,7 +33,7 @@ export interface SendContactMessage extends EndpointModel {
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<ContactErrorCodeEnum.CONTACT_CLOSED>;
 		// Trop de messages depuis cette IP : Retry-After dit quand réessayer
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;
-		// Le fournisseur n'a pas pris la notification : rien n'est parti
+		// Le fournisseur n'a pas pris la notification, et la base n'a pas pu garder le message : rien n'est gardé
 		[HttpStatutCodeErrorEnum.BAD_GATEWAY]: ErrorResponseDto<MailErrorCodeEnum.MAIL_UNAVAILABLE>;
 	};
 }

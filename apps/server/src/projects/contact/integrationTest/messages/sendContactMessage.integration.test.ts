@@ -8,11 +8,13 @@ import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/techn
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
+import { QueryTypes } from "sequelize";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { env } from "../../../../configuration/env.ts";
+import { sequelize } from "../../../../configuration/sequelize.ts";
 import { BadGatewayError } from "../../../../error/BadGatewayError.ts";
 import { CONTACT_ADDRESS } from "../../../../mail/address/contactAddress.ts";
 import type { Mail } from "../../../../mail/mail.type.ts";
@@ -23,6 +25,7 @@ import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWo
 import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
+import { ContactMessageUnsent } from "../../models/ContactMessageUnsent.ts";
 
 const SEND_CONTACT_MESSAGE_URL = `${ApiPrefixEnum.CONTACT}/messages`;
 const HOUR_SECONDS = 3600;
@@ -193,6 +196,39 @@ describe("sendContactMessage", () => {
 					"[Accusé de réception du formulaire de contact] Brevo refused the contact-acknowledgement mail (400, no code)",
 			});
 		});
+		it("SHOULD keep the whole message in the database, without the IP, and still succeed WHEN the notification cannot be sent", async () => {
+			// Arrange
+			const body = buildBody({
+				name: "Alex",
+				message: "Un message à ne pas perdre.\nAvec deux lignes.",
+			});
+			const unsentBefore = await countTableRows("contact_message_unsent");
+			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
+				new BadGatewayError(
+					MailErrorCodeEnum.MAIL_UNAVAILABLE,
+					"Brevo did not answer on /smtp/email",
+				),
+			);
+
+			// Act
+			const response = await postMessage(body);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(await countTableRows("contact_message_unsent")).toBe(
+				unsentBefore + 1,
+			);
+			const [keptMessage] = await sequelize.query(
+				"SELECT subject, message, name, email FROM contact_message_unsent WHERE subject = :subject",
+				{ type: QueryTypes.SELECT, replacements: { subject: body.subject } },
+			);
+			expect(keptMessage).toStrictEqual({
+				subject: body.subject,
+				message: body.message,
+				name: body.name,
+				email: body.email,
+			});
+		});
 	});
 
 	describe("400 Bad Request", () => {
@@ -286,15 +322,18 @@ describe("sendContactMessage", () => {
 	});
 
 	describe("502 Bad Gateway", () => {
-		it("SHOULD answer MAIL_UNAVAILABLE, and record and log the failure WHEN the notification cannot be sent", async () => {
+		it("SHOULD answer MAIL_UNAVAILABLE and keep nothing WHEN the notification cannot be sent and the database cannot keep the message", async () => {
 			// Arrange
-			const { expectLogged } = await watchErrorLogs();
-			const failuresBefore = await countTableRows("mail_failure");
+			vi.spyOn(console, "error").mockImplementation(() => undefined);
+			const unsentBefore = await countTableRows("contact_message_unsent");
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
 					"Brevo did not answer on /smtp/email",
 				),
+			);
+			vi.spyOn(ContactMessageUnsent, "create").mockRejectedValueOnce(
+				new Error("database down"),
 			);
 
 			// Act
@@ -306,11 +345,7 @@ describe("sendContactMessage", () => {
 				code: MailErrorCodeEnum.MAIL_UNAVAILABLE,
 				message: "Brevo did not answer on /smtp/email",
 			});
-			expect(await countTableRows("mail_failure")).toBe(failuresBefore + 1);
-			await expectLogged({
-				errorType: "BadGatewayError",
-				message: `[POST ${SEND_CONTACT_MESSAGE_URL}] Brevo did not answer on /smtp/email`,
-			});
+			expect(await countTableRows("contact_message_unsent")).toBe(unsentBefore);
 		});
 	});
 });

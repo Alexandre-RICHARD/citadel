@@ -114,7 +114,7 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Le formulaire de contact",
 				paragraphs: [
-					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse mail. Il n’est enregistré nulle part sur le site, et je l’efface de ma boîte dans la semaine. Votre adresse mail ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
+					"Un message envoyé depuis la page Contact part par mail vers ma boîte : son sujet, son texte et, si vous les donnez, votre nom et votre adresse mail. Il n’est pas enregistré sur le site, sauf si l’envoi du mail échoue : il est alors gardé dans la base du site, avec ce que vous avez saisi mais sans votre adresse IP, le temps que je le lise, puis je l’en efface. Je l’efface aussi de ma boîte dans la semaine. Votre adresse mail ne sert qu’à vous répondre et à vous envoyer un accusé de réception.",
 					"Pour limiter les abus, le serveur garde en mémoire, sans les écrire nulle part, votre adresse IP pendant une heure (un nombre de messages par heure) et votre adresse mail jusqu’au soir (un seul accusé de réception par jour). Base légale : votre demande de contact, et l’intérêt légitime à protéger le site.",
 					"Les mails du site sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer : voir [sa politique de confidentialité](brevoPrivacy). Brevo ajoute à chaque mail un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
 				],
