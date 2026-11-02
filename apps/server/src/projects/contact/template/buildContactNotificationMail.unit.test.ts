@@ -44,4 +44,29 @@ describe("buildContactNotificationMail.ts", () => {
 			);
 		});
 	});
+
+	describe("reply", () => {
+		it("SHOULD offer a reply button with the subject filled in WHEN the visitor left an email", () => {
+			// Act
+			const mail = buildContactNotificationMail(MESSAGE, WRITTEN_AT);
+
+			// Assert
+			expect(mail.html).toContain(
+				'href="mailto:sam%40example.com?subject=Re%3A%20Question"',
+			);
+			expect(mail.text).toContain("Répondre à Sam : sam@example.com");
+		});
+
+		it("SHOULD offer no reply link and say the email is missing WHEN the visitor left none", () => {
+			// Act
+			const mail = buildContactNotificationMail(
+				{ ...MESSAGE, email: null, name: null },
+				WRITTEN_AT,
+			);
+
+			// Assert
+			expect(mail.html).not.toContain("mailto:");
+			expect(mail.text).toContain("Nom : non donné\nEmail : non donné");
+		});
+	});
 });

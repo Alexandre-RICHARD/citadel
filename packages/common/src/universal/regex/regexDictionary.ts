@@ -16,6 +16,8 @@ export const regexDictionary = {
 
 	// Signe diacritique (accent, cédille…) d'un texte décomposé par normalize("NFD")
 	diacritic: /\p{Diacritic}/gu,
+	// Suite d'espaces, de tabulations ou de retours à la ligne, à ramener à une seule espace
+	whitespaceRun: /\s+/g,
 	// Suite de caractères ni lettre minuscule sans accent ni chiffre : la ponctuation et les espaces d'un texte normalisé
 	nonAlphanumericRun: /[^a-z0-9]+/g,
 	// Mot qui commence par une voyelle, devant laquelle « de » s'élide en « d' »
