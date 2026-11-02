@@ -5,6 +5,7 @@ import { healthRouter } from "./health/router.ts";
 import { globalErrorHandler } from "./middleware/globalErrorHandler.ts";
 import { notFound } from "./middleware/notFound.ts";
 import { realClientIp } from "./middleware/realClientIp.ts";
+import { requireSameOrigin } from "./middleware/requireSameOrigin.ts";
 import { unhandledMethod } from "./middleware/unhandledMethod.ts";
 
 export const app = express();
@@ -12,6 +13,7 @@ app.disable("etag");
 
 app.use(realClientIp);
 app.use(unhandledMethod);
+app.use(requireSameOrigin);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
