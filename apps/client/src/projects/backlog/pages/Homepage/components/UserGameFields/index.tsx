@@ -222,6 +222,7 @@ export function UserGameFields({
 			<FormField
 				label="Type de fin"
 				hint={endingTypeLabels[draft.endingType].meaning}
+				isRequired
 				isGroup
 			>
 				<SegmentedControl
@@ -247,9 +248,13 @@ export function UserGameFields({
 					/>
 				</FormField>
 				{draft.series.kind === SeriesChoiceKindEnum.NEW && (
-					<FormField label="Nom de la nouvelle série">
+					<FormField
+						label="Nom de la nouvelle série"
+						isRequired
+					>
 						<input
 							type="text"
+							required
 							className={styles.textInput}
 							value={draft.series.name}
 							placeholder="Ex. Souls"

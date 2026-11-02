@@ -1,4 +1,5 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import type { ReactNode } from "react";
 
 import styles from "../../../../backlog.module.scss";
@@ -6,6 +7,7 @@ import styles from "../../../../backlog.module.scss";
 type Props = {
 	label: string;
 	hint?: ReactNode;
+	isRequired?: boolean;
 	// Plusieurs champs (boutons radio, cases) : pas de <label>, qui ne viserait que le premier
 	isGroup?: boolean;
 	className?: string | undefined;
@@ -16,13 +18,17 @@ type Props = {
 export function FormField({
 	label,
 	hint,
+	isRequired = false,
 	isGroup = false,
 	className,
 	children,
 }: Props) {
 	const content = (
 		<>
-			<span className={styles.formLabel}>{label}</span>
+			<span className={styles.formLabel}>
+				{label}
+				{isRequired && <RequiredMark />}
+			</span>
 			{children}
 			{hint !== undefined && hint !== null && (
 				<span className={styles.formHint}>{hint}</span>

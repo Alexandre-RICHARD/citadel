@@ -1,3 +1,4 @@
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import { RefreshCw, Rocket, Undo2 } from "lucide-react";
 import { useState } from "react";
 
@@ -58,9 +59,13 @@ export function DeployCard({ status, send }: Props) {
 				{status.previousVersion ?? "–"}
 			</Stat>
 			<label className={styles.field}>
-				Version à déployer
+				<span>
+					Version à déployer
+					<RequiredMark />
+				</span>
 				<select
 					className={styles.input}
+					required
 					value={version}
 					disabled={versions.length === 0}
 					onChange={(event) => setChosen(event.target.value)}

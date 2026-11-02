@@ -1,3 +1,4 @@
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import { DatabaseBackup, Upload } from "lucide-react";
 import { useState } from "react";
 
@@ -68,9 +69,13 @@ export function RestoreCard({ status, send, onError }: Props) {
 				}
 			</p>
 			<label className={styles.field}>
-				Sauvegarde
+				<span>
+					Sauvegarde
+					<RequiredMark />
+				</span>
 				<select
 					className={styles.input}
+					required
 					value={chosen}
 					onChange={(event) => setSource(event.target.value)}
 				>
@@ -93,20 +98,26 @@ export function RestoreCard({ status, send, onError }: Props) {
 							aria-hidden
 						/>
 						{" Dump .sql.zst (comme ceux du NAS)"}
+						<RequiredMark />
 					</span>
 					<input
 						className={styles.input}
 						type="file"
+						required
 						accept=".zst"
 						onChange={(event) => setFile(event.target.files?.[0] ?? null)}
 					/>
 				</label>
 			) : null}
 			<label className={styles.field}>
-				{`Pour confirmer, tape ${CONFIRMATION}`}
+				<span>
+					{`Pour confirmer, tape ${CONFIRMATION}`}
+					<RequiredMark />
+				</span>
 				<input
 					className={styles.input}
 					type="text"
+					required
 					autoComplete="off"
 					spellCheck={false}
 					value={typed}

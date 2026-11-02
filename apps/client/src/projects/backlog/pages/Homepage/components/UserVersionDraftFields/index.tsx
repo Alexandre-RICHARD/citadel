@@ -35,7 +35,10 @@ export function UserVersionDraftFields({
 	return (
 		<div className={styles.formStack}>
 			<div className={styles.formGrid}>
-				<FormField label="Statut">
+				<FormField
+					label="Statut"
+					isRequired
+				>
 					<Select
 						value={draft.status}
 						// Liste filtrée par type de fin

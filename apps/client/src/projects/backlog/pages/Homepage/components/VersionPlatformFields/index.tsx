@@ -40,6 +40,7 @@ export function VersionPlatformFields({
 		<div className={styles.formRow}>
 			<FormField
 				label="Version"
+				isRequired
 				className={styles.versionField}
 			>
 				<Select
@@ -54,7 +55,10 @@ export function VersionPlatformFields({
 					onChange={(value) => onChange(Number(value), null)}
 				/>
 			</FormField>
-			<FormField label="Plateforme">
+			<FormField
+				label="Plateforme"
+				isRequired
+			>
 				<Select
 					value={platformId === null ? null : String(platformId)}
 					options={platformOptions.map((platform) => {

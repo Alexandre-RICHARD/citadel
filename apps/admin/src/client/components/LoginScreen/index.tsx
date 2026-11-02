@@ -1,3 +1,4 @@
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import { Castle } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
@@ -49,7 +50,10 @@ export function LoginScreen({ onLoggedIn }: Props) {
 				<h1 className={styles.title}>Citadel</h1>
 				<p className={styles.subtitle}>{"Console d'administration"}</p>
 				<label className={styles.field}>
-					<span className={styles.label}>Mot de passe</span>
+					<span className={styles.label}>
+						Mot de passe
+						<RequiredMark />
+					</span>
 					<input
 						className={styles.input}
 						type="password"

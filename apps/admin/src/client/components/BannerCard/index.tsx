@@ -1,3 +1,4 @@
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import { ConfirmDialog } from "@citadel/design-system/src/molecules/ConfirmDialog";
 import { Construction, Megaphone, X } from "lucide-react";
 import { useState } from "react";
@@ -56,9 +57,14 @@ export function BannerCard({ status, quick }: Props) {
 			</div>
 
 			<label className={styles.field}>
-				{`Nouveau message (${message.length}/${MESSAGE_LIMIT})`}
+				<span>
+					Nouveau message
+					<RequiredMark />
+					{` (${message.length}/${MESSAGE_LIMIT})`}
+				</span>
 				<textarea
 					className={styles.input}
+					required
 					rows={3}
 					maxLength={MESSAGE_LIMIT}
 					placeholder="Les inscriptions sont fermées : tu peux encore te connecter si tu as un compte"

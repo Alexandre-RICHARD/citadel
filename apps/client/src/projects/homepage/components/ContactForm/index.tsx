@@ -1,4 +1,5 @@
 import { useNow } from "@citadel/common/src/react/hooks/useNow";
+import { RequiredMark } from "@citadel/design-system/src/atoms/RequiredMark";
 import { ContactFieldMaxLengthEnum } from "@citadel/specs/src/projects/contact/contactFieldMaxLength.enum";
 import { sendContactMessageBodySchema } from "@citadel/specs/src/projects/contact/endpoint/messages/sendContactMessage/sendContactMessageBodySchema";
 import { Mail, Send } from "lucide-react";
@@ -162,7 +163,10 @@ export function ContactForm() {
 					className={styles.field}
 					htmlFor={`${fieldId}-subject`}
 				>
-					<span className={styles.label}>Sujet</span>
+					<span className={styles.label}>
+						Sujet
+						<RequiredMark />
+					</span>
 					<input
 						id={`${fieldId}-subject`}
 						className={styles.input}
@@ -179,6 +183,7 @@ export function ContactForm() {
 				>
 					<span className={styles.label}>
 						Message
+						<RequiredMark />
 						<span
 							className={styles.counter}
 							aria-hidden
