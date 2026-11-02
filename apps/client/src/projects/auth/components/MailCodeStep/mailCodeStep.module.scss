@@ -1,0 +1,32 @@
+.form {
+  display: grid;
+  gap: 1.8rem;
+}
+
+.secondaryActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.restart {
+  @include vars.text-link;
+
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 1.4rem;
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.hint {
+  color: vars.$muted;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}

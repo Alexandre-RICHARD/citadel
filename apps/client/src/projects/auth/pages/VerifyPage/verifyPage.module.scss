@@ -1,0 +1,10 @@
+.form {
+  display: grid;
+  gap: 1.8rem;
+}
+
+.hint {
+  color: vars.$muted;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}

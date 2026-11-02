@@ -1,0 +1,10 @@
+.content {
+  display: grid;
+  gap: 1.8rem;
+}
+
+.restart {
+  @include vars.button-ghost;
+
+  justify-self: start;
+}
