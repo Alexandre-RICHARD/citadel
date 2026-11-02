@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 17 de la roadmap (§15), phase 2.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 21 de la roadmap (§15), phase 3.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -200,16 +200,16 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 | `last_sent_at`, `expires_at` | DATETIME(3) | |
 | `created_at`, `updated_at` | DATETIME(3) | |
 
-**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (BIGINT, nul), `last_used_at`, `created_at`, `updated_at`.
+**`auth_factor`** : `id`, `user_id`, `type` (ENUM `email`, `totp`), `name` (VARCHAR(50)), `secret_encrypted` (VARBINARY(255), nul), `key_version` (TINYINT, nul), `last_used_step` (INT, nul : suffit jusqu'à l'an 4000, un BIGINT arriverait en chaîne), `last_used_at`, `created_at`, `updated_at`.
 
 **`auth_recovery_code`** : `id`, `user_id`, `code_hash` (BINARY(32)), `used_at` (nul), `created_at`, `updated_at`.
 
-**`auth_event`** : `id`, `user_id` (nul), `type`, `ip` (tronquée comme dans `auth_session`), `user_agent`, `created_at`, `updated_at`. Purge à 20 jours (§10.2).
+**`auth_event`** : `id`, `user_id` (nul), `type` (VARCHAR(50) : un nouveau type sans migration), `ip` (tronquée comme dans `auth_session`), `user_agent`, `created_at`, `updated_at`. Purge à 20 jours (§10.2).
 
 ### 5.3 Collations et types
 
 - Empreintes en `BINARY(32)` : comparaison octet par octet.
-- Email : `utf8mb4_uca1400_as_ci` sur la colonne, comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie.
+- Email : `utf8mb4_uca1400_as_ci` sur la colonne (et sur `auth_flow.email`), comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie.
 - Pseudo : `utf8mb4_bin`, toute différence de caractère compte : `Alex` et `alex` peuvent coexister.
 - Aucune migration de collation sur les tables existantes.
 

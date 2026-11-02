@@ -44,6 +44,32 @@ type SessionRow = {
 	absoluteExpiresAt: Date;
 };
 
+type FactorRow = {
+	id: number;
+	userId: number;
+	type: string;
+	name: string;
+	secretEncrypted: Buffer | null;
+	keyVersion: number | null;
+	lastUsedStep: number | null;
+	lastUsedAt: Date | null;
+};
+
+type RecoveryCodeRow = {
+	id: number;
+	userId: number;
+	codeHash: Buffer;
+	usedAt: Date | null;
+};
+
+type EventRow = {
+	id: number;
+	userId: number | null;
+	type: string;
+	ip: string;
+	userAgent: string | null;
+};
+
 // Les tables de l'auth dont chaque ligne appartient à un compte
 type UserOwnedTable =
 	| "auth_session"
@@ -70,6 +96,34 @@ export const selectAuthRows = {
 			`SELECT id, user_id AS userId, token_hash AS tokenHash, remember, user_agent AS userAgent, ip,
 				last_seen_at AS lastSeenAt, expires_at AS expiresAt, absolute_expires_at AS absoluteExpiresAt
 			FROM auth_session
+			WHERE id = :id`,
+			{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
+		);
+	},
+
+	async factor(id: number): Promise<FactorRow | null> {
+		return sequelize.query<FactorRow>(
+			`SELECT id, user_id AS userId, type, name, secret_encrypted AS secretEncrypted, key_version AS keyVersion,
+				last_used_step AS lastUsedStep, last_used_at AS lastUsedAt
+			FROM auth_factor
+			WHERE id = :id`,
+			{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
+		);
+	},
+
+	async recoveryCode(id: number): Promise<RecoveryCodeRow | null> {
+		return sequelize.query<RecoveryCodeRow>(
+			`SELECT id, user_id AS userId, code_hash AS codeHash, used_at AS usedAt
+			FROM auth_recovery_code
+			WHERE id = :id`,
+			{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
+		);
+	},
+
+	async event(id: number): Promise<EventRow | null> {
+		return sequelize.query<EventRow>(
+			`SELECT id, user_id AS userId, type, ip, user_agent AS userAgent
+			FROM auth_event
 			WHERE id = :id`,
 			{ type: QueryTypes.SELECT, plain: true, replacements: { id } },
 		);
