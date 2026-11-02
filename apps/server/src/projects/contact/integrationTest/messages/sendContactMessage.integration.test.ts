@@ -32,10 +32,11 @@ const HOUR_SECONDS = 3600;
 
 let lastIpSuffix = 0;
 
-// Chaque test écrit depuis sa propre IP : la limite par heure ne dépend pas de l'ordre des tests
+// Chaque test écrit depuis son propre réseau /64 (la limite compte un /64 comme une seule IP) : la limite par heure ne
+// dépend pas de l'ordre des tests
 function buildUniqueIp(): string {
 	lastIpSuffix += 1;
-	return `2001:db8::${lastIpSuffix.toString(16)}`;
+	return `2001:db8:0:${lastIpSuffix.toString(16)}::1`;
 }
 
 function buildBody(
@@ -202,7 +203,9 @@ describe("sendContactMessage", () => {
 				name: "Alex",
 				message: "Un message à ne pas perdre.\nAvec deux lignes.",
 			});
-			const unsentBefore = await countTableRows("mailing_contact_message_unsent");
+			const unsentBefore = await countTableRows(
+				"mailing_contact_message_unsent",
+			);
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
@@ -306,6 +309,21 @@ describe("sendContactMessage", () => {
 			expect(retryAfter).toBeLessThanOrEqual(HOUR_SECONDS);
 		});
 
+		it("SHOULD count two IPv6 of the same /64 as one WHEN they write in turn", async () => {
+			// Arrange
+			const ip = buildUniqueIp();
+			const sameNetworkIp = ip.replace(/::1$/, "::abcd:1234");
+			for (let index = 0; index < env.CONTACT_HOURLY_LIMIT_PER_IP; index += 1)
+				// eslint-disable-next-line no-await-in-loop
+				await postMessage(buildBody({ email: null }), ip);
+
+			// Act
+			const response = await postMessage(buildBody(), sameNetworkIp);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
+		});
+
 		it("SHOULD accept another IP WHEN one IP reached the limit", async () => {
 			// Arrange
 			const ip = buildUniqueIp();
@@ -325,7 +343,9 @@ describe("sendContactMessage", () => {
 		it("SHOULD answer MAIL_UNAVAILABLE and keep nothing WHEN the notification cannot be sent and the database cannot keep the message", async () => {
 			// Arrange
 			vi.spyOn(console, "error").mockImplementation(() => undefined);
-			const unsentBefore = await countTableRows("mailing_contact_message_unsent");
+			const unsentBefore = await countTableRows(
+				"mailing_contact_message_unsent",
+			);
 			vi.spyOn(memoryMailSender, "send").mockRejectedValueOnce(
 				new BadGatewayError(
 					MailErrorCodeEnum.MAIL_UNAVAILABLE,
@@ -345,7 +365,9 @@ describe("sendContactMessage", () => {
 				code: MailErrorCodeEnum.MAIL_UNAVAILABLE,
 				message: "Brevo did not answer on /smtp/email",
 			});
-			expect(await countTableRows("mailing_contact_message_unsent")).toBe(unsentBefore);
+			expect(await countTableRows("mailing_contact_message_unsent")).toBe(
+				unsentBefore,
+			);
 		});
 	});
 });

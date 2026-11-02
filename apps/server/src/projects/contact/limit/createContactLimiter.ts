@@ -1,6 +1,8 @@
 import { getParisDay } from "@citadel/common/src/universal/date/getParisDay.ts";
 import { createSlidingWindowLimiter } from "@citadel/common/src/universal/limit/createSlidingWindowLimiter.ts";
 
+import { groupIpForLimits } from "../../../common/network/groupIpForLimits.ts";
+
 const HOUR_MS = 3_600_000;
 
 /**
@@ -21,11 +23,11 @@ export function createContactLimiter(
 	let acknowledgedEmails = new Set<string>();
 
 	/**
-	 * Compte un message de cette IP et renvoie null ; au-delà de la limite, rien n'est compté et la réponse est le délai
-	 * avant de pouvoir réessayer, en millisecondes
+	 * Compte un message de cette IP (de son /64 en IPv6) et renvoie null ; au-delà de la limite, rien n'est compté et la
+	 * réponse est le délai avant de pouvoir réessayer, en millisecondes
 	 */
 	function recordMessage(ip: string): number | null {
-		return messagesPerIp.record(ip);
+		return messagesPerIp.record(groupIpForLimits(ip));
 	}
 
 	// Vrai la première fois du jour (heure de Paris) pour cette adresse, majuscules comprises : l'accusé peut partir
