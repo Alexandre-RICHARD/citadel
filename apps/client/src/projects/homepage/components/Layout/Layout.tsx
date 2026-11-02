@@ -193,6 +193,7 @@ export function Layout() {
 							>
 								{displayedPage && (
 									<FooterPage
+										key={displayedPage.slug}
 										page={displayedPage}
 										backPath={backPath}
 									/>
