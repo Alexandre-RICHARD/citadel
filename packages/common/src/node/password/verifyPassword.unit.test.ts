@@ -61,6 +61,18 @@ describe("verifyPassword.ts", () => {
 				reason: "missing a parameter",
 			},
 			{
+				storedHash: "argon2id:m=4,t=1,p=1:abc:def",
+				reason: "asking for less memory than argon2 accepts",
+			},
+			{
+				storedHash: "argon2id:m=19456,t=0,p=1:abc:def",
+				reason: "asking for no pass",
+			},
+			{
+				storedHash: "argon2id:m=19456,t=2,p=0:abc:def",
+				reason: "asking for no thread",
+			},
+			{
 				storedHash: "argon2id:m=19456,t=2,p=1:a$c:def",
 				reason: "holding a dollar sign",
 			},

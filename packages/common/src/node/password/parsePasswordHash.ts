@@ -4,6 +4,8 @@ import { PASSWORD_HASH_ALGORITHM } from "./passwordHashAlgorithm.ts";
 
 const PARAMETERS_PATTERN = /^m=(\d+),t=(\d+),p=(\d+)$/;
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/;
+// Argon2 exige au moins 8 Kio par fil de calcul
+const MIN_MEMORY_KIB_PER_THREAD = 8;
 
 function parseParameters(text: string): Argon2Parameters | null {
 	const [, memoryKib, passes, parallelism] =
@@ -12,6 +14,13 @@ function parseParameters(text: string): Argon2Parameters | null {
 		memoryKib === undefined ||
 		passes === undefined ||
 		parallelism === undefined
+	)
+		return null;
+	// Des paramètres qu'argon2 refuserait : le hash est illisible, pas une erreur au moment de vérifier
+	if (
+		parallelism < 1 ||
+		passes < 1 ||
+		memoryKib < MIN_MEMORY_KIB_PER_THREAD * parallelism
 	)
 		return null;
 	return { memoryKib, passes, parallelism };

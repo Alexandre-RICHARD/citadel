@@ -1,3 +1,4 @@
+import { parsePasswordHash } from "@citadel/common/src/node/password/parsePasswordHash.ts";
 import { z } from "zod";
 
 // Toutes viennent de compose.yml : les adresses y sont écrites, les secrets viennent de .env.prod
@@ -8,8 +9,8 @@ const envSchema = z.object({
 	// Fabriqué par `citadel admin-password` (ou `pnpm admin:password` sur ton PC). Un ancien hash scrypt est refusé
 	ADMIN_PASSWORD_HASH: z
 		.string()
-		.startsWith(
-			"argon2id:",
+		.refine(
+			(storedHash) => parsePasswordHash(storedHash) !== null,
 			"hash argon2id attendu : à refaire avec citadel admin-password",
 		),
 

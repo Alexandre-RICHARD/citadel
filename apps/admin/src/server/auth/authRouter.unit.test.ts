@@ -87,5 +87,21 @@ describe("authRouter.ts", () => {
 			expect(response.status).toBe(401);
 			expect(response.headers.get("set-cookie")).toBeNull();
 		});
+
+		it("SHOULD verify at most five passwords WHEN seven attempts arrive at once from one IP", async () => {
+			// Act
+			const responses = await Promise.all(
+				Array.from({ length: 7 }, async () => postLogin(`${PASSWORD} faux`)),
+			);
+
+			// Assert : au plus 5 essais par quart d'heure, comptés avant la vérification
+			const statuses = responses.map((response) => response.status);
+			expect(
+				statuses.filter((status) => status === 401).length,
+			).toBeLessThanOrEqual(5);
+			expect(
+				statuses.filter((status) => status === 429).length,
+			).toBeGreaterThanOrEqual(2);
+		});
 	});
 });

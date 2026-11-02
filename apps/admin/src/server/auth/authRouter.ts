@@ -1,5 +1,5 @@
-import { verifyPassword } from "@citadel/common/src/node/password/verifyPassword.ts";
 import { readCookieValue } from "@citadel/common/src/universal/cookie/readCookieValue.ts";
+import { QueueFullError } from "@citadel/common/src/universal/limit/QueueFullError.ts";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
@@ -7,6 +7,7 @@ import type { SessionInfo } from "../../shared/sessionInfo.type.ts";
 import { env } from "../configuration/env.ts";
 import { HttpError } from "../http/HttpError.ts";
 import { writeAuditLog } from "../http/writeAuditLog.ts";
+import { consolePasswordHasher } from "./consolePasswordHasher.ts";
 import { loginThrottle } from "./loginThrottle.ts";
 import { requireSession } from "./requireSession.ts";
 import { SESSION_COOKIE_NAME } from "./sessionCookieName.ts";
@@ -31,18 +32,31 @@ function setSessionCookie(
 	});
 }
 
+// File des vérifications pleine : une rafale de connexions, refusée sans calcul
+async function isConsolePassword(password: string): Promise<boolean> {
+	try {
+		return await consolePasswordHasher.verify(
+			password,
+			env.ADMIN_PASSWORD_HASH,
+		);
+	} catch (error) {
+		if (error instanceof QueueFullError)
+			throw new HttpError(
+				429,
+				"Trop de connexions en cours : réessaie dans un instant",
+			);
+		throw error;
+	}
+}
+
 export const authRouter = Router();
 
 authRouter.post("/api/login", async (request, response) => {
 	const ip = request.ip ?? "inconnue";
-	loginThrottle.assertAllowed(ip);
+	loginThrottle.claimAttempt(ip);
 
 	const body = loginBodySchema.safeParse(request.body);
-	if (
-		!body.success ||
-		!(await verifyPassword(body.data.password, env.ADMIN_PASSWORD_HASH))
-	) {
-		loginThrottle.recordFailure(ip);
+	if (!body.success || !(await isConsolePassword(body.data.password))) {
 		writeAuditLog({ event: "login", result: "refusé", ip });
 		throw new HttpError(401, "Mot de passe incorrect");
 	}
