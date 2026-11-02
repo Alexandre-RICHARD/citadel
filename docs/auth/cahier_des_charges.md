@@ -26,6 +26,7 @@ Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 14. Risques
 15. Roadmap
 16. Questions
+17. Vérifications de fin
 - Annexe : fichiers du repo à relire
 
 ---
@@ -645,7 +646,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 12. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console avec un hash `argon2id`, en tests.
 13. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
 14. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres, avec la fonction commune de l'étape 9.
-15. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées courtes, secrets de test) ; outil de test pour avancer l'horloge.
+15. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées de la prod, hash léger, secrets de test) ; outil de test pour avancer l'horloge, qui remplace des durées raccourcies.
 16. [moi] Chiffrement AES-256-GCM avec version de clé, identifiant en donnée associée, clé précédente pour la rotation (§6.7).
 
 **Phase 2 — Base de l'authentification**
@@ -755,6 +756,137 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 Aucune.
 
 ---
+
+## 17. Vérifications de fin
+
+Petites choses à tester à la main pendant la recette (étapes 80 et 82), en plus des 16 critères du §12.2. À cocher une par une ; une ligne qui échoue devient un correctif avant la release.
+
+**Socle (phases 0 et 1)**
+
+- [ ] `POST /api/error-log/entries` répond `404` et n'écrit rien dans `error_log`.
+- [ ] Une erreur de base provoquée (inscription avec la base arrêtée) : la ligne de `error_log` et les logs du conteneur n'ont ni mot de passe, ni email, ni valeur de paramètre SQL, mais gardent le message du driver.
+- [ ] Après la release : `mailing_failure` et `mailing_contact_message_unsent` existent, les anciennes tables non ; les deux alertes de la carte « Site » de la console comptent toujours.
+- [ ] `citadel db-restore-test` passe après V013.
+- [ ] Le job `contact-retry` renvoie toujours un message en attente.
+- [ ] `MAIL_REGISTRATION_STOP` abaissé en dev : inscriptions fermées au bon seuil ; valeurs remises après.
+- [ ] Le serveur refuse de démarrer sans `AUTH_CODE_HMAC_KEY`, avec une clé qui n'a pas 64 caractères hexadécimaux, ou avec une clé précédente et une version 1, en nommant la variable fautive.
+- [ ] `pnpm prod:local` démarre ; la pré-prod démarre avec les clés de `.env.prod`.
+- [ ] Console : `citadel admin-password` (dans l'image) et `pnpm admin:password` donnent une ligne `argon2id:` ; connexion avec ; un ancien hash `scrypt` empêche la console de démarrer, avec le message qui dit quoi faire.
+- [ ] Console : 6 mauvais mots de passe d'affilée → `429` avec les minutes restantes ; un bon mot de passe après l'attente remet le compteur à zéro.
+- [ ] Console : boutons d'action (démarrer, arrêter, bandeau) toujours acceptés depuis la console, refusés (`403`) par un `curl` sans `Origin`.
+- [ ] Site : un formulaire posté depuis une page d'un autre domaine → `403` `FOREIGN_ORIGIN`, message traduit ; les `GET` d'un autre site passent.
+- [ ] Formulaire de contact : deux IPv6 du même `/64` partagent la limite ; deux IPv4 voisines, non.
+
+**Cookie et session**
+
+- [ ] En prod : `__Host-citadel_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, sans `Domain` ; en dev : `citadel_session`, sans `Secure`.
+- [ ] Sans « se souvenir de moi » : pas de `Max-Age` ; navigateur fermé puis rouvert (sans restauration des onglets) → déconnecté.
+- [ ] Avec : `Max-Age` de 7 jours, renvoyé au plus toutes les 5 minutes (onglet Réseau).
+- [ ] Le texte « Reste connecté 7 jours sans visite, 30 jours au plus » est sous la case, à la connexion et à l'inscription.
+- [ ] Un cookie modifié à la main → `401`, retour à `/auth/login`.
+- [ ] Déconnexion : `204`, deux fois de suite sans erreur ; les autres onglets renvoient vers la connexion à leur prochain appel ; aucune donnée du compte n'y reste affichée (cache vidé).
+- [ ] Avertissement avant de se déconnecter avec un formulaire modifié, pas sans.
+
+**Parcours (lien et code)**
+
+- [ ] Rechargement à chaque étape (formulaire, code, second facteur, nouveau mot de passe) : on reprend au même endroit ; les champs sont gardés, jamais les mots de passe.
+- [ ] Lien ouvert dans un autre onglet du même navigateur : l'onglet d'origine passe seul à la suite au retour.
+- [ ] Lien ouvert sur le téléphone : la page dit d'utiliser le code ; le code tapé sur le PC marche.
+- [ ] `/auth/verify` demande un clic ; ouvrir le lien sans cliquer ne valide rien.
+- [ ] Code collé avec des espaces, ou depuis une notification : accepté. Code à 5 chiffres : bouton désactivé.
+- [ ] Un code déjà utilisé, puis l'ancien code après un renvoi : refusés.
+- [ ] 5 mauvais codes → refus, le renvoi remet les essais à zéro.
+- [ ] Renvoi : bouton grisé 60 s avec compte à rebours ; le temps restant du parcours défile et la page dit quoi faire à zéro.
+- [ ] Commencer un autre parcours dans le même navigateur abandonne le premier.
+- [ ] Le lien réécrit par Brevo (`r.mail.`) mène bien à `/auth/verify`.
+
+**Inscription**
+
+- [ ] `Alex` et `alex` créés tous les deux ; `Alex@…` refusé après `alex@…` ; `josé@…` et `jose@…` acceptés.
+- [ ] Pseudo avec espace, accent ou `.` : refusé avant l'envoi ; 64 caractères acceptés, 65 non.
+- [ ] « Vérifier la disponibilité » : juste pour un pseudo pris, libre, ou différent seulement par la casse.
+- [ ] Mot de passe de 11 caractères refusé, 12 accepté, 128 accepté, 129 refusé ; un « é » composé (e + accent) compte pour un caractère.
+- [ ] Barre de force : basse pour `azertyuiop12`, `aaaaaaaaaaaa`, `123456789012` ; le « ? » explique qu'elle surestime `P@ssw0rd!`.
+- [ ] L'œil affiche ou masque les deux champs ; une différence entre les deux est signalée ; les conditions passent au vert en direct.
+- [ ] Les champs incorrects sont coloriés à l'envoi ; chaque champ obligatoire a son astérisque rouge.
+- [ ] Message des 30 minutes et conseil du gestionnaire de mots de passe affichés.
+- [ ] Bitwarden propose d'enregistrer le mot de passe (attributs `autocomplete`) et le remplit à la connexion.
+- [ ] Adresse déjà inscrite : même écran, mail « Tu as déjà un compte… » avec une durée floue juste (aujourd'hui, jours, semaines, mois, années).
+- [ ] Deux inscriptions avec la même adresse : seule la dernière se confirme.
+- [ ] Pseudo pris entre l'envoi et la confirmation : la page redemande un pseudo, le code reste valable.
+- [ ] Champ piège rempli (console du navigateur) : réponse normale, aucun compte.
+- [ ] Inscriptions fermées (interrupteur, puis quota) : bouton désactivé, bandeau « …elles rouvrent demain. ».
+- [ ] Après l'inscription : étape « Protège ton compte » passable, puis retour à la page demandée au départ.
+
+**Connexion**
+
+- [ ] Par email et par pseudo ; un pseudo ne contient jamais `@`.
+- [ ] Identifiant inconnu et mauvais mot de passe : même message, même durée à l'œil.
+- [ ] Deux essais à moins de 2 s : bouton désactivé avec compte à rebours.
+- [ ] 15 échecs : `429` pour ce compte depuis cette IP ; le même compte s'ouvre depuis le téléphone en 4G.
+- [ ] 20 échecs en 10 minutes sur plusieurs comptes : IP bannie 15 minutes.
+- [ ] Les erreurs de second facteur comptent aussi.
+- [ ] Méthode « par mail » seule : la connexion par mot de passe échoue comme un mauvais mot de passe ; « par pseudo » seule : le lien par mail ne part pas, écran identique.
+- [ ] Déjà connecté : `/auth/login` renvoie vers le profil ; une nouvelle connexion dans le même navigateur fait disparaître l'ancienne session de la liste.
+- [ ] Connexion par mail avec un TOTP : le TOTP est demandé, jamais le code par mail ; avec seulement le facteur mail : rien de plus.
+- [ ] Paramètres argon2 montés dans `.env` : le hash d'un compte change à sa connexion suivante, l'ancien marchait encore.
+
+**Mot de passe oublié**
+
+- [ ] Réponse identique pour un compte existant ou non ; l'adresse n'est jamais affichée.
+- [ ] Avec un TOTP : demandé après le lien ; le code par mail n'est pas proposé.
+- [ ] Le mot de passe actuel est refusé (`PASSWORD_UNCHANGED`) ; après le changement, toutes les sessions (téléphone compris) sont fermées ; mail de notification reçu.
+
+**Profil**
+
+- [ ] Pseudo affiché : espaces de début, de fin et en double nettoyés ; vide → le pseudo ; caractère invisible (U+200B) refusé.
+- [ ] Changement d'email : mot de passe demandé, lien et code à la nouvelle adresse, notification à l'ancienne ; adresse déjà prise : même écran et mail « un autre compte a voulu… » ; prise entre-temps : `EMAIL_TAKEN`.
+- [ ] Changement de mot de passe : les autres sessions fermées, celle-ci gardée.
+- [ ] Actions sensibles : mot de passe redemandé ; suppression du compte : second facteur en plus.
+
+**Double authentification**
+
+- [ ] QR code lu par Google Authenticator, Aegis et Bitwarden ; émetteur « Citadel », email en libellé ; clé manuelle qui marche aussi.
+- [ ] Le secret n'apparaît dans aucune requête après celle qui le crée (onglet Réseau), ni dans les logs.
+- [ ] Un code du pas précédent ou suivant accepté ; deux pas d'écart refusé ; le même code deux fois refusé.
+- [ ] Deux TOTP nommés, puis le facteur mail ; liste avec type, date et dernier usage.
+- [ ] Codes de secours : affichés une fois, téléchargés en texte lisible, chacun utilisable une fois, nombre restant juste ; régénération : les anciens ne marchent plus.
+- [ ] Supprimer le dernier facteur désactive la 2FA et efface les codes de secours ; notification reçue.
+- [ ] Rotation de clé (nouvelle clé, version 2, ancienne en clé précédente) : le TOTP marche, puis `key_version` passe à 2 après usage.
+- [ ] Quota épuisé : code par mail grisé, TOTP et codes de secours toujours là.
+
+**Sessions et données**
+
+- [ ] Liste : navigateur et système justes (Edge, Firefox, Android, iOS), IP tronquée, « cette session », fin prévue.
+- [ ] « Tout déconnecter sauf ici » puis « tout déconnecter ».
+- [ ] Export : le ZIP s'ouvre avec l'explorateur Windows et 7-Zip ; les CSV gardent accents et émojis dans Excel ; aucun hash, empreinte ni secret.
+- [ ] Suppression des données du Backlog seul : GDC intact ; suppression du compte : plus aucune ligne, mail de confirmation, reconnexion impossible.
+
+**Projets**
+
+- [ ] GDC et Backlog déconnecté : renvoi vers `/auth/login?redirect=…`, puis retour au même endroit après la connexion.
+- [ ] Les endpoints IGDB répondent `401` sans session.
+- [ ] Le jeu d'un autre compte (identifiant tapé dans l'URL) : `404`.
+- [ ] Série créée à la main invisible pour un autre compte ; séries IGDB communes.
+- [ ] Header : « Se connecter », puis icône et pseudo affiché, et « Se déconnecter » ; icône de profil dans le Backlog et GDC ; `auth` absent de la roue et du pied de page.
+
+**Mails**
+
+- [ ] Chaque gabarit en clair et en sombre, sur mobile et sur ordinateur, dans Gmail et Outlook ; le code se copie d'un appui long sur mobile.
+- [ ] Quota épuisé : `MAIL_CLOSED` et son message pour la connexion par mail, le mot de passe oublié, le changement d'email, l'activation du facteur mail.
+- [ ] Brevo coupé (mauvaise clé) : l'inscription répond comme d'habitude, l'échec est dans `mailing_failure` et la console.
+- [ ] 40 mails par IP et par jour au plus.
+
+**Restauration, RGPD, sécurité**
+
+- [ ] Restauration en `prod:local` d'un dump envoyé depuis le PC, sans date dans son nom : la date vient du dump, le journal est rejoué.
+- [ ] Après une restauration : toutes les sessions et tous les parcours vidés, bandeau avec sa phrase « mot de passe oublié ».
+- [ ] Purges : un parcours expiré disparaît en 15 minutes ; `auth_event` et `error_log` de plus de 20 jours, en un jour (horloge du serveur avancée en `prod:local`).
+- [ ] « Données personnelles » : chaque point du §10.6, et un lien `contact@` qui marche.
+- [ ] Aucun cookie posé avant la connexion, hors ceux de Cloudflare listés.
+- [ ] Les nouvelles pages ne déclenchent aucune violation de CSP (console du navigateur).
+- [ ] `docker logs site-prod-server` après une recette complète : aucun mot de passe, code, jeton ni lien.
+- [ ] Pages de l'authentification sur mobile, en clair et en sombre, au clavier seul, et avec le zoom à 200 %.
 
 ## Annexe : fichiers du repo à relire
 
