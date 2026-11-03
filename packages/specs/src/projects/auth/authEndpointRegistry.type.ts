@@ -1,3 +1,5 @@
+import type { ConfirmTotpFactor } from "./endpoint/factors/confirmTotpFactor/confirmTotpFactorEndpoint.interface.ts";
+import type { CreateTotpFactor } from "./endpoint/factors/createTotpFactor/createTotpFactorEndpoint.interface.ts";
 import type { AbandonFlow } from "./endpoint/flow/abandonFlow/abandonFlowEndpoint.interface.ts";
 import type { GetFlow } from "./endpoint/flow/getFlow/getFlowEndpoint.interface.ts";
 import type { ResendFlowMail } from "./endpoint/flow/resendFlowMail/resendFlowMailEndpoint.interface.ts";
@@ -25,4 +27,6 @@ export type AuthEndpointRegistry =
 	| StartRegistration
 	| LoginWithPassword
 	| StartMailLogin
-	| StartPasswordReset;
+	| StartPasswordReset
+	| CreateTotpFactor
+	| ConfirmTotpFactor;

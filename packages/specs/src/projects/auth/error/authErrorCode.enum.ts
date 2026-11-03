@@ -23,4 +23,6 @@ export enum AuthErrorCodeEnum {
 	TOO_MANY_ATTEMPTS = "TOO_MANY_ATTEMPTS",
 	// Trop de mots de passe à vérifier en même temps : Retry-After dit quand réessayer, en secondes
 	AUTH_BUSY = "AUTH_BUSY",
+	// Aucun facteur de ce compte sous cet id (jamais celui d'un autre), ou un TOTP qui n'attend plus son premier code
+	FACTOR_NOT_FOUND = "FACTOR_NOT_FOUND",
 }

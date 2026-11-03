@@ -1,0 +1,43 @@
+import type { ConfirmTotpFactor } from "@citadel/specs/src/projects/auth/endpoint/factors/confirmTotpFactor/confirmTotpFactorEndpoint.interface.ts";
+import type { CreateTotpFactor } from "@citadel/specs/src/projects/auth/endpoint/factors/createTotpFactor/createTotpFactorEndpoint.interface.ts";
+import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
+
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
+import { readBrowserContext } from "../helper/readBrowserContext.ts";
+import { factorService } from "../service/factorService.ts";
+
+// Des secrets ou des codes de secours : jamais gardés par un cache
+const NO_STORE = "no-store";
+
+export const factorController = {
+	createTotp: protectedRequestHandler<CreateTotpFactor>(
+		async (request, response, session) => {
+			const setup = await factorService.createTotp(
+				session.userId,
+				request.body.name,
+			);
+
+			response.set("Cache-Control", NO_STORE);
+			return response.status(HttpStatutCodeSuccessEnum.CREATED).json({
+				factorId: setup.factorId,
+				secret: setup.secretBase32,
+				otpauthUri: setup.otpauthUri,
+			});
+		},
+	),
+
+	confirmTotp: protectedRequestHandler<ConfirmTotpFactor>(
+		async (request, response, session) => {
+			const recoveryCodes = await factorService.confirmTotp(
+				session.userId,
+				request.body,
+				readBrowserContext(request).client,
+			);
+
+			response.set("Cache-Control", NO_STORE);
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json({ recoveryCodes });
+		},
+	),
+};

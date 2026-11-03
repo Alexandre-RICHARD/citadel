@@ -1,4 +1,6 @@
 import type { AuthEndpointRegistry } from "@citadel/specs/src/projects/auth/authEndpointRegistry.type.ts";
+import { confirmTotpFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/factors/confirmTotpFactor/confirmTotpFactorBodySchema.ts";
+import { createTotpFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/factors/createTotpFactor/createTotpFactorBodySchema.ts";
 import { submitFlowCodeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowCode/submitFlowCodeBodySchema.ts";
 import { submitFlowLinkBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowLink/submitFlowLinkBodySchema.ts";
 import { submitNewPasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitNewPassword/submitNewPasswordBodySchema.ts";
@@ -12,6 +14,7 @@ import { Router as ExpressRouter } from "express";
 
 import { createTypedExpressRouter } from "../../common/routing/createTypedExpressRouter.ts";
 import { requestValidator } from "../../middleware/requestValidator.ts";
+import { factorController } from "./controller/factorController.ts";
 import { flowController } from "./controller/flowController.ts";
 import { loginController } from "./controller/loginController.ts";
 import { meController } from "./controller/meController.ts";
@@ -74,6 +77,17 @@ typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/flow/new-password`,
 	flowController.submitNewPassword,
 	requestValidator({ body: submitNewPasswordBodySchema }),
+);
+
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/factors/totp`,
+	factorController.createTotp,
+	requestValidator({ body: createTotpFactorBodySchema }),
+);
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/factors/totp/confirm`,
+	factorController.confirmTotp,
+	requestValidator({ body: confirmTotpFactorBodySchema }),
 );
 
 export const authRouter = expressRouter;
