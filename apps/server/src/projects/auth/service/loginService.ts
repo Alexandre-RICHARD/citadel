@@ -1,7 +1,7 @@
-import { FactorTypeEnum } from "@citadel/specs/src/projects/auth/enum/factorType.enum.ts";
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
 import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
 import { LoginMethodEnum } from "@citadel/specs/src/projects/auth/enum/loginMethod.enum.ts";
+import { SecondFactorMethodEnum } from "@citadel/specs/src/projects/auth/enum/secondFactorMethod.enum.ts";
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 import { acceptsLoginMethod } from "@citadel/specs/src/projects/auth/helper/acceptsLoginMethod.ts";
 
@@ -76,9 +76,10 @@ class LoginService {
 			);
 		}
 
-		authLimiter.recordSuccess(attempt);
 		await this.#rehashIfOutdated(user, password);
 		const factorTypes = await findConfirmedFactorTypesQuery(user.id);
+		// Les échecs du compte ne repartent de zéro qu'une fois connecté : redonner le mot de passe entre deux erreurs de
+		// second facteur n'efface pas celles-ci
 		if (factorTypes.length > 0)
 			return flowService.startSecondFactor({
 				userId: user.id,
@@ -86,6 +87,7 @@ class LoginService {
 				remember,
 				browser,
 			});
+		authLimiter.recordSuccess(attempt);
 		return this.openSession(
 			user.id,
 			remember,
@@ -131,15 +133,22 @@ class LoginService {
 		const { flow, flowToken } = verified;
 		const userId = flowService.requireAccount(flow);
 		await this.#assertStillAcceptsMail(userId);
-		const factorTypes = await findConfirmedFactorTypesQuery(userId);
+		const secondFactorMethods = await flowService.listSecondFactorMethods({
+			kind: flow.kind,
+			step: FlowStepEnum.SECOND_FACTOR,
+			userId,
+		});
 		const secondFactorFlow = await flowService.consumeMailStep(
 			verified,
 			async (transaction) => {
-				if (factorTypes.includes(FactorTypeEnum.TOTP))
+				if (secondFactorMethods.includes(SecondFactorMethodEnum.TOTP))
 					return flowService.advance(
 						flow,
 						FlowStepEnum.SECOND_FACTOR,
-						authSettings.flowDurationMs.secondFactor,
+						{
+							durationMs: authSettings.flowDurationMs.secondFactor,
+							secondFactorMethods,
+						},
 						transaction,
 					);
 				await deleteFlowQuery(flow.id, transaction);

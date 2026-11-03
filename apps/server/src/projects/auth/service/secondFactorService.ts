@@ -14,6 +14,7 @@ import type { FlowBean } from "../bean/flowBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { flowExpiredError } from "../helper/flow/flowExpiredError.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
 import type { Flow } from "../models/Flow.ts";
 import { findConfirmedFactorsQuery } from "../query/factor/findConfirmedFactorsQuery.ts";
@@ -48,10 +49,6 @@ function invalidCode(message: string): RejectedRequestError {
 	return new RejectedRequestError(AuthErrorCodeEnum.INVALID_CODE, message);
 }
 
-function flowExpired(message: string): RejectedRequestError {
-	return new RejectedRequestError(AuthErrorCodeEnum.FLOW_EXPIRED, message);
-}
-
 /**
  * L'étape « second facteur », après le mot de passe (connexion), ou après le mail (connexion par email, mot de passe
  * oublié, qui ne la passent que si le compte a un TOTP). Chaque échec compte comme un mauvais mot de passe, pour le
@@ -65,11 +62,19 @@ class SecondFactorService {
 		const { flowToken } = browser;
 		const flow = await flowService.findCurrent(flowToken);
 		if (flowToken === undefined || flow?.step !== FlowStepEnum.SECOND_FACTOR)
-			throw flowExpired("No flow waiting for a second factor in this browser");
+			throw flowExpiredError(
+				"No flow waiting for a second factor in this browser",
+			);
 		const userId = flowService.requireAccount(flow);
 		const methods = await flowService.listSecondFactorMethods(flow);
 		if (!methods.includes(answer.method))
 			throw invalidCode("This step does not offer this method");
+		// Aucun email demandé à cette étape : aucun code ne peut être bon, l'essai ne coûte rien
+		if (
+			answer.method === SecondFactorMethodEnum.EMAIL &&
+			flow.codeHmac === null
+		)
+			throw invalidCode("No email code was sent at this step");
 
 		const attempt = { accountKey: String(userId), ip: browser.client.ip };
 		const retryAfterMs = authLimiter.getAttemptRetryAfterMs(attempt);
@@ -95,7 +100,7 @@ class SecondFactorService {
 		if (nextFlow === null) {
 			authLimiter.recordFailure(attempt);
 			await authEventService.record({
-				type: AuthEventTypeEnum.LOGIN_FAILED,
+				type: AuthEventTypeEnum.SECOND_FACTOR_FAILED,
 				userId,
 				client: browser.client,
 			});
@@ -118,12 +123,12 @@ class SecondFactorService {
 		const userId = flowService.requireAccount(flow);
 		const methods = await flowService.listSecondFactorMethods(flow);
 		if (!methods.includes(SecondFactorMethodEnum.EMAIL))
-			throw flowExpired("The account no longer has its email factor");
+			throw flowExpiredError("The account no longer has its email factor");
 
 		await flowService.consumeMailStep(verified, async (transaction) => {
 			await recordEmailFactorUseQuery(userId, new Date(), transaction);
 			if (!(await claimFlowQuery(flow.id, transaction)))
-				throw flowExpired("The login was completed in the meantime");
+				throw flowExpiredError("The login was completed in the meantime");
 		});
 		authLimiter.recordSuccess({
 			accountKey: String(userId),
@@ -206,11 +211,11 @@ class SecondFactorService {
 			return flowService.advance(
 				flow,
 				FlowStepEnum.NEW_PASSWORD,
-				authSettings.flowDurationMs.passwordReset,
+				{ durationMs: authSettings.flowDurationMs.passwordReset },
 				transaction,
 			);
 		if (!(await claimFlowQuery(flow.id, transaction)))
-			throw flowExpired("The login was completed in the meantime");
+			throw flowExpiredError("The login was completed in the meantime");
 		return null;
 	}
 

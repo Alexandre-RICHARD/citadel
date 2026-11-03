@@ -871,6 +871,12 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Quota épuisé : code par mail grisé, TOTP et codes de secours toujours là.
 - [ ] Étape « second facteur » : choix entre application, code par email et code de secours selon le compte ; « Recevoir un code par email » puis « Renvoyer l'email » avec son délai ; le lien de cet email, ouvert dans le même navigateur, connecte aussi.
 - [ ] Code de secours tapé en minuscules, sans tiret ou avec des espaces : accepté.
+- [ ] Bon mot de passe redonné entre de mauvais codes de second facteur : le 15e mauvais code bannit quand même le couple compte + IP.
+- [ ] « Code par email » choisi, un code tapé sans avoir demandé l'email : refusé, sans compte à rebours ni essai consommé.
+- [ ] « Renvoyer l'email » puis, aussitôt, le code du premier email : « code faux » (il est remplacé), un seul échec compté.
+- [ ] Un mauvais second facteur apparaît en `second_factor_failed` dans `auth_event`, distinct d'un mauvais mot de passe (`login_failed`).
+- [ ] Le même TOTP confirmé depuis deux onglets à la fois : un seul lot de codes de secours, l'autre onglet reçoit un message clair.
+- [ ] Une dizaine de connexions par email terminées en même temps vers le second facteur (boucle de `curl` en parallèle) : aucune ne reste bloquée, aucune `DatabaseError`.
 
 **Sessions et données**
 

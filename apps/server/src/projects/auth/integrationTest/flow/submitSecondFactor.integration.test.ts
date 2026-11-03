@@ -16,6 +16,7 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { insertTestRecoveryCodes } from "../../../../testUtils/integration/auth/insertTestRecoveryCodes.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestFlow } from "../../../../testUtils/integration/auth/openTestFlow.ts";
+import { readCookieHeader } from "../../../../testUtils/integration/auth/readCookieHeader.ts";
 import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCookie.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
@@ -492,7 +493,9 @@ describe("submitSecondFactor", () => {
 			const events = await Promise.all(
 				eventIds.map(async (id) => selectAuthRows.event(id)),
 			);
-			expect(events.map((event) => event?.type)).toContain("login_failed");
+			expect(events.map((event) => event?.type)).toContain(
+				"second_factor_failed",
+			);
 		});
 
 		it("SHOULD count the failures with those of the password WHEN the account keeps failing", async () => {
@@ -529,6 +532,86 @@ describe("submitSecondFactor", () => {
 			// Assert : le 15e échec banni le couple compte + IP pour 15 minutes
 			expect(response.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
 			expect(Number(response.headers["retry-after"])).toBeGreaterThan(800);
+		});
+
+		it("SHOULD keep counting the wrong codes WHEN the right password is given again between them", async () => {
+			// Arrange : 14 mauvais codes, chacun après avoir redonné le bon mot de passe
+			const clock = useFakeClock(new Date());
+			const { account } = await openSecondFactorStep();
+			const ip = buildUniqueIp();
+			async function loginThenFail() {
+				const login = await request(app)
+					.post(`${ApiPrefixEnum.AUTH}/login/password`)
+					.set("X-Real-IP", ip)
+					.send({
+						identifier: account.username,
+						password: account.password,
+						remember: false,
+					});
+				const response = await submitSecondFactor(
+					{ method: SecondFactorMethodEnum.TOTP, code: "000000" },
+					readCookieHeader(login, flowCookie.name),
+					ip,
+				);
+				clock.advance(3000);
+				return response;
+			}
+			for (let index = 0; index < 14; index++)
+				// eslint-disable-next-line no-await-in-loop
+				await loginThenFail();
+
+			// Act
+			await loginThenFail();
+			const response = await request(app)
+				.post(`${ApiPrefixEnum.AUTH}/login/password`)
+				.set("X-Real-IP", ip)
+				.send({
+					identifier: account.username,
+					password: account.password,
+					remember: false,
+				});
+
+			// Assert : le 15e mauvais code a banni le couple compte + IP, mot de passe compris
+			expect(response.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
+		});
+
+		it("SHOULD neither count a failure nor use an attempt WHEN the email code is tried before any email was asked", async () => {
+			// Arrange
+			const account = await insertTestAccount({ confirmedFactorType: "email" });
+			const flow = await openTestFlow({
+				kind: FlowKindEnum.LOGIN,
+				step: FlowStepEnum.SECOND_FACTOR,
+				userId: account.userId,
+				email: account.email,
+				hasSecrets: false,
+				lastSentAt: null,
+			});
+			const ip = buildUniqueIp();
+			const first = await submitSecondFactor(
+				{ method: SecondFactorMethodEnum.EMAIL, code: "123456" },
+				flow.cookie,
+				ip,
+			);
+
+			// Act
+			const second = await submitSecondFactor(
+				{ method: SecondFactorMethodEnum.EMAIL, code: "123456" },
+				flow.cookie,
+				ip,
+			);
+
+			// Assert : jamais de délai, aucun essai du code consommé
+			expectRejected(
+				first,
+				AuthErrorCodeEnum.INVALID_CODE,
+				"No email code was sent at this step",
+			);
+			expectRejected(
+				second,
+				AuthErrorCodeEnum.INVALID_CODE,
+				"No email code was sent at this step",
+			);
+			expect((await selectAuthRows.flow(flow.id))?.attempts).toBe(0);
 		});
 	});
 });

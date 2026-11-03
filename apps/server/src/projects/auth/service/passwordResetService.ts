@@ -1,6 +1,6 @@
-import { FactorTypeEnum } from "@citadel/specs/src/projects/auth/enum/factorType.enum.ts";
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
 import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
+import { SecondFactorMethodEnum } from "@citadel/specs/src/projects/auth/enum/secondFactorMethod.enum.ts";
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
@@ -11,7 +11,6 @@ import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
-import { findConfirmedFactorTypesQuery } from "../query/factor/findConfirmedFactorTypesQuery.ts";
 import { claimFlowQuery } from "../query/flow/claimFlowQuery.ts";
 import { deleteSessionsOfUserQuery } from "../query/session/deleteSessionsOfUserQuery.ts";
 import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
@@ -58,23 +57,28 @@ class PasswordResetService {
 	async completeMailStep(verified: VerifiedFlowBean): Promise<FlowOutcomeBean> {
 		const { flow, flowToken } = verified;
 		const userId = flowService.requireAccount(flow);
-		const hasTotp = (await findConfirmedFactorTypesQuery(userId)).includes(
-			FactorTypeEnum.TOTP,
-		);
+		const secondFactorMethods = await flowService.listSecondFactorMethods({
+			kind: flow.kind,
+			step: FlowStepEnum.SECOND_FACTOR,
+			userId,
+		});
 		const nextFlow = await flowService.consumeMailStep(
 			verified,
 			async (transaction) =>
-				hasTotp
+				secondFactorMethods.includes(SecondFactorMethodEnum.TOTP)
 					? flowService.advance(
 							flow,
 							FlowStepEnum.SECOND_FACTOR,
-							authSettings.flowDurationMs.secondFactor,
+							{
+								durationMs: authSettings.flowDurationMs.secondFactor,
+								secondFactorMethods,
+							},
 							transaction,
 						)
 					: flowService.advance(
 							flow,
 							FlowStepEnum.NEW_PASSWORD,
-							authSettings.flowDurationMs.passwordReset,
+							{ durationMs: authSettings.flowDurationMs.passwordReset },
 							transaction,
 						),
 		);

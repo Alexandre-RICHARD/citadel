@@ -20,6 +20,7 @@ import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { listSecondFactorMethods } from "../helper/factor/listSecondFactorMethods.ts";
 import { countRemainingMinutes } from "../helper/flow/countRemainingMinutes.ts";
 import { createFlowSecrets } from "../helper/flow/createFlowSecrets.ts";
+import { flowExpiredError } from "../helper/flow/flowExpiredError.ts";
 import { isDecoyFlow } from "../helper/flow/isDecoyFlow.ts";
 import { readMailLimitAddress } from "../helper/flow/readMailLimitAddress.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
@@ -48,10 +49,6 @@ type SecondFactorStart = {
 	remember: boolean;
 	browser: BrowserContextBean;
 };
-
-function flowExpired(message: string): RejectedRequestError {
-	return new RejectedRequestError(AuthErrorCodeEnum.FLOW_EXPIRED, message);
-}
 
 /**
  * Les parcours en plusieurs étapes, chacun lié au navigateur qui l'a commencé par un cookie dont la base ne garde que
@@ -98,7 +95,8 @@ class FlowService {
 
 	async requireCurrent(flowToken: string | undefined): Promise<Flow> {
 		const flow = await this.findCurrent(flowToken);
-		if (flow === null) throw flowExpired("No flow in progress in this browser");
+		if (flow === null)
+			throw flowExpiredError("No flow in progress in this browser");
 		return flow;
 	}
 
@@ -205,14 +203,19 @@ class FlowService {
 	async resend(browser: BrowserContextBean): Promise<FlowOutcomeBean> {
 		const flowToken = this.#requireToken(browser);
 		const flow = await this.requireCurrent(flowToken);
-		if (!(await this.#sendsMail(flow)))
-			throw flowExpired("This step of the flow sends no mail");
+		// Lues une seule fois : elles disent si l'étape envoie un mail, puis décrivent le parcours
+		const secondFactorMethods = await this.listSecondFactorMethods(flow);
+		if (
+			flow.step !== FlowStepEnum.MAIL_CODE &&
+			!secondFactorMethods.includes(SecondFactorMethodEnum.EMAIL)
+		)
+			throw flowExpiredError("This step of the flow sends no mail");
 		await flowMailService.assertOpen(flow.kind);
 
 		const { resendAvailableAt } = fromFlowEntityToFlowBean(
 			flow,
 			authSettings.code,
-			[],
+			secondFactorMethods,
 		);
 		const waitMs =
 			resendAvailableAt === null ? 0 : resendAvailableAt.getTime() - Date.now();
@@ -240,11 +243,11 @@ class FlowService {
 		);
 		return {
 			isCompleted: false,
-			flow: await this.describe({
-				...flow.get(),
-				attempts: 0,
-				lastSentAt: now,
-			}),
+			flow: fromFlowEntityToFlowBean(
+				{ ...flow.get(), attempts: 0, lastSentAt: now },
+				authSettings.code,
+				secondFactorMethods,
+			),
 			flowCookie: { token: flowToken, expiresAt: flow.expiresAt },
 		};
 	}
@@ -306,7 +309,7 @@ class FlowService {
 	): Promise<VerifiedFlowBean> {
 		const flow = await findFlowByLinkTokenHashQuery(hashSha256(linkToken));
 		if (flow === null || flow.expiresAt <= new Date())
-			throw flowExpired("Unknown, used, replaced or expired link");
+			throw flowExpiredError("Unknown, used, replaced or expired link");
 		const { flowToken } = browser;
 		if (
 			flowToken === undefined ||
@@ -322,7 +325,7 @@ class FlowService {
 	// Le compte d'un parcours dont le mail a été validé. Un leurre n'a ni code ni lien : il n'arrive jamais ici
 	requireAccount(flow: Flow): number {
 		if (flow.userId === null)
-			throw flowExpired("This flow belongs to no account");
+			throw flowExpiredError("This flow belongs to no account");
 		return flow.userId;
 	}
 
@@ -348,42 +351,37 @@ class FlowService {
 								AuthErrorCodeEnum.INVALID_CODE,
 								"The code was used or replaced in the meantime",
 							)
-						: flowExpired("The link was used or replaced in the meantime");
+						: flowExpiredError("The link was used or replaced in the meantime");
 				return work(transaction);
 			},
 		);
 	}
 
-	// Le parcours continue à l'étape donnée, pour la durée donnée, comptée d'ici
+	/**
+	 * Le parcours continue à l'étape donnée, pour la durée donnée, comptée d'ici. Rien n'est lu en base dans la
+	 * transaction de l'appelant : vers le second facteur, ses méthodes ont été lues avant (`listSecondFactorMethods`)
+	 */
 	async advance(
 		flow: Flow,
 		step: FlowStepEnum,
-		durationMs: number,
+		{
+			durationMs,
+			secondFactorMethods = [],
+		}: { durationMs: number; secondFactorMethods?: SecondFactorMethodEnum[] },
 		transaction: Transaction,
 	): Promise<FlowBean> {
 		const expiresAt = new Date(Date.now() + durationMs);
 		await advanceFlowQuery({ flowId: flow.id, step, expiresAt }, transaction);
-		return this.describe({
-			kind: flow.kind,
-			step,
-			userId: flow.userId,
-			expiresAt,
-			attempts: 0,
-			lastSentAt: null,
-		});
-	}
-
-	// L'étape « lien et code » envoie toujours son mail ; l'étape « second facteur », le code par email qu'elle propose
-	async #sendsMail(flow: Flow): Promise<boolean> {
-		if (flow.step === FlowStepEnum.MAIL_CODE) return true;
-		return (await this.listSecondFactorMethods(flow)).includes(
-			SecondFactorMethodEnum.EMAIL,
+		return fromFlowEntityToFlowBean(
+			{ kind: flow.kind, step, expiresAt, attempts: 0, lastSentAt: null },
+			authSettings.code,
+			secondFactorMethods,
 		);
 	}
 
 	#requireToken({ flowToken }: BrowserContextBean): string {
 		if (flowToken === undefined)
-			throw flowExpired("No flow in progress in this browser");
+			throw flowExpiredError("No flow in progress in this browser");
 		return flowToken;
 	}
 
