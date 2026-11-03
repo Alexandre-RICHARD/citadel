@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 45 de la roadmap (§15), phase 6.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 51 de la roadmap (§15), phase 7.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -283,9 +283,9 @@ Page `/auth/profile` :
 
 ### 6.7 Double authentification
 
-- **Par mail** : un code (+ lien) après le mot de passe. Activation confirmée par un premier code.
+- **Par mail** : un code (+ lien) après le mot de passe, envoyé à la demande (`POST /auth/flow/resend` à l'étape « second facteur »). Activation confirmée par un premier code (parcours `email_factor`, 15 minutes), sans nouvelle session.
 - **TOTP** : secret généré par le serveur ; QR code (`otpauth://`, émetteur « Citadel », email en libellé) généré **dans le navigateur**, plus la clé à saisir à la main. L'utilisateur nomme chaque facteur et peut en avoir plusieurs ; activation après un premier code valide. SHA-1, 6 chiffres, 30 s, ±1 pas. Anti-rejeu : un code accepté ne peut pas resservir, même pendant ses 30 à 90 secondes de validité. Secret chiffré en AES-256-GCM, avec la version de la clé et l'identifiant du facteur en donnée associée (AAD). Rotation : nouvelle clé et nouvelle version, l'ancienne gardée dans `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY` ; chaque secret est rechiffré à son prochain usage.
-- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères en Base32 (groupes de 5), hachés. Affichés une seule fois : « Sauvegarde-les en lieu sûr : tu ne pourras plus jamais les revoir ici. », avec téléchargement en texte. Régénérables avec le mot de passe, ce qui invalide les anciens ; le profil affiche le nombre restant.
+- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères en Base32 (groupes de 5), gardés en HMAC avec `AUTH_CODE_HMAC_KEY` (50 bits résisteraient mal à une recherche hors ligne). Donnés par la réponse qui active le premier facteur (`recoveryCodes` de `/factors/totp/confirm`, ou du `{ flow }` qui termine l'activation du facteur mail). Affichés une seule fois : « Sauvegarde-les en lieu sûr : tu ne pourras plus jamais les revoir ici. », avec téléchargement en texte. Régénérables avec le mot de passe, ce qui invalide les anciens ; le profil affiche le nombre restant.
 - **Gestion** : liste (nom, type, création, dernier usage), ajout, suppression confirmée par le mot de passe. Supprimer le dernier facteur désactive la 2FA et supprime les codes de secours.
 
 ### 6.8 Sessions actives et déconnexion
@@ -331,13 +331,13 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `GET /auth/me`, `PATCH /auth/me` | Qui suis-je ; pseudo affiché, méthodes de connexion |
 | `POST /auth/me/password`, `POST /auth/me/email` | Mot de passe ; changement d'email |
 | `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions`, `DELETE /auth/sessions/others` | Sessions ; tout ; tout sauf ici |
-| `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA |
+| `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA ; la suppression porte le mot de passe dans son corps |
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
 | `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions |
 
-Chaque étape répond `{ flow }` : l'état du parcours, ou `null` quand il est terminé (session ouverte).
+Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
 
-Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`).
+Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`, `WRONG_PASSWORD`, `NO_SECOND_FACTOR`), `404` (`FACTOR_NOT_FOUND`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`, `EMAIL_FACTOR_ALREADY_ACTIVE`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`). Le mot de passe redemandé avant une action sensible, faux, répond `400` `WRONG_PASSWORD` : un `401` voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
 
 ---
 
@@ -357,7 +357,7 @@ Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `4
 | Vol de session | Cookie `HttpOnly`/`Secure`, CSP, sessions révocables |
 | CSRF | `SameSite=Lax`, `Origin`, `GET` sans effet |
 
-Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et pseudo ne double pas les essais.
+Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et pseudo ne double pas les essais. Risque accepté (3 novembre 2026) : un échec par pseudo puis un essai immédiat par une adresse devinée montre le compte à rebours si les deux vont ensemble ; il faut déjà connaître le pseudo et deviner l'adresse exacte. Les erreurs de second facteur suivent la même règle.
 
 ### 7.2 IP réelle
 
@@ -713,7 +713,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 53. [moi] Serveur : `POST /auth/me/password`.
 54. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse, adresse déjà prise, `EMAIL_TAKEN`).
 55. [moi] Profil : mot de passe et email. Vérif : critère 9.
-56. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables.
+56. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables. Le facteur mail s'active aussi par son lien : `/auth/verify` reçoit alors les `recoveryCodes` et doit les montrer (le parcours `email_factor` mène aujourd'hui à la connexion, `findFlowPagePath`).
 57. [moi] Étape facultative « Protège ton compte » après l'inscription.
 58. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions, `DELETE /auth/sessions/others`).
 59. [moi] Profil : sessions actives. Vérif : critère 8.
@@ -759,7 +759,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 
 ## 16. Questions
 
-1. **[Important, à trancher au début de la phase 6]** Le délai de 2 s (et le bannissement) après un mauvais mot de passe est compté par compte : un échec par pseudo puis un essai immédiat par une adresse devinée dit, par le compte à rebours, si les deux vont ensemble. Garder (alterner pseudo et email ne double pas les essais) ou compter le texte tapé, comme les mails (§7) ? La réponse vaut aussi pour les erreurs de second facteur.
+Aucune question ouverte.
 
 ---
 
@@ -842,7 +842,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Déjà connecté : `/auth/login` renvoie vers le profil ; une nouvelle connexion dans le même navigateur fait disparaître l'ancienne session de la liste.
 - [ ] Connexion par mail avec un TOTP : le TOTP est demandé, jamais le code par mail ; avec seulement le facteur mail : rien de plus.
 - [ ] Connexion par mail commencée, puis « par mot de passe » seule choisie dans le profil (autre onglet) : le lien et le code ne connectent plus.
-- [ ] Mauvais mot de passe par pseudo, puis essai immédiat par une adresse devinée : comportement conforme à la réponse de la question 1 (§16).
+- [ ] Mauvais mot de passe par pseudo, puis essai immédiat par l'adresse du même compte : compte à rebours (le délai vise le compte, §7.1) ; par l'adresse d'un autre compte : aucun.
 - [ ] Paramètres argon2 montés dans `.env` : le hash d'un compte change à sa connexion suivante, l'ancien marchait encore.
 
 **Mot de passe oublié**
@@ -869,6 +869,8 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Supprimer le dernier facteur désactive la 2FA et efface les codes de secours ; notification reçue.
 - [ ] Rotation de clé (nouvelle clé, version 2, ancienne en clé précédente) : le TOTP marche, puis `key_version` passe à 2 après usage.
 - [ ] Quota épuisé : code par mail grisé, TOTP et codes de secours toujours là.
+- [ ] Étape « second facteur » : choix entre application, code par email et code de secours selon le compte ; « Recevoir un code par email » puis « Renvoyer l'email » avec son délai ; le lien de cet email, ouvert dans le même navigateur, connecte aussi.
+- [ ] Code de secours tapé en minuscules, sans tiret ou avec des espaces : accepté.
 
 **Sessions et données**
 
@@ -901,7 +903,6 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Phrase « tu peux aussi saisir ce code sur la page restée ouverte » : juste dans chaque email à code, y compris le changement d'email et l'activation du facteur mail.
 - [ ] Le bouton « Réinitialiser mon mot de passe » des notifications mène à la page `/auth/forgot-password`.
 - [ ] Une fois connecté sans page demandée, retour à l'accueil : à remplacer par le profil quand il existera (étape 52, `useAuthRedirect`).
-- [ ] L'étape « second facteur » affiche un message d'attente (`SecondFactorPending`) : remplacée à l'étape 50.
 - [ ] Tutoiement des emails face au vouvoiement du site (formulaire de contact, écran « Message envoyé », pages du pied de page) : décider d'harmoniser ou non.
 - [ ] Aucun « mail » ni « adresse » seul pour l'email dans les textes visibles des interfaces et des emails : « email » et « adresse email » partout.
 
