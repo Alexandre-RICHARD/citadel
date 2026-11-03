@@ -19,5 +19,6 @@ export function fromReceivedFlowStatusToFlowFm({
 				? null
 				: receivedAt + flow.resendRetryAfter * SECOND_MS,
 		remainingAttempts: flow.remainingAttempts,
+		secondFactorMethods: flow.secondFactorMethods,
 	};
 }

@@ -22,5 +22,6 @@ export function fromFlowBeanToFlowDto(flow: FlowBean, now: Date): FlowDto {
 		expiresIn: secondsUntil(flow.expiresAt, now),
 		resendRetryAfter: resendRetryAfter === 0 ? null : resendRetryAfter,
 		remainingAttempts: flow.remainingAttempts,
+		secondFactorMethods: flow.secondFactorMethods,
 	};
 }

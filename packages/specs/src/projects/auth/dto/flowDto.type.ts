@@ -1,5 +1,6 @@
 import type { FlowKindEnum } from "../enum/flowKind.enum.ts";
 import type { FlowStepEnum } from "../enum/flowStep.enum.ts";
+import type { SecondFactorMethodEnum } from "../enum/secondFactorMethod.enum.ts";
 
 // Le parcours en cours dans ce navigateur. Durées en secondes, jamais en dates : l'horloge du navigateur peut avancer ou
 // retarder sur celle du serveur
@@ -10,6 +11,8 @@ export type FlowDto = {
 	expiresIn: number;
 	// Avant qu'un nouveau mail puisse être demandé ; null : il peut l'être tout de suite, ou l'étape n'envoie pas de mail
 	resendRetryAfter: number | null;
-	// Codes qui peuvent encore être essayés ; à zéro, il faut en redemander un
+	// Codes reçus par mail qui peuvent encore être essayés ; à zéro, il faut en redemander un
 	remainingAttempts: number;
+	// Étape « second facteur » : ce que le compte peut y donner. Vide à toute autre étape
+	secondFactorMethods: SecondFactorMethodEnum[];
 };

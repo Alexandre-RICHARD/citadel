@@ -11,14 +11,14 @@ type Advance = {
 	expiresAt: Date;
 };
 
-// Le parcours passe à son étape suivante, essais remis à zéro
+// Le parcours passe à son étape suivante : essais remis à zéro, aucun mail encore envoyé pour elle
 export async function advanceFlowQuery(
 	{ flowId, step, expiresAt }: Advance,
 	transaction: Transaction,
 ): Promise<void> {
 	try {
 		await Flow.update(
-			{ step, expiresAt, attempts: 0 },
+			{ step, expiresAt, attempts: 0, lastSentAt: null },
 			{ where: { id: flowId }, transaction },
 		);
 	} catch (error) {

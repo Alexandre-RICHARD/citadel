@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import { app } from "../../../../app.ts";
 import { useFakeClock } from "../../../../testUtils/clock/useFakeClock.ts";
 import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAuthRows.ts";
+import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { openTestFlow } from "../../../../testUtils/integration/auth/openTestFlow.ts";
 import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCookie.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
@@ -63,6 +64,26 @@ describe("submitFlowLink", () => {
 			expect(readSetCookie(response, sessionCookie.name)).toBeDefined();
 		});
 
+		it("SHOULD open the session WHEN the link of the email code of a login is confirmed", async () => {
+			// Arrange
+			const account = await insertTestAccount({ confirmedFactorType: "email" });
+			const flow = await openTestFlow({
+				kind: "login",
+				step: "second_factor",
+				userId: account.userId,
+				email: account.email,
+			});
+
+			// Act
+			const response = await submitLink({ token: flow.linkToken }, flow.cookie);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response.body as FlowStatusDto).toStrictEqual({ flow: null });
+			expect(readSetCookie(response, sessionCookie.name)).toBeDefined();
+			expect(await selectAuthRows.flow(flow.id)).toBeNull();
+		});
+
 		it("SHOULD keep the link valid WHEN the username was taken in the meantime, then accept a new one", async () => {
 			// Arrange
 			const flow = await openRegistration();
@@ -107,6 +128,28 @@ describe("submitFlowLink", () => {
 				);
 			expect(await selectAuthRows.userIdsByEmail(flow.email)).toStrictEqual([]);
 			expect(await selectAuthRows.flow(flow.id)).not.toBeNull();
+		});
+
+		it("SHOULD refuse with FLOW_EXPIRED WHEN the email factor was removed since the email code left", async () => {
+			// Arrange : le compte n'a plus qu'un TOTP
+			const account = await insertTestAccount({ confirmedFactorType: "totp" });
+			const flow = await openTestFlow({
+				kind: "login",
+				step: "second_factor",
+				userId: account.userId,
+				email: account.email,
+			});
+
+			// Act
+			const response = await submitLink({ token: flow.linkToken }, flow.cookie);
+
+			// Assert
+			expectRejected(
+				response,
+				AuthErrorCodeEnum.FLOW_EXPIRED,
+				"The account no longer has its email factor",
+			);
+			expect(readSetCookie(response, sessionCookie.name)).toBeUndefined();
 		});
 
 		it("SHOULD refuse with FLOW_EXPIRED WHEN the link was already used", async () => {

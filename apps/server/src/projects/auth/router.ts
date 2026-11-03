@@ -1,9 +1,12 @@
 import type { AuthEndpointRegistry } from "@citadel/specs/src/projects/auth/authEndpointRegistry.type.ts";
 import { confirmTotpFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/factors/confirmTotpFactor/confirmTotpFactorBodySchema.ts";
 import { createTotpFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/factors/createTotpFactor/createTotpFactorBodySchema.ts";
+import { deleteFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/factors/deleteFactor/deleteFactorBodySchema.ts";
+import { deleteFactorPathParamSchema } from "@citadel/specs/src/projects/auth/endpoint/factors/deleteFactor/deleteFactorPathParamSchema.ts";
 import { submitFlowCodeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowCode/submitFlowCodeBodySchema.ts";
 import { submitFlowLinkBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowLink/submitFlowLinkBodySchema.ts";
 import { submitNewPasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitNewPassword/submitNewPasswordBodySchema.ts";
+import { submitSecondFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitSecondFactor/submitSecondFactorBodySchema.ts";
 import { loginWithPasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/loginWithPassword/loginWithPasswordBodySchema.ts";
 import { startMailLoginBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/startMailLogin/startMailLoginBodySchema.ts";
 import { startPasswordResetBodySchema } from "@citadel/specs/src/projects/auth/endpoint/passwordResets/startPasswordReset/startPasswordResetBodySchema.ts";
@@ -80,7 +83,13 @@ typedRouter.POST(
 	flowController.submitNewPassword,
 	requestValidator({ body: submitNewPasswordBodySchema }),
 );
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/flow/second-factor`,
+	flowController.submitSecondFactor,
+	requestValidator({ body: submitSecondFactorBodySchema }),
+);
 
+typedRouter.GET(`${ApiPrefixEnum.AUTH}/factors`, factorController.list);
 typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/factors/totp`,
 	factorController.createTotp,
@@ -94,6 +103,14 @@ typedRouter.POST(
 typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/factors/email`,
 	factorController.startEmailFactor,
+);
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/factors/:factorId`,
+	factorController.delete,
+	requestValidator({
+		params: deleteFactorPathParamSchema,
+		body: deleteFactorBodySchema,
+	}),
 );
 typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/recovery-codes`,

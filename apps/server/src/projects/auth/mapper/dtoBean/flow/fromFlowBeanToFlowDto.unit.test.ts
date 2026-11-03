@@ -18,6 +18,7 @@ function buildFlow(overrides: Partial<FlowBean> = {}): FlowBean {
 		expiresAt: secondsLater(1800),
 		resendAvailableAt: secondsLater(60),
 		remainingAttempts: 5,
+		secondFactorMethods: [],
 		...overrides,
 	};
 }
@@ -31,6 +32,7 @@ describe("fromFlowBeanToFlowDto.ts", () => {
 				expiresIn: 1800,
 				resendRetryAfter: 60,
 				remainingAttempts: 5,
+				secondFactorMethods: [],
 			});
 		});
 

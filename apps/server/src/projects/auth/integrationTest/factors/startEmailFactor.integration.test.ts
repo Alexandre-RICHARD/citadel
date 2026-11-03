@@ -66,6 +66,7 @@ describe("startEmailFactor", () => {
 					expiresIn: 900,
 					resendRetryAfter: 60,
 					remainingAttempts: 5,
+					secondFactorMethods: [],
 				},
 			});
 			expect(readSetCookie(response, flowCookie.name)).toContain(

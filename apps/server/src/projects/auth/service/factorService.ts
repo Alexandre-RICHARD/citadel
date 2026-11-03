@@ -10,16 +10,22 @@ import { RejectedRequestError } from "../../../error/RejectedRequestError.ts";
 import { MailKindEnum } from "../../../mail/mailKind.enum.ts";
 import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
+import type { FactorListBean } from "../bean/factorListBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { TotpFactorSetupBean } from "../bean/totpFactorSetupBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { fromFactorEntityToFactorBean } from "../mapper/beanEntity/factor/fromFactorEntityToFactorBean.ts";
 import { confirmFactorQuery } from "../query/factor/confirmFactorQuery.ts";
 import { createFactorQuery } from "../query/factor/createFactorQuery.ts";
+import { deleteFactorQuery } from "../query/factor/deleteFactorQuery.ts";
+import { findConfirmedFactorsQuery } from "../query/factor/findConfirmedFactorsQuery.ts";
 import { findConfirmedFactorTypesQuery } from "../query/factor/findConfirmedFactorTypesQuery.ts";
 import { findPendingTotpFactorQuery } from "../query/factor/findPendingTotpFactorQuery.ts";
 import { writeFactorSecretQuery } from "../query/factor/writeFactorSecretQuery.ts";
 import { claimFlowQuery } from "../query/flow/claimFlowQuery.ts";
+import { countUnusedRecoveryCodesQuery } from "../query/recoveryCode/countUnusedRecoveryCodesQuery.ts";
+import { deleteRecoveryCodesQuery } from "../query/recoveryCode/deleteRecoveryCodesQuery.ts";
 import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
 import { lockUserQuery } from "../query/user/lockUserQuery.ts";
 import { buildSecurityNoticeMail } from "../template/buildSecurityNoticeMail.ts";
@@ -28,6 +34,7 @@ import { encodeBase32 } from "../totp/encodeBase32.ts";
 import { authEventService } from "./authEventService.ts";
 import { authMailService } from "./authMailService.ts";
 import { flowService } from "./flowService.ts";
+import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { recoveryCodeService } from "./recoveryCodeService.ts";
 import { totpService } from "./totpService.ts";
 
@@ -53,11 +60,22 @@ async function requireUser(userId: number) {
 
 /**
  * Les seconds facteurs du compte connecté : des TOTP nommés, autant que voulu, et un seul facteur mail. Un facteur ne
- * protège rien tant que son premier code n'est pas validé. Le premier activé donne les codes de secours : chaque
- * changement verrouille le compte, deux activations simultanées ne donnent jamais deux lots de codes. Chaque ajout est
- * notifié à l'adresse du compte
+ * protège rien tant que son premier code n'est pas validé. Le premier activé donne les codes de secours, le dernier
+ * retiré les emporte : chaque changement verrouille le compte, deux activations simultanées ne donnent jamais deux lots
+ * de codes. Chaque ajout et chaque retrait est notifié à l'adresse du compte
  */
 class FactorService {
+	async list(userId: number): Promise<FactorListBean> {
+		const [factors, remainingRecoveryCodes] = await Promise.all([
+			findConfirmedFactorsQuery(userId),
+			countUnusedRecoveryCodesQuery(userId),
+		]);
+		return {
+			factors: factors.map(fromFactorEntityToFactorBean),
+			remainingRecoveryCodes,
+		};
+	}
+
 	// Un secret neuf, chiffré avec l'id de son facteur : le facteur se crée d'abord, sans secret, dans la même transaction
 	async createTotp(userId: number, name: string): Promise<TotpFactorSetupBean> {
 		const user = await requireUser(userId);
@@ -178,6 +196,48 @@ class FactorService {
 		);
 		await this.#notifyAdded(userId, browser.client);
 		return { isCompleted: true, sessionCookie: null, recoveryCodes };
+	}
+
+	// Mot de passe redemandé. Le dernier facteur actif parti, la double authentification l'est aussi : plus de codes
+	async delete(
+		userId: number,
+		{ factorId, password }: { factorId: number; password: string },
+		client: ClientContextBean,
+	): Promise<void> {
+		const user = await passwordConfirmationService.confirm(
+			userId,
+			password,
+			client,
+		);
+		const { wasConfirmed } = await runInTransaction(
+			"Failed to delete factor",
+			async (transaction) => {
+				await lockUserQuery(userId, transaction);
+				const deleted = await deleteFactorQuery(userId, factorId, transaction);
+				if (deleted === null)
+					throw factorNotFound("No factor of this account has this id");
+				const remaining = await findConfirmedFactorTypesQuery(
+					userId,
+					transaction,
+				);
+				if (remaining.length === 0)
+					await deleteRecoveryCodesQuery(userId, transaction);
+				return deleted;
+			},
+		);
+		if (!wasConfirmed) return;
+
+		authMailService.sendWithoutWaiting(
+			buildSecurityNoticeMail(
+				MailKindEnum.AUTH_NOTICE_SECOND_FACTOR_REMOVED,
+				user.email,
+			),
+		);
+		await authEventService.record({
+			type: AuthEventTypeEnum.SECOND_FACTOR_REMOVED,
+			userId,
+			client,
+		});
 	}
 
 	async #notifyAdded(userId: number, client: ClientContextBean): Promise<void> {

@@ -45,6 +45,7 @@ describe("getFlow", () => {
 					expiresIn: 30 * 60 - 20,
 					resendRetryAfter: 40,
 					remainingAttempts: 3,
+					secondFactorMethods: [],
 				},
 			});
 		});

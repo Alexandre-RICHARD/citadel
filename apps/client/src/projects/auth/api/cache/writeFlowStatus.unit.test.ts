@@ -13,6 +13,7 @@ const PENDING = {
 		expiresIn: 900,
 		resendRetryAfter: 60,
 		remainingAttempts: 5,
+		secondFactorMethods: [],
 	},
 };
 

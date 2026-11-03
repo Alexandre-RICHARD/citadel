@@ -10,7 +10,8 @@ import type { FlowStatusDto } from "../../../dto/flowStatusDto.type.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 
 // Renvoie le mail de l'étape : un nouveau lien et un nouveau code, l'ancien code ne vaut plus et les essais repartent de
-// zéro. Pas avant le délai de renvoi (Retry-After), ni au-delà des limites de mails
+// zéro. À l'étape « second facteur » d'une connexion par mot de passe, envoie le code par email du compte qui en a un.
+// Pas avant le délai de renvoi (Retry-After), ni au-delà des limites de mails
 export interface ResendFlowMail extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.AUTH}/flow/resend`;

@@ -32,6 +32,7 @@ const PENDING_RESET: FlowStatusDto = {
 		expiresIn: 900,
 		resendRetryAfter: 60,
 		remainingAttempts: 5,
+		secondFactorMethods: [],
 	},
 };
 

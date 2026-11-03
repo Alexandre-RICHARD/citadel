@@ -1,5 +1,6 @@
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum";
 import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum";
+import { SecondFactorMethodEnum } from "@citadel/specs/src/projects/auth/enum/secondFactorMethod.enum";
 import { describe, expect, it } from "vitest";
 
 import { fromReceivedFlowStatusToFlowFm } from "./fromReceivedFlowStatusToFlowFm";
@@ -18,6 +19,7 @@ describe("fromReceivedFlowStatusToFlowFm.ts", () => {
 							expiresIn: 1800,
 							resendRetryAfter: 60,
 							remainingAttempts: 4,
+							secondFactorMethods: [],
 						},
 					},
 					receivedAt: RECEIVED_AT,
@@ -28,6 +30,7 @@ describe("fromReceivedFlowStatusToFlowFm.ts", () => {
 				expiresAt: RECEIVED_AT + 1_800_000,
 				resendAvailableAt: RECEIVED_AT + 60_000,
 				remainingAttempts: 4,
+				secondFactorMethods: [],
 			});
 		});
 
@@ -41,11 +44,38 @@ describe("fromReceivedFlowStatusToFlowFm.ts", () => {
 							expiresIn: 600,
 							resendRetryAfter: null,
 							remainingAttempts: 5,
+							secondFactorMethods: [],
 						},
 					},
 					receivedAt: RECEIVED_AT,
 				})?.resendAvailableAt,
 			).toBeNull();
+		});
+	});
+
+	describe("second factor", () => {
+		it("SHOULD keep what the account can give WHEN the flow waits for its second factor", () => {
+			expect(
+				fromReceivedFlowStatusToFlowFm({
+					status: {
+						flow: {
+							kind: FlowKindEnum.LOGIN,
+							step: FlowStepEnum.SECOND_FACTOR,
+							expiresIn: 600,
+							resendRetryAfter: null,
+							remainingAttempts: 5,
+							secondFactorMethods: [
+								SecondFactorMethodEnum.TOTP,
+								SecondFactorMethodEnum.RECOVERY_CODE,
+							],
+						},
+					},
+					receivedAt: RECEIVED_AT,
+				})?.secondFactorMethods,
+			).toStrictEqual([
+				SecondFactorMethodEnum.TOTP,
+				SecondFactorMethodEnum.RECOVERY_CODE,
+			]);
 		});
 	});
 

@@ -2,6 +2,7 @@ import { hashPassword } from "@citadel/common/src/node/password/hashPassword.ts"
 import type { FlowStatusDto } from "@citadel/specs/src/projects/auth/dto/flowStatusDto.type.ts";
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
 import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
+import { SecondFactorMethodEnum } from "@citadel/specs/src/projects/auth/enum/secondFactorMethod.enum.ts";
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
@@ -130,6 +131,7 @@ describe("loginWithPassword", () => {
 					expiresIn: 600,
 					resendRetryAfter: null,
 					remainingAttempts: 5,
+					secondFactorMethods: [SecondFactorMethodEnum.EMAIL],
 				},
 			});
 			expect(readSetCookie(response, sessionCookie.name)).toBeUndefined();

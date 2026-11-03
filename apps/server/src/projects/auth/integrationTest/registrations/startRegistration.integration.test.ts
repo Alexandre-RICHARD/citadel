@@ -64,6 +64,7 @@ const PENDING_REGISTRATION: FlowStatusDto = {
 		expiresIn: 1800,
 		resendRetryAfter: 60,
 		remainingAttempts: 5,
+		secondFactorMethods: [],
 	},
 };
 

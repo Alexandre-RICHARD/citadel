@@ -12,6 +12,7 @@ import { MailKindEnum } from "../../../../mail/mailKind.enum.ts";
 import { mailService } from "../../../../mail/mailService.ts";
 import { useFakeClock } from "../../../../testUtils/clock/useFakeClock.ts";
 import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAuthRows.ts";
+import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { openTestFlow } from "../../../../testUtils/integration/auth/openTestFlow.ts";
 import { readMailSecrets } from "../../../../testUtils/integration/auth/readMailSecrets.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
@@ -52,6 +53,7 @@ describe("resendFlowMail", () => {
 			expect((response.body as FlowStatusDto).flow).toMatchObject({
 				resendRetryAfter: 60,
 				remainingAttempts: 5,
+				secondFactorMethods: [],
 			});
 			const mail = await mails.waitForOne();
 			expect(mail).toMatchObject({
@@ -89,6 +91,7 @@ describe("resendFlowMail", () => {
 			expect((response.body as FlowStatusDto).flow).toMatchObject({
 				resendRetryAfter: 60,
 				remainingAttempts: 5,
+				secondFactorMethods: [],
 			});
 			await mails.expectNone();
 		});
@@ -105,6 +108,46 @@ describe("resendFlowMail", () => {
 			// Assert
 			const mail = await mails.waitForOne();
 			expect(mail.kind).toBe(MailKindEnum.AUTH_REGISTRATION_EXISTING_ACCOUNT);
+		});
+
+		it("SHOULD mail the code of the email factor WHEN a login waits for its second factor", async () => {
+			// Arrange : aucun mail encore envoyé à cette étape
+			const account = await insertTestAccount({ confirmedFactorType: "email" });
+			const flow = await openTestFlow({
+				kind: "login",
+				step: "second_factor",
+				userId: account.userId,
+				email: account.email,
+				hasSecrets: false,
+				lastSentAt: null,
+			});
+			const mails = watchSentMails();
+
+			// Act
+			const response = await resend(flow.cookie);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect((response.body as FlowStatusDto).flow).toMatchObject({
+				step: "second_factor",
+				resendRetryAfter: 60,
+				secondFactorMethods: ["email"],
+			});
+			const mail = await mails.waitForOne();
+			expect(mail).toMatchObject({
+				kind: MailKindEnum.AUTH_SECOND_FACTOR,
+				to: { email: account.email },
+			});
+			const { code } = readMailSecrets(mail);
+			expect(
+				(
+					await request(app)
+						.post(`${ApiPrefixEnum.AUTH}/flow/second-factor`)
+						.set("X-Real-IP", buildUniqueIp())
+						.set("Cookie", flow.cookie)
+						.send({ method: "email", code })
+				).status,
+			).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 		});
 	});
 
@@ -137,6 +180,39 @@ describe("resendFlowMail", () => {
 				code: AuthErrorCodeEnum.FLOW_EXPIRED,
 				message: "This step of the flow sends no mail",
 			});
+		});
+
+		it.each([
+			{
+				reason: "the account has only a TOTP",
+				kind: "login",
+				factor: "totp" as const,
+			},
+			{
+				reason: "the step follows a mail login",
+				kind: "mail_login",
+				factor: "email" as const,
+			},
+		])("SHOULD send no email code WHEN $reason", async ({ kind, factor }) => {
+			// Arrange
+			const account = await insertTestAccount({ confirmedFactorType: factor });
+			const flow = await openFlowReadyForResend({
+				kind,
+				step: "second_factor",
+				userId: account.userId,
+				email: account.email,
+			});
+			const mails = watchSentMails();
+
+			// Act
+			const response = await resend(flow.cookie);
+
+			// Assert
+			expect(response.body).toStrictEqual({
+				code: AuthErrorCodeEnum.FLOW_EXPIRED,
+				message: "This step of the flow sends no mail",
+			});
+			await mails.expectNone();
 		});
 	});
 

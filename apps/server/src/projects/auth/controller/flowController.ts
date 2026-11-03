@@ -4,6 +4,7 @@ import type { ResendFlowMail } from "@citadel/specs/src/projects/auth/endpoint/f
 import type { SubmitFlowCode } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowCode/submitFlowCodeEndpoint.interface.ts";
 import type { SubmitFlowLink } from "@citadel/specs/src/projects/auth/endpoint/flow/submitFlowLink/submitFlowLinkEndpoint.interface.ts";
 import type { SubmitNewPassword } from "@citadel/specs/src/projects/auth/endpoint/flow/submitNewPassword/submitNewPasswordEndpoint.interface.ts";
+import type { SubmitSecondFactor } from "@citadel/specs/src/projects/auth/endpoint/flow/submitSecondFactor/submitSecondFactorEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
@@ -15,6 +16,7 @@ import { fromFlowOutcomeBeanToFlowStatusDto } from "../mapper/dtoBean/flow/fromF
 import { flowCompletionService } from "../service/flowCompletionService.ts";
 import { flowService } from "../service/flowService.ts";
 import { passwordResetService } from "../service/passwordResetService.ts";
+import { secondFactorService } from "../service/secondFactorService.ts";
 
 // Chaque réponse d'un parcours dit où il en est : jamais gardée par un cache
 const NO_STORE = "no-store";
@@ -31,7 +33,7 @@ export const flowController = {
 			.status(HttpStatutCodeSuccessEnum.SUCCESS)
 			.json(
 				fromFlowBeanToFlowStatusDto(
-					flow === null ? null : flowService.toBean(flow),
+					flow === null ? null : await flowService.describe(flow),
 					new Date(),
 				),
 			);
@@ -81,6 +83,21 @@ export const flowController = {
 			.status(HttpStatutCodeSuccessEnum.SUCCESS)
 			.json(fromFlowOutcomeBeanToFlowStatusDto(outcome, new Date()));
 	}),
+
+	submitSecondFactor: asyncRequestHandler<SubmitSecondFactor>(
+		async (request, response) => {
+			const outcome = await secondFactorService.submit(
+				readBrowserContext(request),
+				request.body,
+			);
+
+			writeFlowOutcomeCookies(response, outcome);
+			response.set("Cache-Control", NO_STORE);
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromFlowOutcomeBeanToFlowStatusDto(outcome, new Date()));
+		},
+	),
 
 	submitNewPassword: asyncRequestHandler<SubmitNewPassword>(
 		async (request, response) => {

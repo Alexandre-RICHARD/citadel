@@ -1,4 +1,4 @@
-import { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
+import type { SecondFactorMethodEnum } from "@citadel/specs/src/projects/auth/enum/secondFactorMethod.enum.ts";
 
 import type { FlowBean } from "../../../bean/flowBean.type.ts";
 import type { Flow } from "../../../models/Flow.ts";
@@ -8,20 +8,22 @@ type CodeSettings = {
 	resendDelayMs: number;
 };
 
-// Un leurre se lit comme un vrai parcours : mêmes dates, mêmes essais, rien de son compte
+// Un leurre se lit comme un vrai parcours : mêmes dates, mêmes essais, rien de son compte. Chaque étape repart sans
+// mail envoyé (lastSentAt remis à null) : le délai de renvoi ne vaut qu'après un envoi de cette étape
 export function fromFlowEntityToFlowBean(
 	flow: Pick<Flow, "kind" | "step" | "expiresAt" | "lastSentAt" | "attempts">,
 	{ maxAttempts, resendDelayMs }: CodeSettings,
+	secondFactorMethods: SecondFactorMethodEnum[],
 ): FlowBean {
-	const resendAvailableAt =
-		flow.step === FlowStepEnum.MAIL_CODE && flow.lastSentAt !== null
-			? new Date(flow.lastSentAt.getTime() + resendDelayMs)
-			: null;
 	return {
 		kind: flow.kind,
 		step: flow.step,
 		expiresAt: flow.expiresAt,
-		resendAvailableAt,
+		resendAvailableAt:
+			flow.lastSentAt === null
+				? null
+				: new Date(flow.lastSentAt.getTime() + resendDelayMs),
 		remainingAttempts: Math.max(0, maxAttempts - flow.attempts),
+		secondFactorMethods,
 	};
 }

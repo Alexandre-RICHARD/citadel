@@ -1,5 +1,7 @@
 import type { ConfirmTotpFactor } from "./endpoint/factors/confirmTotpFactor/confirmTotpFactorEndpoint.interface.ts";
 import type { CreateTotpFactor } from "./endpoint/factors/createTotpFactor/createTotpFactorEndpoint.interface.ts";
+import type { DeleteFactor } from "./endpoint/factors/deleteFactor/deleteFactorEndpoint.interface.ts";
+import type { ListFactors } from "./endpoint/factors/listFactors/listFactorsEndpoint.interface.ts";
 import type { StartEmailFactor } from "./endpoint/factors/startEmailFactor/startEmailFactorEndpoint.interface.ts";
 import type { AbandonFlow } from "./endpoint/flow/abandonFlow/abandonFlowEndpoint.interface.ts";
 import type { GetFlow } from "./endpoint/flow/getFlow/getFlowEndpoint.interface.ts";
@@ -7,6 +9,7 @@ import type { ResendFlowMail } from "./endpoint/flow/resendFlowMail/resendFlowMa
 import type { SubmitFlowCode } from "./endpoint/flow/submitFlowCode/submitFlowCodeEndpoint.interface.ts";
 import type { SubmitFlowLink } from "./endpoint/flow/submitFlowLink/submitFlowLinkEndpoint.interface.ts";
 import type { SubmitNewPassword } from "./endpoint/flow/submitNewPassword/submitNewPasswordEndpoint.interface.ts";
+import type { SubmitSecondFactor } from "./endpoint/flow/submitSecondFactor/submitSecondFactorEndpoint.interface.ts";
 import type { LoginWithPassword } from "./endpoint/login/loginWithPassword/loginWithPasswordEndpoint.interface.ts";
 import type { StartMailLogin } from "./endpoint/login/startMailLogin/startMailLoginEndpoint.interface.ts";
 import type { GetMe } from "./endpoint/me/getMe/getMeEndpoint.interface.ts";
@@ -25,12 +28,15 @@ export type AuthEndpointRegistry =
 	| SubmitFlowCode
 	| SubmitFlowLink
 	| SubmitNewPassword
+	| SubmitSecondFactor
 	| GetUsernameAvailability
 	| StartRegistration
 	| LoginWithPassword
 	| StartMailLogin
 	| StartPasswordReset
+	| ListFactors
 	| CreateTotpFactor
 	| ConfirmTotpFactor
 	| StartEmailFactor
+	| DeleteFactor
 	| RegenerateRecoveryCodes;

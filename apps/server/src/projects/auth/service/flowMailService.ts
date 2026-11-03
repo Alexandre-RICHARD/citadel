@@ -11,6 +11,7 @@ import { buildExistingAccountMail } from "../template/buildExistingAccountMail.t
 import { buildMailLoginMail } from "../template/buildMailLoginMail.ts";
 import { buildPasswordResetMail } from "../template/buildPasswordResetMail.ts";
 import { buildRegistrationMail } from "../template/buildRegistrationMail.ts";
+import { buildSecondFactorMail } from "../template/buildSecondFactorMail.ts";
 import { buildVerifyLinkUrl } from "../template/buildVerifyLinkUrl.ts";
 import type { VerificationMailParameters } from "../template/verificationMailParameters.type.ts";
 import { authMailService } from "./authMailService.ts";
@@ -35,6 +36,8 @@ const VERIFICATION_MAIL_BUILDERS: Partial<
 	Record<FlowKindEnum, (parameters: VerificationMailParameters) => Mail>
 > = {
 	[FlowKindEnum.REGISTRATION]: buildRegistrationMail,
+	// La connexion par mot de passe n'envoie de mail qu'à son étape « second facteur » : le code par email
+	[FlowKindEnum.LOGIN]: buildSecondFactorMail,
 	[FlowKindEnum.MAIL_LOGIN]: buildMailLoginMail,
 	[FlowKindEnum.PASSWORD_RESET]: buildPasswordResetMail,
 	[FlowKindEnum.EMAIL_CHANGE]: buildEmailChangeMail,

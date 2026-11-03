@@ -7,6 +7,7 @@ import { flowService } from "./flowService.ts";
 import { loginService } from "./loginService.ts";
 import { passwordResetService } from "./passwordResetService.ts";
 import { registrationService } from "./registrationService.ts";
+import { secondFactorService } from "./secondFactorService.ts";
 
 type MailProof =
 	{ kind: "code"; code: string } | { kind: "link"; linkToken: string };
@@ -39,7 +40,10 @@ class FlowCompletionService {
 				return passwordResetService.completeMailStep(verified);
 			case FlowKindEnum.EMAIL_FACTOR:
 				return factorService.completeEmailFactorMailStep(verified, browser);
-			// Changement d'email : son service arrive avec le profil. La connexion avec second facteur n'a pas d'étape mail
+			// Le lien du code par email, à l'étape « second facteur » (le code, lui, se tape dans /flow/second-factor)
+			case FlowKindEnum.LOGIN:
+				return secondFactorService.completeMailLink(verified, browser);
+			// Changement d'email : son service arrive avec le profil
 			default:
 				throw new Error(
 					`No mail step to complete for a ${verified.flow.kind} flow`,
