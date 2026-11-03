@@ -23,8 +23,13 @@ export enum AuthErrorCodeEnum {
 	TOO_MANY_ATTEMPTS = "TOO_MANY_ATTEMPTS",
 	// Trop de mots de passe à vérifier en même temps : Retry-After dit quand réessayer, en secondes
 	AUTH_BUSY = "AUTH_BUSY",
+	// Le mot de passe redemandé avant une action sensible est faux. Un 400 : connecté, un 401 voudrait dire « plus de
+	// session »
+	WRONG_PASSWORD = "WRONG_PASSWORD",
 	// Aucun facteur de ce compte sous cet id (jamais celui d'un autre), ou un TOTP qui n'attend plus son premier code
 	FACTOR_NOT_FOUND = "FACTOR_NOT_FOUND",
 	// Le compte a déjà son facteur mail : il n'en a qu'un
 	EMAIL_FACTOR_ALREADY_ACTIVE = "EMAIL_FACTOR_ALREADY_ACTIVE",
+	// Codes de secours demandés sans aucun second facteur : ils n'auraient rien à secourir
+	NO_SECOND_FACTOR = "NO_SECOND_FACTOR",
 }

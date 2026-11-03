@@ -146,16 +146,21 @@ export const insertAuthRows = {
 		return insertedId;
 	},
 
-	// Renvoie l'id créé. Code tiré au hasard par défaut
+	// Renvoie l'id créé. Code tiré au hasard, encore utilisable, par défaut
 	async recoveryCode(row: {
 		userId: number;
 		codeHash?: Buffer;
+		usedAt?: Date | null;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			"INSERT INTO auth_recovery_code (user_id, code_hash) VALUES (:userId, :codeHash)",
+			"INSERT INTO auth_recovery_code (user_id, code_hash, used_at) VALUES (:userId, :codeHash, :usedAt)",
 			{
 				type: QueryTypes.INSERT,
-				replacements: { codeHash: randomBytes(TOKEN_HASH_BYTES), ...row },
+				replacements: {
+					codeHash: randomBytes(TOKEN_HASH_BYTES),
+					usedAt: null,
+					...row,
+				},
 			},
 		);
 		return insertedId;

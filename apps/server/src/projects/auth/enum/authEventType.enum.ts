@@ -8,6 +8,9 @@ export enum AuthEventTypeEnum {
 	REGISTRATION_COMPLETED = "registration_completed",
 	SECOND_FACTOR_ADDED = "second_factor_added",
 	SECOND_FACTOR_REMOVED = "second_factor_removed",
+	RECOVERY_CODES_REGENERATED = "recovery_codes_regenerated",
+	// Mot de passe redemandé avant une action sensible, et refusé
+	PASSWORD_CONFIRMATION_FAILED = "password_confirmation_failed",
 	PASSWORD_CHANGED = "password_changed",
 	EMAIL_CHANGED = "email_changed",
 }

@@ -11,6 +11,7 @@ import type { LoginWithPassword } from "./endpoint/login/loginWithPassword/login
 import type { StartMailLogin } from "./endpoint/login/startMailLogin/startMailLoginEndpoint.interface.ts";
 import type { GetMe } from "./endpoint/me/getMe/getMeEndpoint.interface.ts";
 import type { StartPasswordReset } from "./endpoint/passwordResets/startPasswordReset/startPasswordResetEndpoint.interface.ts";
+import type { RegenerateRecoveryCodes } from "./endpoint/recoveryCodes/regenerateRecoveryCodes/regenerateRecoveryCodesEndpoint.interface.ts";
 import type { StartRegistration } from "./endpoint/registrations/startRegistration/startRegistrationEndpoint.interface.ts";
 import type { Logout } from "./endpoint/sessions/logout/logoutEndpoint.interface.ts";
 import type { GetUsernameAvailability } from "./endpoint/usernames/getUsernameAvailability/getUsernameAvailabilityEndpoint.interface.ts";
@@ -31,4 +32,5 @@ export type AuthEndpointRegistry =
 	| StartPasswordReset
 	| CreateTotpFactor
 	| ConfirmTotpFactor
-	| StartEmailFactor;
+	| StartEmailFactor
+	| RegenerateRecoveryCodes;

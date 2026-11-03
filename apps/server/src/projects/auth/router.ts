@@ -7,6 +7,7 @@ import { submitNewPasswordBodySchema } from "@citadel/specs/src/projects/auth/en
 import { loginWithPasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/loginWithPassword/loginWithPasswordBodySchema.ts";
 import { startMailLoginBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/startMailLogin/startMailLoginBodySchema.ts";
 import { startPasswordResetBodySchema } from "@citadel/specs/src/projects/auth/endpoint/passwordResets/startPasswordReset/startPasswordResetBodySchema.ts";
+import { regenerateRecoveryCodesBodySchema } from "@citadel/specs/src/projects/auth/endpoint/recoveryCodes/regenerateRecoveryCodes/regenerateRecoveryCodesBodySchema.ts";
 import { startRegistrationBodySchema } from "@citadel/specs/src/projects/auth/endpoint/registrations/startRegistration/startRegistrationBodySchema.ts";
 import { getUsernameAvailabilityPathParamSchema } from "@citadel/specs/src/projects/auth/endpoint/usernames/getUsernameAvailability/getUsernameAvailabilityPathParamSchema.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
@@ -19,6 +20,7 @@ import { flowController } from "./controller/flowController.ts";
 import { loginController } from "./controller/loginController.ts";
 import { meController } from "./controller/meController.ts";
 import { passwordResetController } from "./controller/passwordResetController.ts";
+import { recoveryCodeController } from "./controller/recoveryCodeController.ts";
 import { registrationController } from "./controller/registrationController.ts";
 import { sessionController } from "./controller/sessionController.ts";
 import { usernameController } from "./controller/usernameController.ts";
@@ -92,6 +94,11 @@ typedRouter.POST(
 typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/factors/email`,
 	factorController.startEmailFactor,
+);
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/recovery-codes`,
+	recoveryCodeController.regenerate,
+	requestValidator({ body: regenerateRecoveryCodesBodySchema }),
 );
 
 export const authRouter = expressRouter;
