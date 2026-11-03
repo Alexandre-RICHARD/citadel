@@ -110,6 +110,25 @@ describe("fetchHandler.ts", () => {
 			);
 		});
 
+		it("SHOULD send the body WHEN a DELETE carries one, like the password of a sensitive deletion", async () => {
+			// Arrange
+			fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+			// Act
+			await fetchHandler(
+				{
+					url: "/auth/factors/7",
+					method: HttpMethodEnum.DELETE,
+					protected: true,
+					body: { password: "mot de passe" },
+				},
+				{ urlDomain: DOMAIN },
+			);
+
+			// Assert
+			expect(getSentInit().body).toBe('{"password":"mot de passe"}');
+		});
+
 		it("SHOULD send no Authorization header WHEN the endpoint is protected", async () => {
 			// Arrange
 			fetchMock.mockResolvedValueOnce(jsonResponse(200, {}));

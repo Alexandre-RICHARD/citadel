@@ -6,7 +6,7 @@ import { useFlow } from "../../api/flow/useFlow";
 import { useMe } from "../../api/me/useMe";
 import { MailCodeStep } from "../../components/MailCodeStep";
 import { PageLoading } from "../../components/PageLoading";
-import { SecondFactorPending } from "../../components/SecondFactorPending";
+import { SecondFactorStep } from "../../components/SecondFactorStep";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
 import { NewPasswordForm } from "./components/NewPasswordForm";
@@ -33,7 +33,12 @@ export function ForgotPasswordPage() {
 	if (isResetting && flow.step === FlowStepEnum.NEW_PASSWORD)
 		return <NewPasswordForm />;
 	if (isResetting && flow.step === FlowStepEnum.SECOND_FACTOR)
-		return <SecondFactorPending />;
+		return (
+			<SecondFactorStep
+				flow={flow}
+				purpose="pour choisir un nouveau mot de passe"
+			/>
+		);
 	if (isResetting)
 		return (
 			<MailCodeStep

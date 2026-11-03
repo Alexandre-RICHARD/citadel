@@ -6,7 +6,7 @@ import { useFlow } from "../../api/flow/useFlow";
 import { useMe } from "../../api/me/useMe";
 import { MailCodeStep } from "../../components/MailCodeStep";
 import { PageLoading } from "../../components/PageLoading";
-import { SecondFactorPending } from "../../components/SecondFactorPending";
+import { SecondFactorStep } from "../../components/SecondFactorStep";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { LoginForm } from "./components/LoginForm";
 
@@ -32,7 +32,12 @@ export function LoginPage() {
 	if (flow === undefined) return <PageLoading />;
 	if (flow !== null && LOGIN_FLOW_KINDS.includes(flow.kind)) {
 		if (flow.step === FlowStepEnum.SECOND_FACTOR)
-			return <SecondFactorPending />;
+			return (
+				<SecondFactorStep
+					flow={flow}
+					purpose="pour te connecter"
+				/>
+			);
 		return (
 			<MailCodeStep
 				flow={flow}

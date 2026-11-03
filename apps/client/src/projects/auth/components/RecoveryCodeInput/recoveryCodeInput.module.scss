@@ -1,0 +1,15 @@
+// Lettres capitales espacées, comme dans le fichier des codes : un O et un 0 ne se confondent pas (Base32 n'a pas de 0)
+.input {
+  @include vars.field;
+
+  padding: 1.3rem 1.4rem;
+  font-family: vars.$font-mono;
+  font-size: 2.2rem;
+  letter-spacing: 0.2em;
+  text-align: center;
+  text-transform: uppercase;
+
+  &::placeholder {
+    opacity: 0.35;
+  }
+}

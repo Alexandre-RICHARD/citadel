@@ -48,8 +48,9 @@ export async function fetchHandler<Spec extends EndpointModel>(
 	});
 	const url = `${urlDomain}${urlWithPathParams}${buildQueryString(request.queryParams)}`;
 
+	// Un DELETE peut en porter un : le mot de passe redemandé avant une suppression sensible
 	const hasBody =
-		![HttpMethodEnum.GET, HttpMethodEnum.DELETE].includes(request.method) &&
+		request.method !== HttpMethodEnum.GET &&
 		request.body !== undefined &&
 		request.body !== null;
 
