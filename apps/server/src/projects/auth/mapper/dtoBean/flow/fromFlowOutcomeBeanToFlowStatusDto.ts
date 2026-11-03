@@ -3,13 +3,17 @@ import type { FlowStatusDto } from "@citadel/specs/src/projects/auth/dto/flowSta
 import type { FlowOutcomeBean } from "../../../bean/flowOutcomeBean.type.ts";
 import { fromFlowBeanToFlowStatusDto } from "./fromFlowBeanToFlowStatusDto.ts";
 
-// Terminé : plus de parcours, la session est ouverte
+// Terminé : plus de parcours ; les codes de secours seulement quand le parcours en donne
 export function fromFlowOutcomeBeanToFlowStatusDto(
 	outcome: FlowOutcomeBean,
 	now: Date,
 ): FlowStatusDto {
-	return fromFlowBeanToFlowStatusDto(
-		outcome.isCompleted ? null : outcome.flow,
-		now,
-	);
+	if (!outcome.isCompleted)
+		return fromFlowBeanToFlowStatusDto(outcome.flow, now);
+	return {
+		flow: null,
+		...(outcome.recoveryCodes !== null && {
+			recoveryCodes: outcome.recoveryCodes,
+		}),
+	};
 }

@@ -179,7 +179,7 @@ class LoginService {
 			userId,
 			client: browser.client,
 		});
-		return { isCompleted: true, sessionCookie };
+		return { isCompleted: true, sessionCookie, recoveryCodes: null };
 	}
 
 	// Le compte a pu fermer la connexion par email depuis l'envoi du mail : le lien et le code ne valent plus

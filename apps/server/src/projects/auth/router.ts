@@ -89,5 +89,9 @@ typedRouter.POST(
 	factorController.confirmTotp,
 	requestValidator({ body: confirmTotpFactorBodySchema }),
 );
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/factors/email`,
+	factorController.startEmailFactor,
+);
 
 export const authRouter = expressRouter;

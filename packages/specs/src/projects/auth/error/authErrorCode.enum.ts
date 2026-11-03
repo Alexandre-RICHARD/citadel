@@ -25,4 +25,6 @@ export enum AuthErrorCodeEnum {
 	AUTH_BUSY = "AUTH_BUSY",
 	// Aucun facteur de ce compte sous cet id (jamais celui d'un autre), ou un TOTP qui n'attend plus son premier code
 	FACTOR_NOT_FOUND = "FACTOR_NOT_FOUND",
+	// Le compte a déjà son facteur mail : il n'en a qu'un
+	EMAIL_FACTOR_ALREADY_ACTIVE = "EMAIL_FACTOR_ALREADY_ACTIVE",
 }

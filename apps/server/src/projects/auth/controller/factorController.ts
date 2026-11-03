@@ -1,12 +1,15 @@
 import type { ConfirmTotpFactor } from "@citadel/specs/src/projects/auth/endpoint/factors/confirmTotpFactor/confirmTotpFactorEndpoint.interface.ts";
 import type { CreateTotpFactor } from "@citadel/specs/src/projects/auth/endpoint/factors/createTotpFactor/createTotpFactorEndpoint.interface.ts";
+import type { StartEmailFactor } from "@citadel/specs/src/projects/auth/endpoint/factors/startEmailFactor/startEmailFactorEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
+import { writeFlowOutcomeCookies } from "../cookie/writeFlowOutcomeCookies.ts";
 import { readBrowserContext } from "../helper/readBrowserContext.ts";
+import { fromFlowOutcomeBeanToFlowStatusDto } from "../mapper/dtoBean/flow/fromFlowOutcomeBeanToFlowStatusDto.ts";
 import { factorService } from "../service/factorService.ts";
 
-// Des secrets ou des codes de secours : jamais gardés par un cache
+// Des secrets ou des codes de secours, et l'état d'un parcours : jamais gardés par un cache
 const NO_STORE = "no-store";
 
 export const factorController = {
@@ -38,6 +41,21 @@ export const factorController = {
 			return response
 				.status(HttpStatutCodeSuccessEnum.SUCCESS)
 				.json({ recoveryCodes });
+		},
+	),
+
+	startEmailFactor: protectedRequestHandler<StartEmailFactor>(
+		async (request, response, session) => {
+			const outcome = await factorService.startEmailFactor(
+				session.userId,
+				readBrowserContext(request),
+			);
+
+			writeFlowOutcomeCookies(response, outcome);
+			response.set("Cache-Control", NO_STORE);
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromFlowOutcomeBeanToFlowStatusDto(outcome, new Date()));
 		},
 	),
 };

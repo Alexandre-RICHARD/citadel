@@ -24,4 +24,6 @@ export const authErrorReasons: Record<AuthErrorCodeEnum, string> = {
 		"le serveur est très sollicité, réessaie dans un instant",
 	[AuthErrorCodeEnum.FACTOR_NOT_FOUND]:
 		"cette double authentification n'existe plus, recommence son ajout",
+	[AuthErrorCodeEnum.EMAIL_FACTOR_ALREADY_ACTIVE]:
+		"le code par email est déjà activé sur ton compte",
 };

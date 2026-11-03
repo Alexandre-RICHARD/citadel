@@ -2,6 +2,7 @@ import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enu
 
 import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
+import { factorService } from "./factorService.ts";
 import { flowService } from "./flowService.ts";
 import { loginService } from "./loginService.ts";
 import { passwordResetService } from "./passwordResetService.ts";
@@ -36,8 +37,9 @@ class FlowCompletionService {
 				return loginService.completeMailStep(verified, browser);
 			case FlowKindEnum.PASSWORD_RESET:
 				return passwordResetService.completeMailStep(verified);
-			// Changement d'email et facteur mail : leurs services arrivent avec le profil et la double authentification.
-			// La connexion avec second facteur n'a pas d'étape mail
+			case FlowKindEnum.EMAIL_FACTOR:
+				return factorService.completeEmailFactorMailStep(verified, browser);
+			// Changement d'email : son service arrive avec le profil. La connexion avec second facteur n'a pas d'étape mail
 			default:
 				throw new Error(
 					`No mail step to complete for a ${verified.flow.kind} flow`,
