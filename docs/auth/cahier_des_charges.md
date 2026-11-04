@@ -338,7 +338,7 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 
 Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
 
-Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`, `WRONG_PASSWORD`, `NO_SECOND_FACTOR`, `SECOND_FACTOR_REQUIRED`), `404` (`FACTOR_NOT_FOUND`, `SESSION_NOT_FOUND`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`, `EMAIL_FACTOR_ALREADY_ACTIVE`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`). Le mot de passe redemandé avant une action sensible, faux, répond `400` `WRONG_PASSWORD` : un `401` voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
+Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `EMAIL_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`, `WRONG_PASSWORD`, `NO_SECOND_FACTOR`, `SECOND_FACTOR_REQUIRED`), `404` (`FACTOR_NOT_FOUND`, `SESSION_NOT_FOUND`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`, `EMAIL_FACTOR_ALREADY_ACTIVE`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`). Le mot de passe redemandé avant une action sensible, faux, répond `400` `WRONG_PASSWORD` : un `401` voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
 
 ---
 
@@ -932,6 +932,10 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Les nouvelles pages ne déclenchent aucune violation de CSP (console du navigateur).
 - [ ] `docker logs site-prod-server` après une recette complète : aucun mot de passe, code, jeton ni lien.
 - [ ] Pages de l'authentification sur mobile, en clair et en sombre, au clavier seul, et avec le zoom à 200 %.
+- [ ] Changement d'email vers l'adresse actuelle (même en majuscules) : refusé tout de suite (`EMAIL_UNCHANGED`), aucun email.
+- [ ] Suppression du compte avec une application : un code de secours faux, répété, finit en « trop d'essais » ; redonner le bon mot de passe entre deux erreurs de code n'efface pas le compte à rebours.
+- [ ] À décider : un changement d'email confirmé doit-il fermer les autres sessions et annuler les « mot de passe oublié » en cours vers l'ancienne adresse ? Aujourd'hui non : il faut déjà le mot de passe pour le commencer, et l'ancienne adresse est prévenue après coup. À tester : lancer un « mot de passe oublié », changer l'email, puis finir le « mot de passe oublié » avec l'ancien email.
+- [ ] À décider : le mail de notification du changement d'email pourrait partir à l'ancienne adresse dès la demande (et pas seulement après la confirmation), pour que son propriétaire puisse réagir avant.
 
 ## Annexe : fichiers du repo à relire
 

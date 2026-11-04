@@ -167,6 +167,26 @@ describe("startEmailChange", () => {
 			await mails.expectNone();
 		});
 
+		it("SHOULD refuse with EMAIL_UNCHANGED and send nothing WHEN the new address is the current one, whatever its case", async () => {
+			// Arrange
+			const { account, session } = await openConnectedAccount();
+			const mails = watchSentMails();
+
+			// Act
+			const response = await startEmailChange(
+				{ password: account.password, newEmail: account.email.toUpperCase() },
+				session.cookie,
+			);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeErrorEnum.BAD_REQUEST);
+			expect(response.body).toStrictEqual({
+				code: AuthErrorCodeEnum.EMAIL_UNCHANGED,
+				message: "The new email is the current one",
+			});
+			await mails.expectNone();
+		});
+
 		it("SHOULD refuse WHEN the new address is not an email", async () => {
 			// Arrange
 			const { account, session } = await openConnectedAccount();

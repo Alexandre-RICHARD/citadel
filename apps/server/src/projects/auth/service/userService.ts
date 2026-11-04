@@ -3,6 +3,7 @@ import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/techn
 import { TooManyRequestsError } from "../../../error/TooManyRequestsError.ts";
 import { UnauthorizedError } from "../../../error/UnauthorizedError.ts";
 import type { MeBean } from "../bean/meBean.type.ts";
+import type { ProfileChangeBean } from "../bean/profileChangeBean.type.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
 import { fromUserEntityToMeBean } from "../mapper/beanEntity/user/fromUserEntityToMeBean.ts";
 import type { User } from "../models/User.ts";
@@ -26,14 +27,15 @@ class UserService {
 	// Un champ absent reste tel quel
 	async updateProfile(
 		userId: number,
-		change: Omit<Parameters<typeof updateUserProfileQuery>[0], "userId">,
+		change: ProfileChangeBean,
 	): Promise<MeBean> {
-		if (!(await updateUserProfileQuery({ userId, ...change })))
+		const user = await updateUserProfileQuery(userId, change);
+		if (user === null)
 			throw new UnauthorizedError(
 				TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
 				"The account of the session no longer exists",
 			);
-		return this.getMe(userId);
+		return fromUserEntityToMeBean(user);
 	}
 
 	// L'identifiant tapé pour se connecter : avec « @ », un email (un pseudo n'en contient jamais), sinon un pseudo

@@ -1,7 +1,6 @@
 import { createRandomToken } from "@citadel/common/src/node/crypto/createRandomToken.ts";
 import { hashSha256 } from "@citadel/common/src/node/crypto/hashSha256.ts";
 
-import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import { truncateIpForStorage } from "../../../common/network/truncateIpForStorage.ts";
 import { authSettings } from "../../../configuration/authSettings.ts";
 import type { AuthenticatedSessionBean } from "../bean/authenticatedSessionBean.type.ts";
@@ -118,10 +117,7 @@ class SessionService {
 
 	// Toutes les sessions du compte, celle de la requête comprise
 	async deleteAllOfUser(userId: number): Promise<void> {
-		await runInTransaction(
-			"Failed to delete the sessions of the user",
-			async (transaction) => deleteSessionsOfUserQuery(userId, transaction),
-		);
+		await deleteSessionsOfUserQuery(userId);
 	}
 
 	// Toutes les sessions du compte sauf celle de la requête

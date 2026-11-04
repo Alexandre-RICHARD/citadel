@@ -59,14 +59,17 @@ class AccountDeletionService {
 		{ password, secondFactor }: DeletionProof,
 		client: ClientContextBean,
 	): Promise<void> {
+		const totpFactors = (await findConfirmedFactorsQuery(userId)).filter(
+			(factor) => factor.type === FactorTypeEnum.TOTP,
+		);
+		// Avec une application, le code suit : les échecs du compte ne repartent de zéro qu'une fois le code accepté
 		const user = await passwordConfirmationService.confirm(
 			userId,
 			password,
 			client,
+			{ resetsFailures: totpFactors.length === 0 },
 		);
-		const totpFactors = (await findConfirmedFactorsQuery(userId)).filter(
-			(factor) => factor.type === FactorTypeEnum.TOTP,
-		);
+		const attempt = { accountKey: String(userId), ip: client.ip };
 		const proof =
 			totpFactors.length === 0
 				? null
@@ -77,14 +80,27 @@ class AccountDeletionService {
 						client,
 					);
 
-		await runInTransaction("Failed to delete account", async (transaction) => {
-			// Le compte est verrouillé : deux suppressions, ou une suppression et un changement de sa sécurité, se suivent
-			if (!(await lockUserQuery(userId, transaction)))
-				throw new Error("Deletion of an already deleted account");
-			if (proof !== null && !(await this.#consume(proof, userId, transaction)))
-				throw invalidCode();
-			await deleteUserQuery(userId, transaction);
-		});
+		const isDeleted = await runInTransaction(
+			"Failed to delete account",
+			async (transaction) => {
+				// Le compte est verrouillé : deux suppressions, ou une suppression et un changement de sa sécurité, se suivent
+				if (!(await lockUserQuery(userId, transaction)))
+					throw new Error("Deletion of an already deleted account");
+				// Un code de secours inconnu ou déjà utilisé, ou un pas TOTP déjà servi, ne se voit qu'ici : refus compté
+				// comme un échec, hors de la transaction
+				if (
+					proof !== null &&
+					!(await this.#consume(proof, userId, transaction))
+				)
+					return false;
+				await deleteUserQuery(userId, transaction);
+				return true;
+			},
+		);
+		if (!isDeleted) {
+			await this.#rejectCode(attempt, userId, client);
+			throw invalidCode();
+		}
 
 		authMailService.sendWithoutWaiting(
 			buildSecurityNoticeMail(
@@ -127,16 +143,23 @@ class AccountDeletionService {
 				? { method: answer.method, code: answer.code }
 				: this.#findAcceptingTotp(totpFactors, answer.code);
 		if (proof === null) {
-			authLimiter.recordFailure(attempt);
-			await authEventService.record({
-				type: AuthEventTypeEnum.SECOND_FACTOR_FAILED,
-				userId,
-				client,
-			});
+			await this.#rejectCode(attempt, userId, client);
 			throw invalidCode();
 		}
-		authLimiter.recordSuccess(attempt);
 		return proof;
+	}
+
+	async #rejectCode(
+		attempt: { accountKey: string; ip: string },
+		userId: number,
+		client: ClientContextBean,
+	): Promise<void> {
+		authLimiter.recordFailure(attempt);
+		await authEventService.record({
+			type: AuthEventTypeEnum.SECOND_FACTOR_FAILED,
+			userId,
+			client,
+		});
 	}
 
 	// Le code est essayé sur chaque TOTP du compte : celui qui l'accepte est celui de l'application utilisée

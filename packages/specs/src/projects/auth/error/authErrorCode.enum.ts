@@ -9,6 +9,8 @@ export enum AuthErrorCodeEnum {
 	MAIL_CLOSED = "MAIL_CLOSED",
 	// Le nouveau mot de passe est l'actuel
 	PASSWORD_UNCHANGED = "PASSWORD_UNCHANGED",
+	// La nouvelle adresse email est celle du compte
+	EMAIL_UNCHANGED = "EMAIL_UNCHANGED",
 	// Code faux, déjà utilisé ou remplacé par un renvoi
 	INVALID_CODE = "INVALID_CODE",
 	// Tous les essais du code sont faits : seul un nouveau mail en redonne

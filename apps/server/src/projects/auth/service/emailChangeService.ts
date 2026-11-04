@@ -1,6 +1,8 @@
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
+import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum.ts";
 
 import { authSettings } from "../../../configuration/authSettings.ts";
+import { RejectedRequestError } from "../../../error/RejectedRequestError.ts";
 import { MailKindEnum } from "../../../mail/mailKind.enum.ts";
 import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
@@ -18,7 +20,7 @@ import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 
 /**
  * Le changement d'adresse email du compte connecté : mot de passe redemandé, puis un mail (lien + code) à la nouvelle
- * adresse. Elle ne remplace l'ancienne qu'une fois confirmée, et l'ancienne en est prévenue. Adresse déjà inscrite :
+ * adresse, qui doit différer de l'actuelle. Elle ne remplace l'ancienne qu'une fois confirmée, et l'ancienne en est prévenue. Adresse déjà inscrite :
  * même réponse, et son mail dit seulement qu'un autre compte l'a voulue (voir FlowMailService)
  */
 class EmailChangeService {
@@ -27,7 +29,17 @@ class EmailChangeService {
 		{ password, newEmail }: { password: string; newEmail: string },
 		browser: BrowserContextBean,
 	): Promise<FlowOutcomeBean> {
-		await passwordConfirmationService.confirm(userId, password, browser.client);
+		const user = await passwordConfirmationService.confirm(
+			userId,
+			password,
+			browser.client,
+		);
+		// L'adresse du compte passerait pour celle d'un autre compte : aucun lien ne partirait. La casse ne compte pas
+		if (user.email.toLowerCase() === newEmail.toLowerCase())
+			throw new RejectedRequestError(
+				AuthErrorCodeEnum.EMAIL_UNCHANGED,
+				"The new email is the current one",
+			);
 		return flowService.start({
 			kind: FlowKindEnum.EMAIL_CHANGE,
 			userId,

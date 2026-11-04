@@ -32,7 +32,9 @@ export interface StartEmailChange extends EndpointModel {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]:
 			| ValidationErrorResponseDto
-			| ErrorResponseDto<AuthErrorCodeEnum.WRONG_PASSWORD>;
+			| ErrorResponseDto<
+					AuthErrorCodeEnum.WRONG_PASSWORD | AuthErrorCodeEnum.EMAIL_UNCHANGED
+			  >;
 		// Plus aucun mail ne part aujourd'hui
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.MAIL_CLOSED>;
 		// Mauvais mot de passe répété, ou trop de mails pour cette adresse ou cette IP : Retry-After dit quand réessayer

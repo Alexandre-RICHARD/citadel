@@ -208,22 +208,44 @@ describe("deleteMe", () => {
 			);
 		});
 
-		it("SHOULD keep the account WHEN the recovery code is unknown", async () => {
+		it("SHOULD keep the account, note the failure and count it WHEN the recovery code is unknown", async () => {
 			// Arrange
 			const { account, session } = await openProtectedAccount();
+			const ip = buildUniqueIp();
+			const body = {
+				password: account.password,
+				secondFactor: { method: "recovery_code", code: "AAAAAAAAAA" },
+			};
 
 			// Act
-			const response = await deleteMe(
-				{
-					password: account.password,
-					secondFactor: { method: "recovery_code", code: "AAAAAAAAAA" },
-				},
-				session.cookie,
-			);
+			const response = await request(app)
+				.delete(DELETE_ME_URL)
+				.set("X-Real-IP", ip)
+				.set("Cookie", session.cookie)
+				.send(body);
+			const retry = await request(app)
+				.delete(DELETE_ME_URL)
+				.set("X-Real-IP", ip)
+				.set("Cookie", session.cookie)
+				.send(body);
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeErrorEnum.BAD_REQUEST);
+			expect(response.body).toMatchObject({
+				code: AuthErrorCodeEnum.INVALID_CODE,
+			});
+			expect(retry.status).toBe(HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS);
 			expect(await selectAuthRows.user(account.userId)).not.toBeNull();
+			const eventIds = await selectAuthRows.rowIdsByUserId(
+				"auth_event",
+				account.userId,
+			);
+			const events = await Promise.all(
+				eventIds.map(async (id) => selectAuthRows.event(id)),
+			);
+			expect(events.map((event) => event?.type)).toContain(
+				"second_factor_failed",
+			);
 		});
 	});
 

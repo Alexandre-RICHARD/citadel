@@ -13,13 +13,15 @@ import { passwordService } from "./passwordService.ts";
 /**
  * Le mot de passe redemandé avant une action sensible (retirer un facteur, refaire les codes de secours…). Ses échecs
  * comptent comme ceux de la connexion, pour le compte et pour l'IP : une session volée ne sert pas à deviner le mot de
- * passe
+ * passe. `resetsFailures: false` : un second facteur suit, et redonner le mot de passe entre deux de ses erreurs
+ * n'efface pas celles-ci (comme à la connexion)
  */
 class PasswordConfirmationService {
 	async confirm(
 		userId: number,
 		password: string,
 		client: ClientContextBean,
+		{ resetsFailures = true }: { resetsFailures?: boolean } = {},
 	): Promise<User> {
 		const attempt = { accountKey: String(userId), ip: client.ip };
 		const retryAfterMs = authLimiter.getAttemptRetryAfterMs(attempt);
@@ -44,7 +46,7 @@ class PasswordConfirmationService {
 				"Wrong password",
 			);
 		}
-		authLimiter.recordSuccess(attempt);
+		if (resetsFailures) authLimiter.recordSuccess(attempt);
 		return user;
 	}
 }
