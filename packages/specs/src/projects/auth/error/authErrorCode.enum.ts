@@ -32,4 +32,8 @@ export enum AuthErrorCodeEnum {
 	EMAIL_FACTOR_ALREADY_ACTIVE = "EMAIL_FACTOR_ALREADY_ACTIVE",
 	// Codes de secours demandés sans aucun second facteur : ils n'auraient rien à secourir
 	NO_SECOND_FACTOR = "NO_SECOND_FACTOR",
+	// Le compte a une application d'authentification, et l'action sensible n'en a pas reçu de code
+	SECOND_FACTOR_REQUIRED = "SECOND_FACTOR_REQUIRED",
+	// Aucune session de ce compte sous cet id (jamais celle d'un autre)
+	SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }

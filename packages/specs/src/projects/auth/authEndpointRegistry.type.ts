@@ -12,16 +12,34 @@ import type { SubmitNewPassword } from "./endpoint/flow/submitNewPassword/submit
 import type { SubmitSecondFactor } from "./endpoint/flow/submitSecondFactor/submitSecondFactorEndpoint.interface.ts";
 import type { LoginWithPassword } from "./endpoint/login/loginWithPassword/loginWithPasswordEndpoint.interface.ts";
 import type { StartMailLogin } from "./endpoint/login/startMailLogin/startMailLoginEndpoint.interface.ts";
+import type { ChangePassword } from "./endpoint/me/changePassword/changePasswordEndpoint.interface.ts";
+import type { DeleteMe } from "./endpoint/me/deleteMe/deleteMeEndpoint.interface.ts";
+import type { ExportMyData } from "./endpoint/me/exportMyData/exportMyDataEndpoint.interface.ts";
 import type { GetMe } from "./endpoint/me/getMe/getMeEndpoint.interface.ts";
+import type { StartEmailChange } from "./endpoint/me/startEmailChange/startEmailChangeEndpoint.interface.ts";
+import type { UpdateMe } from "./endpoint/me/updateMe/updateMeEndpoint.interface.ts";
 import type { StartPasswordReset } from "./endpoint/passwordResets/startPasswordReset/startPasswordResetEndpoint.interface.ts";
 import type { RegenerateRecoveryCodes } from "./endpoint/recoveryCodes/regenerateRecoveryCodes/regenerateRecoveryCodesEndpoint.interface.ts";
 import type { StartRegistration } from "./endpoint/registrations/startRegistration/startRegistrationEndpoint.interface.ts";
+import type { DeleteAllSessions } from "./endpoint/sessions/deleteAllSessions/deleteAllSessionsEndpoint.interface.ts";
+import type { DeleteOtherSessions } from "./endpoint/sessions/deleteOtherSessions/deleteOtherSessionsEndpoint.interface.ts";
+import type { DeleteSession } from "./endpoint/sessions/deleteSession/deleteSessionEndpoint.interface.ts";
+import type { ListSessions } from "./endpoint/sessions/listSessions/listSessionsEndpoint.interface.ts";
 import type { Logout } from "./endpoint/sessions/logout/logoutEndpoint.interface.ts";
 import type { GetUsernameAvailability } from "./endpoint/usernames/getUsernameAvailability/getUsernameAvailabilityEndpoint.interface.ts";
 
 export type AuthEndpointRegistry =
 	| GetMe
+	| UpdateMe
+	| ChangePassword
+	| ExportMyData
+	| DeleteMe
+	| StartEmailChange
 	| Logout
+	| ListSessions
+	| DeleteSession
+	| DeleteAllSessions
+	| DeleteOtherSessions
 	| GetFlow
 	| AbandonFlow
 	| ResendFlowMail
