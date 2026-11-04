@@ -1,0 +1,42 @@
+.form {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.hint {
+  margin-top: 0.6rem;
+  color: vars.$muted;
+  font-size: 1.3rem;
+}
+
+.step {
+  color: vars.$muted;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.qr {
+  display: grid;
+  justify-items: center;
+}
+
+// La clé se lit et se recopie : police à chasse fixe, coupée au besoin plutôt que de déborder
+.secret {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.2rem 0.8rem;
+  border-radius: 0.5rem;
+  background: vars.$surface-sunken;
+  color: vars.$text;
+  font-family: vars.$font-mono;
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.cancel {
+  @include vars.button-ghost;
+
+  justify-self: start;
+}

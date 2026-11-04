@@ -1,0 +1,57 @@
+.section {
+  padding: 2.6rem 2.8rem;
+  border: 1px solid vars.$border-soft;
+  border-radius: calc(#{vars.$radius} + 0.6rem);
+  background: color-mix(in srgb, vars.$surface 88%, transparent);
+  backdrop-filter: blur(12px);
+
+  @include vars.phone {
+    padding: 2rem 1.6rem;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.4rem;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(
+    135deg,
+    vars.$decoration-1,
+    vars.$decoration-2
+  );
+  color: #fff;
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+}
+
+.title {
+  @include vars.display-font;
+
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.lead {
+  margin-top: 0.4rem;
+  color: vars.$muted;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.body {
+  display: grid;
+  gap: 2rem;
+  margin-top: 2.2rem;
+}

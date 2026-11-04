@@ -1,0 +1,60 @@
+.sessions {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+}
+
+.session {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 1.4rem;
+  border: 1px solid vars.$border-soft;
+  border-radius: vars.$radius-field;
+}
+
+.text {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+
+  strong {
+    font-size: 1.5rem;
+  }
+
+  span {
+    color: vars.$muted;
+    font-size: 1.3rem;
+  }
+}
+
+.current {
+  margin-left: 1rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 99rem;
+  background: vars.$success-subtle;
+  color: vars.$success;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.disconnect {
+  @include vars.button-ghost;
+}
+
+.empty {
+  color: vars.$muted;
+  font-size: 1.4rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.action {
+  @include vars.button-ghost;
+}

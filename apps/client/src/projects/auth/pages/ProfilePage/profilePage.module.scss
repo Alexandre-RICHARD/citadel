@@ -1,0 +1,14 @@
+.page {
+  display: grid;
+  gap: 2.4rem;
+  width: 100%;
+  max-width: 64rem;
+  padding-bottom: 4rem;
+}
+
+.title {
+  @include vars.display-font;
+
+  font-size: 3rem;
+  line-height: 1.2;
+}

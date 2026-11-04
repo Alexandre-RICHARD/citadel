@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from "react-router";
 
 import { checkInput } from "../../../../common/validation/checkInput";
 import { authFieldLabels } from "../../api/authFieldLabels";
+import { useFlow } from "../../api/flow/useFlow";
 import { useSubmitFlowLink } from "../../api/flow/useSubmitFlowLink";
 import { AuthCard } from "../../components/AuthCard";
 import { FormAlert } from "../../components/FormAlert";
@@ -16,6 +17,7 @@ import { readLinkToken } from "../../helper/readLinkToken";
 import { useAuthFailure } from "../../hooks/useAuthFailure";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { AuthPathEnum } from "../../routing/authPath.enum";
+import { findCompletionPath } from "../../routing/findCompletionPath";
 import { findFlowPagePath } from "../../routing/findFlowPagePath";
 import styles from "./verifyPage.module.scss";
 
@@ -35,6 +37,8 @@ export function VerifyPage() {
 		null,
 	);
 	const submitLink = useSubmitFlowLink();
+	// Le parcours que ce lien termine : sa page de suite en dépend
+	const { flow: pendingFlow } = useFlow();
 	const { waitUntil, failure, report, clear } =
 		useAuthFailure("confirmer ce lien");
 
@@ -62,6 +66,7 @@ export function VerifyPage() {
 	function confirm(): void {
 		if (linkToken === null || usernameCheck?.isValid === false) return;
 		clear();
+		const pendingKind = pendingFlow?.kind;
 		submitLink.mutate(
 			{
 				token: linkToken,
@@ -72,7 +77,9 @@ export function VerifyPage() {
 			{
 				onSuccess: ({ flow }) => {
 					void navigate(
-						flow === null ? redirectPath : findFlowPagePath(flow.kind),
+						flow === null
+							? findCompletionPath(pendingKind, redirectPath)
+							: findFlowPagePath(flow.kind),
 						{ replace: true },
 					);
 				},

@@ -2,13 +2,10 @@ import { useSessionStorage } from "@citadel/common/src/react/hooks/useSessionSto
 import { useEffect } from "react";
 import { useSearchParams } from "react-router";
 
-import { ProjectsEnum } from "../../../react/appNavigation/projects.enum";
-import { projects } from "../../../react/appNavigation/projectsDictionary";
 import { resolveRedirectPath } from "../helper/resolveRedirectPath";
+import { AuthPathEnum } from "../routing/authPath.enum";
 
 const REDIRECT_KEY = "citadel:auth:redirect";
-// Sans page demandée : l'accueil du site (le profil prendra sa place quand il existera)
-const DEFAULT_TARGET = projects[ProjectsEnum.Homepage].path;
 
 /**
  * La page où revenir une fois connecté : celle de `?redirect=…`, gardée le temps de l'onglet, car le parcours peut passer
@@ -24,5 +21,6 @@ export function useAuthRedirect(): string {
 		if (requested !== null) set(requested);
 	}, [requested, set]);
 
-	return resolveRedirectPath(requested ?? stored.value, DEFAULT_TARGET);
+	// Sans page demandée : le profil
+	return resolveRedirectPath(requested ?? stored.value, AuthPathEnum.PROFILE);
 }

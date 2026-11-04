@@ -1,0 +1,109 @@
+.factors {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+}
+
+.factor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.4rem 1.2rem;
+  align-items: center;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid vars.$border-soft;
+  border-radius: vars.$radius-field;
+}
+
+.factorIcon {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: vars.$accent-subtle;
+  color: vars.$accent;
+
+  svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+}
+
+.factorText {
+  display: grid;
+  min-width: 0;
+  font-size: 1.4rem;
+
+  strong {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    color: vars.$muted;
+    font-size: 1.3rem;
+  }
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border: 1px solid vars.$border;
+  border-radius: vars.$radius-field;
+  background: transparent;
+  color: vars.$danger;
+  cursor: pointer;
+
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  &:hover {
+    border-color: vars.$danger;
+    background: vars.$danger-subtle;
+  }
+
+  &:focus-visible {
+    @include vars.focus-ring;
+  }
+}
+
+.confirm {
+  grid-column: 1 / -1;
+  margin-top: 0.8rem;
+}
+
+.empty {
+  color: vars.$muted;
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.adders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.add {
+  @include vars.button-ghost;
+}
+
+.recovery {
+  display: grid;
+  gap: 1.2rem;
+  padding-top: 2rem;
+  border-top: 1px solid vars.$border-soft;
+  justify-items: start;
+
+  > :not(:first-child) {
+    justify-self: stretch;
+  }
+
+  > button {
+    justify-self: start;
+  }
+}

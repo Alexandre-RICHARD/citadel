@@ -1,0 +1,43 @@
+.export {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+}
+
+.download {
+  @include vars.button-ghost;
+
+  text-decoration: none;
+}
+
+.hint {
+  color: vars.$muted;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}
+
+.danger {
+  display: grid;
+  gap: 1.4rem;
+  justify-items: stretch;
+  padding-top: 2rem;
+  border-top: 1px solid vars.$border-soft;
+}
+
+.dangerTitle {
+  color: vars.$danger;
+  font-size: 1.6rem;
+}
+
+.delete {
+  @include vars.button-ghost;
+
+  justify-self: start;
+  border-color: vars.$danger;
+  color: vars.$danger;
+
+  &:hover:not(:disabled) {
+    border-color: vars.$danger;
+    background: vars.$danger-subtle;
+  }
+}

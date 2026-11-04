@@ -1,0 +1,8 @@
+// Toujours noir sur blanc, même en thème sombre : les applications ne lisent pas un QR code inversé
+.qrCode {
+  display: block;
+  width: min(100%, 22rem);
+  height: auto;
+  border-radius: 0.8rem;
+  box-shadow: 0 0 0 1px vars.$border-soft;
+}

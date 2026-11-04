@@ -1,0 +1,36 @@
+.closed {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+}
+
+.open {
+  @include vars.button-ghost;
+}
+
+.form {
+  display: grid;
+  gap: 1.6rem;
+  padding: 1.8rem;
+  border: 1px solid vars.$border-soft;
+  border-radius: vars.$radius-field;
+  background: color-mix(in srgb, vars.$surface-sunken 55%, transparent);
+}
+
+.hint {
+  margin-top: 0.6rem;
+  color: vars.$muted;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}
+
+.actions {
+  display: grid;
+  gap: 1rem;
+}
+
+.cancel {
+  @include vars.button-ghost;
+
+  width: 100%;
+}

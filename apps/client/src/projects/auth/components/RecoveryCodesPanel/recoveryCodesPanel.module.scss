@@ -1,0 +1,41 @@
+.codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem 1.6rem;
+  padding: 1.6rem 1.8rem;
+  border: 1px dashed vars.$border;
+  border-radius: vars.$radius-field;
+  background: color-mix(in srgb, vars.$surface-sunken 55%, transparent);
+  font-family: vars.$font-mono;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  list-style: none;
+
+  @include vars.phone {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.download {
+  @include vars.button-ghost;
+
+  justify-self: start;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.4rem;
+  cursor: pointer;
+
+  input {
+    width: 1.8rem;
+    height: 1.8rem;
+    accent-color: vars.$accent;
+  }
+}
+
+.acknowledge {
+  @include vars.button-primary;
+}
