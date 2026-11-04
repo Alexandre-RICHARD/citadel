@@ -2,6 +2,7 @@ import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enu
 
 import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
+import { emailChangeService } from "./emailChangeService.ts";
 import { factorService } from "./factorService.ts";
 import { flowService } from "./flowService.ts";
 import { loginService } from "./loginService.ts";
@@ -43,11 +44,10 @@ class FlowCompletionService {
 			// Le lien du code par email, à l'étape « second facteur » (le code, lui, se tape dans /flow/second-factor)
 			case FlowKindEnum.LOGIN:
 				return secondFactorService.completeMailLink(verified, browser);
-			// Changement d'email : son service arrive avec le profil
+			case FlowKindEnum.EMAIL_CHANGE:
+				return emailChangeService.completeMailStep(verified, browser);
 			default:
-				throw new Error(
-					`No mail step to complete for a ${verified.flow.kind} flow`,
-				);
+				throw new Error("No mail step to complete for this kind of flow");
 		}
 	}
 }

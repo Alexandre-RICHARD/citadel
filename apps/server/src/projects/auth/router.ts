@@ -9,9 +9,14 @@ import { submitNewPasswordBodySchema } from "@citadel/specs/src/projects/auth/en
 import { submitSecondFactorBodySchema } from "@citadel/specs/src/projects/auth/endpoint/flow/submitSecondFactor/submitSecondFactorBodySchema.ts";
 import { loginWithPasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/loginWithPassword/loginWithPasswordBodySchema.ts";
 import { startMailLoginBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/startMailLogin/startMailLoginBodySchema.ts";
+import { changePasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/changePassword/changePasswordBodySchema.ts";
+import { deleteMeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/deleteMe/deleteMeBodySchema.ts";
+import { startEmailChangeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/startEmailChange/startEmailChangeBodySchema.ts";
+import { updateMeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/updateMe/updateMeBodySchema.ts";
 import { startPasswordResetBodySchema } from "@citadel/specs/src/projects/auth/endpoint/passwordResets/startPasswordReset/startPasswordResetBodySchema.ts";
 import { regenerateRecoveryCodesBodySchema } from "@citadel/specs/src/projects/auth/endpoint/recoveryCodes/regenerateRecoveryCodes/regenerateRecoveryCodesBodySchema.ts";
 import { startRegistrationBodySchema } from "@citadel/specs/src/projects/auth/endpoint/registrations/startRegistration/startRegistrationBodySchema.ts";
+import { deleteSessionPathParamSchema } from "@citadel/specs/src/projects/auth/endpoint/sessions/deleteSession/deleteSessionPathParamSchema.ts";
 import { getUsernameAvailabilityPathParamSchema } from "@citadel/specs/src/projects/auth/endpoint/usernames/getUsernameAvailability/getUsernameAvailabilityPathParamSchema.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { Router as ExpressRouter } from "express";
@@ -34,7 +39,44 @@ const typedRouter =
 	createTypedExpressRouter<AuthEndpointRegistry>(expressRouter);
 
 typedRouter.GET(`${ApiPrefixEnum.AUTH}/me`, meController.getMe);
+typedRouter.PATCH(
+	`${ApiPrefixEnum.AUTH}/me`,
+	meController.updateMe,
+	requestValidator({ body: updateMeBodySchema }),
+);
+typedRouter.GET(`${ApiPrefixEnum.AUTH}/me/export`, meController.exportMyData);
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/me`,
+	meController.deleteMe,
+	requestValidator({ body: deleteMeBodySchema }),
+);
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/me/password`,
+	meController.changePassword,
+	requestValidator({ body: changePasswordBodySchema }),
+);
+typedRouter.POST(
+	`${ApiPrefixEnum.AUTH}/me/email`,
+	meController.startEmailChange,
+	requestValidator({ body: startEmailChangeBodySchema }),
+);
 typedRouter.POST(`${ApiPrefixEnum.AUTH}/logout`, sessionController.logout);
+
+typedRouter.GET(`${ApiPrefixEnum.AUTH}/sessions`, sessionController.list);
+// « others » avant « :sessionId », qui le prendrait pour un id
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/sessions/others`,
+	sessionController.deleteOthers,
+);
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/sessions/:sessionId`,
+	sessionController.delete,
+	requestValidator({ params: deleteSessionPathParamSchema }),
+);
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/sessions`,
+	sessionController.deleteAll,
+);
 
 typedRouter.GET(
 	`${ApiPrefixEnum.AUTH}/usernames/:username/availability`,

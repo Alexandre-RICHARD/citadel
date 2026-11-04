@@ -5,6 +5,7 @@ import type { FlowSecretsBean } from "../bean/flowSecretsBean.type.ts";
 import { isDecoyFlow } from "../helper/flow/isDecoyFlow.ts";
 import type { FlowPayload } from "../models/flowPayload.type.ts";
 import { findUserByEmailQuery } from "../query/user/findUserByEmailQuery.ts";
+import { buildEmailChangeAddressTakenMail } from "../template/buildEmailChangeAddressTakenMail.ts";
 import { buildEmailChangeMail } from "../template/buildEmailChangeMail.ts";
 import { buildEmailFactorActivationMail } from "../template/buildEmailFactorActivationMail.ts";
 import { buildExistingAccountMail } from "../template/buildExistingAccountMail.ts";
@@ -29,6 +30,8 @@ type StepMail =
 	| { hasSecrets: true }
 	// Une inscription à une adresse déjà inscrite : un avertissement, sans rien à confirmer
 	| { hasSecrets: false; existingAccountLastLoginAt: Date }
+	// Un changement d'email vers une adresse déjà inscrite : le propriétaire apprend qu'un autre compte l'a voulue
+	| { hasSecrets: false; isAddressTaken: true }
 	// Un leurre : rien ne part
 	| { hasSecrets: false; existingAccountLastLoginAt: null };
 
@@ -57,6 +60,10 @@ class FlowMailService {
 		const { kind, email } = facts;
 		if (isDecoyFlow(facts))
 			return { hasSecrets: false, existingAccountLastLoginAt: null };
+		if (kind === FlowKindEnum.EMAIL_CHANGE)
+			return (await findUserByEmailQuery(email)) === null
+				? { hasSecrets: true }
+				: { hasSecrets: false, isAddressTaken: true };
 		if (kind !== FlowKindEnum.REGISTRATION) return { hasSecrets: true };
 
 		const existingUser = await findUserByEmailQuery(email);
@@ -87,6 +94,8 @@ class FlowMailService {
 		secrets: FlowSecretsBean | null,
 		validityMinutes: number,
 	): Mail | null {
+		if (!stepMail.hasSecrets && "isAddressTaken" in stepMail)
+			return buildEmailChangeAddressTakenMail(email);
 		if (!stepMail.hasSecrets)
 			return stepMail.existingAccountLastLoginAt === null
 				? null

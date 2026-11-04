@@ -9,6 +9,7 @@ import type { User } from "../models/User.ts";
 import { findUserByEmailQuery } from "../query/user/findUserByEmailQuery.ts";
 import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
 import { findUserByUsernameQuery } from "../query/user/findUserByUsernameQuery.ts";
+import { updateUserProfileQuery } from "../query/user/updateUserProfileQuery.ts";
 
 class UserService {
 	// Le compte supprimé emporte ses sessions (cascade) ; s'il disparaît pendant la requête, elle n'est plus connectée
@@ -20,6 +21,19 @@ class UserService {
 				"The account of the session no longer exists",
 			);
 		return fromUserEntityToMeBean(user);
+	}
+
+	// Un champ absent reste tel quel
+	async updateProfile(
+		userId: number,
+		change: Omit<Parameters<typeof updateUserProfileQuery>[0], "userId">,
+	): Promise<MeBean> {
+		if (!(await updateUserProfileQuery({ userId, ...change })))
+			throw new UnauthorizedError(
+				TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
+				"The account of the session no longer exists",
+			);
+		return this.getMe(userId);
 	}
 
 	// L'identifiant tapé pour se connecter : avec « @ », un email (un pseudo n'en contient jamais), sinon un pseudo

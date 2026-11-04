@@ -1,16 +1,23 @@
 import { createRandomToken } from "@citadel/common/src/node/crypto/createRandomToken.ts";
 import { hashSha256 } from "@citadel/common/src/node/crypto/hashSha256.ts";
 
+import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import { truncateIpForStorage } from "../../../common/network/truncateIpForStorage.ts";
 import { authSettings } from "../../../configuration/authSettings.ts";
 import type { AuthenticatedSessionBean } from "../bean/authenticatedSessionBean.type.ts";
 import type { CreateSessionBean } from "../bean/createSessionBean.type.ts";
+import type { SessionBean } from "../bean/sessionBean.type.ts";
 import type { SessionCookieBean } from "../bean/sessionCookieBean.type.ts";
 import { computeSessionExpiresAt } from "../helper/session/computeSessionExpiresAt.ts";
 import { isSessionDueForProlongation } from "../helper/session/isSessionDueForProlongation.ts";
+import { fromSessionEntityToSessionBean } from "../mapper/beanEntity/session/fromSessionEntityToSessionBean.ts";
 import { createSessionQuery } from "../query/session/createSessionQuery.ts";
+import { deleteOtherSessionsOfUserQuery } from "../query/session/deleteOtherSessionsOfUserQuery.ts";
 import { deleteSessionByTokenHashQuery } from "../query/session/deleteSessionByTokenHashQuery.ts";
+import { deleteSessionOfUserQuery } from "../query/session/deleteSessionOfUserQuery.ts";
+import { deleteSessionsOfUserQuery } from "../query/session/deleteSessionsOfUserQuery.ts";
 import { findSessionByTokenHashQuery } from "../query/session/findSessionByTokenHashQuery.ts";
+import { findSessionsOfUserQuery } from "../query/session/findSessionsOfUserQuery.ts";
 import { prolongSessionQuery } from "../query/session/prolongSessionQuery.ts";
 
 /**
@@ -94,6 +101,35 @@ class SessionService {
 	// Le jeton ne marche plus, immédiatement. Sans effet sur un jeton inconnu
 	async delete(token: string): Promise<void> {
 		await deleteSessionByTokenHashQuery(hashSha256(token));
+	}
+
+	// Les sessions encore valables du compte, avec celle de la requête repérée
+	async list(userId: number, currentSessionId: number): Promise<SessionBean[]> {
+		const sessions = await findSessionsOfUserQuery(userId, new Date());
+		return sessions.map((session) =>
+			fromSessionEntityToSessionBean(session, currentSessionId),
+		);
+	}
+
+	// Une session du compte, jamais celle d'un autre. false : aucune session de ce compte sous cet id
+	async deleteOfUser(userId: number, sessionId: number): Promise<boolean> {
+		return deleteSessionOfUserQuery({ userId, sessionId });
+	}
+
+	// Toutes les sessions du compte, celle de la requête comprise
+	async deleteAllOfUser(userId: number): Promise<void> {
+		await runInTransaction(
+			"Failed to delete the sessions of the user",
+			async (transaction) => deleteSessionsOfUserQuery(userId, transaction),
+		);
+	}
+
+	// Toutes les sessions du compte sauf celle de la requête
+	async deleteOthersOfUser(
+		userId: number,
+		keptSessionId: number,
+	): Promise<void> {
+		await deleteOtherSessionsOfUserQuery({ userId, keptSessionId });
 	}
 }
 
