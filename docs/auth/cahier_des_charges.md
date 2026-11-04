@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 51 de la roadmap (§15), phase 7.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 63 de la roadmap (§15), phase 8.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -294,12 +294,13 @@ Page `/auth/profile` :
 - **Déconnexion** : sans confirmation ; avertissement seulement s'il reste des mutations en cours ou un formulaire modifié (`useBlocker`, comme `useProjectChangeTransition`).
 - Le cache de TanStack Query est vidé à la déconnexion (`queryClient.clear()`).
 - Dans les autres onglets, le prochain appel reçoit un `401` et renvoie vers `/auth/login`.
+- Une session d'un autre compte, ou qui n'existe plus : `404` `SESSION_NOT_FOUND`. Se déconnecter de la session en cours, ou de toutes, efface aussi le cookie.
 
 ### 6.9 Suppression et export
 
-- **Suppression du compte** : mot de passe (+ second facteur), puis un écran : « La suppression est immédiate et définitive. Aucun délai de récupération. » Tout part par cascade ; mail de confirmation. Les sauvegardes l'oublient en 3 mois au plus (§10).
+- **Suppression du compte** : mot de passe, plus un code de l'application d'authentification (ou un code de secours) quand le compte en a une (`400` `SECOND_FACTOR_REQUIRED` sinon) ; jamais le code par email, qui demanderait un mail de plus : un compte qui n'a que ce facteur n'en doit pas, comme à la connexion par email. Puis un écran : « La suppression est immédiate et définitive. Aucun délai de récupération. » Tout part par cascade ; mail de confirmation. Les sauvegardes l'oublient en 3 mois au plus (§10).
 - **Suppression des données d'un projet** : une case par projet, mot de passe ; le compte reste.
-- **Export** : « Télécharger mes données » → un ZIP avec un CSV par table, toutes les lignes de l'utilisateur, sans aucun secret (ni hash, ni empreinte, ni secret TOTP). ZIP sans compression, fait sans bibliothèque.
+- **Export** : « Télécharger mes données » (un simple lien `GET`, le cookie de session suffit) → un ZIP avec un CSV par table, toutes les lignes de l'utilisateur, sans aucun secret (ni hash, ni empreinte, ni secret TOTP). ZIP sans compression, fait sans bibliothèque.
 
 ### 6.10 Où se connecter dans l'interface
 
@@ -333,11 +334,11 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions`, `DELETE /auth/sessions/others` | Sessions ; tout ; tout sauf ici |
 | `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA ; la suppression porte le mot de passe dans son corps |
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
-| `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions |
+| `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions ; la suppression du compte porte le mot de passe (et le code d'un TOTP) dans son corps |
 
 Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
 
-Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`, `WRONG_PASSWORD`, `NO_SECOND_FACTOR`), `404` (`FACTOR_NOT_FOUND`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`, `EMAIL_FACTOR_ALREADY_ACTIVE`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`). Le mot de passe redemandé avant une action sensible, faux, répond `400` `WRONG_PASSWORD` : un `401` voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
+Erreurs nouvelles : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGISTRATION_CLOSED`, `MAIL_CLOSED`), `400` (`PASSWORD_UNCHANGED`, `INVALID_CODE`, `CODE_ATTEMPTS_EXHAUSTED`, `LINK_OTHER_BROWSER`, `FLOW_EXPIRED`, `WRONG_PASSWORD`, `NO_SECOND_FACTOR`, `SECOND_FACTOR_REQUIRED`), `404` (`FACTOR_NOT_FOUND`, `SESSION_NOT_FOUND`), `409` (`USERNAME_TAKEN`, `EMAIL_TAKEN`, `EMAIL_FACTOR_ALREADY_ACTIVE`), `429` (`TOO_MANY_ATTEMPTS` + `Retry-After`), `503` (`AUTH_BUSY` + `Retry-After`). Le mot de passe redemandé avant une action sensible, faux, répond `400` `WRONG_PASSWORD` : un `401` voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
 
 ---
 
@@ -541,7 +542,7 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 | Serveur | `apps/server/src/projects/auth/` | `router.ts`, `controller/`, `service/`, `query/`, `models/`, `bean/`, `mapper/`, `integrationTest/` |
 | Serveur, transverse | `middleware/`, `error/`, `configuration/env.ts` | `requireSession`, IP réelle, `Origin` ; erreurs 401, 403, 429 ; section `auth` |
 | Migrations | `apps/server/src/sql/migrations/V013__…` et suivantes | Tables `mailing_*` renommées, tables `auth_*`, `user_id` des projets |
-| Front | `apps/client/src/projects/auth/` | `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/verify`, `/auth/profile` ; `useMe` ; `authErrorReasons.ts`, `authFieldLabels.ts` |
+| Front | `apps/client/src/projects/auth/` | `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/verify`, `/auth/profile`, `/auth/secure-account` (étape facultative après l'inscription) ; `useMe` ; `authErrorReasons.ts`, `authFieldLabels.ts` |
 | Front, transverse | `react/appNavigation/`, homepage, Backlog, GDC | `ProjectsEnum.Auth` (thème de la homepage, `showcase: null`), accès de chaque projet, gestion du `401`, bouton du header, icône de profil ; plus de faux `Bearer` |
 
 ### 11.2 Code Node partagé : `packages/common/src/node/`
@@ -883,7 +884,14 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Liste : navigateur et système justes (Edge, Firefox, Android, iOS), IP tronquée, « cette session », fin prévue.
 - [ ] Connexion avec un user agent de plus de 255 caractères (`curl -A`) : session ouverte, user agent tronqué dans la liste.
 - [ ] Double clic sur « S'inscrire » : un seul compte créé, et le code du second mail éventuel répond proprement, sans erreur 500.
-- [ ] « Tout déconnecter sauf ici » puis « tout déconnecter ».
+- [ ] « Tout déconnecter sauf ici » puis « tout déconnecter » (le second renvoie vers la connexion).
+- [ ] Profil : pseudo affiché modifiable, vidé il redonne le pseudo ; les trois méthodes de connexion se choisissent et la connexion les respecte.
+- [ ] Changement d'email : la nouvelle adresse reçoit le lien et le code, l'ancienne la notification ; adresse déjà inscrite : même écran, et seul son propriétaire reçoit un email, sans lien ni code ; lien ouvert dans un autre navigateur : refusé.
+- [ ] Changement de mot de passe : l'ancien redemandé, le même refusé, les autres sessions fermées, celle-ci gardée.
+- [ ] Ajout d'une application : le QR code se scanne (Google Authenticator, Aegis, Bitwarden), la clé saisie à la main marche aussi, le premier code active ; les codes de secours s'affichent une seule fois, se téléchargent, et ne reviennent pas au rechargement.
+- [ ] Facteur mail activé par son lien (`/auth/verify`) plutôt que par son code : les codes de secours s'affichent sur le profil.
+- [ ] Étape « Protège ton compte » après l'inscription : « Plus tard » mène à la page demandée ; la fin de l'activation montre les codes de secours avant d'y mener.
+- [ ] Suppression du compte avec une application d'authentification : le code (ou un code de secours) est demandé en plus du mot de passe.
 - [ ] Export : le ZIP s'ouvre avec l'explorateur Windows et 7-Zip ; les CSV gardent accents et émojis dans Excel ; aucun hash, empreinte ni secret.
 - [ ] Suppression des données du Backlog seul : GDC intact ; suppression du compte : plus aucune ligne, mail de confirmation, reconnexion impossible.
 
@@ -908,7 +916,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] « Ta dernière connexion » (compte déjà inscrit) : « aujourd'hui », jours, semaines, mois et années justes, autour de minuit à Paris et d'un changement d'heure.
 - [ ] Phrase « tu peux aussi saisir ce code sur la page restée ouverte » : juste dans chaque email à code, y compris le changement d'email et l'activation du facteur mail.
 - [ ] Le bouton « Réinitialiser mon mot de passe » des notifications mène à la page `/auth/forgot-password`.
-- [ ] Une fois connecté sans page demandée, retour à l'accueil : à remplacer par le profil quand il existera (étape 52, `useAuthRedirect`).
+- [ ] Une fois connecté sans page demandée, retour au profil (`useAuthRedirect`).
 - [ ] Tutoiement des emails face au vouvoiement du site (formulaire de contact, écran « Message envoyé », pages du pied de page) : décider d'harmoniser ou non.
 - [ ] Aucun « mail » ni « adresse » seul pour l'email dans les textes visibles des interfaces et des emails : « email » et « adresse email » partout.
 
