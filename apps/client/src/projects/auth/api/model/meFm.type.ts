@@ -6,5 +6,7 @@ export type MeFm = {
 	username: string;
 	// Toujours rempli : le pseudo quand aucun pseudo affiché n'est choisi
 	displayName: string;
+	// Le pseudo affiché choisi, tel qu'on le modifie ; null : aucun, le pseudo en tient lieu
+	customDisplayName: string | null;
 	loginMethods: LoginMethodEnum;
 };

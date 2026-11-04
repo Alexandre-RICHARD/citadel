@@ -14,6 +14,8 @@ describe("findFlowPagePath.ts", () => {
 				kind: FlowKindEnum.PASSWORD_RESET,
 				path: AuthPathEnum.FORGOT_PASSWORD,
 			},
+			{ kind: FlowKindEnum.EMAIL_CHANGE, path: AuthPathEnum.PROFILE },
+			{ kind: FlowKindEnum.EMAIL_FACTOR, path: AuthPathEnum.PROFILE },
 		])("SHOULD continue a $kind flow on $path", ({ kind, path }) => {
 			expect(findFlowPagePath(kind)).toBe(path);
 		});

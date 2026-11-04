@@ -6,6 +6,7 @@ import { ApiError } from "../../../../common/api/error/ApiError";
 import { mailStatusQueryOptions } from "../../../../common/api/mail/mailStatusQueryOptions";
 import { authQueryKeys } from "../authQueryKeys";
 import { writeFlowStatus } from "../cache/writeFlowStatus";
+import { writeNewRecoveryCodes } from "../cache/writeNewRecoveryCodes";
 
 // L'état du parcours a changé : il n'est plus là (la page revient au formulaire de départ), ou il lui reste moins d'essais
 const FLOW_CHANGED_CODES: readonly string[] = [
@@ -21,7 +22,8 @@ const MAIL_CLOSED_CODES: readonly string[] = [
 
 /**
  * Une étape de parcours : sa réponse devient l'état du parcours. Pas d'optimisme, chaque étape attend le serveur (code
- * juste ou faux, mail parti ou non)
+ * juste ou faux, mail parti ou non). Le parcours qui active le premier facteur du compte donne ses codes de secours, mis
+ * de côté pour être montrés une seule fois
  */
 export function useFlowMutation<Variables>(
 	send: (variables: Variables) => Promise<FlowStatusDto>,
@@ -31,6 +33,12 @@ export function useFlowMutation<Variables>(
 	return useMutation({
 		mutationFn: send,
 		onSuccess: (status) => {
+			if (status.recoveryCodes !== undefined) {
+				writeNewRecoveryCodes(queryClient, status.recoveryCodes);
+				void queryClient.invalidateQueries({
+					queryKey: authQueryKeys.factors(),
+				});
+			}
 			writeFlowStatus(queryClient, status, Date.now());
 		},
 		onError: (error) => {

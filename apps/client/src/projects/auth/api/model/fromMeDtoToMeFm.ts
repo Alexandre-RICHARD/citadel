@@ -7,6 +7,7 @@ export function fromMeDtoToMeFm(me: MeDto): MeFm {
 		email: me.email,
 		username: me.username,
 		displayName: me.displayName ?? me.username,
+		customDisplayName: me.displayName,
 		loginMethods: me.loginMethods,
 	};
 }

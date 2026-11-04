@@ -7,9 +7,9 @@ const FLOW_PAGES: Record<FlowKindEnum, AuthPathEnum> = {
 	[FlowKindEnum.LOGIN]: AuthPathEnum.LOGIN,
 	[FlowKindEnum.MAIL_LOGIN]: AuthPathEnum.LOGIN,
 	[FlowKindEnum.PASSWORD_RESET]: AuthPathEnum.FORGOT_PASSWORD,
-	// Les parcours du profil : leur page arrive avec lui
-	[FlowKindEnum.EMAIL_CHANGE]: AuthPathEnum.LOGIN,
-	[FlowKindEnum.EMAIL_FACTOR]: AuthPathEnum.LOGIN,
+	// Les parcours du profil
+	[FlowKindEnum.EMAIL_CHANGE]: AuthPathEnum.PROFILE,
+	[FlowKindEnum.EMAIL_FACTOR]: AuthPathEnum.PROFILE,
 };
 
 // La page où un parcours continue, après la validation de son lien sur /auth/verify

@@ -8,4 +8,10 @@ export const authFieldLabels: Readonly<Record<string, string>> = {
 	token: "le lien",
 	remember: "« Se souvenir de moi »",
 	website: "le champ caché",
+	displayName: "le pseudo affiché",
+	newEmail: "la nouvelle adresse email",
+	currentPassword: "le mot de passe actuel",
+	newPassword: "le nouveau mot de passe",
+	name: "le nom",
+	secondFactor: "le second facteur",
 };

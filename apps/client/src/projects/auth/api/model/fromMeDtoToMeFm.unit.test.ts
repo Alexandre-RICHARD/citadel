@@ -13,14 +13,18 @@ describe("fromMeDtoToMeFm.ts", () => {
 	describe("display name", () => {
 		it("SHOULD keep the chosen display name WHEN there is one", () => {
 			expect(
-				fromMeDtoToMeFm({ ...ME, displayName: "Alex le Grand" }).displayName,
-			).toBe("Alex le Grand");
+				fromMeDtoToMeFm({ ...ME, displayName: "Alex le Grand" }),
+			).toMatchObject({
+				displayName: "Alex le Grand",
+				customDisplayName: "Alex le Grand",
+			});
 		});
 
 		it("SHOULD show the username WHEN no display name is chosen", () => {
 			expect(fromMeDtoToMeFm({ ...ME, displayName: null })).toStrictEqual({
 				...ME,
 				displayName: "Alex",
+				customDisplayName: null,
 			});
 		});
 	});

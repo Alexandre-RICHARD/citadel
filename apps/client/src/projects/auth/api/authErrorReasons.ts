@@ -29,4 +29,8 @@ export const authErrorReasons: Record<AuthErrorCodeEnum, string> = {
 		"le code par email est déjà activé sur ton compte",
 	[AuthErrorCodeEnum.NO_SECOND_FACTOR]:
 		"ton compte n'a aucune double authentification à secourir",
+	[AuthErrorCodeEnum.SECOND_FACTOR_REQUIRED]:
+		"ton compte a une application d'authentification : un de ses codes est nécessaire",
+	[AuthErrorCodeEnum.SESSION_NOT_FOUND]:
+		"cette session n'existe plus, elle a peut-être déjà été fermée",
 };
