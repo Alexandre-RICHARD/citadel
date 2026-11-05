@@ -14,6 +14,7 @@ import type { LoginWithPassword } from "./endpoint/login/loginWithPassword/login
 import type { StartMailLogin } from "./endpoint/login/startMailLogin/startMailLoginEndpoint.interface.ts";
 import type { ChangePassword } from "./endpoint/me/changePassword/changePasswordEndpoint.interface.ts";
 import type { DeleteMe } from "./endpoint/me/deleteMe/deleteMeEndpoint.interface.ts";
+import type { DeleteProjectData } from "./endpoint/me/deleteProjectData/deleteProjectDataEndpoint.interface.ts";
 import type { ExportMyData } from "./endpoint/me/exportMyData/exportMyDataEndpoint.interface.ts";
 import type { GetMe } from "./endpoint/me/getMe/getMeEndpoint.interface.ts";
 import type { StartEmailChange } from "./endpoint/me/startEmailChange/startEmailChangeEndpoint.interface.ts";
@@ -34,6 +35,7 @@ export type AuthEndpointRegistry =
 	| ChangePassword
 	| ExportMyData
 	| DeleteMe
+	| DeleteProjectData
 	| StartEmailChange
 	| Logout
 	| ListSessions

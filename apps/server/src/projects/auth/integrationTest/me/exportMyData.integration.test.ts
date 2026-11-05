@@ -10,6 +10,7 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { insertTestRecoveryCodes } from "../../../../testUtils/integration/auth/insertTestRecoveryCodes.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { seedAccountProjectData } from "../../../../testUtils/integration/projectData/seedAccountProjectData.ts";
 import { readStoredZip } from "../../../../testUtils/zip/readStoredZip.ts";
 
 const EXPORT_URL = `${ApiPrefixEnum.AUTH}/me/export`;
@@ -26,6 +27,11 @@ async function exportData(cookie?: string) {
 			});
 		});
 	return cookie === undefined ? pending : pending.set("Cookie", cookie);
+}
+
+// Les lignes de données d'un CSV, sans son en-tête
+function readDataLines(content: string | undefined): string[] {
+	return (content ?? "").trim().split("\r\n").slice(1);
 }
 
 function readFiles(response: request.Response): Record<string, string> {
@@ -60,6 +66,74 @@ describe("exportMyData", () => {
 				"auth_recovery_code.csv",
 				"auth_event.csv",
 				"auth_flow.csv",
+				"gdc_game.csv",
+				"gdc_boss.csv",
+				"gdc_death.csv",
+				"backlog_user_game.csv",
+				"backlog_user_version.csv",
+				"backlog_done_dlc.csv",
+				"backlog_series.csv",
+			]);
+		});
+
+		it("SHOULD export every row of the user in the projects, and only theirs", async () => {
+			// Arrange
+			const account = await insertTestAccount();
+			const session = await openTestSession({ userId: account.userId });
+			const data = await seedAccountProjectData(account.userId);
+			const stranger = await insertTestAccount();
+			await seedAccountProjectData(stranger.userId);
+
+			// Act
+			const files = readFiles(await exportData(session.cookie));
+
+			// Assert
+			expect(readDataLines(files["gdc_game.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(`^${data.gdc.gameId},Hollow Knight,,`, "u"),
+				),
+			]);
+			expect(readDataLines(files["gdc_boss.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(`^${data.gdc.bossId},${data.gdc.gameId},Hornet,,1,`, "u"),
+				),
+			]);
+			expect(readDataLines(files["gdc_death.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(
+						`^${data.gdc.deathId},${data.gdc.bossId},2017-02-24T20:00:00.000Z,,`,
+						"u",
+					),
+				),
+			]);
+			expect(readDataLines(files["backlog_user_game.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(
+						`^${data.backlog.gameId},,story,${data.backlog.seriesId},1,`,
+						"u",
+					),
+				),
+			]);
+			expect(readDataLines(files["backlog_user_version.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(
+						`^${data.backlog.userVersionId},${data.backlog.gameId},`,
+						"u",
+					),
+				),
+			]);
+			expect(readDataLines(files["backlog_done_dlc.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(
+						`^${data.backlog.userVersionId},${data.backlog.dlcId},`,
+						"u",
+					),
+				),
+			]);
+			expect(readDataLines(files["backlog_series.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(`^${data.backlog.seriesId},Mes jeux,`, "u"),
+				),
 			]);
 		});
 

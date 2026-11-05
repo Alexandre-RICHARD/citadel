@@ -11,6 +11,8 @@ import { loginWithPasswordBodySchema } from "@citadel/specs/src/projects/auth/en
 import { startMailLoginBodySchema } from "@citadel/specs/src/projects/auth/endpoint/login/startMailLogin/startMailLoginBodySchema.ts";
 import { changePasswordBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/changePassword/changePasswordBodySchema.ts";
 import { deleteMeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/deleteMe/deleteMeBodySchema.ts";
+import { deleteProjectDataBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/deleteProjectData/deleteProjectDataBodySchema.ts";
+import { deleteProjectDataPathParamSchema } from "@citadel/specs/src/projects/auth/endpoint/me/deleteProjectData/deleteProjectDataPathParamSchema.ts";
 import { startEmailChangeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/startEmailChange/startEmailChangeBodySchema.ts";
 import { updateMeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/updateMe/updateMeBodySchema.ts";
 import { startPasswordResetBodySchema } from "@citadel/specs/src/projects/auth/endpoint/passwordResets/startPasswordReset/startPasswordResetBodySchema.ts";
@@ -49,6 +51,14 @@ typedRouter.DELETE(
 	`${ApiPrefixEnum.AUTH}/me`,
 	meController.deleteMe,
 	requestValidator({ body: deleteMeBodySchema }),
+);
+typedRouter.DELETE(
+	`${ApiPrefixEnum.AUTH}/me/projects/:project`,
+	meController.deleteProjectData,
+	requestValidator({
+		params: deleteProjectDataPathParamSchema,
+		body: deleteProjectDataBodySchema,
+	}),
 );
 typedRouter.POST(
 	`${ApiPrefixEnum.AUTH}/me/password`,

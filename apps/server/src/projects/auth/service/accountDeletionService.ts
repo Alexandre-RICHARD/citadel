@@ -19,6 +19,7 @@ import { buildSecurityNoticeMail } from "../template/buildSecurityNoticeMail.ts"
 import { authEventService } from "./authEventService.ts";
 import { authMailService } from "./authMailService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
+import { projectDataDeletionService } from "./projectDataDeletionService.ts";
 import { recoveryCodeService } from "./recoveryCodeService.ts";
 import { totpService } from "./totpService.ts";
 
@@ -93,6 +94,8 @@ class AccountDeletionService {
 					!(await this.#consume(proof, userId, transaction))
 				)
 					return false;
+				// Les projets d'abord, chacun dans son ordre : les cascades du compte ne décident de rien (§5.1)
+				await projectDataDeletionService.deleteAllProjects(userId, transaction);
 				await deleteUserQuery(userId, transaction);
 				return true;
 			},

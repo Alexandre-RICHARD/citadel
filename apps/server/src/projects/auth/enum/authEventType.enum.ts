@@ -15,6 +15,8 @@ export enum AuthEventTypeEnum {
 	PASSWORD_CONFIRMATION_FAILED = "password_confirmation_failed",
 	PASSWORD_CHANGED = "password_changed",
 	EMAIL_CHANGED = "email_changed",
+	// Toutes les données du compte dans un projet, supprimées depuis le profil
+	PROJECT_DATA_DELETED = "project_data_deleted",
 	// Sans utilisateur : le journal du compte est parti avec lui
 	ACCOUNT_DELETED = "account_deleted",
 }

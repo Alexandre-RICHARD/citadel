@@ -1,5 +1,6 @@
 import type { ChangePassword } from "@citadel/specs/src/projects/auth/endpoint/me/changePassword/changePasswordEndpoint.interface.ts";
 import type { DeleteMe } from "@citadel/specs/src/projects/auth/endpoint/me/deleteMe/deleteMeEndpoint.interface.ts";
+import type { DeleteProjectData } from "@citadel/specs/src/projects/auth/endpoint/me/deleteProjectData/deleteProjectDataEndpoint.interface.ts";
 import type { ExportMyData } from "@citadel/specs/src/projects/auth/endpoint/me/exportMyData/exportMyDataEndpoint.interface.ts";
 import type { GetMe } from "@citadel/specs/src/projects/auth/endpoint/me/getMe/getMeEndpoint.interface.ts";
 import type { StartEmailChange } from "@citadel/specs/src/projects/auth/endpoint/me/startEmailChange/startEmailChangeEndpoint.interface.ts";
@@ -16,6 +17,7 @@ import { accountDeletionService } from "../service/accountDeletionService.ts";
 import { accountExportService } from "../service/accountExportService.ts";
 import { emailChangeService } from "../service/emailChangeService.ts";
 import { passwordChangeService } from "../service/passwordChangeService.ts";
+import { projectDataDeletionService } from "../service/projectDataDeletionService.ts";
 import { userService } from "../service/userService.ts";
 
 export const meController = {
@@ -83,6 +85,19 @@ export const meController = {
 				"Content-Disposition": `attachment; filename="citadel-mes-donnees-${new Date().toISOString().slice(0, 10)}.zip"`,
 			});
 			return response.status(HttpStatutCodeSuccessEnum.SUCCESS).send(archive);
+		},
+	),
+
+	deleteProjectData: protectedRequestHandler<DeleteProjectData>(
+		async (request, response, session) => {
+			await projectDataDeletionService.deleteProject(
+				session.userId,
+				request.params.project,
+				request.body.password,
+				readBrowserContext(request).client,
+			);
+
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 		},
 	),
 

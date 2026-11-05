@@ -16,6 +16,8 @@ import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCoo
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
+import { countAccountProjectRows } from "../../../../testUtils/integration/projectData/countAccountProjectRows.ts";
+import { seedAccountProjectData } from "../../../../testUtils/integration/projectData/seedAccountProjectData.ts";
 import { sessionCookie } from "../../cookie/sessionCookie.ts";
 
 const DELETE_ME_URL = `${ApiPrefixEnum.AUTH}/me`;
@@ -82,6 +84,29 @@ describe("deleteMe", () => {
 				kind: MailKindEnum.AUTH_NOTICE_ACCOUNT_DELETED,
 				to: { email: account.email },
 			});
+		});
+
+		it("SHOULD delete the data of the account in every project, its own series included, and only theirs", async () => {
+			// Arrange
+			const { account, session } = await openAccount();
+			await seedAccountProjectData(account.userId);
+			const stranger = await insertTestAccount();
+			await seedAccountProjectData(stranger.userId);
+
+			// Act
+			const response = await deleteMe(
+				{ password: account.password },
+				session.cookie,
+			);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(
+				Object.values(await countAccountProjectRows(account.userId)),
+			).toStrictEqual([0, 0, 0, 0, 0, 0, 0]);
+			expect(
+				Object.values(await countAccountProjectRows(stranger.userId)),
+			).toStrictEqual([1, 1, 1, 1, 1, 1, 1]);
 		});
 
 		it("SHOULD delete a protected account WHEN a TOTP code comes with the password", async () => {

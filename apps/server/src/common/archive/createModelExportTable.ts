@@ -13,6 +13,8 @@ type ModelExportTable<Row extends Model> = {
 	ownerAttribute: string;
 	// Les seules colonnes exportées : jamais un hash, une empreinte, un jeton ni un secret
 	columns: readonly (keyof Row & string)[];
+	// L'ordre des lignes ; « id » par défaut, une table sans id (clé composée) donne le sien
+	orderAttribute?: keyof Row & string;
 };
 
 function isCsvCell(value: unknown): value is CsvCell {
@@ -36,6 +38,7 @@ export function createModelExportTable<Row extends Model>({
 	model,
 	ownerAttribute,
 	columns,
+	orderAttribute = "id" as keyof Row & string,
 }: ModelExportTable<Row>): ExportTable {
 	return {
 		fileName: `${tableName}.csv`,
@@ -45,7 +48,7 @@ export function createModelExportTable<Row extends Model>({
 				const rows = await model.findAll({
 					where: { [ownerAttribute]: userId } as WhereOptions<Attributes<Row>>,
 					attributes: [...columns],
-					order: [["id", "ASC"]],
+					order: [[orderAttribute, "ASC"]],
 				});
 				return rows.map((row) =>
 					columns.map((column): CsvCell => {
