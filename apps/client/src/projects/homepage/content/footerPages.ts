@@ -138,7 +138,7 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Les emails du site",
 				paragraphs: [
-					"Les codes et liens de connexion, les avis de sécurité du compte et les accusés de réception du formulaire de contact sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer et garde la trace de ses envois (adresse, objet, ouverture) le temps de ses propres journaux : voir [sa politique de confidentialité](brevoPrivacy).",
+					"Les codes et liens de connexion, les avis de sécurité du compte et les accusés de réception du formulaire de contact sont envoyés par [Brevo](brevo), une société française, qui les voit donc passer et garde la trace de ses envois (adresse, objet, ouverture) pendant 1 mois, puis l’efface : voir [sa politique de confidentialité](brevoPrivacy).",
 					"Brevo ajoute à chaque email un pixel qui signale son ouverture et fait passer ses liens par son serveur : ce suivi est anonymisé, et je ne le consulte pas.",
 				],
 			},

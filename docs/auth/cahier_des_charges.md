@@ -493,7 +493,7 @@ Aucune donnée personnelle temporaire ou supprimée ne survit plus de **3 mois**
 | Logs de Caddy et des conteneurs | 90 jours (job `log-retention` d'`infra/citadel`) |
 | Sauvegardes de la base | Moins de 10 semaines (rétention dans `infra/citadel`) |
 | Journal de restauration (§10.5) | 10 semaines, l'âge de la plus vieille sauvegarde |
-| Mails chez Brevo (adresse, objet, ouvertures) | Durée de ses journaux, vérifiée avant la release (§15) |
+| Mails chez Brevo (adresse, objet, ouvertures) | 1 mois : « Retention rules » de ses journaux transactionnels, réglée dans son compte |
 | Données des projets | Tant que le compte existe |
 
 Les fichiers dérivés (historiques déposés pour la console) suivent la même règle.
@@ -745,15 +745,16 @@ Ordre : 70, 73, 74, 75, 77, puis 76, close par ta validation technique ; ensuite
 73. [moi] Journal de restauration (§10.5) écrit par chaque suppression, changement d'email et changement de sécurité ; volume dans `compose.yml`, purge à 10 semaines.
 74. [moi] Commande « après restauration » du serveur (journal rejoué, mots de passe invalidés, sessions et parcours vidés), branchée dans `citadel restore-db` ; phrase ajoutée au message du bandeau.
 75. [moi] Page « Données personnelles » (§10.6).
-76. [nous] Vérification CNIL (§10.4) : cookies posés par Cloudflare, pixel de Brevo ; durée des journaux de Brevo (§10.2).
+76. [nous] Vérification CNIL (§10.4) : cookies posés par Cloudflare, pixel de Brevo ; durée des journaux de Brevo (§10.2). Fait, sauf le pixel (ci-dessous).
 77. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
 
-En suspens (70, 73, 74, 75 et 77 faites) :
+En suspens :
 
 - 71 et 72 (de ton côté).
-- 76 : cookies réellement posés par Cloudflare en prod ; pixel de Brevo face à la recommandation CNIL du 12 mars 2026 (délibération 2026-042 : dispense pour un mail transactionnel seulement si le pixel ne garde que la date de dernière ouverture ; suivi non désactivable sur l'offre gratuite) : garder, changer d'offre ou remplacer Brevo ; durée de conservation des journaux de Brevo (illimitée par défaut, à régler dans Retention rules), puis la préciser dans « Données personnelles ». Close par ta validation technique.
-- À trancher : sortir le journal de restauration de `config-backup` (une archive de 2 mois qui contient 70 jours de journal dépasse les 3 mois) ; tutoiement du bandeau de restauration, sur un site qui vouvoie.
-- `pnpm audit` : 2 « high » dans `brace-expansion`, sous des plugins ESLint (dev seulement) : override pnpm ou attendre Dependabot.
+- 76, le pixel de Brevo : la recommandation CNIL du 12 mars 2026 (délibération 2026-042) ne dispense de consentement un mail transactionnel que si le pixel ne garde que la date de dernière ouverture ; le suivi ne se coupe pas sur l'offre gratuite. À trancher : garder, changer d'offre ou remplacer Brevo, après lecture du texte officiel. En attendant, « Données personnelles » le décrit tel qu'il est. Fait : journaux de Brevo réglés à 1 mois (« Données personnelles » à jour) ; seul cookie vu en prod : `lang=fr`, que ni le site ni Caddy ne posent (probablement ancien : à revérifier en navigation privée).
+- À trancher : sortir le journal de restauration de `config-backup` (une archive de 2 mois qui contient 70 jours de journal dépasse les 3 mois).
+
+Décidé : le bandeau de restauration tutoie, comme les mails ; l'application vouvoie. Les alertes `pnpm audit` de `brace-expansion` (dev seulement) sont ignorées.
 
 ### Partie D — Recette et release
 
@@ -960,6 +961,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Journal impossible à écrire (dossier en lecture seule) : l'action échoue (500) et ne change rien ; l'erreur arrive dans `error_log`.
 - [ ] En `prod:local` : restaurer une sauvegarde, créer un compte (il reprend l'identifiant d'un compte perdu), lui changer son email, puis restaurer le dump « avant-restauration » : le compte d'origine garde son email.
 - [ ] Un code de secours utilisé pour se connecter, puis une restauration d'avant : il est refusé.
+- [ ] Cookies du site en navigation privée, après connexion : `citadel_session` et `citadel_flow` seulement, aucun `lang` ni cookie de Cloudflare hors `__cf_bm`.
 - [ ] Console du navigateur en `prod:local`, sur chaque page : aucune violation de la CSP, sauf `wasm-eval` sur Angers Irigo (sonde WebAssembly de `long.js`, sans effet).
 
 ## Annexe : fichiers du repo à relire
