@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 63 de la roadmap (§15), phase 8.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 70 de la roadmap (§15), phase 9.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -153,11 +153,11 @@ CSRF : `SameSite=Lax`, mutations en `POST`/`PATCH`/`DELETE`, contrôle de l'en-t
 | `backlog_user_game` | `user_id` ; clé primaire `(user_id, game_id)` ; cascade |
 | `backlog_user_version` | `user_id` ; unicité `(user_id, version_id, platform_id)` ; cascade |
 | `backlog_done_dlc` | Aucun (cascade par sa version jouée) |
-| `backlog_series` | `user_id` nullable : vide pour une série IGDB commune, rempli pour une série créée à la main (cascade) |
+| `backlog_series` | `user_id` nullable : vide pour une série IGDB commune, rempli pour une série créée à la main (cascade) ; un `CHECK` l'impose |
 | Tables IGDB (`backlog_game`, `backlog_version`, `backlog_version_platform`, `backlog_dlc`, `backlog_company`, `backlog_platform`) | Aucun : données communes |
 | `error_log` | Purge à 20 jours |
 
-Un jeu du backlog ne se range que dans une série IGDB ou une série de son propriétaire.
+Un jeu du backlog ne se range que dans une série IGDB ou une série de son propriétaire ; « Nouvelle série… » ne retrouve un nom que parmi celles-là. Un jeu en base (données IGDB) est à tous : celui du backlog d'un autre reste dans « Ma base ».
 
 Les données du Backlog d'un utilisateur (suppression du compte ou du projet) sont supprimées par le serveur, dans une transaction, enfants d'abord : `backlog_user_game`, `backlog_user_version`, puis ses séries. `backlog_user_game.series_id` est en `RESTRICT` et son `CHECK` interdit `SET NULL` : l'ordre des cascades ne doit rien décider.
 
@@ -334,7 +334,7 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions`, `DELETE /auth/sessions/others` | Sessions ; tout ; tout sauf ici |
 | `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA ; la suppression porte le mot de passe dans son corps |
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
-| `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions ; la suppression du compte porte le mot de passe (et le code d'un TOTP) dans son corps |
+| `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions ; `:project` vaut `game-death-counter` ou `backlog` ; les suppressions portent le mot de passe (et, pour le compte, le code d'un TOTP) dans leur corps |
 
 Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
 
@@ -901,6 +901,9 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Les endpoints IGDB répondent `401` sans session.
 - [ ] Le jeu d'un autre compte (identifiant tapé dans l'URL) : `404`.
 - [ ] Série créée à la main invisible pour un autre compte ; séries IGDB communes.
+- [ ] Déconnecté depuis un autre onglet : la prochaine action dans GDC ou le Backlog mène à la connexion, qui ramène à la page ; rien du compte ne reste affiché.
+- [ ] Un jeu enregistré par un compte apparaît dans « Ma base » d'un autre, sans sa personnalisation ; ajouté aux deux backlogs, chacun garde ses versions jouées.
+- [ ] Profil : vider GDC et le Backlog d'un coup, puis l'un sans l'autre ; un mauvais mot de passe ne vide rien ; le projet vidé s'ouvre ensuite vide, sans rechargement.
 - [ ] Header : « Se connecter », puis icône et pseudo affiché, et « Se déconnecter » ; icône de profil dans le Backlog et GDC ; `auth` absent de la roue et du pied de page.
 
 **Mails**
