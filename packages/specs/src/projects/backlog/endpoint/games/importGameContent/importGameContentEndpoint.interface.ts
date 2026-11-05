@@ -16,7 +16,7 @@ export interface ImportGameContent extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/games/:gameId/imports`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		pathParams: ImportGameContentPathParamDto;
 		body: ImportGameContentBodyDto;
 	};

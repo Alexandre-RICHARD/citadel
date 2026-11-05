@@ -23,7 +23,7 @@ export function useGameImages(igdbId: number): GameImages {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/igdb/games/:igdbId/images`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { igdbId },
 					},
 					{ signal },

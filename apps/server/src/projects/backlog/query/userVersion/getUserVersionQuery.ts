@@ -6,13 +6,15 @@ import { Version } from "../../models/Version.ts";
 
 type UserVersionWithVersion = UserVersion & { version: Version };
 
-// Avec sa version, qui donne son jeu ; verrouillée jusqu'à la fin de la transaction
+// La version jouée du compte, avec sa version, qui donne son jeu ; verrouillée jusqu'à la fin de la transaction
 export async function getUserVersionQuery(
+	userId: number,
 	id: number,
 	transaction: Transaction,
 ): Promise<UserVersionWithVersion | null> {
 	try {
-		const userVersion = await UserVersion.findByPk(id, {
+		const userVersion = await UserVersion.findOne({
+			where: { userId, id },
 			include: [{ model: Version, as: "version" }],
 			transaction,
 			lock: transaction.LOCK.UPDATE,

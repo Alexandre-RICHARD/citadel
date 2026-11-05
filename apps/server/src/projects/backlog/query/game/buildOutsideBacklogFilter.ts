@@ -1,7 +1,7 @@
 import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictionary.ts";
 
 /**
- * Condition SQL de « Ma base », et son motif : les jeux hors backlog dont le nom VO, le nom VF ou
+ * Condition SQL de « Ma base », et son motif : les jeux hors du backlog du compte (:userId) dont le nom VO, le nom VF ou
  * un titre de version contient la saisie. La collation ignore accents et majuscules ; les % et _ tapés restent du texte
  */
 export function buildOutsideBacklogFilter(query: string): {
@@ -14,7 +14,9 @@ export function buildOutsideBacklogFilter(query: string): {
 	);
 	return {
 		condition: `
-			NOT EXISTS (SELECT 1 FROM backlog_user_game ug WHERE ug.game_id = g.id)
+			NOT EXISTS (
+					SELECT 1 FROM backlog_user_game ug WHERE ug.user_id = :userId AND ug.game_id = g.id
+				)
 			AND (
 				g.name LIKE :pattern
 				OR g.french_name LIKE :pattern

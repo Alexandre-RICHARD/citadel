@@ -11,7 +11,7 @@ export interface GetAllSeries extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/series`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 	};
 	response:
 		| {

@@ -4,21 +4,54 @@ import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/vali
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { BadGatewayError } from "../../../../error/BadGatewayError.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
 import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
+import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { igdbGateway } from "../../igdb/igdbGateway.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 const SEARCH_URL = `${ApiPrefixEnum.BACKLOG}/igdb/search`;
 
 describe("searchIgdbGames", () => {
 	describe("200 OK", () => {
+		it("SHOULD say a stored game is not in the backlog WHEN only another account has it", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const backlogGame = await seedBacklogGame({ userId: other.userId });
+			vi.spyOn(igdbGateway, "searchGames").mockResolvedValueOnce([
+				{
+					game: { id: backlogGame.gameId, name: "The Elder Scrolls V: Skyrim" },
+					matchedName: "The Elder Scrolls V: Skyrim",
+				},
+			]);
+
+			// Act
+			const response = await player.agent
+				.get(SEARCH_URL)
+				.query({ query: "skyrim" });
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response.body).toMatchObject({
+				results: [{ storedGameId: backlogGame.gameId, isInBacklog: false }],
+			});
+		});
+
 		it("SHOULD give each hit with its names, year, cover and platforms", async () => {
 			// Arrange
 			const igdbId = await nextIgdbId();
@@ -46,7 +79,7 @@ describe("searchIgdbGames", () => {
 			]);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(SEARCH_URL)
 				.query({ query: "brain age" });
 
@@ -72,7 +105,10 @@ describe("searchIgdbGames", () => {
 		it("SHOULD flag a hit already stored, and whether its game is in the backlog", async () => {
 			// Arrange
 			const inBacklog = await seedStoredGame();
-			await insertBacklogRows.userGame({ gameId: inBacklog.gameId });
+			await insertBacklogRows.userGame({
+				userId: player.userId,
+				gameId: inBacklog.gameId,
+			});
 			const storedOnly = await seedStoredGame({
 				otherVersionTitles: ["Special Edition"],
 			});
@@ -86,7 +122,7 @@ describe("searchIgdbGames", () => {
 			]);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(SEARCH_URL)
 				.query({ query: "skyrim" });
 
@@ -106,7 +142,7 @@ describe("searchIgdbGames", () => {
 			vi.spyOn(igdbGateway, "searchGames").mockResolvedValueOnce([]);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(SEARCH_URL)
 				.query({ query: "zzzz" });
 
@@ -119,7 +155,7 @@ describe("searchIgdbGames", () => {
 	describe("400 Bad Request", () => {
 		it("SHOULD reject the request WHEN the query is only spaces", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(SEARCH_URL)
 				.query({ query: "  " });
 
@@ -136,7 +172,7 @@ describe("searchIgdbGames", () => {
 
 		it("SHOULD reject the request WHEN there is no query", async () => {
 			// Act
-			const response = await request(app).get(SEARCH_URL);
+			const response = await player.agent.get(SEARCH_URL);
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeErrorEnum.BAD_REQUEST);
@@ -155,7 +191,7 @@ describe("searchIgdbGames", () => {
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(SEARCH_URL)
 				.query({ query: "skyrim" });
 
@@ -169,6 +205,18 @@ describe("searchIgdbGames", () => {
 				errorType: "BadGatewayError",
 				message: `[GET ${SEARCH_URL}?query=skyrim] IGDB answered 503 on games`,
 			});
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.get(SEARCH_URL)
+				.query({ query: "skyrim" });
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

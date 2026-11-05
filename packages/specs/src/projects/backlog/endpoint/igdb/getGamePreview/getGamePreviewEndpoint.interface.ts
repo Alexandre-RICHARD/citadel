@@ -15,7 +15,7 @@ export interface GetGamePreview extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/igdb/games/:igdbId`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetGamePreviewPathParamDto;
 	};
 	response: {

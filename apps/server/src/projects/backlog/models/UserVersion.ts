@@ -13,12 +13,14 @@ import type { DoneDlc } from "./DoneDlc.ts";
 import { Platform } from "./Platform.ts";
 import { Version } from "./Version.ts";
 
-// Version jouée : une version sur une plateforme, unique par version + plateforme ; elle porte les données de jeu
+// Version jouée d'un compte : une version sur une plateforme, unique par compte, version et plateforme ; elle porte
+// les données de jeu
 export class UserVersion extends Model<
 	InferAttributes<UserVersion>,
 	InferCreationAttributes<UserVersion>
 > {
 	declare id: CreationOptional<number>;
+	declare userId: number;
 	declare versionId: number;
 	declare platformId: number;
 	declare status: StatusEnum;
@@ -45,6 +47,11 @@ UserVersion.init(
 			field: "id",
 			primaryKey: true,
 			autoIncrement: true,
+			allowNull: false,
+		},
+		userId: {
+			type: DataTypes.INTEGER,
+			field: "user_id",
 			allowNull: false,
 		},
 		versionId: {

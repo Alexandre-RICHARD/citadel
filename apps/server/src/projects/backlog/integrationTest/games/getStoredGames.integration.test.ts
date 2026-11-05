@@ -3,19 +3,52 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
+import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
 import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWord.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 const STORED_GAMES_URL = `${ApiPrefixEnum.BACKLOG}/games`;
 
 describe("getStoredGames", () => {
 	describe("200 OK", () => {
+		it("SHOULD list a game WHEN it is only in the backlog of another account", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			const other = await openSignedInAgent();
+			const backlogGame = await seedBacklogGame({
+				userId: other.userId,
+				name: `${word} elsewhere`,
+			});
+
+			// Act
+			const response = await player.agent
+				.get(STORED_GAMES_URL)
+				.query({ query: word });
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(
+				(response.body as { games: { id: number }[] }).games.map(
+					({ id }) => id,
+				),
+			).toStrictEqual([backlogGame.gameId]);
+		});
+
 		it("SHOULD find games outside the backlog by name, French name or version title, without accents or case", async () => {
 			// Arrange
 			const word = buildUniqueWord();
@@ -32,10 +65,13 @@ describe("getStoredGames", () => {
 				otherVersionTitles: [`${word} Edition`],
 			});
 			const inBacklog = await seedStoredGame({ name: `${word} in backlog` });
-			await insertBacklogRows.userGame({ gameId: inBacklog.gameId });
+			await insertBacklogRows.userGame({
+				userId: player.userId,
+				gameId: inBacklog.gameId,
+			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ query: `POKEMON ${word.toLowerCase()}` });
 
@@ -55,7 +91,7 @@ describe("getStoredGames", () => {
 				totalCount: 1,
 			});
 
-			const wordResponse = await request(app)
+			const wordResponse = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ query: word });
 			// Triés par nom affiché (VF, sinon VO), hors backlog
@@ -76,7 +112,7 @@ describe("getStoredGames", () => {
 				});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ query: word, page: "2" });
 
@@ -94,7 +130,7 @@ describe("getStoredGames", () => {
 			await seedStoredGame({ name: `${word} 1000 Orange Juice` });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ query: `${word} 100%` });
 
@@ -108,7 +144,7 @@ describe("getStoredGames", () => {
 	describe("204 No Content", () => {
 		it("SHOULD answer without body WHEN no game matches", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ query: buildUniqueWord() });
 
@@ -120,7 +156,7 @@ describe("getStoredGames", () => {
 	describe("400 Bad Request", () => {
 		it("SHOULD reject a page that is not a positive number", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(STORED_GAMES_URL)
 				.query({ page: "0" });
 
@@ -133,6 +169,16 @@ describe("getStoredGames", () => {
 					message: "Page should be at least 1",
 				},
 			]);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(STORED_GAMES_URL);
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

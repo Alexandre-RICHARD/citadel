@@ -4,19 +4,28 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildIgdbGameData } from "../../../../testUtils/integration/backlog/buildIgdbGameData.ts";
 import { IGDB_PLATFORMS } from "../../../../testUtils/integration/backlog/igdbPlatforms.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
 import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectConflict } from "../../../../testUtils/integration/expectConflict.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { igdbGateway } from "../../igdb/igdbGateway.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 const STORE_URL = `${ApiPrefixEnum.BACKLOG}/games`;
 
@@ -77,13 +86,11 @@ describe("storeGame", () => {
 			const ids = await mockIgdbGame();
 
 			// Act
-			const response = await request(app)
-				.post(STORE_URL)
-				.send({
-					igdbId: ids.gameId,
-					versionIds: [ids.portId],
-					dlcIds: [ids.firstDlcId],
-				});
+			const response = await player.agent.post(STORE_URL).send({
+				igdbId: ids.gameId,
+				versionIds: [ids.portId],
+				dlcIds: [ids.firstDlcId],
+			});
 
 			// Assert : réponse
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.CREATED);
@@ -135,7 +142,7 @@ describe("storeGame", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(STORE_URL)
 				.send({ igdbId: ids.gameId, versionIds: [], dlcIds: [] });
 
@@ -150,7 +157,7 @@ describe("storeGame", () => {
 	describe("400 Bad Request", () => {
 		it("SHOULD reject the request WHEN a version is checked twice", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(STORE_URL)
 				.send({ igdbId: 42, versionIds: [7, 7], dlcIds: [] });
 
@@ -172,13 +179,11 @@ describe("storeGame", () => {
 			const unknownVersionId = await nextIgdbId();
 
 			// Act
-			const response = await request(app)
-				.post(STORE_URL)
-				.send({
-					igdbId: ids.gameId,
-					versionIds: [unknownVersionId],
-					dlcIds: [],
-				});
+			const response = await player.agent.post(STORE_URL).send({
+				igdbId: ids.gameId,
+				versionIds: [unknownVersionId],
+				dlcIds: [],
+			});
 
 			// Assert
 			expectNotFound(
@@ -198,7 +203,7 @@ describe("storeGame", () => {
 			vi.spyOn(igdbGateway, "fetchGameData").mockResolvedValueOnce(null);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(STORE_URL)
 				.send({ igdbId, versionIds: [], dlcIds: [] });
 
@@ -225,7 +230,7 @@ describe("storeGame", () => {
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(STORE_URL)
 				.send({ igdbId: stored.gameId, versionIds: [], dlcIds: [] });
 
@@ -239,6 +244,18 @@ describe("storeGame", () => {
 				versionIds: stored.versionIds,
 				dlcIds: [],
 			});
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.post(STORE_URL)
+				.send({ igdbId: 1, versionIds: [], dlcIds: [] });
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

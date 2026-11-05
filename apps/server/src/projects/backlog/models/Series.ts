@@ -8,12 +8,14 @@ import {
 
 import { sequelize } from "../../../configuration/sequelize.ts";
 
-// Série proposée par IGDB (collection ou franchise), ou créée à la main : les deux id IGDB à null
+// Série proposée par IGDB (collection ou franchise), commune à tous ; ou créée à la main par un compte, à lui seul :
+// les deux id IGDB à null et `userId` rempli
 export class Series extends Model<
 	InferAttributes<Series>,
 	InferCreationAttributes<Series>
 > {
 	declare id: CreationOptional<number>;
+	declare userId: number | null;
 	declare name: string;
 	declare igdbCollectionId: number | null;
 	declare igdbFranchiseId: number | null;
@@ -29,6 +31,11 @@ Series.init(
 			primaryKey: true,
 			autoIncrement: true,
 			allowNull: false,
+		},
+		userId: {
+			type: DataTypes.INTEGER,
+			field: "user_id",
+			allowNull: true,
 		},
 		name: {
 			type: DataTypes.STRING,

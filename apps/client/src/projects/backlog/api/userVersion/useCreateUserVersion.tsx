@@ -29,7 +29,7 @@ export function useCreateUserVersion(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId/user-versions`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			pathParams: { gameId },
 			body,
 		}),

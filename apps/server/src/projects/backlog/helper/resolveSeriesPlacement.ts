@@ -11,7 +11,9 @@ import { getSeriesNumbersQuery } from "../query/series/getSeriesNumbersQuery.ts"
 import { seriesExistsQuery } from "../query/series/seriesExistsQuery.ts";
 import type { SeriesPlacement } from "./seriesPlacement.type.ts";
 
+// Une série choisie est une série d'IGDB ou une de celles du compte ; une nouvelle série est à lui
 async function resolveSeriesId(
+	userId: number,
 	proposedSeriesId: number | null,
 	series: CustomizationInputBean["series"],
 	transaction: Transaction,
@@ -20,14 +22,14 @@ async function resolveSeriesId(
 		case SeriesChoiceKindEnum.PROPOSED:
 			return proposedSeriesId;
 		case SeriesChoiceKindEnum.OTHER:
-			if (!(await seriesExistsQuery(series.seriesId, transaction)))
+			if (!(await seriesExistsQuery(userId, series.seriesId, transaction)))
 				throw new NotFoundError(
 					BacklogErrorCodeEnum.SERIES_NOT_FOUND,
 					`No series with id : ${series.seriesId}`,
 				);
 			return series.seriesId;
 		case SeriesChoiceKindEnum.NEW:
-			return findOrCreateSeriesByNameQuery(series.name, transaction);
+			return findOrCreateSeriesByNameQuery(userId, series.name, transaction);
 		default:
 			return null;
 	}
@@ -38,12 +40,14 @@ async function resolveSeriesId(
  * un numéro déjà pris est libéré vers le haut, et les jeux décalés sont rendus. Sans série, pas de numéro
  */
 export async function resolveSeriesPlacement(
+	userId: number,
 	gameId: number,
 	proposedSeriesId: number | null,
 	customization: CustomizationInputBean,
 	transaction: Transaction,
 ): Promise<SeriesPlacement> {
 	const seriesId = await resolveSeriesId(
+		userId,
 		proposedSeriesId,
 		customization.series,
 		transaction,
@@ -51,7 +55,7 @@ export async function resolveSeriesPlacement(
 	if (seriesId === null)
 		return { seriesId: null, seriesNumber: null, shiftedEntries: [] };
 
-	const entries = await getSeriesNumbersQuery(seriesId, transaction);
+	const entries = await getSeriesNumbersQuery(userId, seriesId, transaction);
 	const nextNumber = getNextSeriesNumber(
 		entries.filter((entry) => entry.gameId !== gameId),
 	);

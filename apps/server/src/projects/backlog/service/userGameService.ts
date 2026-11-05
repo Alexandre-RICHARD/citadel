@@ -42,6 +42,7 @@ function userGameNotFound(gameId: number): NotFoundError {
 
 // Range le jeu dans sa série et écrit sa personnalisation ; les jeux que son numéro décale avancent
 async function saveCustomization(
+	userId: number,
 	gameId: number,
 	proposedSeriesId: number | null,
 	customization: CustomizationInputBean,
@@ -50,36 +51,38 @@ async function saveCustomization(
 ): Promise<void> {
 	const { seriesId, seriesNumber, shiftedEntries } =
 		await resolveSeriesPlacement(
+			userId,
 			gameId,
 			proposedSeriesId,
 			customization,
 			transaction,
 		);
-	await updateSeriesNumbersQuery(shiftedEntries, transaction);
+	await updateSeriesNumbersQuery(userId, shiftedEntries, transaction);
 	const saved = {
 		imageId: customization.imageId,
 		endingType: customization.endingType,
 		seriesId,
 		seriesNumber,
 	};
-	if (isNew) await createUserGameQuery({ gameId, ...saved }, transaction);
-	else await updateUserGameQuery(gameId, saved, transaction);
+	if (isNew)
+		await createUserGameQuery({ userId, gameId, ...saved }, transaction);
+	else await updateUserGameQuery(userId, gameId, saved, transaction);
 }
 
+// Chaque méthode ne voit que le backlog du compte : le jeu du backlog d'un autre répond comme absent (404)
 class UserGameService {
 	/**
 	 * Le tableau : tout le backlog est lu, chaque ligne calculée, filtrée et triée, puis découpée
 	 * en pages de 25. Quelques milliers de jeux tiennent largement en mémoire
 	 */
-	async getUserGames({
-		page,
-		sort,
-		filters,
-	}: GetUserGamesBean): Promise<UserGamePageBean> {
+	async getUserGames(
+		userId: number,
+		{ page, sort, filters }: GetUserGamesBean,
+	): Promise<UserGamePageBean> {
 		const pageSize = Number(BacklogPageSizeEnum.USER_GAMES);
 		const views = sortUserGameViews(
 			filterUserGameViews(
-				(await loadUserGameBeans(null)).map(buildUserGameView),
+				(await loadUserGameBeans(userId, null)).map(buildUserGameView),
 				filters,
 			),
 			sort,
@@ -96,26 +99,26 @@ class UserGameService {
 	 * Ajout au backlog : la personnalisation et la première version jouée, en une seule action.
 	 * Un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0
 	 */
-	async createUserGame({
-		gameId,
-		customization,
-		userVersion,
-	}: CreateUserGameBean): Promise<UserGameBean> {
+	async createUserGame(
+		userId: number,
+		{ gameId, customization, userVersion }: CreateUserGameBean,
+	): Promise<UserGameBean> {
 		await runInTransaction(
 			"Failed to add game to the backlog",
 			async (transaction) => {
-				const game = await loadStoredGameBean(gameId, transaction);
+				const game = await loadStoredGameBean(userId, gameId, transaction);
 				if (game === null)
 					throw new NotFoundError(
 						BacklogErrorCodeEnum.GAME_NOT_FOUND,
 						`No game with id : ${gameId}`,
 					);
-				if ((await getUserGameQuery(gameId, transaction)) !== null)
+				if ((await getUserGameQuery(userId, gameId, transaction)) !== null)
 					throw new ConflictError(
 						BacklogErrorCodeEnum.USER_GAME_ALREADY_EXISTS,
 						`Game already in the backlog : ${gameId}`,
 					);
 				await checkNewUserVersion(
+					userId,
 					game,
 					userVersion,
 					customization.endingType,
@@ -123,6 +126,7 @@ class UserGameService {
 				);
 
 				await saveCustomization(
+					userId,
 					gameId,
 					game.proposedSeries?.id ?? null,
 					customization,
@@ -130,6 +134,7 @@ class UserGameService {
 					transaction,
 				);
 				await createUserVersionQuery(
+					userId,
 					{
 						...userVersion,
 						sureFinishCount: applyFirstFinishCount(
@@ -141,25 +146,26 @@ class UserGameService {
 				);
 			},
 		);
-		return loadUserGameBean(gameId);
+		return loadUserGameBean(userId, gameId);
 	}
 
 	/**
 	 * « Personnaliser » : image, type de fin, série et numéro. Les statuts que le nouveau type de fin
 	 * rend incompatibles sont convertis ; une série qui n'a plus de raison d'être quitte la base
 	 */
-	async customizeUserGame({
-		gameId,
-		customization,
-	}: CustomizeUserGameBean): Promise<UserGameBean> {
+	async customizeUserGame(
+		userId: number,
+		{ gameId, customization }: CustomizeUserGameBean,
+	): Promise<UserGameBean> {
 		await runInTransaction(
 			"Failed to customize backlog game",
 			async (transaction) => {
-				if ((await getUserGameQuery(gameId, transaction)) === null)
+				if ((await getUserGameQuery(userId, gameId, transaction)) === null)
 					throw userGameNotFound(gameId);
-				const game = await loadStoredGameBean(gameId, transaction);
+				const game = await loadStoredGameBean(userId, gameId, transaction);
 
 				await saveCustomization(
+					userId,
 					gameId,
 					game?.proposedSeries?.id ?? null,
 					customization,
@@ -167,6 +173,7 @@ class UserGameService {
 					transaction,
 				);
 				const userVersions = await getGameUserVersionsQuery(
+					userId,
 					gameId,
 					transaction,
 				);
@@ -175,6 +182,7 @@ class UserGameService {
 						const converted = convertStatus(status, customization.endingType);
 						if (converted === status) return;
 						await updateUserVersionQuery(
+							userId,
 							id,
 							{ status: converted },
 							transaction,
@@ -184,25 +192,30 @@ class UserGameService {
 				await deleteUnusedSeriesQuery(transaction);
 			},
 		);
-		return loadUserGameBean(gameId);
+		return loadUserGameBean(userId, gameId);
 	}
 
 	// « Retirer le jeu du backlog » : ses versions jouées et sa personnalisation ; le jeu reste en base
-	async deleteUserGame({ gameId }: DeleteUserGameBean): Promise<void> {
+	async deleteUserGame(
+		userId: number,
+		{ gameId }: DeleteUserGameBean,
+	): Promise<void> {
 		await runInTransaction(
 			"Failed to remove game from the backlog",
 			async (transaction) => {
-				if ((await getUserGameQuery(gameId, transaction)) === null)
+				if ((await getUserGameQuery(userId, gameId, transaction)) === null)
 					throw userGameNotFound(gameId);
 				const userVersions = await getGameUserVersionsQuery(
+					userId,
 					gameId,
 					transaction,
 				);
 				await deleteUserVersionsQuery(
+					userId,
 					userVersions.map(({ id }) => id),
 					transaction,
 				);
-				await deleteUserGameQuery(gameId, transaction);
+				await deleteUserGameQuery(userId, gameId, transaction);
 				await deleteUnusedSeriesQuery(transaction);
 			},
 		);

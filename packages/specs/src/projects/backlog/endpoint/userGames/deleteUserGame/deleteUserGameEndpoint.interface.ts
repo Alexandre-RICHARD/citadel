@@ -14,7 +14,7 @@ export interface DeleteUserGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId`;
 		method: HttpMethodEnum.DELETE;
-		protected: false;
+		protected: true;
 		pathParams: DeleteUserGamePathParamDto;
 	};
 	response: {

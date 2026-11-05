@@ -12,6 +12,8 @@ export async function countTableRows(
 		| "gdc_game"
 		| "gdc_boss"
 		| "gdc_death"
+		| "backlog_user_game"
+		| "backlog_user_version"
 		| "error_log"
 		| "mailing_failure"
 		| "mailing_contact_message_unsent",

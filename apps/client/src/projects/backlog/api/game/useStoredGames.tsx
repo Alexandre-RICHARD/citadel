@@ -33,7 +33,7 @@ export function useStoredGames(query: string): StoredGames {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/games`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						queryParams: { query: trimmedQuery, page: pageParam },
 					},
 					{ signal },

@@ -43,7 +43,7 @@ export function useCustomizeUserGame(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId`,
 			method: HttpMethodEnum.PUT,
-			protected: false,
+			protected: true,
 			pathParams: { gameId },
 			body,
 		}),

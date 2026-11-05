@@ -1,9 +1,11 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { Series } from "../../models/Series.ts";
+import { visibleSeries } from "./visibleSeries.ts";
 
-export async function getAllSeriesQuery(): Promise<Series[]> {
+export async function getAllSeriesQuery(userId: number): Promise<Series[]> {
 	try {
 		return await Series.findAll({
+			where: visibleSeries(userId),
 			order: [
 				["name", "ASC"],
 				["id", "ASC"],

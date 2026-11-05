@@ -6,6 +6,8 @@ import { SEEDED_PLATFORMS } from "./seededPlatforms.ts";
 import { seedStoredGame } from "./seedStoredGame.ts";
 
 type SeedOptions = Parameters<typeof seedStoredGame>[0] & {
+	// Le compte dont le backlog reçoit le jeu ; le jeu en base, lui, est à tous
+	userId: number;
 	endingType?: EndingTypeEnum;
 	seriesId?: number | null;
 	seriesNumber?: number | null;
@@ -18,15 +20,17 @@ type SeededBacklogGame = Awaited<ReturnType<typeof seedStoredGame>> & {
 	userVersionIds: number[];
 };
 
-// Un jeu en base et dans le backlog, avec une version jouée par statut donné, chacune sur une version différente
+// Un jeu en base et dans le backlog du compte, avec une version jouée par statut donné, chacune sur une version
+// différente
 export async function seedBacklogGame({
+	userId,
 	endingType = EndingTypeEnum.STORY,
 	seriesId = null,
 	seriesNumber = null,
 	userVersionStatuses,
 	createdAt = new Date(),
 	...storedOptions
-}: SeedOptions = {}): Promise<SeededBacklogGame> {
+}: SeedOptions): Promise<SeededBacklogGame> {
 	const statuses = userVersionStatuses ?? [undefined];
 	const stored = await seedStoredGame({
 		...storedOptions,
@@ -35,6 +39,7 @@ export async function seedBacklogGame({
 			statuses.slice(1).map((_, index) => `Edition ${index + 1}`),
 	});
 	await insertBacklogRows.userGame({
+		userId,
 		gameId: stored.gameId,
 		endingType,
 		seriesId,
@@ -47,6 +52,7 @@ export async function seedBacklogGame({
 		userVersionIds.push(
 			// eslint-disable-next-line no-await-in-loop -- les versions jouées se suivent, dans l'ordre d'ajout
 			await insertBacklogRows.userVersion({
+				userId,
 				versionId: stored.versionIds[index] ?? stored.gameId,
 				platformId,
 				...(status !== undefined && { status }),

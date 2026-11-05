@@ -21,6 +21,7 @@ export async function findOrCreateProposedSeriesQuery(
 
 		const created = await Series.create(
 			{
+				userId: null,
 				name: proposedSeries.name,
 				igdbCollectionId: proposedSeries.igdbCollectionId,
 				igdbFranchiseId: proposedSeries.igdbFranchiseId,

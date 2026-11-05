@@ -5,15 +5,24 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectConflict } from "../../../../testUtils/integration/expectConflict.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function updateUrl(id: number): string {
 	return `${ApiPrefixEnum.BACKLOG}/user-versions/${id}`;
@@ -23,18 +32,20 @@ describe("updateUserVersion", () => {
 	describe("200 OK", () => {
 		it("SHOULD change only the given fields and give the row", async () => {
 			// Arrange
-			const backlogGame = await seedBacklogGame();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
 			const [userVersionId = 0] = backlogGame.userVersionIds;
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateUrl(userVersionId))
 				.send({ rating: 15, comment: "", trackedPlayTimeMinutes: 90 });
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 			expect(
-				await selectBacklogRows.userVersions(backlogGame.gameId),
+				await selectBacklogRows.userVersions(player.userId, backlogGame.gameId),
 			).toMatchObject([
 				{
 					id: userVersionId,
@@ -50,33 +61,45 @@ describe("updateUserVersion", () => {
 
 		it("SHOULD count a first sure finish WHEN the status reaches rank 5", async () => {
 			// Arrange
-			const backlogGame = await seedBacklogGame();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
 				.send({ status: StatusEnum.COMPLETED });
 
 			// Assert
 			expect(
-				(await selectBacklogRows.userVersions(backlogGame.gameId))[0]
-					?.sureFinishCount,
+				(
+					await selectBacklogRows.userVersions(
+						player.userId,
+						backlogGame.gameId,
+					)
+				)[0]?.sureFinishCount,
 			).toBe(1);
 		});
 
 		it("SHOULD keep the counter sent with the status", async () => {
 			// Arrange
-			const backlogGame = await seedBacklogGame();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
 				.send({ status: StatusEnum.FINISHED, sureFinishCount: 0 });
 
 			// Assert
 			expect(
-				(await selectBacklogRows.userVersions(backlogGame.gameId))[0]
-					?.sureFinishCount,
+				(
+					await selectBacklogRows.userVersions(
+						player.userId,
+						backlogGame.gameId,
+					)
+				)[0]?.sureFinishCount,
 			).toBe(0);
 		});
 	});
@@ -84,7 +107,7 @@ describe("updateUserVersion", () => {
 	describe("400 Bad Request", () => {
 		it("SHOULD reject an empty body", async () => {
 			// Act
-			const response = await request(app).patch(updateUrl(42)).send({});
+			const response = await player.agent.patch(updateUrl(42)).send({});
 
 			// Assert
 			expectValidationError(response, [
@@ -98,7 +121,7 @@ describe("updateUserVersion", () => {
 
 		it("SHOULD reject a rating above 20", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateUrl(42))
 				.send({ rating: 25 });
 
@@ -115,9 +138,31 @@ describe("updateUserVersion", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the played version does not exist, changing nothing, WHEN it belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const othersGame = await seedBacklogGame({ userId: other.userId });
+			const [userVersionId = 0] = othersGame.userVersionIds;
+
+			// Act
+			const response = await player.agent
+				.patch(updateUrl(userVersionId))
+				.send({ isOwned: true });
+
+			// Assert
+			expectNotFound(
+				response,
+				BacklogErrorCodeEnum.USER_VERSION_NOT_FOUND,
+				`No played version with id : ${userVersionId}`,
+			);
+			expect(
+				await selectBacklogRows.userVersions(other.userId, othersGame.gameId),
+			).toMatchObject([{ isOwned: false }]);
+		});
+
 		it("SHOULD answer that the played version does not exist", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateUrl(NON_EXISTENT_ID))
 				.send({ isOwned: true });
 
@@ -134,11 +179,12 @@ describe("updateUserVersion", () => {
 		it("SHOULD refuse a status that the ending type of the game does not offer", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				endingType: EndingTypeEnum.SANDBOX,
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
 				.send({ status: StatusEnum.FINISHED });
 
@@ -148,6 +194,18 @@ describe("updateUserVersion", () => {
 				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
 				`Status ${StatusEnum.FINISHED} is not offered for ending type : ${EndingTypeEnum.SANDBOX}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.patch(updateUrl(1))
+				.send({ isOwned: true });
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

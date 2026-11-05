@@ -35,7 +35,7 @@ export function useDeleteUserVersion(gameId: number, userVersionId: number) {
 		buildRequest: () => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id`,
 			method: HttpMethodEnum.DELETE,
-			protected: false,
+			protected: true,
 			pathParams: { id: userVersionId },
 		}),
 		getAffectedQueryKeys: () => [

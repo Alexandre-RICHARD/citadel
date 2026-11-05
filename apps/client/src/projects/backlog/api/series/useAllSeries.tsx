@@ -18,7 +18,7 @@ export function useAllSeries(): SeriesFm[] {
 						{
 							url: `${ApiPrefixEnum.BACKLOG}/series`,
 							method: HttpMethodEnum.GET,
-							protected: false,
+							protected: true,
 						},
 						{ signal },
 					)

@@ -5,14 +5,24 @@ import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
+import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
 import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function customizeUrl(gameId: number): string {
 	return `${ApiPrefixEnum.BACKLOG}/user-games/${gameId}`;
@@ -23,6 +33,7 @@ describe("customizeUserGame", () => {
 		it("SHOULD save the new choices and convert the statuses the ending type no longer offers", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				userVersionStatuses: [
 					StatusEnum.FINISHED,
 					StatusEnum.WATCHED,
@@ -31,7 +42,7 @@ describe("customizeUserGame", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.put(customizeUrl(backlogGame.gameId))
 				.send({
 					imageId: "ar42",
@@ -49,9 +60,12 @@ describe("customizeUserGame", () => {
 				seriesNumber: null,
 			});
 			expect(
-				(await selectBacklogRows.userVersions(backlogGame.gameId)).map(
-					({ status }) => status,
-				),
+				(
+					await selectBacklogRows.userVersions(
+						player.userId,
+						backlogGame.gameId,
+					)
+				).map(({ status }) => status),
 			).toStrictEqual([
 				StatusEnum.DEEMED_FINISHED,
 				StatusEnum.NOT_STARTED,
@@ -61,18 +75,23 @@ describe("customizeUserGame", () => {
 
 		it("SHOULD remove a hand-made series WHEN its last game leaves it", async () => {
 			// Arrange
-			const seriesId = await insertBacklogRows.series({ name: "Souls" });
-			const backlogGame = await seedBacklogGame({ seriesId, seriesNumber: 1 });
+			const seriesId = await insertBacklogRows.series({
+				userId: player.userId,
+				name: "Souls",
+			});
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				seriesId,
+				seriesNumber: 1,
+			});
 
 			// Act
-			await request(app)
-				.put(customizeUrl(backlogGame.gameId))
-				.send({
-					imageId: null,
-					endingType: EndingTypeEnum.STORY,
-					series: { kind: SeriesChoiceKindEnum.NONE },
-					seriesNumber: null,
-				});
+			await player.agent.put(customizeUrl(backlogGame.gameId)).send({
+				imageId: null,
+				endingType: EndingTypeEnum.STORY,
+				series: { kind: SeriesChoiceKindEnum.NONE },
+				seriesNumber: null,
+			});
 
 			// Assert
 			expect(await selectBacklogRows.series(seriesId)).toBeNull();
@@ -80,22 +99,25 @@ describe("customizeUserGame", () => {
 
 		it("SHOULD keep a series proposed by a game, even without backlog game", async () => {
 			// Arrange
-			const seriesId = await insertBacklogRows.series({ name: "Halo" });
+			// Une série proposée vient toujours d'IGDB
+			const seriesId = await insertBacklogRows.series({
+				name: "Halo",
+				igdbCollectionId: await nextIgdbId(),
+			});
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				proposedSeriesId: seriesId,
 				seriesId,
 				seriesNumber: 1,
 			});
 
 			// Act
-			await request(app)
-				.put(customizeUrl(backlogGame.gameId))
-				.send({
-					imageId: null,
-					endingType: EndingTypeEnum.STORY,
-					series: { kind: SeriesChoiceKindEnum.NONE },
-					seriesNumber: null,
-				});
+			await player.agent.put(customizeUrl(backlogGame.gameId)).send({
+				imageId: null,
+				endingType: EndingTypeEnum.STORY,
+				series: { kind: SeriesChoiceKindEnum.NONE },
+				seriesNumber: null,
+			});
 
 			// Assert
 			expect(await selectBacklogRows.series(seriesId)).not.toBeNull();
@@ -104,35 +126,74 @@ describe("customizeUserGame", () => {
 		it("SHOULD move a main game with its sub-games WHEN its number changes", async () => {
 			// Arrange
 			const seriesId = await insertBacklogRows.series({
+				userId: player.userId,
 				name: "Final Fantasy",
 			});
-			const main = await seedBacklogGame({ seriesId, seriesNumber: 7 });
-			const sub = await seedBacklogGame({ seriesId, seriesNumber: 7.1 });
+			const main = await seedBacklogGame({
+				userId: player.userId,
+				seriesId,
+				seriesNumber: 7,
+			});
+			const sub = await seedBacklogGame({
+				userId: player.userId,
+				seriesId,
+				seriesNumber: 7.1,
+			});
 
 			// Act
-			await request(app)
-				.put(customizeUrl(main.gameId))
-				.send({
-					imageId: null,
-					endingType: EndingTypeEnum.STORY,
-					series: { kind: SeriesChoiceKindEnum.OTHER, seriesId },
-					seriesNumber: 9,
-				});
+			await player.agent.put(customizeUrl(main.gameId)).send({
+				imageId: null,
+				endingType: EndingTypeEnum.STORY,
+				series: { kind: SeriesChoiceKindEnum.OTHER, seriesId },
+				seriesNumber: 9,
+			});
 
 			// Assert
 			expect(
-				(await selectBacklogRows.userGame(main.gameId))?.seriesNumber,
+				(await selectBacklogRows.userGame(player.userId, main.gameId))
+					?.seriesNumber,
 			).toBe(9);
-			expect((await selectBacklogRows.userGame(sub.gameId))?.seriesNumber).toBe(
-				9.1,
-			);
+			expect(
+				(await selectBacklogRows.userGame(player.userId, sub.gameId))
+					?.seriesNumber,
+			).toBe(9.1);
 		});
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the game is not in the backlog, changing nothing, WHEN only another account has it", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const othersGame = await seedBacklogGame({ userId: other.userId });
+			const rowBefore = await selectBacklogRows.userGame(
+				other.userId,
+				othersGame.gameId,
+			);
+
+			// Act
+			const response = await player.agent
+				.put(customizeUrl(othersGame.gameId))
+				.send({
+					imageId: null,
+					endingType: EndingTypeEnum.RUNS,
+					series: { kind: SeriesChoiceKindEnum.NONE },
+					seriesNumber: null,
+				});
+
+			// Assert
+			expectNotFound(
+				response,
+				BacklogErrorCodeEnum.USER_GAME_NOT_FOUND,
+				`No backlog game with id : ${othersGame.gameId}`,
+			);
+			expect(
+				await selectBacklogRows.userGame(other.userId, othersGame.gameId),
+			).toStrictEqual(rowBefore);
+		});
+
 		it("SHOULD answer that the game is not in the backlog", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.put(customizeUrl(NON_EXISTENT_ID))
 				.send({
 					imageId: null,
@@ -151,10 +212,12 @@ describe("customizeUserGame", () => {
 
 		it("SHOULD refuse another series that does not exist", async () => {
 			// Arrange
-			const backlogGame = await seedBacklogGame();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.put(customizeUrl(backlogGame.gameId))
 				.send({
 					imageId: null,
@@ -172,6 +235,16 @@ describe("customizeUserGame", () => {
 				BacklogErrorCodeEnum.SERIES_NOT_FOUND,
 				`No series with id : ${NON_EXISTENT_ID}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).put(customizeUrl(1)).send({});
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

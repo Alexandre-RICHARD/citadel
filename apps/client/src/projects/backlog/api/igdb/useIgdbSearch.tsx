@@ -29,7 +29,7 @@ export function useIgdbSearch(query: string): IgdbSearch {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/igdb/search`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						queryParams: { query: trimmedQuery },
 					},
 					{ signal },

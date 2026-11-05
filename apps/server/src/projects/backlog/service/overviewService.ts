@@ -5,17 +5,18 @@ import { countUserGamesQuery } from "../query/userGame/countUserGamesQuery.ts";
 import { countUserVersionsQuery } from "../query/userVersion/countUserVersionsQuery.ts";
 
 class OverviewService {
-	async getOverview(): Promise<BacklogOverviewBean> {
+	// Les chiffres du backlog du compte ; « Ma base » : les jeux en base qui ne sont pas dans son backlog
+	async getOverview(userId: number): Promise<BacklogOverviewBean> {
 		const [
 			gameCount,
 			userVersionCount,
 			outsideBacklogGameCount,
 			playedPlatforms,
 		] = await Promise.all([
-			countUserGamesQuery(),
-			countUserVersionsQuery(),
-			countOutsideBacklogGamesQuery(""),
-			getPlayedPlatformsQuery(),
+			countUserGamesQuery(userId),
+			countUserVersionsQuery(userId),
+			countOutsideBacklogGamesQuery(userId, ""),
+			getPlayedPlatformsQuery(userId),
 		]);
 		return {
 			gameCount,

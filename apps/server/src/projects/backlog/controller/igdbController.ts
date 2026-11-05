@@ -3,7 +3,7 @@ import type { GetGamePreview } from "@citadel/specs/src/projects/backlog/endpoin
 import type { SearchIgdbGames } from "@citadel/specs/src/projects/backlog/endpoint/igdb/searchIgdbGames/searchIgdbGamesEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
 import { fromGamePreviewBeanToGamePreviewDto } from "../mapper/dtoBean/igdb/fromGamePreviewBeanToGamePreviewDto.ts";
 import { fromGetGameImagesDtoToGetGameImagesBean } from "../mapper/dtoBean/igdb/fromGetGameImagesDtoToGetGameImagesBean.ts";
 import { fromGetGamePreviewDtoToGetGamePreviewBean } from "../mapper/dtoBean/igdb/fromGetGamePreviewDtoToGetGamePreviewBean.ts";
@@ -13,36 +13,45 @@ import { fromSearchResultBeanListToIgdbSearchResultListDto } from "../mapper/dto
 import { igdbService } from "../service/igdbService.ts";
 
 export const igdbController = {
-	search: asyncRequestHandler<SearchIgdbGames>(async (request, response) => {
-		const results = await igdbService.searchGames(
-			fromSearchIgdbGamesDtoToSearchIgdbGamesBean(request.query),
-		);
+	search: protectedRequestHandler<SearchIgdbGames>(
+		async (request, response, session) => {
+			const results = await igdbService.searchGames(
+				session.userId,
+				fromSearchIgdbGamesDtoToSearchIgdbGamesBean(request.query),
+			);
 
-		if (results.length === 0)
-			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+			if (results.length === 0)
+				return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromSearchResultBeanListToIgdbSearchResultListDto(results));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromSearchResultBeanListToIgdbSearchResultListDto(results));
+		},
+	),
 
-	getPreview: asyncRequestHandler<GetGamePreview>(async (request, response) => {
-		const preview = await igdbService.getGamePreview(
-			fromGetGamePreviewDtoToGetGamePreviewBean(request.params),
-		);
+	getPreview: protectedRequestHandler<GetGamePreview>(
+		async (request, response, session) => {
+			const preview = await igdbService.getGamePreview(
+				session.userId,
+				fromGetGamePreviewDtoToGetGamePreviewBean(request.params),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromGamePreviewBeanToGamePreviewDto(preview));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromGamePreviewBeanToGamePreviewDto(preview));
+		},
+	),
 
-	getImages: asyncRequestHandler<GetGameImages>(async (request, response) => {
-		const imageIds = await igdbService.getGameImages(
-			fromGetGameImagesDtoToGetGameImagesBean(request.params),
-		);
+	// Protégé pour le quota d'IGDB, partagé par tous les comptes : les images d'un jeu ne dépendent d'aucun d'eux
+	getImages: protectedRequestHandler<GetGameImages>(
+		async (request, response) => {
+			const imageIds = await igdbService.getGameImages(
+				fromGetGameImagesDtoToGetGameImagesBean(request.params),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromImageIdsToGameImagesDto(imageIds));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromImageIdsToGameImagesDto(imageIds));
+		},
+	),
 };

@@ -48,7 +48,7 @@ export function useReorderSeries(seriesId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/series/:seriesId/entries`,
 			method: HttpMethodEnum.PUT,
-			protected: false,
+			protected: true,
 			pathParams: { seriesId },
 			body,
 		}),

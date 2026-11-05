@@ -3,18 +3,27 @@ import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildIgdbGameData } from "../../../../testUtils/integration/backlog/buildIgdbGameData.ts";
 import { IGDB_PLATFORMS } from "../../../../testUtils/integration/backlog/igdbPlatforms.ts";
 import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
 import { igdbGateway } from "../../igdb/igdbGateway.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function previewUrl(igdbId: number | string): string {
 	return `${ApiPrefixEnum.BACKLOG}/igdb/games/${igdbId}`;
@@ -56,7 +65,7 @@ describe("getGamePreview", () => {
 			);
 
 			// Act
-			const response = await request(app).get(previewUrl(gameId));
+			const response = await player.agent.get(previewUrl(gameId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
@@ -185,7 +194,7 @@ describe("getGamePreview", () => {
 			);
 
 			// Act
-			const response = await request(app).get(previewUrl(stored.gameId));
+			const response = await player.agent.get(previewUrl(stored.gameId));
 
 			// Assert
 			const preview = response.body as GamePreviewDto;
@@ -228,7 +237,7 @@ describe("getGamePreview", () => {
 			);
 
 			// Act
-			const response = await request(app).get(previewUrl(gameId));
+			const response = await player.agent.get(previewUrl(gameId));
 
 			// Assert
 			expect((response.body as GamePreviewDto).dlcs).toStrictEqual([
@@ -247,7 +256,7 @@ describe("getGamePreview", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).get(previewUrl(pathValue));
+				const response = await player.agent.get(previewUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["igdbId"], ...issue }]);
@@ -262,7 +271,7 @@ describe("getGamePreview", () => {
 			vi.spyOn(igdbGateway, "fetchGameData").mockResolvedValueOnce(null);
 
 			// Act
-			const response = await request(app).get(previewUrl(igdbId));
+			const response = await player.agent.get(previewUrl(igdbId));
 
 			// Assert
 			expectNotFound(
@@ -270,6 +279,16 @@ describe("getGamePreview", () => {
 				BacklogErrorCodeEnum.IGDB_GAME_NOT_FOUND,
 				`No IGDB game with id : ${igdbId}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(previewUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

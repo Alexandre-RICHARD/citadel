@@ -21,16 +21,22 @@ function seriesNotFound(seriesId: number): NotFoundError {
 	);
 }
 
+// Un compte voit les séries d'IGDB et les siennes ; celle créée par un autre répond comme absente (404)
 class SeriesService {
-	async getAllSeries(): Promise<SeriesBean[]> {
-		return (await getAllSeriesQuery()).map(({ id, name }) => ({ id, name }));
+	async getAllSeries(userId: number): Promise<SeriesBean[]> {
+		return (await getAllSeriesQuery(userId)).map(({ id, name }) => ({
+			id,
+			name,
+		}));
 	}
 
-	async getSeriesEntries({
-		seriesId,
-	}: GetSeriesEntriesBean): Promise<SeriesEntryBean[]> {
-		if (!(await seriesExistsQuery(seriesId))) throw seriesNotFound(seriesId);
-		return (await getSeriesEntriesQuery(seriesId)).map(
+	async getSeriesEntries(
+		userId: number,
+		{ seriesId }: GetSeriesEntriesBean,
+	): Promise<SeriesEntryBean[]> {
+		if (!(await seriesExistsQuery(userId, seriesId)))
+			throw seriesNotFound(seriesId);
+		return (await getSeriesEntriesQuery(userId, seriesId)).map(
 			fromSeriesEntryRowToSeriesEntryBean,
 		);
 	}
@@ -39,15 +45,19 @@ class SeriesService {
 	 * « Réorganiser la série » : les nouveaux numéros de tous ses jeux du backlog, en une action.
 	 * Un jeu ajouté ou retiré de la série entre l'ouverture et la validation rend la liste caduque
 	 */
-	async reorderSeries({
-		seriesId,
-		entries,
-	}: ReorderSeriesBean): Promise<SeriesEntryBean[]> {
+	async reorderSeries(
+		userId: number,
+		{ seriesId, entries }: ReorderSeriesBean,
+	): Promise<SeriesEntryBean[]> {
 		await runInTransaction("Failed to reorder series", async (transaction) => {
-			if (!(await seriesExistsQuery(seriesId, transaction)))
+			if (!(await seriesExistsQuery(userId, seriesId, transaction)))
 				throw seriesNotFound(seriesId);
 
-			const current = await getSeriesNumbersQuery(seriesId, transaction);
+			const current = await getSeriesNumbersQuery(
+				userId,
+				seriesId,
+				transaction,
+			);
 			const sentGameIds = new Set(entries.map(({ gameId }) => gameId));
 			if (
 				current.length !== entries.length ||
@@ -62,6 +72,7 @@ class SeriesService {
 				current.map(({ gameId, seriesNumber }) => [gameId, seriesNumber]),
 			);
 			await updateSeriesNumbersQuery(
+				userId,
 				entries.filter(
 					({ gameId, seriesNumber }) =>
 						currentNumbers.get(gameId) !== seriesNumber,
@@ -69,7 +80,7 @@ class SeriesService {
 				transaction,
 			);
 		});
-		return this.getSeriesEntries({ seriesId });
+		return this.getSeriesEntries(userId, { seriesId });
 	}
 }
 

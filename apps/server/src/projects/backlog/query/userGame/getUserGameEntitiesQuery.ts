@@ -5,15 +5,16 @@ import { Game } from "../../models/Game.ts";
 import { Series } from "../../models/Series.ts";
 import { UserGame } from "../../models/UserGame.ts";
 
-// Jeux du backlog, dans l'ordre d'ajout ; null : tout le backlog
+// Jeux du backlog du compte, dans l'ordre d'ajout ; null : tout son backlog
 export async function getUserGameEntitiesQuery(
+	userId: number,
 	gameIds: number[] | null,
 ): Promise<UserGameEntity[]> {
 	if (gameIds?.length === 0) return [];
 
 	try {
 		const userGames = await UserGame.findAll({
-			where: gameIds === null ? {} : { gameId: gameIds },
+			where: gameIds === null ? { userId } : { userId, gameId: gameIds },
 			include: [
 				{
 					model: Game,

@@ -6,6 +6,7 @@ import { UserVersion } from "../../models/UserVersion.ts";
 
 // Seuls les champs donnés changent
 export async function updateUserVersionQuery(
+	userId: number,
 	id: number,
 	changes: UpdateUserVersionBean["changes"],
 	transaction: Transaction,
@@ -14,7 +15,10 @@ export async function updateUserVersionQuery(
 		Object.entries(changes).filter(([, value]) => value !== undefined),
 	);
 	try {
-		await UserVersion.update(definedChanges, { where: { id }, transaction });
+		await UserVersion.update(definedChanges, {
+			where: { userId, id },
+			transaction,
+		});
 	} catch (error) {
 		throw new DatabaseError("Failed to update played version", {
 			cause: error,

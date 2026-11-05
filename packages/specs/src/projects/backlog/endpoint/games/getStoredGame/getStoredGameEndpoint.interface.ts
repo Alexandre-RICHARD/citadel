@@ -15,7 +15,7 @@ export interface GetStoredGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/games/:gameId`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetStoredGamePathParamDto;
 	};
 	response: {

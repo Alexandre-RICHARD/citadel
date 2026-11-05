@@ -30,7 +30,7 @@ export function useSeriesEntries(seriesId: number | null): SeriesEntries {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/series/:seriesId/entries`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { seriesId: seriesId ?? 0 },
 					},
 					{ signal },

@@ -4,15 +4,19 @@ import type { Transaction } from "sequelize";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { UserGame } from "../../models/UserGame.ts";
 
-// Nouveaux numéros de jeux du backlog d'une même série (décalage, réorganisation)
+// Nouveaux numéros de jeux du backlog du compte dans une même série (décalage, réorganisation)
 export async function updateSeriesNumbersQuery(
+	userId: number,
 	entries: SeriesEntry[],
 	transaction: Transaction,
 ): Promise<void> {
 	try {
 		await Promise.all(
 			entries.map(({ gameId, seriesNumber }) =>
-				UserGame.update({ seriesNumber }, { where: { gameId }, transaction }),
+				UserGame.update(
+					{ seriesNumber },
+					{ where: { userId, gameId }, transaction },
+				),
 			),
 		);
 	} catch (error) {

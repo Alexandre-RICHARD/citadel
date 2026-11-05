@@ -29,7 +29,7 @@ export function useBacklogRows(view: BacklogView): BacklogRows {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/user-games`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						queryParams: buildUserGamesQueryParams(view, pageParam),
 					},
 					{ signal },

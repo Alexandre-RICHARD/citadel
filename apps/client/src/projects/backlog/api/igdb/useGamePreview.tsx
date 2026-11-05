@@ -21,7 +21,7 @@ export function useGamePreview(igdbId: number): UseQueryResult<GamePreviewFm> {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/igdb/games/:igdbId`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { igdbId },
 					},
 					{ signal },

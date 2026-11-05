@@ -4,14 +4,23 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
 import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWord.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 const USER_GAMES_URL = `${ApiPrefixEnum.BACKLOG}/user-games`;
 
@@ -25,13 +34,16 @@ describe("getUserGames", () => {
 			// Arrange
 			const word = buildUniqueWord();
 			const seriesId = await insertBacklogRows.series({
+				userId: player.userId,
 				name: `${word} series`,
 			});
 			await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} B`,
 				createdAt: new Date("2026-01-01T00:00:00Z"),
 			});
 			const second = await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} A`,
 				seriesId,
 				seriesNumber: 3.1,
@@ -40,7 +52,7 @@ describe("getUserGames", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word });
 
@@ -64,17 +76,23 @@ describe("getUserGames", () => {
 			// Arrange
 			const word = buildUniqueWord();
 			await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} 2`,
 				firstReleaseDate: "2001-01-01",
 			});
-			await seedBacklogGame({ name: `${word} 1`, firstReleaseDate: null });
 			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} 1`,
+				firstReleaseDate: null,
+			});
+			await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} 3`,
 				firstReleaseDate: "2001-01-01",
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word, sort: "releaseDate:desc,name:asc" });
 
@@ -90,19 +108,21 @@ describe("getUserGames", () => {
 			// Arrange
 			const word = buildUniqueWord();
 			const kept = await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} kept`,
 				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.FINISHED],
 			});
 			await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} other`,
 				userVersionStatuses: [StatusEnum.STARTED],
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word, status: StatusEnum.STARTED, platform: "PS3" });
-			const finishedResponse = await request(app)
+			const finishedResponse = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word, status: StatusEnum.FINISHED });
 
@@ -121,21 +141,34 @@ describe("getUserGames", () => {
 			// Arrange
 			const word = buildUniqueWord();
 			const seriesId = await insertBacklogRows.series({
+				userId: player.userId,
 				name: `${word} Witcher`,
 			});
 			const otherSeriesId = await insertBacklogRows.series({
+				userId: player.userId,
 				name: `${word} Witcher 3`,
 			});
-			await seedBacklogGame({ name: `${word} 1`, seriesId, seriesNumber: 1 });
-			await seedBacklogGame({ name: `${word} 2`, seriesId, seriesNumber: 2 });
 			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} 1`,
+				seriesId,
+				seriesNumber: 1,
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} 2`,
+				seriesId,
+				seriesNumber: 2,
+			});
+			await seedBacklogGame({
+				userId: player.userId,
 				name: `${word} 3`,
 				seriesId: otherSeriesId,
 				seriesNumber: 1,
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ series: `=${word} witcher`, seriesNumber: "2.." });
 
@@ -149,11 +182,12 @@ describe("getUserGames", () => {
 			for (let index = 0; index < 26; index += 1)
 				// eslint-disable-next-line no-await-in-loop -- les jeux s'ajoutent un par un
 				await seedBacklogGame({
+					userId: player.userId,
 					name: `${word} ${String(index).padStart(2, "0")}`,
 				});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word, sort: "name:asc", page: "2" });
 
@@ -166,17 +200,19 @@ describe("getUserGames", () => {
 			// Arrange
 			const word = buildUniqueWord();
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				name: word,
 				platformIds: [SEEDED_PLATFORMS.PS2],
 				firstReleaseDate: "2004-03-01",
 			});
 			await insertBacklogRows.userVersion({
+				userId: player.userId,
 				versionId: backlogGame.gameId,
 				platformId: SEEDED_PLATFORMS.PCSX2,
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: word });
 
@@ -193,9 +229,21 @@ describe("getUserGames", () => {
 	});
 
 	describe("204 No Content", () => {
+		it("SHOULD answer without body WHEN only another account has games", async () => {
+			// Arrange
+			const newcomer = await openSignedInAgent();
+			await seedBacklogGame({ userId: player.userId });
+
+			// Act
+			const response = await newcomer.agent.get(USER_GAMES_URL);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+		});
+
 		it("SHOULD answer without body WHEN no game matches the filters", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ name: buildUniqueWord() });
 
@@ -207,7 +255,7 @@ describe("getUserGames", () => {
 	describe("400 Bad Request", () => {
 		it("SHOULD refuse a sort on a column that does not sort", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ sort: "thumbnail:asc" });
 
@@ -224,7 +272,7 @@ describe("getUserGames", () => {
 
 		it("SHOULD refuse an unreadable filter", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(USER_GAMES_URL)
 				.query({ rating: "high" });
 
@@ -237,6 +285,16 @@ describe("getUserGames", () => {
 						'rating filter is not readable (e.g. "zelda", "=The Witcher", "finished", "oui", "10..18", "2020-01-01..")',
 				},
 			]);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(USER_GAMES_URL);
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

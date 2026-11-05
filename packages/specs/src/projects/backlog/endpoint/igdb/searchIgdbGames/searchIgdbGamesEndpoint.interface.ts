@@ -15,7 +15,7 @@ export interface SearchIgdbGames extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/igdb/search`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		queryParams: SearchIgdbGamesQueryParamDto;
 	};
 	response:

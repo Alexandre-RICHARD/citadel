@@ -33,12 +33,13 @@ function userVersionNotFound(id: number): NotFoundError {
 	);
 }
 
-// La version jouée, verrouillée, et le jeu qui la porte
+// La version jouée du compte, verrouillée, et le jeu qui la porte ; celle d'un autre compte est absente (404)
 async function lockUserVersion(
+	userId: number,
 	id: number,
 	transaction: Transaction,
 ): Promise<{ gameId: number; sureFinishCount: number }> {
-	const userVersion = await getUserVersionQuery(id, transaction);
+	const userVersion = await getUserVersionQuery(userId, id, transaction);
 	if (userVersion === null) throw userVersionNotFound(id);
 	return {
 		gameId: userVersion.version.gameId,
@@ -48,27 +49,29 @@ async function lockUserVersion(
 
 class UserVersionService {
 	// « Ajouter une version jouée », à un jeu déjà dans le backlog
-	async createUserVersion({
-		gameId,
-		userVersion,
-	}: CreateUserVersionBean): Promise<UserGameBean> {
+	async createUserVersion(
+		userId: number,
+		{ gameId, userVersion }: CreateUserVersionBean,
+	): Promise<UserGameBean> {
 		await runInTransaction(
 			"Failed to add played version",
 			async (transaction) => {
-				const userGame = await getUserGameQuery(gameId, transaction);
-				const game = await loadStoredGameBean(gameId, transaction);
+				const userGame = await getUserGameQuery(userId, gameId, transaction);
+				const game = await loadStoredGameBean(userId, gameId, transaction);
 				if (userGame === null || game === null)
 					throw new NotFoundError(
 						BacklogErrorCodeEnum.USER_GAME_NOT_FOUND,
 						`No backlog game with id : ${gameId}`,
 					);
 				await checkNewUserVersion(
+					userId,
 					game,
 					userVersion,
 					userGame.endingType,
 					transaction,
 				);
 				await createUserVersionQuery(
+					userId,
 					{
 						...userVersion,
 						sureFinishCount: applyFirstFinishCount(
@@ -80,7 +83,7 @@ class UserVersionService {
 				);
 			},
 		);
-		return loadUserGameBean(gameId);
+		return loadUserGameBean(userId, gameId);
 	}
 
 	/**
@@ -88,17 +91,18 @@ class UserVersionService {
 	 * était à 0, sauf quand la même requête fixe ce compteur : la valeur envoyée l'emporte. Repasser sous le rang 5
 	 * n'efface pas la date de fin
 	 */
-	async updateUserVersion({
-		id,
-		changes,
-	}: UpdateUserVersionBean): Promise<UserGameBean> {
+	async updateUserVersion(
+		userId: number,
+		{ id, changes }: UpdateUserVersionBean,
+	): Promise<UserGameBean> {
 		const gameId = await runInTransaction(
 			"Failed to update played version",
 			async (transaction) => {
-				const userVersion = await lockUserVersion(id, transaction);
+				const userVersion = await lockUserVersion(userId, id, transaction);
 				const { status } = changes;
 				if (status !== undefined) {
 					const userGame = await getUserGameQuery(
+						userId,
 						userVersion.gameId,
 						transaction,
 					);
@@ -112,6 +116,7 @@ class UserVersionService {
 						);
 				}
 				await updateUserVersionQuery(
+					userId,
 					id,
 					{
 						...changes,
@@ -128,37 +133,47 @@ class UserVersionService {
 				return userVersion.gameId;
 			},
 		);
-		return loadUserGameBean(gameId);
+		return loadUserGameBean(userId, gameId);
 	}
 
 	/**
 	 * « Retirer la version jouée » : ses DLC faits partent avec elle. Retirer la dernière retire le jeu du backlog avec sa
 	 * personnalisation, et une série créée à la main qui n'a plus de jeu
 	 */
-	async deleteUserVersion({ id }: DeleteUserVersionBean): Promise<void> {
+	async deleteUserVersion(
+		userId: number,
+		{ id }: DeleteUserVersionBean,
+	): Promise<void> {
 		await runInTransaction(
 			"Failed to remove played version",
 			async (transaction) => {
-				const { gameId } = await lockUserVersion(id, transaction);
-				await deleteUserVersionsQuery([id], transaction);
-				if ((await getGameUserVersionsQuery(gameId, transaction)).length > 0)
+				const { gameId } = await lockUserVersion(userId, id, transaction);
+				await deleteUserVersionsQuery(userId, [id], transaction);
+				if (
+					(await getGameUserVersionsQuery(userId, gameId, transaction)).length >
+					0
+				)
 					return;
-				await deleteUserGameQuery(gameId, transaction);
+				await deleteUserGameQuery(userId, gameId, transaction);
 				await deleteUnusedSeriesQuery(transaction);
 			},
 		);
 	}
 
 	// Case « fait » d'un DLC du jeu sur une version jouée ; cocher deux fois ne change rien
-	async setDlcDone({
-		userVersionId,
-		dlcId,
-		isDone,
-	}: SetDlcDoneBean): Promise<UserGameBean> {
+	async setDlcDone(
+		userId: number,
+		{ userVersionId, dlcId, isDone }: SetDlcDoneBean,
+	): Promise<UserGameBean> {
 		const gameId = await runInTransaction(
 			"Failed to set DLC done",
 			async (transaction) => {
-				const userVersion = await lockUserVersion(userVersionId, transaction);
+				// La version jouée est au compte : ses DLC faits, sans user_id, le sont aussi
+				const userVersion = await lockUserVersion(
+					userId,
+					userVersionId,
+					transaction,
+				);
 				if (
 					!(await dlcBelongsToGameQuery(dlcId, userVersion.gameId, transaction))
 				)
@@ -171,7 +186,7 @@ class UserVersionService {
 				return userVersion.gameId;
 			},
 		);
-		return loadUserGameBean(gameId);
+		return loadUserGameBean(userId, gameId);
 	}
 }
 

@@ -14,7 +14,7 @@ export const overviewQueryOptions = queryOptions({
 				{
 					url: `${ApiPrefixEnum.BACKLOG}/overview`,
 					method: HttpMethodEnum.GET,
-					protected: false,
+					protected: true,
 				},
 				{ signal },
 			)

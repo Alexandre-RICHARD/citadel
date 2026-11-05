@@ -4,12 +4,16 @@ import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
+import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
+import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId.ts";
@@ -17,12 +21,37 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function storedGameUrl(gameId: number): string {
 	return `${ApiPrefixEnum.BACKLOG}/games/${gameId}`;
 }
 
 describe("getStoredGame", () => {
 	describe("200 OK", () => {
+		it("SHOULD give no customization WHEN the game is only in the backlog of another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const backlogGame = await seedBacklogGame({ userId: other.userId });
+
+			// Act
+			const response = await player.agent.get(
+				storedGameUrl(backlogGame.gameId),
+			);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response.body).toMatchObject({
+				id: backlogGame.gameId,
+				customization: null,
+			});
+		});
+
 		it("SHOULD give the game, its versions in release order with their emulators, and its DLC", async () => {
 			// Arrange
 			const stored = await seedStoredGame({
@@ -33,7 +62,7 @@ describe("getStoredGame", () => {
 			});
 
 			// Act
-			const response = await request(app).get(storedGameUrl(stored.gameId));
+			const response = await player.agent.get(storedGameUrl(stored.gameId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
@@ -55,11 +84,14 @@ describe("getStoredGame", () => {
 
 		it("SHOULD give its customization WHEN the game is in the backlog", async () => {
 			// Arrange
+			// Une série proposée vient toujours d'IGDB
 			const seriesId = await insertBacklogRows.series({
 				name: "Final Fantasy",
+				igdbCollectionId: await nextIgdbId(),
 			});
 			const stored = await seedStoredGame({ proposedSeriesId: seriesId });
 			await insertBacklogRows.userGame({
+				userId: player.userId,
 				gameId: stored.gameId,
 				imageId: "ar9",
 				endingType: EndingTypeEnum.RUNS,
@@ -68,7 +100,7 @@ describe("getStoredGame", () => {
 			});
 
 			// Act
-			const response = await request(app).get(storedGameUrl(stored.gameId));
+			const response = await player.agent.get(storedGameUrl(stored.gameId));
 
 			// Assert
 			expect((response.body as StoredGameDto).customization).toStrictEqual({
@@ -83,7 +115,7 @@ describe("getStoredGame", () => {
 	describe("404 Not Found", () => {
 		it("SHOULD answer that the game is not stored", async () => {
 			// Act
-			const response = await request(app).get(storedGameUrl(NON_EXISTENT_ID));
+			const response = await player.agent.get(storedGameUrl(NON_EXISTENT_ID));
 
 			// Assert
 			expectNotFound(
@@ -104,7 +136,7 @@ describe("getStoredGame", () => {
 			);
 
 			// Act
-			const response = await request(app).get(storedGameUrl(stored.gameId));
+			const response = await player.agent.get(storedGameUrl(stored.gameId));
 
 			// Assert
 			expectInternalServerError(response);
@@ -112,6 +144,16 @@ describe("getStoredGame", () => {
 				errorType: "DatabaseError",
 				message: `[GET ${storedGameUrl(stored.gameId)}] Failed to fetch stored game`,
 			});
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(storedGameUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

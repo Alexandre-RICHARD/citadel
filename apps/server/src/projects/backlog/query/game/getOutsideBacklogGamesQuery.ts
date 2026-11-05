@@ -7,6 +7,7 @@ import { buildOutsideBacklogFilter } from "./buildOutsideBacklogFilter.ts";
 
 // Une page de « Ma base », triée par nom affiché (VF, sinon VO) ; la cover est celle de la version originale
 export async function getOutsideBacklogGamesQuery(
+	userId: number,
 	query: string,
 	offset: number,
 	limit: number,
@@ -28,7 +29,7 @@ export async function getOutsideBacklogGamesQuery(
 				LIMIT :limit OFFSET :offset
 			`,
 			{
-				replacements: { pattern, limit, offset },
+				replacements: { userId, pattern, limit, offset },
 				type: QueryTypes.SELECT,
 			},
 		);

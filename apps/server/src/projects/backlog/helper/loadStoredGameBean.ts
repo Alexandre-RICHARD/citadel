@@ -6,13 +6,15 @@ import { fromStoredGameEntityToStoredGameBean } from "../mapper/beanEntity/fromS
 import { getStoredGameEntityQuery } from "../query/game/getStoredGameEntityQuery.ts";
 import { getEmulatorsQuery } from "../query/platform/getEmulatorsQuery.ts";
 
-// Un jeu en base, avec les plateformes proposées de chaque version ; null s'il n'y est pas
+// Un jeu en base, avec les plateformes proposées de chaque version et sa personnalisation dans le backlog du compte ;
+// null s'il n'y est pas
 export async function loadStoredGameBean(
+	userId: number,
 	gameId: number,
 	transaction: Transaction | null = null,
 ): Promise<StoredGameBean | null> {
 	const [game, emulators] = await Promise.all([
-		getStoredGameEntityQuery(gameId, transaction),
+		getStoredGameEntityQuery(userId, gameId, transaction),
 		getEmulatorsQuery(),
 	]);
 	return game === null

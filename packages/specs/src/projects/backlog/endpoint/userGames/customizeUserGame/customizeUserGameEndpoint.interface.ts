@@ -16,7 +16,7 @@ export interface CustomizeUserGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId`;
 		method: HttpMethodEnum.PUT;
-		protected: false;
+		protected: true;
 		pathParams: CustomizeUserGamePathParamDto;
 		body: CustomizeUserGameBodyDto;
 	};

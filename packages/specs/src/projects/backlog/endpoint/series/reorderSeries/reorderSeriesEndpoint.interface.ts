@@ -16,7 +16,7 @@ export interface ReorderSeries extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/series/:seriesId/entries`;
 		method: HttpMethodEnum.PUT;
-		protected: false;
+		protected: true;
 		pathParams: ReorderSeriesPathParamDto;
 		body: ReorderSeriesBodyDto;
 	};

@@ -15,7 +15,7 @@ export interface StoreGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/games`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		body: StoreGameBodyDto;
 	};
 	response: {

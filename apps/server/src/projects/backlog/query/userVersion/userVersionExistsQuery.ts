@@ -3,8 +3,9 @@ import type { Transaction } from "sequelize";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { UserVersion } from "../../models/UserVersion.ts";
 
-// Une version jouée est unique par version + plateforme
+// Une version jouée est unique par compte, version et plateforme
 export async function userVersionExistsQuery(
+	userId: number,
 	versionId: number,
 	platformId: number,
 	transaction: Transaction,
@@ -12,7 +13,7 @@ export async function userVersionExistsQuery(
 	try {
 		return (
 			(await UserVersion.count({
-				where: { versionId, platformId },
+				where: { userId, versionId, platformId },
 				transaction,
 			})) > 0
 		);

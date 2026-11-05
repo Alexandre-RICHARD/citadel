@@ -28,7 +28,7 @@ export function useStoreGame(igdbId: number, gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/games`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			body,
 		}),
 		getAffectedQueryKeys: () => [

@@ -35,7 +35,7 @@ export function useCreateUserGame(gameId: number) {
 			buildRequest: (body) => ({
 				url: `${ApiPrefixEnum.BACKLOG}/user-games`,
 				method: HttpMethodEnum.POST,
-				protected: false,
+				protected: true,
 				body,
 			}),
 			getAffectedQueryKeys: () => [

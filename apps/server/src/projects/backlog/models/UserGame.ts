@@ -12,11 +12,12 @@ import { sequelize } from "../../../configuration/sequelize.ts";
 import { Game } from "./Game.ts";
 import { Series } from "./Series.ts";
 
-// Jeu du backlog : le jeu et sa personnalisation ; `createdAt` donne l'ordre d'ajout au backlog
+// Jeu du backlog d'un compte : le jeu et sa personnalisation ; `createdAt` donne l'ordre d'ajout au backlog
 export class UserGame extends Model<
 	InferAttributes<UserGame>,
 	InferCreationAttributes<UserGame>
 > {
+	declare userId: number;
 	declare gameId: number;
 	declare imageId: string | null;
 	declare endingType: EndingTypeEnum;
@@ -30,6 +31,13 @@ export class UserGame extends Model<
 
 UserGame.init(
 	{
+		// Clé primaire (user_id, game_id) : un jeu n'est qu'une fois dans le backlog d'un compte
+		userId: {
+			type: DataTypes.INTEGER,
+			field: "user_id",
+			primaryKey: true,
+			allowNull: false,
+		},
 		gameId: {
 			type: DataTypes.INTEGER,
 			field: "game_id",
@@ -80,6 +88,7 @@ UserGame.init(
 	},
 );
 
+// Un jeu est dans le backlog de plusieurs comptes : l'include filtre toujours celui du compte (getStoredGameEntityQuery)
 Game.hasOne(UserGame, { foreignKey: "gameId", as: "userGame" });
 UserGame.belongsTo(Game, { foreignKey: "gameId", as: "game" });
 UserGame.belongsTo(Series, { foreignKey: "seriesId", as: "series" });

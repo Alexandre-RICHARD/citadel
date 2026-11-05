@@ -18,7 +18,7 @@ export function useStoredGame(gameId: number): UseQueryResult<StoredGameFm> {
 					{
 						url: `${ApiPrefixEnum.BACKLOG}/games/:gameId`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { gameId },
 					},
 					{ signal },

@@ -26,7 +26,7 @@ export function useDeleteUserGame(gameId: number) {
 		buildRequest: () => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId`,
 			method: HttpMethodEnum.DELETE,
-			protected: false,
+			protected: true,
 			pathParams: { gameId },
 		}),
 		getAffectedQueryKeys: () => [

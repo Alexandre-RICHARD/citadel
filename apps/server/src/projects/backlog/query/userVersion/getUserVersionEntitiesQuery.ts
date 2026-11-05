@@ -5,14 +5,16 @@ import { Platform } from "../../models/Platform.ts";
 import { UserVersion } from "../../models/UserVersion.ts";
 import { Version } from "../../models/Version.ts";
 
-// Versions jouées de ces jeux, dans l'ordre d'ajout ; null : de tout le backlog
+// Versions jouées de ces jeux par le compte, dans l'ordre d'ajout ; null : de tout son backlog
 export async function getUserVersionEntitiesQuery(
+	userId: number,
 	gameIds: number[] | null,
 ): Promise<UserVersionEntity[]> {
 	if (gameIds?.length === 0) return [];
 
 	try {
 		const userVersions = await UserVersion.findAll({
+			where: { userId },
 			include: [
 				{
 					model: Version,

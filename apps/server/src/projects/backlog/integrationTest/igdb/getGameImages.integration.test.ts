@@ -2,12 +2,21 @@ import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { igdbGateway } from "../../igdb/igdbGateway.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function imagesUrl(igdbId: number): string {
 	return `${ApiPrefixEnum.BACKLOG}/igdb/games/${igdbId}/images`;
@@ -25,7 +34,7 @@ describe("getGameImages", () => {
 			});
 
 			// Act
-			const response = await request(app).get(imagesUrl(igdbId));
+			const response = await player.agent.get(imagesUrl(igdbId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
@@ -40,7 +49,7 @@ describe("getGameImages", () => {
 			});
 
 			// Act
-			const response = await request(app).get(imagesUrl(igdbId));
+			const response = await player.agent.get(imagesUrl(igdbId));
 
 			// Assert
 			expect(response.body).toStrictEqual({ imageIds: [] });
@@ -54,7 +63,7 @@ describe("getGameImages", () => {
 			vi.spyOn(igdbGateway, "fetchGameImages").mockResolvedValueOnce(null);
 
 			// Act
-			const response = await request(app).get(imagesUrl(igdbId));
+			const response = await player.agent.get(imagesUrl(igdbId));
 
 			// Assert
 			expectNotFound(
@@ -62,6 +71,16 @@ describe("getGameImages", () => {
 				BacklogErrorCodeEnum.IGDB_GAME_NOT_FOUND,
 				`No IGDB game with id : ${igdbId}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(imagesUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

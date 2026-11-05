@@ -11,7 +11,7 @@ export interface GetBacklogOverview extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/overview`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 	};
 	response: {
 		status: HttpStatutCodeSuccessEnum.SUCCESS;

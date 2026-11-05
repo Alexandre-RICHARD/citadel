@@ -10,17 +10,18 @@ import { getVersionPlatformsQuery } from "../query/version/getVersionPlatformsQu
 import { getVersionsQuery } from "../query/version/getVersionsQuery.ts";
 
 /**
- * Lignes du backlog, dans l'ordre d'ajout ; null : tout le backlog. Quelques requêtes à plat plutôt qu'une jointure
+ * Lignes du backlog du compte, dans l'ordre d'ajout ; null : tout son backlog. Quelques requêtes à plat plutôt qu'une jointure
  * géante : leur nombre ne dépend pas de la taille du backlog
  */
 export async function loadUserGameBeans(
+	userId: number,
 	gameIds: number[] | null,
 ): Promise<UserGameBean[]> {
-	const userGames = await getUserGameEntitiesQuery(gameIds);
+	const userGames = await getUserGameEntitiesQuery(userId, gameIds);
 	const backlogGameIds = userGames.map(({ gameId }) => gameId);
 	const [dlcs, userVersions, originalVersions] = await Promise.all([
 		getDlcsOfGamesQuery(backlogGameIds),
-		getUserVersionEntitiesQuery(backlogGameIds),
+		getUserVersionEntitiesQuery(userId, backlogGameIds),
 		getVersionsQuery(backlogGameIds),
 	]);
 	const [versionPlatforms, seriesNumbers] = await Promise.all([
@@ -28,6 +29,7 @@ export async function loadUserGameBeans(
 			getUniqueValues(userVersions.map(({ versionId }) => versionId)),
 		),
 		getSeriesListNumbersQuery(
+			userId,
 			getUniqueValues(userGames.flatMap(({ seriesId }) => seriesId ?? [])),
 		),
 	]);

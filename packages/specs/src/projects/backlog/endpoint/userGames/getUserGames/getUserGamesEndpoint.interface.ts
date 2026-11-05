@@ -13,7 +13,7 @@ export interface GetUserGames extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		queryParams: GetUserGamesQueryParamDto;
 	};
 	response:

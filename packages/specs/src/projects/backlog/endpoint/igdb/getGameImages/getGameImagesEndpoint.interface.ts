@@ -15,7 +15,7 @@ export interface GetGameImages extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/igdb/games/:igdbId/images`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetGameImagesPathParamDto;
 	};
 	response: {

@@ -52,7 +52,7 @@ export function useUpdateUserVersion(
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id`,
 			method: HttpMethodEnum.PATCH,
-			protected: false,
+			protected: true,
 			pathParams: { id: userVersionId },
 			body,
 		}),

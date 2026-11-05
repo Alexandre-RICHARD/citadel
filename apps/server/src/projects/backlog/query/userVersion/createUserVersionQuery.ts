@@ -7,12 +7,16 @@ import { UserVersion } from "../../models/UserVersion.ts";
 
 // La version jouée et ses DLC faits
 export async function createUserVersionQuery(
+	userId: number,
 	userVersion: NewUserVersionBean,
 	transaction: Transaction,
 ): Promise<void> {
 	const { doneDlcIds, ...data } = userVersion;
 	try {
-		const created = await UserVersion.create(data, { transaction });
+		const created = await UserVersion.create(
+			{ ...data, userId },
+			{ transaction },
+		);
 		await DoneDlc.bulkCreate(
 			doneDlcIds.map((dlcId) => ({ userVersionId: created.id, dlcId })),
 			{ transaction },

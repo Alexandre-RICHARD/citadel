@@ -11,9 +11,11 @@ import { userVersionExistsQuery } from "../query/userVersion/userVersionExistsQu
 
 /**
  * Une nouvelle version jouée du jeu : une de ses versions en base, une plateforme proposée
- * pour cette version, des DLC du jeu, un statut que le type de fin propose, et pas déjà jouée sur cette plateforme
+ * pour cette version, des DLC du jeu, un statut que le type de fin propose, et pas déjà jouée sur cette plateforme par
+ * ce compte
  */
 export async function checkNewUserVersion(
+	userId: number,
 	game: StoredGameBean,
 	userVersion: NewUserVersionBean,
 	endingType: EndingTypeEnum,
@@ -48,6 +50,7 @@ export async function checkNewUserVersion(
 
 	if (
 		await userVersionExistsQuery(
+			userId,
 			userVersion.versionId,
 			userVersion.platformId,
 			transaction,

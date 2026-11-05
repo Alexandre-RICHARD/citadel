@@ -14,7 +14,7 @@ export interface DeleteUserVersion extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id`;
 		method: HttpMethodEnum.DELETE;
-		protected: false;
+		protected: true;
 		pathParams: DeleteUserVersionPathParamDto;
 	};
 	response: {

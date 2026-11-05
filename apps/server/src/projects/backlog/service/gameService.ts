@@ -73,21 +73,33 @@ function pickSelection(
 	};
 }
 
+/**
+ * Les jeux en base sont communs à tous les comptes (données IGDB) ; seule leur personnalisation, et « Ma base » (les jeux
+ * hors du backlog), dépendent du compte
+ */
 class GameService {
-	async getStoredGame({ gameId }: GetStoredGameBean): Promise<StoredGameBean> {
-		const game = await loadStoredGameBean(gameId);
+	async getStoredGame(
+		userId: number,
+		{ gameId }: GetStoredGameBean,
+	): Promise<StoredGameBean> {
+		const game = await loadStoredGameBean(userId, gameId);
 		if (game === null) throw gameNotFound(gameId);
 		return game;
 	}
 
-	async getStoredGames({
-		query,
-		page,
-	}: GetStoredGamesBean): Promise<StoredGamePageBean> {
+	async getStoredGames(
+		userId: number,
+		{ query, page }: GetStoredGamesBean,
+	): Promise<StoredGamePageBean> {
 		const pageSize = Number(BacklogPageSizeEnum.STORED_GAMES);
 		const [totalCount, rows] = await Promise.all([
-			countOutsideBacklogGamesQuery(query),
-			getOutsideBacklogGamesQuery(query, (page - 1) * pageSize, pageSize),
+			countOutsideBacklogGamesQuery(userId, query),
+			getOutsideBacklogGamesQuery(
+				userId,
+				query,
+				(page - 1) * pageSize,
+				pageSize,
+			),
 		]);
 		const platformRows = await getGamesPlatformNamesQuery(
 			rows.map(({ id }) => id),
@@ -109,11 +121,10 @@ class GameService {
 	 * « Valider » de la modale d'ajout : le jeu, sa version originale, toujours, les versions et DLC
 	 * cochés, la série proposée par IGDB, les sociétés et plateformes qui manquent. L'ajout au backlog suit, à part
 	 */
-	async storeGame({
-		igdbId,
-		versionIds,
-		dlcIds,
-	}: StoreGameBean): Promise<StoredGameBean> {
+	async storeGame(
+		userId: number,
+		{ igdbId, versionIds, dlcIds }: StoreGameBean,
+	): Promise<StoredGameBean> {
 		const gameImport = await fetchGameImport(igdbId);
 		const gameId = gameImport.game.id;
 		const selection = pickSelection(gameImport, versionIds, dlcIds);
@@ -160,18 +171,17 @@ class GameService {
 			await insertDlcsQuery(gameId, selection.dlcs, transaction);
 		});
 
-		return this.getStoredGame({ gameId });
+		return this.getStoredGame(userId, { gameId });
 	}
 
 	/**
 	 * « Modifier le jeu » et « Rechercher d'autres DLC » : des versions et DLC IGDB rejoignent
 	 * le jeu ; ceux déjà en base sont ignorés, et rien n'est retiré
 	 */
-	async importGameContent({
-		gameId,
-		versionIds,
-		dlcIds,
-	}: ImportGameContentBean): Promise<StoredGameBean> {
+	async importGameContent(
+		userId: number,
+		{ gameId, versionIds, dlcIds }: ImportGameContentBean,
+	): Promise<StoredGameBean> {
 		if (!(await gameExistsQuery(gameId))) throw gameNotFound(gameId);
 
 		const gameImport = await fetchGameImport(gameId);
@@ -191,7 +201,7 @@ class GameService {
 			},
 		);
 
-		return this.getStoredGame({ gameId });
+		return this.getStoredGame(userId, { gameId });
 	}
 }
 

@@ -16,7 +16,7 @@ export interface UpdateUserVersion extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id`;
 		method: HttpMethodEnum.PATCH;
-		protected: false;
+		protected: true;
 		pathParams: UpdateUserVersionPathParamDto;
 		body: UpdateUserVersionBodyDto;
 	};

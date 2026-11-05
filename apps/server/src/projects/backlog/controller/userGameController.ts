@@ -4,7 +4,7 @@ import type { DeleteUserGame } from "@citadel/specs/src/projects/backlog/endpoin
 import type { GetUserGames } from "@citadel/specs/src/projects/backlog/endpoint/userGames/getUserGames/getUserGamesEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
 import { fromCreateUserGameDtoToCreateUserGameBean } from "../mapper/dtoBean/userGame/fromCreateUserGameDtoToCreateUserGameBean.ts";
 import { fromCustomizeUserGameDtoToCustomizeUserGameBean } from "../mapper/dtoBean/userGame/fromCustomizeUserGameDtoToCustomizeUserGameBean.ts";
 import { fromDeleteUserGameDtoToDeleteUserGameBean } from "../mapper/dtoBean/userGame/fromDeleteUserGameDtoToDeleteUserGameBean.ts";
@@ -14,32 +14,39 @@ import { fromUserGamePageBeanToUserGameListDto } from "../mapper/dtoBean/userGam
 import { userGameService } from "../service/userGameService.ts";
 
 export const userGameController = {
-	getAll: asyncRequestHandler<GetUserGames>(async (request, response) => {
-		const page = await userGameService.getUserGames(
-			fromGetUserGamesDtoToGetUserGamesBean(request.query),
-		);
+	getAll: protectedRequestHandler<GetUserGames>(
+		async (request, response, session) => {
+			const page = await userGameService.getUserGames(
+				session.userId,
+				fromGetUserGamesDtoToGetUserGamesBean(request.query),
+			);
 
-		if (page.userGames.length === 0)
-			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+			if (page.userGames.length === 0)
+				return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromUserGamePageBeanToUserGameListDto(page));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromUserGamePageBeanToUserGameListDto(page));
+		},
+	),
 
-	create: asyncRequestHandler<CreateUserGame>(async (request, response) => {
-		const userGame = await userGameService.createUserGame(
-			fromCreateUserGameDtoToCreateUserGameBean(request.body),
-		);
+	create: protectedRequestHandler<CreateUserGame>(
+		async (request, response, session) => {
+			const userGame = await userGameService.createUserGame(
+				session.userId,
+				fromCreateUserGameDtoToCreateUserGameBean(request.body),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.CREATED)
-			.json(fromUserGameBeanToUserGameDto(userGame));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.CREATED)
+				.json(fromUserGameBeanToUserGameDto(userGame));
+		},
+	),
 
-	customize: asyncRequestHandler<CustomizeUserGame>(
-		async (request, response) => {
+	customize: protectedRequestHandler<CustomizeUserGame>(
+		async (request, response, session) => {
 			const userGame = await userGameService.customizeUserGame(
+				session.userId,
 				fromCustomizeUserGameDtoToCustomizeUserGameBean(
 					request.params,
 					request.body,
@@ -52,11 +59,14 @@ export const userGameController = {
 		},
 	),
 
-	delete: asyncRequestHandler<DeleteUserGame>(async (request, response) => {
-		await userGameService.deleteUserGame(
-			fromDeleteUserGameDtoToDeleteUserGameBean(request.params),
-		);
+	delete: protectedRequestHandler<DeleteUserGame>(
+		async (request, response, session) => {
+			await userGameService.deleteUserGame(
+				session.userId,
+				fromDeleteUserGameDtoToDeleteUserGameBean(request.params),
+			);
 
-		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
-	}),
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+		},
+	),
 };

@@ -16,7 +16,7 @@ export interface SetDlcDone extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id/done-dlcs/:dlcId`;
 		method: HttpMethodEnum.PATCH;
-		protected: false;
+		protected: true;
 		pathParams: SetDlcDonePathParamDto;
 		body: SetDlcDoneBodyDto;
 	};

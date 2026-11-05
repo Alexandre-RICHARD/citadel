@@ -5,15 +5,25 @@ import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { newUserVersionBody } from "../../../../testUtils/integration/backlog/newUserVersionBody.ts";
 import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { SEEDED_PLATFORMS } from "../../../../testUtils/integration/backlog/seededPlatforms.ts";
 import { seedStoredGame } from "../../../../testUtils/integration/backlog/seedStoredGame.ts";
+import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectConflict } from "../../../../testUtils/integration/expectConflict.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
+
+// Le compte de ce fichier : son backlog, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function createUrl(gameId: number): string {
 	return `${ApiPrefixEnum.BACKLOG}/user-games/${gameId}/user-versions`;
@@ -24,12 +34,13 @@ describe("createUserVersion", () => {
 		it("SHOULD add the played version after the others and give the row", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				otherVersionTitles: ["Remastered"],
 				dlcNames: ["DLC"],
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createUrl(backlogGame.gameId))
 				.send(
 					newUserVersionBody(
@@ -57,12 +68,41 @@ describe("createUserVersion", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the game is not in the backlog, adding nothing, WHEN only another account has it", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const othersGame = await seedBacklogGame({
+				userId: other.userId,
+				otherVersionTitles: ["Remaster"],
+			});
+
+			// Act
+			const response = await player.agent
+				.post(createUrl(othersGame.gameId))
+				.send(
+					newUserVersionBody(
+						othersGame.versionIds[1] ?? 0,
+						SEEDED_PLATFORMS.PS3,
+					),
+				);
+
+			// Assert
+			expectNotFound(
+				response,
+				BacklogErrorCodeEnum.USER_GAME_NOT_FOUND,
+				`No backlog game with id : ${othersGame.gameId}`,
+			);
+			expect(
+				await selectBacklogRows.userVersions(other.userId, othersGame.gameId),
+			).toHaveLength(1);
+		});
+
 		it("SHOULD answer that the game is not in the backlog", async () => {
 			// Arrange
 			const stored = await seedStoredGame();
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createUrl(stored.gameId))
 				.send(newUserVersionBody(stored.gameId, SEEDED_PLATFORMS.PS3));
 
@@ -77,12 +117,13 @@ describe("createUserVersion", () => {
 		it("SHOULD refuse a DLC of another game", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				otherVersionTitles: ["Remastered"],
 			});
 			const other = await seedStoredGame({ dlcNames: ["Not mine"] });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createUrl(backlogGame.gameId))
 				.send(
 					newUserVersionBody(
@@ -106,10 +147,12 @@ describe("createUserVersion", () => {
 	describe("409 Conflict", () => {
 		it("SHOULD refuse the same version on the same platform twice", async () => {
 			// Arrange
-			const backlogGame = await seedBacklogGame();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createUrl(backlogGame.gameId))
 				.send(newUserVersionBody(backlogGame.gameId, SEEDED_PLATFORMS.PS3));
 
@@ -124,12 +167,13 @@ describe("createUserVersion", () => {
 		it("SHOULD refuse a status that the ending type of the game does not offer", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
 				endingType: EndingTypeEnum.MULTIPLAYER,
 				otherVersionTitles: ["Remastered"],
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createUrl(backlogGame.gameId))
 				.send(
 					newUserVersionBody(
@@ -147,6 +191,16 @@ describe("createUserVersion", () => {
 				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
 				`Status ${StatusEnum.WATCHED} is not offered for ending type : ${EndingTypeEnum.MULTIPLAYER}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).post(createUrl(1)).send({});
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 });

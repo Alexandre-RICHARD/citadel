@@ -48,7 +48,7 @@ export function useSetDlcDone(
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/user-versions/:id/done-dlcs/:dlcId`,
 			method: HttpMethodEnum.PATCH,
-			protected: false,
+			protected: true,
 			pathParams: { id: userVersionId, dlcId },
 			body,
 		}),

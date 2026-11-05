@@ -4,7 +4,7 @@ import type { SetDlcDone } from "@citadel/specs/src/projects/backlog/endpoint/us
 import type { UpdateUserVersion } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/updateUserVersion/updateUserVersionEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
 import { fromUserGameBeanToUserGameDto } from "../mapper/dtoBean/userGame/fromUserGameBeanToUserGameDto.ts";
 import { fromCreateUserVersionDtoToCreateUserVersionBean } from "../mapper/dtoBean/userVersion/fromCreateUserVersionDtoToCreateUserVersionBean.ts";
 import { fromDeleteUserVersionDtoToDeleteUserVersionBean } from "../mapper/dtoBean/userVersion/fromDeleteUserVersionDtoToDeleteUserVersionBean.ts";
@@ -13,47 +13,59 @@ import { fromUpdateUserVersionDtoToUpdateUserVersionBean } from "../mapper/dtoBe
 import { userVersionService } from "../service/userVersionService.ts";
 
 export const userVersionController = {
-	create: asyncRequestHandler<CreateUserVersion>(async (request, response) => {
-		const userGame = await userVersionService.createUserVersion(
-			fromCreateUserVersionDtoToCreateUserVersionBean(
-				request.params,
-				request.body,
-			),
-		);
+	create: protectedRequestHandler<CreateUserVersion>(
+		async (request, response, session) => {
+			const userGame = await userVersionService.createUserVersion(
+				session.userId,
+				fromCreateUserVersionDtoToCreateUserVersionBean(
+					request.params,
+					request.body,
+				),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.CREATED)
-			.json(fromUserGameBeanToUserGameDto(userGame));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.CREATED)
+				.json(fromUserGameBeanToUserGameDto(userGame));
+		},
+	),
 
-	update: asyncRequestHandler<UpdateUserVersion>(async (request, response) => {
-		const userGame = await userVersionService.updateUserVersion(
-			fromUpdateUserVersionDtoToUpdateUserVersionBean(
-				request.params,
-				request.body,
-			),
-		);
+	update: protectedRequestHandler<UpdateUserVersion>(
+		async (request, response, session) => {
+			const userGame = await userVersionService.updateUserVersion(
+				session.userId,
+				fromUpdateUserVersionDtoToUpdateUserVersionBean(
+					request.params,
+					request.body,
+				),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromUserGameBeanToUserGameDto(userGame));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromUserGameBeanToUserGameDto(userGame));
+		},
+	),
 
-	delete: asyncRequestHandler<DeleteUserVersion>(async (request, response) => {
-		await userVersionService.deleteUserVersion(
-			fromDeleteUserVersionDtoToDeleteUserVersionBean(request.params),
-		);
+	delete: protectedRequestHandler<DeleteUserVersion>(
+		async (request, response, session) => {
+			await userVersionService.deleteUserVersion(
+				session.userId,
+				fromDeleteUserVersionDtoToDeleteUserVersionBean(request.params),
+			);
 
-		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
-	}),
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+		},
+	),
 
-	setDlcDone: asyncRequestHandler<SetDlcDone>(async (request, response) => {
-		const userGame = await userVersionService.setDlcDone(
-			fromSetDlcDoneDtoToSetDlcDoneBean(request.params, request.body),
-		);
+	setDlcDone: protectedRequestHandler<SetDlcDone>(
+		async (request, response, session) => {
+			const userGame = await userVersionService.setDlcDone(
+				session.userId,
+				fromSetDlcDoneDtoToSetDlcDoneBean(request.params, request.body),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromUserGameBeanToUserGameDto(userGame));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromUserGameBeanToUserGameDto(userGame));
+		},
+	),
 };

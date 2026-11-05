@@ -3,7 +3,7 @@ import type { GetSeriesEntries } from "@citadel/specs/src/projects/backlog/endpo
 import type { ReorderSeries } from "@citadel/specs/src/projects/backlog/endpoint/series/reorderSeries/reorderSeriesEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
 import { fromGetSeriesEntriesDtoToGetSeriesEntriesBean } from "../mapper/dtoBean/series/fromGetSeriesEntriesDtoToGetSeriesEntriesBean.ts";
 import { fromReorderSeriesDtoToReorderSeriesBean } from "../mapper/dtoBean/series/fromReorderSeriesDtoToReorderSeriesBean.ts";
 import { fromSeriesBeanListToSeriesListDto } from "../mapper/dtoBean/series/fromSeriesBeanListToSeriesListDto.ts";
@@ -11,20 +11,23 @@ import { fromSeriesEntryBeanListToSeriesEntryListDto } from "../mapper/dtoBean/s
 import { seriesService } from "../service/seriesService.ts";
 
 export const seriesController = {
-	getAll: asyncRequestHandler<GetAllSeries>(async (_request, response) => {
-		const series = await seriesService.getAllSeries();
+	getAll: protectedRequestHandler<GetAllSeries>(
+		async (_request, response, session) => {
+			const series = await seriesService.getAllSeries(session.userId);
 
-		if (series.length === 0)
-			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+			if (series.length === 0)
+				return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromSeriesBeanListToSeriesListDto(series));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromSeriesBeanListToSeriesListDto(series));
+		},
+	),
 
-	getEntries: asyncRequestHandler<GetSeriesEntries>(
-		async (request, response) => {
+	getEntries: protectedRequestHandler<GetSeriesEntries>(
+		async (request, response, session) => {
 			const entries = await seriesService.getSeriesEntries(
+				session.userId,
 				fromGetSeriesEntriesDtoToGetSeriesEntriesBean(request.params),
 			);
 
@@ -37,13 +40,16 @@ export const seriesController = {
 		},
 	),
 
-	reorder: asyncRequestHandler<ReorderSeries>(async (request, response) => {
-		const entries = await seriesService.reorderSeries(
-			fromReorderSeriesDtoToReorderSeriesBean(request.params, request.body),
-		);
+	reorder: protectedRequestHandler<ReorderSeries>(
+		async (request, response, session) => {
+			const entries = await seriesService.reorderSeries(
+				session.userId,
+				fromReorderSeriesDtoToReorderSeriesBean(request.params, request.body),
+			);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromSeriesEntryBeanListToSeriesEntryListDto(entries));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromSeriesEntryBeanListToSeriesEntryListDto(entries));
+		},
+	),
 };

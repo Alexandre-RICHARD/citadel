@@ -28,6 +28,7 @@ type UserVersionRow = {
 
 type SeriesRow = {
 	id: number;
+	userId: number | null;
 	name: string;
 	igdbCollectionId: number | null;
 	igdbFranchiseId: number | null;
@@ -35,14 +36,19 @@ type SeriesRow = {
 
 // Lectures en SQL brut : vérifient les vraies colonnes, indépendamment du mapping des modèles
 export const selectBacklogRows = {
-	async userGame(gameId: number): Promise<UserGameRow | null> {
+	// Le jeu dans le backlog de ce compte
+	async userGame(userId: number, gameId: number): Promise<UserGameRow | null> {
 		const row = await sequelize.query<
 			Omit<UserGameRow, "seriesNumber"> & { seriesNumber: string | null }
 		>(
 			`SELECT game_id AS gameId, image_id AS imageId, ending_type AS endingType, series_id AS seriesId,
 				series_number AS seriesNumber
-			FROM backlog_user_game WHERE game_id = :gameId`,
-			{ type: QueryTypes.SELECT, plain: true, replacements: { gameId } },
+			FROM backlog_user_game WHERE user_id = :userId AND game_id = :gameId`,
+			{
+				type: QueryTypes.SELECT,
+				plain: true,
+				replacements: { userId, gameId },
+			},
 		);
 		return row === null
 			? null
@@ -53,7 +59,11 @@ export const selectBacklogRows = {
 				};
 	},
 
-	async userVersions(gameId: number): Promise<UserVersionRow[]> {
+	// Les versions jouées du jeu par ce compte
+	async userVersions(
+		userId: number,
+		gameId: number,
+	): Promise<UserVersionRow[]> {
 		const rows = await sequelize.query<
 			Omit<UserVersionRow, "isOwned" | "isUpNext"> & {
 				isOwned: number;
@@ -68,9 +78,9 @@ export const selectBacklogRows = {
 				uv.estimated_play_time_minutes AS estimatedPlayTimeMinutes, uv.rating, uv.comment
 			FROM backlog_user_version uv
 			JOIN backlog_version v ON v.id = uv.version_id
-			WHERE v.game_id = :gameId
+			WHERE uv.user_id = :userId AND v.game_id = :gameId
 			ORDER BY uv.id`,
-			{ type: QueryTypes.SELECT, replacements: { gameId } },
+			{ type: QueryTypes.SELECT, replacements: { userId, gameId } },
 		);
 		return rows.map((row) => ({
 			...row,
@@ -89,7 +99,8 @@ export const selectBacklogRows = {
 
 	async series(seriesId: number): Promise<SeriesRow | null> {
 		return sequelize.query<SeriesRow>(
-			`SELECT id, name, igdb_collection_id AS igdbCollectionId, igdb_franchise_id AS igdbFranchiseId
+			`SELECT id, user_id AS userId, name, igdb_collection_id AS igdbCollectionId,
+				igdb_franchise_id AS igdbFranchiseId
 			FROM backlog_series WHERE id = :seriesId`,
 			{ type: QueryTypes.SELECT, plain: true, replacements: { seriesId } },
 		);
@@ -97,7 +108,8 @@ export const selectBacklogRows = {
 
 	async seriesByName(name: string): Promise<SeriesRow[]> {
 		return sequelize.query<SeriesRow>(
-			`SELECT id, name, igdb_collection_id AS igdbCollectionId, igdb_franchise_id AS igdbFranchiseId
+			`SELECT id, user_id AS userId, name, igdb_collection_id AS igdbCollectionId,
+				igdb_franchise_id AS igdbFranchiseId
 			FROM backlog_series WHERE name = :name ORDER BY id`,
 			{ type: QueryTypes.SELECT, replacements: { name } },
 		);

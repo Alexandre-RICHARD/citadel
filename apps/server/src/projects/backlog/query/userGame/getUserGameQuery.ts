@@ -5,11 +5,13 @@ import { UserGame } from "../../models/UserGame.ts";
 
 // Verrouillé jusqu'à la fin de la transaction : une autre modification du même jeu attend son tour
 export async function getUserGameQuery(
+	userId: number,
 	gameId: number,
 	transaction: Transaction,
 ): Promise<UserGame | null> {
 	try {
-		return await UserGame.findByPk(gameId, {
+		return await UserGame.findOne({
+			where: { userId, gameId },
 			transaction,
 			lock: transaction.LOCK.UPDATE,
 		});

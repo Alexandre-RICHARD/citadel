@@ -30,7 +30,7 @@ export function useImportGameContent(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.BACKLOG}/games/:gameId/imports`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			pathParams: { gameId },
 			body,
 		}),

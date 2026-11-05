@@ -4,13 +4,15 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { UserVersion } from "../../models/UserVersion.ts";
 import { Version } from "../../models/Version.ts";
 
-// Versions jouées d'un jeu, verrouillées jusqu'à la fin de la transaction
+// Versions jouées d'un jeu par le compte, verrouillées jusqu'à la fin de la transaction
 export async function getGameUserVersionsQuery(
+	userId: number,
 	gameId: number,
 	transaction: Transaction,
 ): Promise<UserVersion[]> {
 	try {
 		return await UserVersion.findAll({
+			where: { userId },
 			include: [
 				{
 					model: Version,

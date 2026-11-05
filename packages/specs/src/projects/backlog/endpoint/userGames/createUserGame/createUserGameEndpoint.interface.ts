@@ -15,7 +15,7 @@ export interface CreateUserGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		body: CreateUserGameBodyDto;
 	};
 	response: {

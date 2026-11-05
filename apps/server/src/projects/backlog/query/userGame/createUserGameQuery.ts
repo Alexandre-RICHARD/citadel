@@ -5,6 +5,7 @@ import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { UserGame } from "../../models/UserGame.ts";
 
 type NewUserGame = {
+	userId: number;
 	gameId: number;
 	imageId: string | null;
 	endingType: EndingTypeEnum;

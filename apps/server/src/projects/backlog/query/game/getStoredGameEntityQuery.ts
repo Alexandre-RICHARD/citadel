@@ -11,8 +11,10 @@ import { UserGame } from "../../models/UserGame.ts";
 import { Version } from "../../models/Version.ts";
 import { VersionPlatform } from "../../models/VersionPlatform.ts";
 
-// Les listes (versions, DLC) se lisent chacune à part (`separate`) : une seule jointure les multiplierait entre elles
+// Le jeu en base, avec sa personnalisation dans le backlog du compte s'il y est. Les listes (versions, DLC) se lisent
+// chacune à part (`separate`) : une seule jointure les multiplierait entre elles
 export async function getStoredGameEntityQuery(
+	userId: number,
 	gameId: number,
 	transaction: Transaction | null = null,
 ): Promise<StoredGameEntity | null> {
@@ -38,6 +40,8 @@ export async function getStoredGameEntityQuery(
 				{
 					model: UserGame,
 					as: "userGame",
+					where: { userId },
+					required: false,
 					include: [{ model: Series, as: "series" }],
 				},
 			],

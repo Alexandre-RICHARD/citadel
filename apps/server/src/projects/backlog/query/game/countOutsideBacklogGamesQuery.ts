@@ -7,13 +7,18 @@ import { buildOutsideBacklogFilter } from "./buildOutsideBacklogFilter.ts";
 
 // Jeux de « Ma base » qui correspondent à la saisie ; une saisie vide les compte tous
 export async function countOutsideBacklogGamesQuery(
+	userId: number,
 	query: string,
 ): Promise<number> {
 	const { condition, pattern } = buildOutsideBacklogFilter(query);
 	try {
 		const row = await sequelize.query<CountRow>(
 			`SELECT COUNT(*) AS count FROM backlog_game g WHERE ${condition}`,
-			{ replacements: { pattern }, type: QueryTypes.SELECT, plain: true },
+			{
+				replacements: { userId, pattern },
+				type: QueryTypes.SELECT,
+				plain: true,
+			},
 		);
 		return Number(row?.count ?? 0);
 	} catch (error) {

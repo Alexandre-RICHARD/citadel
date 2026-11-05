@@ -40,18 +40,24 @@ export const insertBacklogRows = {
 		);
 	},
 
-	// Renvoie l'id créé
+	// Renvoie l'id créé. Une série IGDB (un de ses id IGDB) est à tous ; une série créée à la main a un compte (userId)
 	async series(row: {
+		userId?: number | null;
 		name: string;
 		igdbCollectionId?: number | null;
 		igdbFranchiseId?: number | null;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO backlog_series (name, igdb_collection_id, igdb_franchise_id)
-			VALUES (:name, :igdbCollectionId, :igdbFranchiseId)`,
+			`INSERT INTO backlog_series (user_id, name, igdb_collection_id, igdb_franchise_id)
+			VALUES (:userId, :name, :igdbCollectionId, :igdbFranchiseId)`,
 			{
 				type: QueryTypes.INSERT,
-				replacements: { igdbCollectionId: null, igdbFranchiseId: null, ...row },
+				replacements: {
+					userId: null,
+					igdbCollectionId: null,
+					igdbFranchiseId: null,
+					...row,
+				},
 			},
 		);
 		return insertedId;
@@ -126,6 +132,7 @@ export const insertBacklogRows = {
 	},
 
 	async userGame(row: {
+		userId: number;
 		gameId: number;
 		endingType?: EndingTypeEnum;
 		imageId?: string | null;
@@ -134,8 +141,9 @@ export const insertBacklogRows = {
 		createdAt?: Date;
 	}): Promise<void> {
 		await sequelize.query(
-			`INSERT INTO backlog_user_game (game_id, image_id, ending_type, series_id, series_number, created_at, updated_at)
-			VALUES (:gameId, :imageId, :endingType, :seriesId, :seriesNumber, :createdAt, :createdAt)`,
+			`INSERT INTO backlog_user_game (user_id, game_id, image_id, ending_type, series_id, series_number, created_at,
+				updated_at)
+			VALUES (:userId, :gameId, :imageId, :endingType, :seriesId, :seriesNumber, :createdAt, :createdAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -152,6 +160,7 @@ export const insertBacklogRows = {
 
 	// Renvoie l'id créé
 	async userVersion(row: {
+		userId: number;
 		versionId: number;
 		platformId: number;
 		status?: StatusEnum;
@@ -166,9 +175,9 @@ export const insertBacklogRows = {
 		comment?: string | null;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
-			`INSERT INTO backlog_user_version (version_id, platform_id, status, is_owned, is_up_next, finish_date,
+			`INSERT INTO backlog_user_version (user_id, version_id, platform_id, status, is_owned, is_up_next, finish_date,
 				sure_finish_count, probable_finish_count, tracked_play_time_minutes, estimated_play_time_minutes, rating, comment)
-			VALUES (:versionId, :platformId, :status, :isOwned, :isUpNext, :finishDate,
+			VALUES (:userId, :versionId, :platformId, :status, :isOwned, :isUpNext, :finishDate,
 				:sureFinishCount, :probableFinishCount, :trackedPlayTimeMinutes, :estimatedPlayTimeMinutes, :rating, :comment)`,
 			{
 				type: QueryTypes.INSERT,

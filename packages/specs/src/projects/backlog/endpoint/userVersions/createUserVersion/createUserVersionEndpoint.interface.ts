@@ -16,7 +16,7 @@ export interface CreateUserVersion extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId/user-versions`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		pathParams: CreateUserVersionPathParamDto;
 		body: CreateUserVersionBodyDto;
 	};

@@ -12,12 +12,16 @@ type UserGameCustomization = {
 };
 
 export async function updateUserGameQuery(
+	userId: number,
 	gameId: number,
 	customization: UserGameCustomization,
 	transaction: Transaction,
 ): Promise<void> {
 	try {
-		await UserGame.update(customization, { where: { gameId }, transaction });
+		await UserGame.update(customization, {
+			where: { userId, gameId },
+			transaction,
+		});
 	} catch (error) {
 		throw new DatabaseError("Failed to update backlog game", { cause: error });
 	}

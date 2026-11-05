@@ -15,7 +15,7 @@ export interface GetSeriesEntries extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/series/:seriesId/entries`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetSeriesEntriesPathParamDto;
 	};
 	response:

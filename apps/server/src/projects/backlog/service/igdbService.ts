@@ -26,16 +26,20 @@ function igdbGameNotFound(igdbId: number): NotFoundError {
 
 class IgdbService {
 	// Un résultat déjà en base est signalé : il mène à l'ajout au backlog, pas à la modale d'ajout
-	async searchGames({
-		query,
-	}: SearchIgdbGamesBean): Promise<SearchResultBean[]> {
+	async searchGames(
+		userId: number,
+		{ query }: SearchIgdbGamesBean,
+	): Promise<SearchResultBean[]> {
 		const results = (await igdbGateway.searchGames(query)).map(
 			fromIgdbSearchHitToSearchResultBean,
 		);
 		const storedVersions = new Map(
-			(await getStoredVersionsQuery(results.map(({ igdbId }) => igdbId))).map(
-				(row) => [row.id, row],
-			),
+			(
+				await getStoredVersionsQuery(
+					userId,
+					results.map(({ igdbId }) => igdbId),
+				)
+			).map((row) => [row.id, row]),
 		);
 		return results.map((result) => {
 			const stored = storedVersions.get(result.igdbId);
@@ -51,9 +55,10 @@ class IgdbService {
 	 * Le jeu en base est celui de la première fiche de l'arbre qui y est déjà : la fiche demandée, son original, puis
 	 * ses versions. Un jeu dont IGDB a changé l'original (FF7) se retrouve ainsi quand même
 	 */
-	async getGamePreview({
-		igdbId,
-	}: GetGamePreviewBean): Promise<GamePreviewBean> {
+	async getGamePreview(
+		userId: number,
+		{ igdbId }: GetGamePreviewBean,
+	): Promise<GamePreviewBean> {
 		const data = await igdbGateway.fetchGameData(igdbId);
 		if (data === null) throw igdbGameNotFound(igdbId);
 
@@ -65,7 +70,7 @@ class IgdbService {
 		];
 		const dlcIds = gameImport.dlcs.map(({ id }) => id);
 		const [storedVersions, emulators] = await Promise.all([
-			getStoredVersionsQuery(getUniqueValues([...treeIds, ...dlcIds])),
+			getStoredVersionsQuery(userId, getUniqueValues([...treeIds, ...dlcIds])),
 			getEmulatorsQuery(),
 		]);
 		const storedGameId =
@@ -76,7 +81,9 @@ class IgdbService {
 		return buildGamePreview({
 			gameImport,
 			storedGame:
-				storedGameId === null ? null : await loadStoredGameBean(storedGameId),
+				storedGameId === null
+					? null
+					: await loadStoredGameBean(userId, storedGameId),
 			dlcGameIds: new Map(
 				storedVersions
 					.filter(({ id }) => dlcIds.includes(id))
