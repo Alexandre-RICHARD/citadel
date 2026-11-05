@@ -8,6 +8,7 @@ import { MailCodeStep } from "../../components/MailCodeStep";
 import { PageLoading } from "../../components/PageLoading";
 import { RecoveryCodesPanel } from "../../components/RecoveryCodesPanel";
 import { AuthPathEnum } from "../../routing/authPath.enum";
+import { buildLoginPath } from "../../routing/buildLoginPath";
 import { DataSection } from "./components/DataSection";
 import { IdentitySection } from "./components/IdentitySection";
 import { LoginMethodsSection } from "./components/LoginMethodsSection";
@@ -16,7 +17,7 @@ import { SecondFactorSection } from "./components/SecondFactorSection";
 import { SessionsSection } from "./components/SessionsSection";
 import styles from "./profilePage.module.scss";
 
-const PROFILE_REDIRECT = `${AuthPathEnum.LOGIN}?redirect=${encodeURIComponent(AuthPathEnum.PROFILE)}`;
+const PROFILE_REDIRECT = buildLoginPath(AuthPathEnum.PROFILE);
 
 // Le profil : tout ce que le compte permet de changer. Un parcours du profil en cours (nouvelle adresse email, code par
 // email à activer) prend la place de la page jusqu'à la saisie du code ou du lien ; les codes de secours qui viennent

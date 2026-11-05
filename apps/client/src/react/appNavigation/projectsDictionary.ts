@@ -22,6 +22,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/home.ico",
 		theme: citadelTheme,
 		showcase: null,
+		requiresAccount: false,
 	},
 	[ProjectsEnum.Satisfactory]: {
 		id: ProjectsEnum.Satisfactory,
@@ -32,6 +33,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/satisfactory.png",
 		theme: satisfactoryTheme,
 		showcase: satisfactoryShowcase,
+		requiresAccount: false,
 	},
 	[ProjectsEnum.GameDeathCount]: {
 		id: ProjectsEnum.GameDeathCount,
@@ -42,6 +44,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/game-death-counter.png",
 		theme: gameDeathCounterTheme,
 		showcase: gameDeathCounterShowcase,
+		requiresAccount: true,
 	},
 
 	[ProjectsEnum.Backlog]: {
@@ -53,6 +56,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/backlog.png",
 		theme: backlogTheme,
 		showcase: backlogShowcase,
+		requiresAccount: true,
 	},
 	[ProjectsEnum.AngersIrigo]: {
 		id: ProjectsEnum.AngersIrigo,
@@ -63,6 +67,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/angersIrigo.png",
 		theme: angersIrigoTheme,
 		showcase: angersIrigoShowcase,
+		requiresAccount: false,
 	},
 	// Les comptes, partagés par tous les projets : dans l'ambiance de la homepage, ni dans la roue ni dans le pied de page
 	[ProjectsEnum.Auth]: {
@@ -74,5 +79,7 @@ export const projects: Record<ProjectsEnum, ProjectDictionary> = {
 		illustration: "/favicon/home.ico",
 		theme: citadelTheme,
 		showcase: null,
+		// Ses pages se gardent chacune : la connexion ne peut pas exiger d'être connecté
+		requiresAccount: false,
 	},
 };

@@ -1,5 +1,6 @@
 import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 
+import { ProjectAccessGuard } from "../ProjectAccessGuard";
 import { projectLoaders } from "./projectLoaders";
 import { ProjectsEnum } from "./projects.enum";
 import { projects } from "./projectsDictionary";
@@ -92,6 +93,12 @@ const routes: Record<ProjectsEnum, RouteObject> = {
 	},
 };
 
+function routesOf(requiresAccount: boolean): RouteObject[] {
+	return Object.values(ProjectsEnum)
+		.filter((project) => projects[project].requiresAccount === requiresAccount)
+		.map((project) => routes[project]);
+}
+
 export const router = createBrowserRouter([
 	{
 		path: "/",
@@ -102,7 +109,9 @@ export const router = createBrowserRouter([
 					return redirect(projects[ProjectsEnum.Homepage].path);
 				},
 			},
-			...Object.values(routes),
+			...routesOf(false),
+			// Les projets privés passent par la connexion
+			{ Component: ProjectAccessGuard, children: routesOf(true) },
 		],
 	},
 ]);

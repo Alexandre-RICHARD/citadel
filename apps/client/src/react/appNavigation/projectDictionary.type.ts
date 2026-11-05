@@ -14,4 +14,6 @@ export type ProjectDictionary = {
 	theme: ThemeDefinitionType;
 	// Sa présentation sur la homepage ; null pour la homepage elle-même
 	showcase: ProjectShowcase | null;
+	// Privé : ses données appartiennent à un compte, un visiteur non connecté passe par la connexion
+	requiresAccount: boolean;
 };
