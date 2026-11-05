@@ -4,7 +4,7 @@
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
-Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : l'étape 70 de la roadmap (§15), phase 9.
+Ce que l'authentification doit faire, ancré dans le code existant. Aucun code ici. Je code et tu relis. Prochaine étape : la recette (étapes 71 à 80 de la roadmap, §15) ; la phase 9 est écrite.
 
 Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
@@ -759,7 +759,7 @@ Décidé : le bandeau de restauration vouvoie, comme l'application ; seuls les m
 
 **Phase 10 — Recette et release**
 
-78. [moi] Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
+78. [moi] (faite) Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
 79. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH` (fait en local par `pnpm admin:password` : l'image de la nouvelle version n'existe pas encore).
 80. [nous] Recette en `pnpm prod:local` : les 16 critères du §12.2, un par un.
 81. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.

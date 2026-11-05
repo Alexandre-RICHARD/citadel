@@ -111,6 +111,7 @@ src/
 ├── middleware/             requestValidator, requireSession, notFound, unhandledMethod, globalErrorHandler
 ├── configuration/          env.ts (variables lues et vérifiées au démarrage), sequelize.ts
 ├── purge/                  purges répétées, lancées au démarrage
+├── afterRestore.ts         commande lancée par citadel restore-db (second point d'entrée du build)
 ├── sql/migrations/         migrations Flyway
 └── testUtils/              insertions et lectures directes en base pour les tests d'intégration
 ```
@@ -235,7 +236,7 @@ Sur le NAS :
 
 ```
 /Volume1/citadel/        citadel, .env.prod (600), rclone.conf (600), state/ (version, historiques, logs)
-/Volume1/appdata/<svc>/  données de chaque service, dont site-prod-db/
+/Volume1/appdata/<svc>/  données de chaque service, dont site-prod-db/ et site-prod-server/restore-journal/ (hors de config-backup)
 /Volume2/data/           médias et torrents
 /Volume2/backups/        dumps de la base
 ```
@@ -274,6 +275,18 @@ projects/angersIrigo/
 └── types/          flux décodé, GTFS théorique, véhicules, arrêts, favoris, paramètres
 ```
 
+### Authentification
+
+Les comptes (cahier des charges : [authentification](auth/cahier_des_charges.md)). Un projet comme les autres, mais que tous les autres utilisent : leurs endpoints sont `protected`, et chaque table de projet porte un `user_id`.
+
+- **Serveur** (`projects/auth/`) :
+  - `service/` porte les règles : un service par parcours (inscription, connexion, mot de passe oublié, second facteur, changement d'email…) ; `flowService` gère le parcours en cours (`auth_flow`), lié au navigateur par son cookie ;
+  - `crypto/`, `totp/` et `helper/` : empreintes, TOTP écrit à la main, jetons ; `limit/` : les limiteurs d'échecs et d'envois (en mémoire) ;
+  - `projectData/` : `projectUserData` liste, pour chaque projet, comment supprimer et exporter les données d'un compte. Un nouveau projet qui garde des données par compte s'y ajoute, sinon sa suppression et son export les oublient ;
+  - réglages : `authSettings` (`configuration/`) est la seule porte vers les variables `AUTH_*`.
+- **Journal de restauration** : chaque suppression, changement d'email ou de sécurité écrit une ligne JSON, dans la transaction de l'action, dans un dossier hors de la base (`AUTH_RESTORE_JOURNAL_DIR`). `citadel restore-db` lance ensuite `build/afterRestore.cjs` (un second point d'entrée de l'image du serveur) : sessions et parcours vidés, journal rejoué. Tout nouvel événement de sécurité qu'une sauvegarde ferait oublier doit y écrire (`restoreJournalService.write`).
+- **Front** (`projects/auth/`) : `api/me/useMe` est la source unique de « qui est connecté » ; `ProjectAccessGuard` ferme les projets privés ; la gestion du `401` (`configuration/leaveExpiredSession`) vide le cache et renvoie à la connexion. Les formulaires gardent leurs champs en `sessionStorage`, jamais un mot de passe.
+
 ### Homepage
 
 La vitrine des projets, animée : le modèle à suivre pour des effets visuels.
@@ -304,5 +317,5 @@ projects/homepage/
 ### Brancher un nouveau projet
 
 1. Specs : préfixe dans `ApiPrefixEnum`, enum des codes métier, registre des endpoints.
-2. Serveur : `router.ts` branché dans `globalRouter.ts`, enum des codes dans `errorCode.type.ts`, tables préfixées dans une migration.
+2. Serveur : `router.ts` branché dans `globalRouter.ts`, enum des codes dans `errorCode.type.ts`, tables préfixées dans une migration. S'il garde des données par compte : `user_id` sur ses tables, endpoints `protected`, et son entrée dans `projectUserData` (suppression et export des données du compte).
 3. Front : fiche et route dans `react/appNavigation`, `<projet>QueryKeys.ts`, `<projet>ErrorReasons.ts` exhaustif, `<projet>FieldLabels.ts` ; thème dans `projectThemes` du design system, présentation (`showcase`) dans la fiche ; Layout avec `ProjectThemeProvider`, `QueryErrorBoundary` global autour de l'`<Outlet />` et `AppToaster`, et un bouton qui bascule entre clair et sombre.

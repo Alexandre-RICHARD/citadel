@@ -40,7 +40,7 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel up` | relance tout ce qui doit toujours tourner |
 | `citadel deploy <version>` | déploie une version : plan, confirmation, dump, migrations, vérifications, retour arrière automatique en cas d'échec |
 | `citadel rollback` | revient à la version précédente |
-| `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) |
+| `citadel restore-db pre-deploy` | remet la base d'avant le dernier déploiement (puis `citadel rollback`) ; puis rejoue le journal de restauration du serveur et vide les sessions (cahier de l'authentification, §10.5) |
 | `citadel maintenance on\|off` | page de maintenance (503) à la place du site, ou plus |
 | `citadel banner "<message>"\|off` | le bandeau du site, ou plus de bandeau |
 | `citadel <job>` | lance un job tout de suite : `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `site-check`, `vpn-leak-test`, `update-check`, `storage-stats`, `qbittorrent-stats`, `auto-stop`, `log-retention`, `contact-retry` |
