@@ -121,6 +121,10 @@ class PasswordResetService {
 				transaction,
 			);
 			await deleteSessionsOfUserQuery(user.id, transaction);
+			await restoreJournalService.write(
+				{ userId: user.id, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+				transaction,
+			);
 		});
 
 		authMailService.sendWithoutWaiting(
@@ -129,10 +133,6 @@ class PasswordResetService {
 				user.email,
 			),
 		);
-		await restoreJournalService.record({
-			userId: user.id,
-			action: RestoreJournalActionEnum.SECURITY_CHANGED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PASSWORD_CHANGED,
 			userId: user.id,

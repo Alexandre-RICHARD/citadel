@@ -4,7 +4,7 @@ import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/vali
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
 import { MailKindEnum } from "../../../../mail/mailKind.enum.ts";
@@ -16,6 +16,7 @@ import { watchSentMails } from "../../../../testUtils/integration/auth/watchSent
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
 import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 import { passwordService } from "../../service/passwordService.ts";
+import { restoreJournalService } from "../../service/restoreJournalService.ts";
 
 const CHANGE_PASSWORD_URL = `${ApiPrefixEnum.AUTH}/me/password`;
 const NEW_PASSWORD = "un tout nouveau mot de passe";
@@ -156,6 +157,35 @@ describe("changePassword", () => {
 			expect(JSON.stringify(response.body)).toContain(
 				ValidationIssueCodeEnum.TOO_SHORT,
 			);
+		});
+	});
+
+	describe("500 Internal Server Error", () => {
+		it("SHOULD keep the old password WHEN the restore journal cannot be written", async () => {
+			// Arrange
+			const { account, here } = await openAccountWithTwoSessions();
+			const write = vi
+				.spyOn(restoreJournalService, "write")
+				.mockRejectedValueOnce(new Error("Disque plein"));
+			onTestFinished(() => {
+				write.mockRestore();
+			});
+
+			// Act
+			const response = await changePassword(
+				{ currentPassword: account.password, newPassword: NEW_PASSWORD },
+				here.cookie,
+			);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeErrorEnum.SERVER_ERROR);
+			const user = await selectAuthRows.user(account.userId);
+			expect(
+				await passwordService.verify(
+					account.password,
+					user?.passwordHash ?? null,
+				),
+			).toBe(true);
 		});
 	});
 

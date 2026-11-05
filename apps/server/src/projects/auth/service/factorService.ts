@@ -141,6 +141,10 @@ class FactorService {
 					))
 				)
 					throw factorNotFound("The TOTP was confirmed in the meantime");
+				await restoreJournalService.write(
+					{ userId, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+					transaction,
+				);
 				return recoveryCodeService.issueForFirstFactor(userId, transaction);
 			},
 		);
@@ -193,6 +197,10 @@ class FactorService {
 				);
 				if (factorId === null) throw emailFactorAlreadyActive();
 				await claimFlowQuery(flow.id, transaction);
+				await restoreJournalService.write(
+					{ userId, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+					transaction,
+				);
 				return recoveryCodeService.issueForFirstFactor(userId, transaction);
 			},
 		);
@@ -224,6 +232,12 @@ class FactorService {
 				);
 				if (remaining.length === 0)
 					await deleteRecoveryCodesQuery(userId, transaction);
+				// Un facteur jamais confirmé ne protégeait rien : rien à rejouer
+				if (deleted.wasConfirmed)
+					await restoreJournalService.write(
+						{ userId, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+						transaction,
+					);
 				return deleted;
 			},
 		);
@@ -235,10 +249,6 @@ class FactorService {
 				user.email,
 			),
 		);
-		await restoreJournalService.record({
-			userId,
-			action: RestoreJournalActionEnum.SECURITY_CHANGED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.SECOND_FACTOR_REMOVED,
 			userId,
@@ -254,10 +264,6 @@ class FactorService {
 				user.email,
 			),
 		);
-		await restoreJournalService.record({
-			userId,
-			action: RestoreJournalActionEnum.SECURITY_CHANGED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.SECOND_FACTOR_ADDED,
 			userId,

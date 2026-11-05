@@ -6,17 +6,29 @@ import type { RestoreJournalLineBean } from "../bean/restoreJournalLineBean.type
 import type { RestoreReplayReportBean } from "../bean/restoreReplayReportBean.type.ts";
 import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { deleteAllFlowsQuery } from "../query/flow/deleteAllFlowsQuery.ts";
+import { useRecoveryCodeQuery } from "../query/recoveryCode/useRecoveryCodeQuery.ts";
 import { deleteAllSessionsQuery } from "../query/session/deleteAllSessionsQuery.ts";
 import { deleteUserQuery } from "../query/user/deleteUserQuery.ts";
-import { lockUserQuery } from "../query/user/lockUserQuery.ts";
+import { lockSameUserQuery } from "../query/user/lockSameUserQuery.ts";
 import { updateUserEmailQuery } from "../query/user/updateUserEmailQuery.ts";
 import { updateUserPasswordQuery } from "../query/user/updateUserPasswordQuery.ts";
 import { passwordService } from "./passwordService.ts";
 import { projectDataDeletionService } from "./projectDataDeletionService.ts";
 
+type ReplayedLine = Exclude<
+	RestoreJournalLineBean,
+	{ action: RestoreJournalActionEnum.SECURITY_CHANGED }
+>;
+
+// Le compte d'une ligne : son identifiant ne suffit pas, une restauration a pu le redonner à un autre compte
+type JournalAccount = Pick<RestoreJournalLineBean, "userId" | "username">;
+
+type SecurityChange = JournalAccount & { lineCount: number };
+
 /**
  * Après une restauration de la base (cahier de l'authentification, §10.5) : ce que la sauvegarde a fait oublier est
- * refait depuis le journal. Une ligne par transaction, dans l'ordre où elles ont eu lieu
+ * refait depuis le journal. Une ligne par transaction, dans l'ordre où elles ont eu lieu, sur le compte qu'elle désigne
+ * (même identifiant ET même pseudo), jamais sur un autre qui aurait repris son identifiant
  */
 class RestoreReplayService {
 	async replay(
@@ -29,12 +41,17 @@ class RestoreReplayService {
 			invalidatedPasswords: 0,
 		};
 		// Un compte qui a changé sa sécurité plusieurs fois n'est traité qu'une fois, à la fin : il a pu être supprimé entre-temps
-		const securityChanged = new Set<number>();
+		const securityChanges = new Map<string, SecurityChange>();
 
 		for (const line of lines) {
 			if (line.action === RestoreJournalActionEnum.SECURITY_CHANGED) {
-				securityChanged.add(line.userId);
-				report.replayed += 1;
+				const key = `${line.userId}:${line.username}`;
+				const change = securityChanges.get(key);
+				securityChanges.set(key, {
+					userId: line.userId,
+					username: line.username,
+					lineCount: (change?.lineCount ?? 0) + 1,
+				});
 				continue;
 			}
 			// eslint-disable-next-line no-await-in-loop -- l'ordre compte : deux changements d'email se suivent
@@ -44,10 +61,12 @@ class RestoreReplayService {
 			if (outcome === "emailConflict") report.emailConflicts += 1;
 		}
 
-		for (const userId of securityChanged)
+		for (const change of securityChanges.values())
 			// eslint-disable-next-line no-await-in-loop -- un hachage à la fois : la file de passwordService est bornée
-			if (await this.#invalidatePassword(userId))
+			if (await this.#invalidatePassword(change)) {
 				report.invalidatedPasswords += 1;
+				report.replayed += change.lineCount;
+			} else report.skippedMissingAccount += change.lineCount;
 		return report;
 	}
 
@@ -66,16 +85,13 @@ class RestoreReplayService {
 	}
 
 	async #replayLine(
-		line: Exclude<
-			RestoreJournalLineBean,
-			{ action: RestoreJournalActionEnum.SECURITY_CHANGED }
-		>,
+		line: ReplayedLine,
 	): Promise<"replayed" | "missingAccount" | "emailConflict"> {
 		try {
 			return await runInTransaction(
 				"Failed to replay the restore journal",
 				async (transaction) => {
-					if (!(await lockUserQuery(line.userId, transaction)))
+					if (!(await lockSameUserQuery(line, transaction)))
 						return "missingAccount";
 					switch (line.action) {
 						case RestoreJournalActionEnum.ACCOUNT_DELETED:
@@ -98,6 +114,17 @@ class RestoreReplayService {
 								transaction,
 							);
 							break;
+						// Déjà utilisé dans la sauvegarde, ou régénéré depuis : rien ne change, c'est voulu
+						case RestoreJournalActionEnum.RECOVERY_CODE_USED:
+							await useRecoveryCodeQuery(
+								{
+									userId: line.userId,
+									codeHash: Buffer.from(line.codeHash, "hex"),
+									usedAt: line.at,
+								},
+								transaction,
+							);
+							break;
 					}
 					return "replayed";
 				},
@@ -113,14 +140,14 @@ class RestoreReplayService {
 	 * est remplacé par celui que personne ne connaît, à refaire par « Mot de passe oublié ». Un vrai hachage, pas une
 	 * valeur vide : la connexion le vérifie comme les autres et répond « mauvais mot de passe »
 	 */
-	async #invalidatePassword(userId: number): Promise<boolean> {
+	async #invalidatePassword(account: JournalAccount): Promise<boolean> {
 		const passwordHash = await passwordService.hash(createRandomToken());
 		return runInTransaction(
 			"Failed to invalidate a password after a restore",
 			async (transaction) => {
-				if (!(await lockUserQuery(userId, transaction))) return false;
+				if (!(await lockSameUserQuery(account, transaction))) return false;
 				await updateUserPasswordQuery(
-					{ userId, passwordHash, changedAt: new Date() },
+					{ userId: account.userId, passwordHash, changedAt: new Date() },
 					transaction,
 				);
 				return true;

@@ -2,7 +2,7 @@ import type { UserDataProjectEnum } from "@citadel/specs/src/projects/auth/enum/
 
 import type { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 
-// Une ligne du journal de restauration, sans sa date : de quoi refaire l'action sur une base restaurée
+// Ce qu'un service journalise : de quoi refaire l'action sur une base restaurée. La date et le pseudo s'y ajoutent à l'écriture
 export type RestoreJournalEntryBean = { userId: number } & (
 	| {
 			action:
@@ -14,4 +14,6 @@ export type RestoreJournalEntryBean = { userId: number } & (
 			projects: readonly UserDataProjectEnum[];
 	  }
 	| { action: RestoreJournalActionEnum.EMAIL_CHANGED; email: string }
+	// L'empreinte HMAC du code, en hexadécimal : il est déjà utilisé, elle ne permet plus rien
+	| { action: RestoreJournalActionEnum.RECOVERY_CODE_USED; codeHash: string }
 );

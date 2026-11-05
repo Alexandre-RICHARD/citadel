@@ -170,6 +170,8 @@ describe("addBacklogUserId", () => {
 		it("SHOULD refuse a hand-made series without account, and an IGDB series with one", async () => {
 			// Arrange
 			const userId = await insertAuthRows.user();
+			// Avant les insertions : un await entre elles laisserait la première rejeter sans personne pour l'attendre
+			const igdbFranchiseId = await nextIgdbId();
 
 			// Act
 			const handMadeWithoutOwner = insertBacklogRows.series({
@@ -178,7 +180,7 @@ describe("addBacklogUserId", () => {
 			const igdbWithOwner = insertBacklogRows.series({
 				userId,
 				name: "Zelda",
-				igdbFranchiseId: await nextIgdbId(),
+				igdbFranchiseId,
 			});
 
 			// Assert

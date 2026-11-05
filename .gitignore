@@ -36,6 +36,8 @@
 /apps/server/build/
 /apps/server/node_modules/
 /apps/server/.local/
+# Idem quand les tests se lancent depuis la racine (le chemin est relatif au dossier de lancement)
+/.local/
 
 # ====================
 # =      Common      =

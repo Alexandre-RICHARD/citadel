@@ -72,6 +72,14 @@ class EmailChangeService {
 			await lockUserQuery(userId, transaction);
 			await updateUserEmailQuery({ userId, email: newEmail }, transaction);
 			await claimFlowQuery(flow.id, transaction);
+			await restoreJournalService.write(
+				{
+					userId,
+					action: RestoreJournalActionEnum.EMAIL_CHANGED,
+					email: newEmail,
+				},
+				transaction,
+			);
 		});
 
 		authMailService.sendWithoutWaiting(
@@ -80,11 +88,6 @@ class EmailChangeService {
 				previousEmail,
 			),
 		);
-		await restoreJournalService.record({
-			userId: userId,
-			action: RestoreJournalActionEnum.EMAIL_CHANGED,
-			email: newEmail,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.EMAIL_CHANGED,
 			userId,

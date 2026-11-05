@@ -774,19 +774,23 @@ cmd_restore_db() {
 # commande « après restauration ». Celle de son nom (citadel-AAAAMMJJ-HHMMSS, heure de
 # Paris : celle d'infra-ops, prise juste avant le début du dump) ; sinon, pour un dump
 # envoyé depuis ton PC, la dernière ligne de mariadb-dump (« -- Dump completed on
-# AAAA-MM-JJ HH:MM:SS », heure de la machine qui l'a fait). Lue elle aussi comme l'heure
-# de Paris : Paris est en avance sur UTC, c'est la plus tôt des deux lectures possibles,
-# et le rejeu refait au pire une action déjà là plutôt que d'en oublier une
+# AAAA-MM-JJ HH:MM:SS », heure de la machine qui l'a fait). Celle-là marque la FIN du
+# dump, pas l'instant de son image (--single-transaction) : une heure de moins couvre sa
+# durée. Lue elle aussi comme l'heure de Paris : Paris est en avance sur UTC, c'est la
+# plus tôt des deux lectures possibles. Dans le doute, toujours plus tôt : le rejeu refait
+# au pire une action déjà là plutôt que d'en oublier une
 backup_date_of() {
 	local file=$1 stamp
 	stamp=$(basename "$file" |
 		sed -nE 's/^citadel-([0-9]{4})([0-9]{2})([0-9]{2})-([0-9]{2})([0-9]{2})([0-9]{2})-.*/\1-\2-\3 \4:\5:\6/p')
-	if [[ -z $stamp ]]; then
-		stamp=$(zstd --decompress --stdout "$file" | tail -n 1 |
-			sed -nE 's/^-- Dump completed on ([0-9]{4}-[0-9]{2}-[0-9]{2}) +([0-9]{1,2}:[0-9]{2}:[0-9]{2}).*/\1 \2/p')
+	if [[ -n $stamp ]]; then
+		TZ=Europe/Paris date -d "$stamp" -Iseconds
+		return
 	fi
+	stamp=$(zstd --decompress --stdout "$file" | tail -n 1 |
+		sed -nE 's/^-- Dump completed on ([0-9]{4}-[0-9]{2}-[0-9]{2}) +([0-9]{1,2}:[0-9]{2}:[0-9]{2}).*/\1 \2/p')
 	[[ -n $stamp ]] || return 1
-	TZ=Europe/Paris date -d "$stamp" -Iseconds
+	TZ=Europe/Paris date -d "$stamp 1 hour ago" -Iseconds
 }
 
 # --- Le bandeau et la page de maintenance du site ---

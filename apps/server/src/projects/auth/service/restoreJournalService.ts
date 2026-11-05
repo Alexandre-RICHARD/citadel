@@ -1,14 +1,16 @@
 import { appendFile, mkdir, readdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 
+import type { Transaction } from "sequelize";
+
 import { authSettings } from "../../../configuration/authSettings.ts";
-import { logError } from "../../../error/logError.ts";
 import type { RestoreJournalEntryBean } from "../bean/restoreJournalEntryBean.type.ts";
 import type { RestoreJournalLineBean } from "../bean/restoreJournalLineBean.type.ts";
 import { buildRestoreJournalFileName } from "../helper/restoreJournal/buildRestoreJournalFileName.ts";
 import { findExpiredRestoreJournalFiles } from "../helper/restoreJournal/findExpiredRestoreJournalFiles.ts";
 import { isRestoreJournalFile } from "../helper/restoreJournal/isRestoreJournalFile.ts";
 import { parseRestoreJournalLine } from "../helper/restoreJournal/parseRestoreJournalLine.ts";
+import { findUsernameQuery } from "../query/user/findUsernameQuery.ts";
 
 type ReadJournal = {
 	lines: RestoreJournalLineBean[];
@@ -18,30 +20,33 @@ type ReadJournal = {
 
 /**
  * Le journal de restauration (cahier de l'authentification, §10.5) : une ligne JSON par suppression, changement d'email
- * ou de sécurité, hors de la base pour qu'une sauvegarde restaurée ne l'efface pas, puis rejouée après elle. Écrit
- * après la transaction : il ne retient que ce qui a eu lieu
+ * ou de sécurité, hors de la base pour qu'une sauvegarde restaurée ne l'efface pas, puis rejouée après elle
  */
 class RestoreJournalService {
 	/**
-	 * L'action a eu lieu : son échec à s'écrire est loggé (error_log, visible dans la console), jamais renvoyé. Une
-	 * restauration la ferait alors oublier, mais refuser une action déjà faite ne la déferait pas
+	 * Dernière étape de la transaction de l'action : une ligne qui ne s'écrit pas annule l'action (500), plutôt qu'une
+	 * suppression qu'une restauration ferait revenir. Une transaction qui échoue ensuite, à sa validation seulement,
+	 * laisse une ligne de trop : le rejeu refera une action que le compte avait demandée et prouvée. Le pseudo,
+	 * définitif et unique, accompagne l'identifiant : après une restauration, ce dernier peut désigner un autre compte
 	 */
-	async record(entry: RestoreJournalEntryBean): Promise<void> {
+	async write(
+		entry: RestoreJournalEntryBean,
+		transaction: Transaction,
+	): Promise<void> {
+		const username = await findUsernameQuery(entry.userId, transaction);
+		if (username === null)
+			throw new Error("Restore journal line for a missing account");
 		const now = new Date();
-		const line = `${JSON.stringify({ at: now.toISOString(), ...entry })}\n`;
-		try {
-			await mkdir(authSettings.restoreJournalDirectory, { recursive: true });
-			// Une seule écriture en ajout (O_APPEND) : deux lignes écrites en même temps ne se mêlent pas
-			await appendFile(
-				path.join(
-					authSettings.restoreJournalDirectory,
-					buildRestoreJournalFileName(now),
-				),
-				line,
-			);
-		} catch (error) {
-			await logError(error, "Journal de restauration");
-		}
+		const line = `${JSON.stringify({ at: now.toISOString(), username, ...entry })}\n`;
+		await mkdir(authSettings.restoreJournalDirectory, { recursive: true });
+		// Une seule écriture en ajout (O_APPEND) : deux lignes écrites en même temps ne se mêlent pas
+		await appendFile(
+			path.join(
+				authSettings.restoreJournalDirectory,
+				buildRestoreJournalFileName(now),
+			),
+			line,
+		);
 	}
 
 	// Tout le journal gardé : 10 semaines, l'âge de la plus vieille sauvegarde

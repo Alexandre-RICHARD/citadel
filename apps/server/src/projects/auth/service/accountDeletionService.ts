@@ -97,6 +97,10 @@ class AccountDeletionService {
 				)
 					return false;
 				// Les projets d'abord, chacun dans son ordre : les cascades du compte ne décident de rien (§5.1)
+				await restoreJournalService.write(
+					{ userId, action: RestoreJournalActionEnum.ACCOUNT_DELETED },
+					transaction,
+				);
 				await projectDataDeletionService.deleteAllProjects(userId, transaction);
 				await deleteUserQuery(userId, transaction);
 				return true;
@@ -114,10 +118,6 @@ class AccountDeletionService {
 			),
 		);
 		// Sans compte : le journal du compte est parti avec lui par cascade, l'événement n'a plus d'utilisateur
-		await restoreJournalService.record({
-			userId: userId,
-			action: RestoreJournalActionEnum.ACCOUNT_DELETED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.ACCOUNT_DELETED,
 			userId: null,

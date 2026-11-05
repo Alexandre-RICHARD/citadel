@@ -46,6 +46,9 @@ describe("requireSameOrigin", () => {
 		});
 
 		it("SHOULD let a read through WHEN it comes from another site", async () => {
+			// Arrange : une liste vide répondrait 204, quel que soit l'ordre des tests
+			await player.agent.post(GAMES_URL).send({ name: buildUniqueWord() });
+
 			// Act
 			const response = await player.agent
 				.get(GAMES_URL)

@@ -53,6 +53,10 @@ class PasswordChangeService {
 				{ userId, keptSessionId: sessionId },
 				transaction,
 			);
+			await restoreJournalService.write(
+				{ userId, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+				transaction,
+			);
 		});
 
 		authMailService.sendWithoutWaiting(
@@ -61,10 +65,6 @@ class PasswordChangeService {
 				user.email,
 			),
 		);
-		await restoreJournalService.record({
-			userId: userId,
-			action: RestoreJournalActionEnum.SECURITY_CHANGED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PASSWORD_CHANGED,
 			userId,

@@ -58,13 +58,13 @@ class RecoveryCodeService {
 						AuthErrorCodeEnum.NO_SECOND_FACTOR,
 						"No second factor to recover",
 					);
+				await restoreJournalService.write(
+					{ userId, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+					transaction,
+				);
 				return this.#replace(userId, transaction);
 			},
 		);
-		await restoreJournalService.record({
-			userId: userId,
-			action: RestoreJournalActionEnum.SECURITY_CHANGED,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.RECOVERY_CODES_REGENERATED,
 			userId,
@@ -79,14 +79,22 @@ class RecoveryCodeService {
 		code: string,
 		transaction: Transaction,
 	): Promise<boolean> {
-		return useRecoveryCodeQuery(
-			{
-				userId,
-				codeHash: hashRecoveryCode(authSettings.code.hmacKey, code),
-				usedAt: new Date(),
-			},
+		const codeHash = hashRecoveryCode(authSettings.code.hmacKey, code);
+		const isUsed = await useRecoveryCodeQuery(
+			{ userId, codeHash, usedAt: new Date() },
 			transaction,
 		);
+		// Une restauration le rendrait de nouveau valable : le journal le marquera utilisé
+		if (isUsed)
+			await restoreJournalService.write(
+				{
+					userId,
+					action: RestoreJournalActionEnum.RECOVERY_CODE_USED,
+					codeHash: codeHash.toString("hex"),
+				},
+				transaction,
+			);
+		return isUsed;
 	}
 
 	async #replace(userId: number, transaction: Transaction): Promise<string[]> {

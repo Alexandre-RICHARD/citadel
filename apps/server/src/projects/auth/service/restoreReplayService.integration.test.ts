@@ -1,6 +1,9 @@
+import { randomBytes } from "node:crypto";
+
 import { UserDataProjectEnum } from "@citadel/specs/src/projects/auth/enum/userDataProject.enum.ts";
 import { describe, expect, it } from "vitest";
 
+import { insertAuthRows } from "../../../testUtils/integration/auth/insertAuthRows.ts";
 import { insertTestAccount } from "../../../testUtils/integration/auth/insertTestAccount.ts";
 import { selectAuthRows } from "../../../testUtils/integration/auth/selectAuthRows.ts";
 import { countAccountProjectRows } from "../../../testUtils/integration/projectData/countAccountProjectRows.ts";
@@ -32,6 +35,7 @@ describe("restoreReplayService", () => {
 				{
 					at: AT,
 					userId: account.userId,
+					username: account.username,
 					action: RestoreJournalActionEnum.ACCOUNT_DELETED,
 				},
 			]);
@@ -54,6 +58,7 @@ describe("restoreReplayService", () => {
 				{
 					at: AT,
 					userId: account.userId,
+					username: account.username,
 					action: RestoreJournalActionEnum.PROJECT_DATA_DELETED,
 					projects: [UserDataProjectEnum.GAME_DEATH_COUNTER],
 				},
@@ -76,12 +81,14 @@ describe("restoreReplayService", () => {
 				{
 					at: at(1),
 					userId: account.userId,
+					username: account.username,
 					action: RestoreJournalActionEnum.EMAIL_CHANGED,
 					email: `premiere-${account.email}`,
 				},
 				{
 					at: at(2),
 					userId: account.userId,
+					username: account.username,
 					action: RestoreJournalActionEnum.EMAIL_CHANGED,
 					email: `derniere-${account.email}`,
 				},
@@ -107,6 +114,7 @@ describe("restoreReplayService", () => {
 				{
 					at: AT,
 					userId: account.userId,
+					username: account.username,
 					action: RestoreJournalActionEnum.EMAIL_CHANGED,
 					email: owner.email,
 				},
@@ -119,33 +127,103 @@ describe("restoreReplayService", () => {
 			);
 		});
 
-		it("SHOULD skip a line WHEN its account is not in the backup", async () => {
+		it("SHOULD mark again as used a recovery code the backup brought back", async () => {
+			// Arrange
+			const account = await insertTestAccount();
+			const codeHash = randomBytes(32);
+			const codeId = await insertAuthRows.recoveryCode({
+				userId: account.userId,
+				codeHash,
+			});
+
 			// Act
 			const report = await restoreReplayService.replay([
 				{
 					at: AT,
-					userId: MISSING_USER_ID,
+					userId: account.userId,
+					username: account.username,
+					action: RestoreJournalActionEnum.RECOVERY_CODE_USED,
+					codeHash: codeHash.toString("hex"),
+				},
+			]);
+
+			// Assert
+			expect(report).toMatchObject({ replayed: 1 });
+			expect((await selectAuthRows.recoveryCode(codeId))?.usedAt).toStrictEqual(
+				AT,
+			);
+		});
+
+		it("SHOULD leave alone the account that now holds the id WHEN it is not the one of the line", async () => {
+			// Arrange
+			const account = await insertTestAccount();
+			const lineOf = {
+				at: AT,
+				userId: account.userId,
+				username: "un-ancien-compte",
+			};
+
+			// Act
+			const report = await restoreReplayService.replay([
+				{
+					...lineOf,
+					action: RestoreJournalActionEnum.EMAIL_CHANGED,
+					email: `autre-${account.email}`,
+				},
+				{ ...lineOf, action: RestoreJournalActionEnum.SECURITY_CHANGED },
+				{ ...lineOf, action: RestoreJournalActionEnum.ACCOUNT_DELETED },
+			]);
+
+			// Assert
+			expect(report).toStrictEqual({
+				replayed: 0,
+				skippedMissingAccount: 3,
+				emailConflicts: 0,
+				invalidatedPasswords: 0,
+			});
+			const user = await selectAuthRows.user(account.userId);
+			expect(user?.email).toBe(account.email);
+			expect(
+				await passwordService.verify(
+					account.password,
+					user?.passwordHash ?? null,
+				),
+			).toBe(true);
+		});
+
+		it("SHOULD skip and count every line WHEN its account is not in the backup", async () => {
+			// Arrange
+			const missing = { userId: MISSING_USER_ID, username: "personne" };
+
+			// Act
+			const report = await restoreReplayService.replay([
+				{
+					at: AT,
+					...missing,
 					action: RestoreJournalActionEnum.ACCOUNT_DELETED,
 				},
 				{
 					at: at(1),
-					userId: MISSING_USER_ID,
+					...missing,
 					action: RestoreJournalActionEnum.SECURITY_CHANGED,
 				},
 			]);
 
 			// Assert
-			expect(report).toMatchObject({
-				skippedMissingAccount: 1,
+			expect(report).toStrictEqual({
+				replayed: 0,
+				skippedMissingAccount: 2,
+				emailConflicts: 0,
 				invalidatedPasswords: 0,
 			});
 		});
 
-		it("SHOULD invalidate the password once WHEN the account changed its security several times", async () => {
+		it("SHOULD invalidate the password once, and count each line, WHEN the account changed its security several times", async () => {
 			// Arrange
 			const account = await insertTestAccount();
 			const securityChange = {
 				userId: account.userId,
+				username: account.username,
 				action: RestoreJournalActionEnum.SECURITY_CHANGED,
 			} as const;
 
@@ -156,7 +234,7 @@ describe("restoreReplayService", () => {
 			]);
 
 			// Assert
-			expect(report).toMatchObject({ invalidatedPasswords: 1 });
+			expect(report).toMatchObject({ replayed: 2, invalidatedPasswords: 1 });
 			const user = await selectAuthRows.user(account.userId);
 			expect(
 				await passwordService.verify(
@@ -169,23 +247,28 @@ describe("restoreReplayService", () => {
 		it("SHOULD invalidate nothing WHEN the account was deleted after changing its security", async () => {
 			// Arrange
 			const account = await insertTestAccount();
+			const lineOf = { userId: account.userId, username: account.username };
 
 			// Act
 			const report = await restoreReplayService.replay([
 				{
 					at: at(1),
-					userId: account.userId,
+					...lineOf,
 					action: RestoreJournalActionEnum.SECURITY_CHANGED,
 				},
 				{
 					at: at(2),
-					userId: account.userId,
+					...lineOf,
 					action: RestoreJournalActionEnum.ACCOUNT_DELETED,
 				},
 			]);
 
 			// Assert
-			expect(report).toMatchObject({ replayed: 2, invalidatedPasswords: 0 });
+			expect(report).toMatchObject({
+				replayed: 1,
+				skippedMissingAccount: 1,
+				invalidatedPasswords: 0,
+			});
 			expect(await selectAuthRows.user(account.userId)).toBeNull();
 		});
 	});

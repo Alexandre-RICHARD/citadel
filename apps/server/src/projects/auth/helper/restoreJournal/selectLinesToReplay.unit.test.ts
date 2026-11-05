@@ -10,6 +10,7 @@ function line(at: string, email: string): RestoreJournalLineBean {
 	return {
 		at: new Date(at),
 		userId: 1,
+		username: "alex",
 		action: RestoreJournalActionEnum.EMAIL_CHANGED,
 		email,
 	};

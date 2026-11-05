@@ -7,6 +7,7 @@ import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.t
 const common = {
 	at: z.iso.datetime().transform((at) => new Date(at)),
 	userId: z.number().int().positive(),
+	username: z.string().min(1),
 };
 
 const lineSchema = z.discriminatedUnion("action", [
@@ -26,6 +27,11 @@ const lineSchema = z.discriminatedUnion("action", [
 		...common,
 		action: z.literal(RestoreJournalActionEnum.EMAIL_CHANGED),
 		email: z.string().min(1),
+	}),
+	z.object({
+		...common,
+		action: z.literal(RestoreJournalActionEnum.RECOVERY_CODE_USED),
+		codeHash: z.string().regex(/^[0-9a-f]+$/),
 	}),
 ]);
 

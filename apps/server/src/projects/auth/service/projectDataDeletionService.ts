@@ -55,13 +55,16 @@ class ProjectDataDeletionService {
 				if (!(await shareLockUserQuery(userId, transaction)))
 					throw new Error("Project data deletion of a deleted account");
 				await this.deleteProjectsInTransaction(userId, projects, transaction);
+				await restoreJournalService.write(
+					{
+						userId,
+						action: RestoreJournalActionEnum.PROJECT_DATA_DELETED,
+						projects,
+					},
+					transaction,
+				);
 			},
 		);
-		await restoreJournalService.record({
-			userId: userId,
-			action: RestoreJournalActionEnum.PROJECT_DATA_DELETED,
-			projects,
-		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PROJECT_DATA_DELETED,
 			userId,
