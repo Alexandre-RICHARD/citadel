@@ -73,12 +73,25 @@ export const backlogUserData: ProjectUserData = {
 				ORDER BY dd.user_version_id, dd.dlc_id
 			`,
 		}),
-		// Les seules séries du compte : celles qu'il a créées à la main
-		createModelExportTable({
+		// Les séries qu'il a créées à la main, et les séries IGDB communes où il a rangé un jeu : chaque series_id de
+		// backlog_user_game.csv y trouve son nom
+		createSqlExportTable({
 			tableName: "backlog_series",
-			model: Series,
-			ownerAttribute: "userId",
-			columns: ["id", "name", "createdAt", "updatedAt"],
+			columns: [
+				"id",
+				"name",
+				"igdb_collection_id",
+				"igdb_franchise_id",
+				"created_at",
+				"updated_at",
+			],
+			sql: `
+				SELECT s.id, s.name, s.igdb_collection_id, s.igdb_franchise_id, s.created_at, s.updated_at
+				FROM backlog_series s
+				WHERE s.user_id = :userId
+				OR s.id IN (SELECT ug.series_id FROM backlog_user_game ug WHERE ug.user_id = :userId)
+				ORDER BY s.id
+			`,
 		}),
 	],
 };

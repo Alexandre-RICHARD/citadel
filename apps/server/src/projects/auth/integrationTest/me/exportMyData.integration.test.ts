@@ -10,6 +10,9 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { insertTestRecoveryCodes } from "../../../../testUtils/integration/auth/insertTestRecoveryCodes.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { insertBacklogRows } from "../../../../testUtils/integration/backlog/insertBacklogRows.ts";
+import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId.ts";
+import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { seedAccountProjectData } from "../../../../testUtils/integration/projectData/seedAccountProjectData.ts";
 import { readStoredZip } from "../../../../testUtils/zip/readStoredZip.ts";
 
@@ -133,6 +136,37 @@ describe("exportMyData", () => {
 			expect(readDataLines(files["backlog_series.csv"])).toStrictEqual([
 				expect.stringMatching(
 					new RegExp(`^${data.backlog.seriesId},Mes jeux,`, "u"),
+				),
+			]);
+		});
+
+		it("SHOULD export the shared IGDB series holding a game of the user, and only those", async () => {
+			// Arrange
+			const account = await insertTestAccount();
+			const session = await openTestSession({ userId: account.userId });
+			const igdbSeriesId = await insertBacklogRows.series({
+				name: "The Elder Scrolls",
+				igdbCollectionId: await nextIgdbId(),
+				igdbFranchiseId: await nextIgdbId(),
+			});
+			await insertBacklogRows.series({
+				name: "Fallout",
+				igdbCollectionId: await nextIgdbId(),
+				igdbFranchiseId: await nextIgdbId(),
+			});
+			await seedBacklogGame({
+				userId: account.userId,
+				seriesId: igdbSeriesId,
+				seriesNumber: 1,
+			});
+
+			// Act
+			const files = readFiles(await exportData(session.cookie));
+
+			// Assert
+			expect(readDataLines(files["backlog_series.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(`^${igdbSeriesId},The Elder Scrolls,\\d+,\\d+,`, "u"),
 				),
 			]);
 		});

@@ -25,6 +25,7 @@ import { createUserGameQuery } from "../query/userGame/createUserGameQuery.ts";
 import { deleteUserGameQuery } from "../query/userGame/deleteUserGameQuery.ts";
 import { getUserGameQuery } from "../query/userGame/getUserGameQuery.ts";
 import { updateUserGameQuery } from "../query/userGame/updateUserGameQuery.ts";
+import { userGameExistsQuery } from "../query/userGame/userGameExistsQuery.ts";
 import { createUserVersionQuery } from "../query/userVersion/createUserVersionQuery.ts";
 import { deleteUserVersionsQuery } from "../query/userVersion/deleteUserVersionsQuery.ts";
 import { getGameUserVersionsQuery } from "../query/userVersion/getGameUserVersionsQuery.ts";
@@ -112,7 +113,7 @@ class UserGameService {
 						BacklogErrorCodeEnum.GAME_NOT_FOUND,
 						`No game with id : ${gameId}`,
 					);
-				if ((await getUserGameQuery(userId, gameId, transaction)) !== null)
+				if (await userGameExistsQuery(userId, gameId, transaction))
 					throw new ConflictError(
 						BacklogErrorCodeEnum.USER_GAME_ALREADY_EXISTS,
 						`Game already in the backlog : ${gameId}`,
@@ -189,7 +190,7 @@ class UserGameService {
 						);
 					}),
 				);
-				await deleteUnusedSeriesQuery(transaction);
+				await deleteUnusedSeriesQuery(userId, transaction);
 			},
 		);
 		return loadUserGameBean(userId, gameId);
@@ -216,7 +217,7 @@ class UserGameService {
 					transaction,
 				);
 				await deleteUserGameQuery(userId, gameId, transaction);
-				await deleteUnusedSeriesQuery(transaction);
+				await deleteUnusedSeriesQuery(userId, transaction);
 			},
 		);
 	}

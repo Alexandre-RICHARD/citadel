@@ -8,18 +8,16 @@ import type { HttpStatutCodeErrorEnum } from "../../../../../specUtils/httpStatu
 import type { HttpStatutCodeSuccessEnum } from "../../../../../specUtils/httpStatutCodeSuccess.enum.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { DeleteProjectDataBodyDto } from "./deleteProjectDataBodyDto.type.ts";
-import type { DeleteProjectDataPathParamDto } from "./deleteProjectDataPathParamDto.type.ts";
 
 /**
- * Supprime toutes les données du compte dans un projet, immédiatement et sans retour possible ; le compte reste. Mot de
- * passe redemandé. Sans aucune donnée dans le projet, la réponse est la même
+ * Supprime toutes les données du compte dans ces projets, immédiatement, sans retour possible et en une fois : tous ou
+ * aucun. Le compte reste. Mot de passe redemandé. Sans aucune donnée dans un projet, la réponse est la même
  */
 export interface DeleteProjectData extends EndpointModel {
 	request: {
-		url: `${ApiPrefixEnum.AUTH}/me/projects/:project`;
+		url: `${ApiPrefixEnum.AUTH}/me/projects`;
 		method: HttpMethodEnum.DELETE;
 		protected: true;
-		pathParams: DeleteProjectDataPathParamDto;
 		body: DeleteProjectDataBodyDto;
 	};
 	response: {

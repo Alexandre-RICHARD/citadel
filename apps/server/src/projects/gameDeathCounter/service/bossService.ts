@@ -81,7 +81,6 @@ class BossService {
 
 	async setBossDefeated(
 		userId: number,
-
 		setBossDefeatedBean: SetBossDefeatedBean,
 	): Promise<BossSummaryBean> {
 		const defeatedAt = setBossDefeatedBean.defeated ? dateNow() : null;

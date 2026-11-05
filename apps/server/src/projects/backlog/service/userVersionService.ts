@@ -155,7 +155,7 @@ class UserVersionService {
 				)
 					return;
 				await deleteUserGameQuery(userId, gameId, transaction);
-				await deleteUnusedSeriesQuery(transaction);
+				await deleteUnusedSeriesQuery(userId, transaction);
 			},
 		);
 	}

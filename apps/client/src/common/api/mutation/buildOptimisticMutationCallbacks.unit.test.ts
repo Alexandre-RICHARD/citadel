@@ -14,6 +14,10 @@ type Variables = { name: string };
 type Rollback = { previousName: string };
 
 const GAME_KEY = ["games", 1];
+const SESSION_EXPIRED = new ApiError({
+	status: 401,
+	code: TechnicalErrorCodeEnum.AUTHENTICATION_REQUIRED,
+});
 const VARIABLES = { name: "Hades II" };
 
 const REMOVE_GAME = {
@@ -255,6 +259,24 @@ describe("buildOptimisticMutationCallbacks.ts", () => {
 			expect(revertOptimistic).not.toHaveBeenCalled();
 			expect(notifyFailure).toHaveBeenCalledOnce();
 		});
+
+		it("SHOULD put nothing back in the cache and notify nothing WHEN the session expired", async () => {
+			// Arrange : le client de requêtes a déjà vidé le cache
+			const revertOptimistic = vi.fn();
+			const { queryClient, notifyFailure, callbacks } = setup({
+				revertOptimistic,
+			});
+			const context = await callbacks.onMutate(VARIABLES);
+			queryClient.clear();
+
+			// Act
+			callbacks.onError(SESSION_EXPIRED, VARIABLES, context);
+
+			// Assert
+			expect(revertOptimistic).not.toHaveBeenCalled();
+			expect(notifyFailure).not.toHaveBeenCalled();
+			expect(queryClient.getQueryData(GAME_KEY)).toBeUndefined();
+		});
 	});
 
 	describe("resynchronization", () => {
@@ -313,6 +335,19 @@ describe("buildOptimisticMutationCallbacks.ts", () => {
 				[{ queryKey: GAME_KEY }],
 				[{ queryKey: listKey }],
 			]);
+		});
+
+		it("SHOULD invalidate nothing WHEN the session expired", () => {
+			// Arrange
+			const { queryClient, callbacks } = setup();
+			vi.spyOn(queryClient, "isMutating").mockReturnValue(1);
+			const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+
+			// Act
+			callbacks.onSettled(undefined, SESSION_EXPIRED, VARIABLES);
+
+			// Assert
+			expect(invalidateQueries).not.toHaveBeenCalled();
 		});
 
 		it("SHOULD invalidate each query once WHEN several mutations touched it", () => {

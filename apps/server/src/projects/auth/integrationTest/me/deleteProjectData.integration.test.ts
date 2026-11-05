@@ -28,20 +28,18 @@ const BACKLOG_TABLES = [
 	"backlog_series",
 ] as const;
 
-function deleteProjectDataUrl(project: string): string {
-	return `${ApiPrefixEnum.AUTH}/me/projects/${project}`;
-}
+const DELETE_PROJECT_DATA_URL = `${ApiPrefixEnum.AUTH}/me/projects`;
 
 async function deleteProjectData(
-	project: string,
+	projects: unknown,
 	body: object,
 	cookie?: string,
 	ip = buildUniqueIp(),
 ) {
 	const pending = request(app)
-		.delete(deleteProjectDataUrl(project))
+		.delete(DELETE_PROJECT_DATA_URL)
 		.set("X-Real-IP", ip)
-		.send(body);
+		.send({ projects, ...body });
 	return cookie === undefined ? pending : pending.set("Cookie", cookie);
 }
 
@@ -63,7 +61,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				UserDataProjectEnum.GAME_DEATH_COUNTER,
+				[UserDataProjectEnum.GAME_DEATH_COUNTER],
 				{ password: account.password },
 				session.cookie,
 			);
@@ -95,7 +93,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				UserDataProjectEnum.BACKLOG,
+				[UserDataProjectEnum.BACKLOG],
 				{ password: account.password },
 				session.cookie,
 			);
@@ -126,6 +124,36 @@ describe("deleteProjectData", () => {
 			});
 		});
 
+		it("SHOULD delete both projects at once, the account and its session kept", async () => {
+			// Arrange
+			const { account, session } = await openAccountWithData();
+
+			// Act
+			const response = await deleteProjectData(
+				[UserDataProjectEnum.GAME_DEATH_COUNTER, UserDataProjectEnum.BACKLOG],
+				{ password: account.password },
+				session.cookie,
+			);
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
+			expect(
+				await countAccountProjectRows(account.userId, [
+					...GDC_TABLES,
+					...BACKLOG_TABLES,
+				]),
+			).toStrictEqual({
+				gdc_game: 0,
+				gdc_boss: 0,
+				gdc_death: 0,
+				backlog_user_game: 0,
+				backlog_user_version: 0,
+				backlog_done_dlc: 0,
+				backlog_series: 0,
+			});
+			expect(await isSessionOpen(session.cookie)).toBe(true);
+		});
+
 		it("SHOULD answer the same and note it WHEN the project has no data of the account", async () => {
 			// Arrange
 			const account = await insertTestAccount();
@@ -133,7 +161,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				UserDataProjectEnum.BACKLOG,
+				[UserDataProjectEnum.BACKLOG],
 				{ password: account.password },
 				session.cookie,
 			);
@@ -160,7 +188,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				UserDataProjectEnum.BACKLOG,
+				[UserDataProjectEnum.BACKLOG],
 				{ password: "pas le bon mot de passe" },
 				session.cookie,
 			);
@@ -188,7 +216,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				"satisfactory",
+				["satisfactory"],
 				{ password: account.password },
 				session.cookie,
 			);
@@ -196,18 +224,66 @@ describe("deleteProjectData", () => {
 			// Assert
 			expectValidationError(response, [
 				{
-					path: ["project"],
+					path: ["projects", 0],
 					code: ValidationIssueCodeEnum.INVALID_VALUE,
 					message: "Project is not valid",
 				},
 			]);
+		});
+
+		it("SHOULD refuse WHEN no project is chosen", async () => {
+			// Arrange
+			const account = await insertTestAccount();
+			const session = await openTestSession({ userId: account.userId });
+
+			// Act
+			const response = await deleteProjectData(
+				[],
+				{ password: account.password },
+				session.cookie,
+			);
+
+			// Assert
+			expectValidationError(response, [
+				{
+					path: ["projects"],
+					code: ValidationIssueCodeEnum.TOO_SMALL,
+					message: "Projects should contain at least 1 project",
+					limit: 1,
+				},
+			]);
+		});
+
+		it("SHOULD refuse WHEN the same project is chosen twice", async () => {
+			// Arrange
+			const { account, session } = await openAccountWithData();
+
+			// Act
+			const response = await deleteProjectData(
+				[UserDataProjectEnum.BACKLOG, UserDataProjectEnum.BACKLOG],
+				{ password: account.password },
+				session.cookie,
+			);
+
+			// Assert
+			expectValidationError(response, [
+				{
+					path: ["projects"],
+					code: ValidationIssueCodeEnum.DUPLICATE_VALUE,
+					message: "Projects should not contain the same project twice",
+				},
+			]);
+			expect(
+				(await countAccountProjectRows(account.userId, ["backlog_user_game"]))
+					.backlog_user_game,
+			).toBe(1);
 		});
 	});
 
 	describe("401 Unauthorized", () => {
 		it("SHOULD refuse WHEN the request has no session", async () => {
 			// Act
-			const response = await deleteProjectData(UserDataProjectEnum.BACKLOG, {
+			const response = await deleteProjectData([UserDataProjectEnum.BACKLOG], {
 				password: "x",
 			});
 
@@ -222,7 +298,7 @@ describe("deleteProjectData", () => {
 			const { account, session } = await openAccountWithData();
 			const ip = buildUniqueIp();
 			await deleteProjectData(
-				UserDataProjectEnum.BACKLOG,
+				[UserDataProjectEnum.BACKLOG],
 				{ password: "pas le bon" },
 				session.cookie,
 				ip,
@@ -230,7 +306,7 @@ describe("deleteProjectData", () => {
 
 			// Act
 			const response = await deleteProjectData(
-				UserDataProjectEnum.BACKLOG,
+				[UserDataProjectEnum.BACKLOG],
 				{ password: account.password },
 				session.cookie,
 				ip,

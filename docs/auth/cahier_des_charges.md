@@ -334,7 +334,7 @@ Préfixe `/auth` (`ApiPrefixEnum`). Liste à figer dans la roadmap :
 | `GET /auth/sessions`, `DELETE /auth/sessions/:id`, `DELETE /auth/sessions`, `DELETE /auth/sessions/others` | Sessions ; tout ; tout sauf ici |
 | `GET /auth/factors`, `POST /auth/factors/totp`, `POST /auth/factors/totp/confirm`, `POST /auth/factors/email`, `DELETE /auth/factors/:id` | 2FA ; la suppression porte le mot de passe dans son corps |
 | `POST /auth/recovery-codes` | Régénérer les codes de secours |
-| `GET /auth/me/export`, `DELETE /auth/me/projects/:project`, `DELETE /auth/me` | Export, suppressions ; `:project` vaut `game-death-counter` ou `backlog` ; les suppressions portent le mot de passe (et, pour le compte, le code d'un TOTP) dans leur corps |
+| `GET /auth/me/export`, `DELETE /auth/me/projects`, `DELETE /auth/me` | Export, suppressions ; `DELETE /auth/me/projects` vide en une fois (tous ou aucun) les projets de sa liste `projects` (`game-death-counter`, `backlog`) ; les suppressions portent le mot de passe (et, pour le compte, le code d'un TOTP) dans leur corps |
 
 Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
 
@@ -730,7 +730,7 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 64. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
 65. [moi] Backlog, dans un seul commit : migration `user_id` (`backlog_user_game`, `backlog_user_version`, `backlog_series`), données de test rattachées, tous les endpoints `protected` (IGDB compris), jeux suivis et versions filtrés par `user_id`.
 66. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
-67. [moi] Serveur : suppression ordonnée du Backlog (§5.1) dans `DELETE /auth/me`, `DELETE /auth/me/projects/:project`, export étendu aux tables des projets.
+67. [moi] Serveur : suppression ordonnée du Backlog (§5.1) dans `DELETE /auth/me`, `DELETE /auth/me/projects`, export étendu aux tables des projets.
 68. [moi] Front : accès des projets avec retour à la page demandée, gestion du `401` `AUTHENTICATION_REQUIRED`.
 69. [moi] Profil : suppression des données d'un projet. Vérif : critère 11.
 
@@ -939,6 +939,12 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Suppression du compte avec une application : un code de secours faux, répété, finit en « trop d'essais » ; redonner le bon mot de passe entre deux erreurs de code n'efface pas le compte à rebours.
 - [ ] À décider : un changement d'email confirmé doit-il fermer les autres sessions et annuler les « mot de passe oublié » en cours vers l'ancienne adresse ? Aujourd'hui non : il faut déjà le mot de passe pour le commencer, et l'ancienne adresse est prévenue après coup. À tester : lancer un « mot de passe oublié », changer l'email, puis finir le « mot de passe oublié » avec l'ancien email.
 - [ ] À décider : le mail de notification du changement d'email pourrait partir à l'ancienne adresse dès la demande (et pas seulement après la confirmation), pour que son propriétaire puisse réagir avant.
+- [ ] Session expirée pendant une modification du Backlog ou de GDC : aucun toast « Échec de … » par-dessus la connexion ; un autre compte connecté ensuite dans le même onglet ne voit rien du premier.
+- [ ] Double clic sur l'ajout d'un jeu au backlog : un seul ajout, pas de 500.
+- [ ] Deux comptes en même temps sur le Backlog : l'un retire un jeu pendant que l'autre en range un dans une nouvelle série ; aucun des deux n'attend ni n'échoue.
+- [ ] Vider le Backlog depuis le profil, ou supprimer le compte, pendant qu'un autre onglet modifie un jeu : pas de 500, et aucune ligne du compte ne reste.
+- [ ] Export : `backlog_series.csv` donne le nom de chaque série de `backlog_user_game.csv`, séries IGDB comprises.
+- [ ] Edge : une seule icône d'œil dans les champs mot de passe (Edge ajoute la sienne à côté de la nôtre).
 
 ## Annexe : fichiers du repo à relire
 

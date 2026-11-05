@@ -90,9 +90,9 @@ export const meController = {
 
 	deleteProjectData: protectedRequestHandler<DeleteProjectData>(
 		async (request, response, session) => {
-			await projectDataDeletionService.deleteProject(
+			await projectDataDeletionService.deleteProjects(
 				session.userId,
-				request.params.project,
+				request.body.projects,
 				request.body.password,
 				readBrowserContext(request).client,
 			);

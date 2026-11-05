@@ -5,6 +5,7 @@ import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
+import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -445,6 +446,33 @@ describe("createUserGame", () => {
 				BacklogErrorCodeEnum.USER_GAME_ALREADY_EXISTS,
 				`Game already in the backlog : ${backlogGame.gameId}`,
 			);
+		});
+
+		it("SHOULD add the game once and refuse the other WHEN it is added twice at the same time", async () => {
+			// Arrange
+			const stored = await seedStoredGame();
+			const body = {
+				gameId: stored.gameId,
+				customization: DEFAULT_CUSTOMIZATION,
+				userVersion: newUserVersionBody(stored.gameId, SEEDED_PLATFORMS.PS3),
+			};
+
+			// Act
+			const responses = await Promise.all([
+				player.agent.post(CREATE_URL).send(body),
+				player.agent.post(CREATE_URL).send(body),
+			]);
+
+			// Assert
+			expect(responses.map((response) => response.status).sort()).toStrictEqual(
+				[
+					HttpStatutCodeSuccessEnum.CREATED,
+					HttpStatutCodeErrorEnum.CONFLICT_WITH_SERVER,
+				],
+			);
+			expect(
+				await selectBacklogRows.userVersions(player.userId, stored.gameId),
+			).toHaveLength(1);
 		});
 
 		it("SHOULD refuse a platform the version was not released on", async () => {

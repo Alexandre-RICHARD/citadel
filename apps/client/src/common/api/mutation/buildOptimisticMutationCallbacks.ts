@@ -10,6 +10,7 @@ import {
 import { ApiError } from "../error/ApiError";
 import { buildFailureMessage } from "../error/buildFailureMessage";
 import { getErrorReason } from "../error/getErrorReason";
+import { isSessionExpiredError } from "../error/isSessionExpiredError";
 import { isTransientApiError } from "../error/isTransientApiError";
 import type { MutationFailure } from "./mutationFailure.type";
 import type { OptimisticMutationOptions } from "./optimisticMutationOptions.type";
@@ -71,6 +72,9 @@ export function buildOptimisticMutationCallbacks<
 			variables: Variables,
 			context: MutationContext<Rollback> | undefined,
 		): void {
+			// Le client de requêtes a déjà vidé le cache et mène à la connexion : rien à remettre, rien à signaler
+			if (isSessionExpiredError(error)) return;
+
 			if (isGoneResourceError(error) && options.removeGoneResource)
 				options.removeGoneResource(queryClient, variables, error);
 			else if (context)
@@ -103,7 +107,13 @@ export function buildOptimisticMutationCallbacks<
 		},
 
 		// Le serveur reste la source de vérité des valeurs calculées (totaux, dates, ordre)
-		onSettled(_data: unknown, _error: unknown, variables: Variables): void {
+		onSettled(_data: unknown, error: unknown, variables: Variables): void {
+			// Relire une donnée du compte sans session ne ferait qu'un 401 de plus
+			if (isSessionExpiredError(error)) {
+				queryKeysToResync.delete(queryClient);
+				return;
+			}
+
 			const queryKeys = getUniqueQueryKeys([
 				...(queryKeysToResync.get(queryClient) ?? []),
 				...options.getAffectedQueryKeys(variables),

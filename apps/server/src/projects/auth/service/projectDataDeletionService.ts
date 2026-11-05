@@ -5,7 +5,7 @@ import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
 import { projectUserData } from "../projectData/projectUserData.ts";
-import { lockUserQuery } from "../query/user/lockUserQuery.ts";
+import { shareLockUserQuery } from "../query/user/shareLockUserQuery.ts";
 import { authEventService } from "./authEventService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 
@@ -25,12 +25,12 @@ class ProjectDataDeletionService {
 	}
 
 	/**
-	 * « Supprimer les données de ce projet » : immédiat et définitif, le compte reste. Mot de passe redemandé ; ses
-	 * échecs comptent comme ceux de la connexion
+	 * « Supprimer les données de ces projets » : immédiat, définitif, tous ou aucun ; le compte reste. Mot de passe
+	 * redemandé ; ses échecs comptent comme ceux de la connexion
 	 */
-	async deleteProject(
+	async deleteProjects(
 		userId: number,
-		project: UserDataProjectEnum,
+		projects: readonly UserDataProjectEnum[],
 		password: string,
 		client: ClientContextBean,
 	): Promise<void> {
@@ -38,10 +38,12 @@ class ProjectDataDeletionService {
 		await runInTransaction(
 			"Failed to delete project data",
 			async (transaction) => {
-				// Le compte est verrouillé : une suppression du compte en même temps passe avant ou après, jamais au milieu
-				if (!(await lockUserQuery(userId, transaction)))
+				// Une suppression du compte en même temps passe avant ou après, jamais au milieu
+				if (!(await shareLockUserQuery(userId, transaction)))
 					throw new Error("Project data deletion of a deleted account");
-				await projectUserData[project].deleteAll(userId, transaction);
+				for (const project of projects)
+					// eslint-disable-next-line no-await-in-loop -- une même transaction : ses requêtes se suivent
+					await projectUserData[project].deleteAll(userId, transaction);
 			},
 		);
 		await authEventService.record({

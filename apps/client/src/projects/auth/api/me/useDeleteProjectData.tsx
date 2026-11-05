@@ -8,10 +8,7 @@ import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { backlogQueryKeys } from "../../../backlog/api/backlogQueryKeys";
 import { gameDeathCounterQueryKeys } from "../../../gameDeathCounter/api/gameDeathCounterQueryKeys";
 
-type Variables = {
-	projects: readonly UserDataProjectEnum[];
-	password: string;
-};
+type Variables = DeleteProjectData["request"]["body"];
 
 // Le cache de chaque projet : ses données supprimées n'y restent pas
 const PROJECT_QUERY_KEYS: Record<UserDataProjectEnum, readonly string[]> = {
@@ -20,26 +17,21 @@ const PROJECT_QUERY_KEYS: Record<UserDataProjectEnum, readonly string[]> = {
 };
 
 /**
- * Supprime toutes les données du compte dans ces projets, un projet après l'autre, avec le même mot de passe. Le compte
- * reste. Un mot de passe refusé arrête tout dès le premier projet
+ * Supprime toutes les données du compte dans ces projets, en une requête : tous ou aucun. Le compte reste
  */
 export function useDeleteProjectData() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({ projects, password }: Variables): Promise<void> => {
-			for (const project of projects)
-				// eslint-disable-next-line no-await-in-loop -- un mot de passe refusé arrête la suite
-				await fetchHandler<DeleteProjectData>({
-					url: `${ApiPrefixEnum.AUTH}/me/projects/:project`,
-					method: HttpMethodEnum.DELETE,
-					protected: true,
-					pathParams: { project },
-					body: { password },
-				});
+		mutationFn: async (body: Variables): Promise<void> => {
+			await fetchHandler<DeleteProjectData>({
+				url: `${ApiPrefixEnum.AUTH}/me/projects`,
+				method: HttpMethodEnum.DELETE,
+				protected: true,
+				body,
+			});
 		},
-		// Aussi après un échec : le premier projet a pu partir avant le refus du second
-		onSettled: (_data, _error, { projects }) => {
+		onSuccess: (_data, { projects }) => {
 			for (const project of projects)
 				queryClient.removeQueries({ queryKey: PROJECT_QUERY_KEYS[project] });
 		},
