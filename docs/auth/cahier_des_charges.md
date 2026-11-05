@@ -454,6 +454,7 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_FACTOR_CONFIRMATION_MINUTES` | 15 (facteur non confirmé, purgé ensuite) |
 | `AUTH_EVENT_RETENTION_DAYS`, `ERROR_LOG_RETENTION_DAYS` | 20 |
 | `AUTH_RESTORE_JOURNAL_DAYS` | 70 |
+| `AUTH_RESTORE_JOURNAL_DIR` | `/var/lib/citadel/restore-journal` (image) ; `./.local/restore-journal` en dev |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |
 
 Mails (section existante, valeurs écrites et non plus commentées dans `.env.example` et `.env.test`) :
@@ -518,8 +519,8 @@ Tous dispensés de bandeau, à condition d'être décrits dans « Données perso
 ### 10.5 Sauvegardes et restauration
 
 - **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
-- **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur, lancée une fois le serveur relancé, avec la date de la sauvegarde (son nom, sinon la ligne `-- Dump completed on` du dump : un dump envoyé depuis le PC n'a pas forcément de date dans son nom) :
-  - **le journal** : lignes JSON (identifiant du compte, action, date ; nouvelle adresse pour un changement d'email) pour chaque suppression de compte ou des données d'un projet, changement d'email et changement de sécurité (mot de passe, facteur, codes de secours). Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/` (donc dans `config-backup`), purgé à 10 semaines ;
+- **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur (`build/afterRestore.cjs`), lancée juste après l'import, serveur encore arrêté (un conteneur jetable du service) : aucune requête ne passe avec une session ressuscitée. Elle reçoit la date de la sauvegarde (son nom, sinon la ligne `-- Dump completed on` du dump, lue à l'heure de Paris : un dump envoyé depuis le PC n'a pas forcément de date dans son nom). En échec, le serveur reste arrêté :
+  - **le journal** : lignes JSON (identifiant du compte, action, date ; nouvelle adresse pour un changement d'email, projets vidés) pour chaque suppression de compte ou des données d'un projet, changement d'email et changement de sécurité (mot de passe, facteur, codes de secours), écrites après la transaction. Un fichier par jour (UTC), effacé quand son dernier instant a 10 semaines. Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/restore-journal/` (donc dans `config-backup`), créé à `node` par `citadel deploy` ;
   - **rejouer le journal** après la date de la sauvegarde : suppressions refaites, changements d'email remis ; un compte qui a changé sa sécurité voit son mot de passe invalidé (à refaire par « Mot de passe oublié ») ;
   - **vider toutes les sessions et tous les parcours** : sinon, une session révoquée après la sauvegarde redevient valide.
 - **Bandeau** : le message automatique de restauration gagne la phrase « Si tu as changé de mot de passe ou de double authentification pendant cette période, passe par « Mot de passe oublié ». »
@@ -736,6 +737,8 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 
 **Phase 9 — Interface, restauration et RGPD**
 
+Ordre : 70, 73, 74, 75, 77, puis 76, close par ta validation technique ; ensuite revue et commits. 71 vient après 70 et 75, 72 quand tu veux.
+
 70. [moi] Header de la homepage (bouton, icône et pseudo affiché, déconnexion) ; icône de profil dans le Backlog et GDC ; avertissement de déconnexion, cache vidé.
 71. [toi] Recette visuelle de toutes les pages en dev.
 72. [nous] Chaque gabarit envoyé depuis le dev vers Gmail et Outlook, et à mail-tester. Vérif : critère 13.
@@ -744,6 +747,13 @@ Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'inté
 75. [moi] Page « Données personnelles » (§10.6).
 76. [nous] Vérification CNIL (§10.4) : cookies posés par Cloudflare, pixel de Brevo ; durée des journaux de Brevo (§10.2).
 77. [moi] Revue de sécurité : aucun secret dans les logs ni dans `error_log` (critère 6), CSP compatible avec les nouvelles pages, `pnpm audit`.
+
+En suspens (70, 73, 74, 75 et 77 faites) :
+
+- 71 et 72 (de ton côté).
+- 76 : cookies réellement posés par Cloudflare en prod ; pixel de Brevo face à la recommandation CNIL du 12 mars 2026 (délibération 2026-042 : dispense pour un mail transactionnel seulement si le pixel ne garde que la date de dernière ouverture ; suivi non désactivable sur l'offre gratuite) : garder, changer d'offre ou remplacer Brevo ; durée de conservation des journaux de Brevo (illimitée par défaut, à régler dans Retention rules), puis la préciser dans « Données personnelles ». Close par ta validation technique.
+- À trancher : sortir le journal de restauration de `config-backup` (une archive de 2 mois qui contient 70 jours de journal dépasse les 3 mois) ; tutoiement du bandeau de restauration, sur un site qui vouvoie.
+- `pnpm audit` : 2 « high » dans `brace-expansion`, sous des plugins ESLint (dev seulement) : override pnpm ou attendre Dependabot.
 
 ### Partie D — Recette et release
 
@@ -766,7 +776,7 @@ Aucune question ouverte.
 
 ## 17. Vérifications de fin
 
-Petites choses à tester à la main pendant la recette (étapes 80 et 82), en plus des 16 critères du §12.2. À cocher une par une ; une ligne qui échoue devient un correctif avant la release.
+Petites choses à tester à la main pendant la recette (étapes 80 et 82), en plus des 16 critères du §12.2. À cocher une par une ; une ligne qui échoue devient un correctif avant la release. Une fois la phase 9 finie, je peaufine cette liste ; tu testes alors tout (peut-être en end-to-end avec Playwright), puis tu dresses la liste de tous les points à modifier.
 
 **Socle (phases 0 et 1)**
 
@@ -945,6 +955,10 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Vider le Backlog depuis le profil, ou supprimer le compte, pendant qu'un autre onglet modifie un jeu : pas de 500, et aucune ligne du compte ne reste.
 - [ ] Export : `backlog_series.csv` donne le nom de chaque série de `backlog_user_game.csv`, séries IGDB comprises.
 - [ ] Edge : une seule icône d'œil dans les champs mot de passe (Edge ajoute la sienne à côté de la nôtre).
+- [ ] Se déconnecter juste après une mort comptée dans GDC (requête lente) : avertissement ; « Annuler » garde la session. Sur téléphone, le header tient sur une ligne, profil et déconnexion en icônes.
+- [ ] Journal de restauration : après un premier `citadel deploy`, `/Volume1/appdata/site-prod-server/restore-journal` appartient à 1000 en 700 ; un changement de mot de passe y écrit une ligne ; en `prod:local`, la même ligne dans le volume (`docker exec site-prod-server cat /var/lib/citadel/restore-journal/*.jsonl`).
+- [ ] Journal illisible (dossier en lecture seule) : l'action réussit quand même, l'erreur arrive dans `error_log`.
+- [ ] Console du navigateur en `prod:local`, sur chaque page : aucune violation de la CSP, sauf `wasm-eval` sur Angers Irigo (sonde WebAssembly de `long.js`, sans effet).
 
 ## Annexe : fichiers du repo à relire
 
