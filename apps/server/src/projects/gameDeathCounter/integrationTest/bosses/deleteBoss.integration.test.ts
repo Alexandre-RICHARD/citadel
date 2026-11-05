@@ -2,10 +2,12 @@ import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameD
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -20,6 +22,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function deleteBossUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}`;
 }
@@ -28,7 +37,10 @@ describe("deleteBoss", () => {
 	describe("204 No Content", () => {
 		it("SHOULD delete the boss and its deaths, with an empty response", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Bed of Chaos",
@@ -44,7 +56,7 @@ describe("deleteBoss", () => {
 			});
 
 			// Act
-			const response = await request(app).delete(deleteBossUrl(bossId));
+			const response = await player.agent.delete(deleteBossUrl(bossId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
@@ -56,7 +68,10 @@ describe("deleteBoss", () => {
 
 		it("SHOULD keep the game, its other bosses and their deaths", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 			const bossId = await insertBossRow({ gameId, name: "False Knight" });
 			const otherBossId = await insertBossRow({
 				gameId,
@@ -72,7 +87,7 @@ describe("deleteBoss", () => {
 			const otherDeathRowBefore = await selectDeathRow(otherDeathId);
 
 			// Act
-			await request(app).delete(deleteBossUrl(bossId));
+			await player.agent.delete(deleteBossUrl(bossId));
 
 			// Assert
 			expect(await selectGameRow(gameId)).toStrictEqual(gameRowBefore);
@@ -90,7 +105,7 @@ describe("deleteBoss", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).delete(deleteBossUrl(pathValue));
+				const response = await player.agent.delete(deleteBossUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["id"], ...issue }]);
@@ -99,9 +114,34 @@ describe("deleteBoss", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist, deleting nothing, WHEN its game belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const otherBossId = await insertBossRow({
+				gameId: otherGameId,
+				name: "Hornet",
+				totalDeath: 2,
+			});
+
+			// Act
+			const response = await player.agent.delete(deleteBossUrl(otherBossId));
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${otherBossId}`,
+			);
+			expect(await selectBossRow(otherBossId)).not.toBeNull();
+		});
+
 		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
-			const response = await request(app).delete(
+			const response = await player.agent.delete(
 				deleteBossUrl(NON_EXISTENT_ID),
 			);
 
@@ -115,12 +155,15 @@ describe("deleteBoss", () => {
 
 		it("SHOULD answer that the boss no longer exists WHEN deleted twice", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Cuphead" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Cuphead",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Hilda Berg" });
-			await request(app).delete(deleteBossUrl(bossId));
+			await player.agent.delete(deleteBossUrl(bossId));
 
 			// Act
-			const response = await request(app).delete(deleteBossUrl(bossId));
+			const response = await player.agent.delete(deleteBossUrl(bossId));
 
 			// Assert
 			expectNotFound(
@@ -131,10 +174,23 @@ describe("deleteBoss", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).delete(deleteBossUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error, log it and delete nothing WHEN the deletion fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Sekiro: Shadows Die Twice",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Corrupted Monk",
@@ -150,7 +206,7 @@ describe("deleteBoss", () => {
 			);
 
 			// Act
-			const response = await request(app).delete(deleteBossUrl(bossId));
+			const response = await player.agent.delete(deleteBossUrl(bossId));
 
 			// Assert
 			expectInternalServerError(response);

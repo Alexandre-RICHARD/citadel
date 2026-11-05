@@ -18,7 +18,7 @@ export function useBoss(bossId: number): BossFm {
 					{
 						url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { id: bossId },
 					},
 					{ signal },

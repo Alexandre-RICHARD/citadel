@@ -4,11 +4,13 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
 import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectDateBetween } from "../../../../testUtils/integration/expectDateBetween.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectMalformedJsonError } from "../../../../testUtils/integration/expectMalformedJsonError.ts";
@@ -24,6 +26,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function createBossUrl(gameId: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${gameId}/bosses`;
 }
@@ -32,11 +41,14 @@ describe("createBoss", () => {
 	describe("201 Created", () => {
 		it("SHOULD create the boss in the game and return its summary", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 
 			// Act
 			const requestStartedAt = new Date();
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Mantis Lords" });
 			const requestEndedAt = new Date();
@@ -73,10 +85,13 @@ describe("createBoss", () => {
 
 		it("SHOULD remove the spaces around the name", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Elden Ring" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Elden Ring",
+			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "  Rennala, Queen of the Full Moon\n" });
 
@@ -90,11 +105,14 @@ describe("createBoss", () => {
 
 		it("SHOULD store intact a 255 characters name, the column maximum", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls II" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls II",
+			});
 			const longestName = "The Smelter Demon, ".repeat(14).slice(0, 255);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: longestName });
 
@@ -106,11 +124,14 @@ describe("createBoss", () => {
 
 		it("SHOULD keep accents, ideograms and emojis", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Ōkami" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Ōkami",
+			});
 			const unicodeName = "Orochi, le serpent à huit têtes 八岐大蛇 🐍";
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: unicodeName });
 
@@ -122,13 +143,16 @@ describe("createBoss", () => {
 
 		it("SHOULD accept two bosses with the same name in the same game", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls III" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls III",
+			});
 
 			// Act
-			const firstResponse = await request(app)
+			const firstResponse = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Lothric, Younger Prince" });
-			const secondResponse = await request(app)
+			const secondResponse = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Lothric, Younger Prince" });
 
@@ -143,12 +167,13 @@ describe("createBoss", () => {
 		it("SHOULD accept a boss WHEN the game is already finished", async () => {
 			// Arrange
 			const gameId = await insertGameRow({
+				userId: player.userId,
 				name: "Celeste",
 				endedAt: new Date("2018-02-10T20:00:00.000Z"),
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Badeline" });
 
@@ -158,11 +183,17 @@ describe("createBoss", () => {
 
 		it("SHOULD attach the boss to the game of the path and ignore unknown body fields", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hades" });
-			const otherGameId = await insertGameRow({ name: "Hades II" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades",
+			});
+			const otherGameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades II",
+			});
 
 			// Act
-			const response = await request(app).post(createBossUrl(gameId)).send({
+			const response = await player.agent.post(createBossUrl(gameId)).send({
 				name: "Megaera",
 				gameId: otherGameId,
 				totalDeath: 50,
@@ -186,7 +217,7 @@ describe("createBoss", () => {
 			"SHOULD reject the request WHEN the game id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.post(createBossUrl(pathValue))
 					.send({ name: "False Knight" });
 
@@ -199,11 +230,14 @@ describe("createBoss", () => {
 			"SHOULD reject the request without creating anything WHEN $reason",
 			async ({ name, issue }) => {
 				// Arrange
-				const gameId = await insertGameRow({ name: "Blasphemous" });
+				const gameId = await insertGameRow({
+					userId: player.userId,
+					name: "Blasphemous",
+				});
 				const bossCountBefore = await countTableRows("gdc_boss");
 
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.post(createBossUrl(gameId))
 					.send({ name });
 
@@ -215,7 +249,7 @@ describe("createBoss", () => {
 
 		it("SHOULD report both the invalid game id and body, the id first", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl("1.5"))
 				.send({ name: null });
 
@@ -237,7 +271,7 @@ describe("createBoss", () => {
 
 		it("SHOULD validate the body before looking for the game", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(NON_EXISTENT_ID))
 				.send({ name: "" });
 
@@ -254,11 +288,14 @@ describe("createBoss", () => {
 
 		it("SHOULD reject a malformed JSON without creating anything", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Shovel Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Shovel Knight",
+			});
 			const bossCountBefore = await countTableRows("gdc_boss");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.set("Content-Type", "application/json")
 				.send(MALFORMED_JSON_BODY);
@@ -270,12 +307,35 @@ describe("createBoss", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist, creating nothing, WHEN it belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const bossCountBefore = await countTableRows("gdc_boss");
+
+			// Act
+			const response = await player.agent
+				.post(createBossUrl(otherGameId))
+				.send({ name: "Hornet" });
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${otherGameId}`,
+			);
+			expect(await countTableRows("gdc_boss")).toBe(bossCountBefore);
+		});
+
 		it("SHOULD answer that the game does not exist, creating nothing", async () => {
 			// Arrange
 			const bossCountBefore = await countTableRows("gdc_boss");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(NON_EXISTENT_ID))
 				.send({ name: "Specter Knight" });
 
@@ -289,16 +349,31 @@ describe("createBoss", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.post(createBossUrl(1))
+				.send({ name: "Hornet" });
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error, log it and create nothing WHEN checking the game fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Nine Sols" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Nine Sols",
+			});
 			const bossCountBefore = await countTableRows("gdc_boss");
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Game, "count").mockRejectedValueOnce(simulatedDatabaseFailure());
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Yingzhao" });
 
@@ -313,7 +388,10 @@ describe("createBoss", () => {
 
 		it("SHOULD answer a generic error, log it and create nothing WHEN the insertion fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Ender Magnolia" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Ender Magnolia",
+			});
 			const bossCountBefore = await countTableRows("gdc_boss");
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Boss, "create").mockRejectedValueOnce(
@@ -321,7 +399,7 @@ describe("createBoss", () => {
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(createBossUrl(gameId))
 				.send({ name: "Nola" });
 

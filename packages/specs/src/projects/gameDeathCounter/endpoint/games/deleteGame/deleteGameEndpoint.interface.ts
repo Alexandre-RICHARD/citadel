@@ -13,7 +13,7 @@ export interface DeleteGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
 		method: HttpMethodEnum.DELETE;
-		protected: false;
+		protected: true;
 		pathParams: DeleteGamePathParamDto;
 	};
 	response: {

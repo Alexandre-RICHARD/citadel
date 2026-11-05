@@ -3,10 +3,12 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -22,6 +24,13 @@ import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function deleteDeathUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/${id}`;
 }
@@ -30,7 +39,10 @@ describe("deleteDeath", () => {
 	describe("204 No Content", () => {
 		it("SHOULD delete the death and decrement the boss counter, with an empty response", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Elden Ring" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Elden Ring",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Placidusax",
@@ -47,7 +59,7 @@ describe("deleteDeath", () => {
 			const otherDeathRowBefore = await selectDeathRow(otherDeathId);
 
 			// Act
-			const response = await request(app).delete(deleteDeathUrl(deathId));
+			const response = await player.agent.delete(deleteDeathUrl(deathId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
@@ -61,7 +73,10 @@ describe("deleteDeath", () => {
 
 		it("SHOULD never bring the counter below zero", async () => {
 			// Arrange : compteur déjà à zéro alors qu'une mort existe, état incohérent possible en base
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Lost Kin",
@@ -73,7 +88,7 @@ describe("deleteDeath", () => {
 			});
 
 			// Act
-			const response = await request(app).delete(deleteDeathUrl(deathId));
+			const response = await player.agent.delete(deleteDeathUrl(deathId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
@@ -83,7 +98,10 @@ describe("deleteDeath", () => {
 
 		it("SHOULD decrement only once WHEN the same death is deleted twice at the same time", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Cuphead" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Cuphead",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Beppi the Clown",
@@ -96,8 +114,8 @@ describe("deleteDeath", () => {
 
 			// Act
 			const responses = await Promise.all([
-				request(app).delete(deleteDeathUrl(deathId)),
-				request(app).delete(deleteDeathUrl(deathId)),
+				player.agent.delete(deleteDeathUrl(deathId)),
+				player.agent.delete(deleteDeathUrl(deathId)),
 			]);
 
 			// Assert
@@ -112,7 +130,10 @@ describe("deleteDeath", () => {
 
 		it("SHOULD keep an exact counter WHEN additions and deletions cross on the same boss", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Pure Vessel",
@@ -129,11 +150,11 @@ describe("deleteDeath", () => {
 
 			// Act : deux suppressions et trois ajouts envoyés ensemble
 			const responses = await Promise.all([
-				request(app).delete(deleteDeathUrl(deathIds[0] ?? 0)),
-				request(app).post(addDeathUrl),
-				request(app).delete(deleteDeathUrl(deathIds[1] ?? 0)),
-				request(app).post(addDeathUrl),
-				request(app).post(addDeathUrl),
+				player.agent.delete(deleteDeathUrl(deathIds[0] ?? 0)),
+				player.agent.post(addDeathUrl),
+				player.agent.delete(deleteDeathUrl(deathIds[1] ?? 0)),
+				player.agent.post(addDeathUrl),
+				player.agent.post(addDeathUrl),
 			]);
 
 			// Assert : 3 - 2 + 3
@@ -154,7 +175,7 @@ describe("deleteDeath", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).delete(deleteDeathUrl(pathValue));
+				const response = await player.agent.delete(deleteDeathUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["id"], ...issue }]);
@@ -163,9 +184,39 @@ describe("deleteDeath", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the death does not exist, deleting nothing, WHEN its game belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const otherBossId = await insertBossRow({
+				gameId: otherGameId,
+				name: "Hornet",
+				totalDeath: 2,
+			});
+			const otherDeathId = await insertDeathRow({
+				bossId: otherBossId,
+				date: new Date("2017-02-24T20:00:00.000Z"),
+			});
+
+			// Act
+			const response = await player.agent.delete(deleteDeathUrl(otherDeathId));
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${otherDeathId}`,
+			);
+			expect(await selectDeathRow(otherDeathId)).not.toBeNull();
+			expect((await selectBossRow(otherBossId))?.totalDeath).toBe(2);
+		});
+
 		it("SHOULD answer that the death does not exist", async () => {
 			// Act
-			const response = await request(app).delete(
+			const response = await player.agent.delete(
 				deleteDeathUrl(NON_EXISTENT_ID),
 			);
 
@@ -179,7 +230,10 @@ describe("deleteDeath", () => {
 
 		it("SHOULD answer that the death no longer exists without decrementing again WHEN deleted twice", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls III" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls III",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Sister Friede",
@@ -189,10 +243,10 @@ describe("deleteDeath", () => {
 				bossId,
 				date: new Date("2016-10-25T21:00:00.000Z"),
 			});
-			await request(app).delete(deleteDeathUrl(deathId));
+			await player.agent.delete(deleteDeathUrl(deathId));
 
 			// Act
-			const response = await request(app).delete(deleteDeathUrl(deathId));
+			const response = await player.agent.delete(deleteDeathUrl(deathId));
 
 			// Assert
 			expectNotFound(
@@ -204,13 +258,23 @@ describe("deleteDeath", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).delete(deleteDeathUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it.each([
 			{
 				step: "reading the death",
 				failStep: () =>
 					vi
-						.spyOn(Death, "findByPk")
+						.spyOn(Death, "findOne")
 						.mockRejectedValueOnce(simulatedDatabaseFailure()),
 			},
 			{
@@ -231,7 +295,10 @@ describe("deleteDeath", () => {
 			"SHOULD answer a generic error, log it and change nothing WHEN $step fails",
 			async ({ failStep }) => {
 				// Arrange
-				const gameId = await insertGameRow({ name: "Bloodborne" });
+				const gameId = await insertGameRow({
+					userId: player.userId,
+					name: "Bloodborne",
+				});
 				const bossId = await insertBossRow({
 					gameId,
 					name: "Martyr Logarius",
@@ -246,7 +313,7 @@ describe("deleteDeath", () => {
 				failStep();
 
 				// Act
-				const response = await request(app).delete(deleteDeathUrl(deathId));
+				const response = await player.agent.delete(deleteDeathUrl(deathId));
 
 				// Assert : tout se fait dans une transaction, annulée en bloc
 				expectInternalServerError(response);

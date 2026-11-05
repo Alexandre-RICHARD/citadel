@@ -15,7 +15,7 @@ export interface SetGameFinished extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id/finished`;
 		method: HttpMethodEnum.PATCH;
-		protected: false;
+		protected: true;
 		pathParams: SetGameFinishedPathParamDto;
 		body: SetGameFinishedBodyDto;
 	};

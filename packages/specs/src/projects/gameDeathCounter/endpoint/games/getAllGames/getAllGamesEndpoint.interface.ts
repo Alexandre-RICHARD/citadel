@@ -10,7 +10,7 @@ export interface GetAllGames extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 	};
 	response:
 		| {

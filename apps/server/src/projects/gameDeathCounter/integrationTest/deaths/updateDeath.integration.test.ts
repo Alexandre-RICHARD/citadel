@@ -4,10 +4,12 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectDateBetween } from "../../../../testUtils/integration/expectDateBetween.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectMalformedJsonError } from "../../../../testUtils/integration/expectMalformedJsonError.ts";
@@ -23,6 +25,13 @@ import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId
 import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simulatedDatabaseFailure.ts";
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Death } from "../../models/Death.ts";
+
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
 
 function updateDeathUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/${id}`;
@@ -40,7 +49,7 @@ async function insertDeathScenario({
 	date: Date;
 	comment?: string | null;
 }): Promise<{ bossId: number; deathId: number }> {
-	const gameId = await insertGameRow({ name: gameName });
+	const gameId = await insertGameRow({ userId: player.userId, name: gameName });
 	const bossId = await insertBossRow({ gameId, name: bossName, totalDeath: 1 });
 	const deathId = await insertDeathRow({ bossId, date, comment });
 	return { bossId, deathId };
@@ -62,7 +71,7 @@ describe("updateDeath", () => {
 
 			// Act
 			const requestStartedAt = new Date();
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ date: newDate.toISOString() });
 			const requestEndedAt = new Date();
@@ -100,7 +109,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "Le deuxième s'est relevé" });
 
@@ -126,7 +135,7 @@ describe("updateDeath", () => {
 			const newDate = new Date("2015-03-24T22:15:00.000Z");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ date: newDate.toISOString(), comment: "La boîte à musique !" });
 
@@ -147,7 +156,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "\n  Trois à la fois, vraiment ?  \t" });
 
@@ -174,7 +183,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment });
 
@@ -194,7 +203,7 @@ describe("updateDeath", () => {
 			const longestComment = "Trop de magie noire. ".repeat(48).slice(0, 1000);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: longestComment });
 
@@ -213,7 +222,7 @@ describe("updateDeath", () => {
 			const unicodeComment = "九尾の狐 m'a eu… encore 🦊🔥";
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: unicodeComment });
 
@@ -230,7 +239,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ date: "2024-05-30T23:45:00.000+02:00" });
 
@@ -250,7 +259,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ date: "2010-10-20T20:00:00.987Z" });
 
@@ -269,7 +278,7 @@ describe("updateDeath", () => {
 			});
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ date: "1000-01-01T00:00:00.000Z" });
 
@@ -287,11 +296,14 @@ describe("updateDeath", () => {
 				bossName: "Ten Piedad",
 				date: new Date("2019-09-11T20:00:00.000Z"),
 			});
-			const gameId = await insertGameRow({ name: "Blasphemous II" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Blasphemous II",
+			});
 			const otherBossId = await insertBossRow({ gameId, name: "Orospina" });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "Le premier gros boss", bossId: otherBossId });
 
@@ -315,7 +327,7 @@ describe("updateDeath", () => {
 			const otherDeathRowBefore = await selectDeathRow(otherDeathId);
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "Le char de Thésée" });
 
@@ -331,7 +343,7 @@ describe("updateDeath", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.patch(updateDeathUrl(pathValue))
 					.send({ comment: "Ornstein" });
 
@@ -527,7 +539,7 @@ describe("updateDeath", () => {
 				const deathRowBefore = await selectDeathRow(deathId);
 
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.patch(updateDeathUrl(deathId))
 					.send(body);
 
@@ -539,7 +551,7 @@ describe("updateDeath", () => {
 
 		it("SHOULD reject a missing body", async () => {
 			// Act
-			const response = await request(app).patch(updateDeathUrl(1));
+			const response = await player.agent.patch(updateDeathUrl(1));
 
 			// Assert
 			expectValidationError(response, [
@@ -553,7 +565,7 @@ describe("updateDeath", () => {
 
 		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
-			const response = await request(app).patch(updateDeathUrl("abc")).send({});
+			const response = await player.agent.patch(updateDeathUrl("abc")).send({});
 
 			// Assert
 			expectValidationError(response, [
@@ -573,7 +585,7 @@ describe("updateDeath", () => {
 
 		it("SHOULD validate the body before looking for the death", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(NON_EXISTENT_ID))
 				.send({ comment: 404 });
 
@@ -597,7 +609,7 @@ describe("updateDeath", () => {
 			const deathRowBefore = await selectDeathRow(deathId);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.set("Content-Type", "application/json")
 				.send(MALFORMED_JSON_BODY);
@@ -609,9 +621,43 @@ describe("updateDeath", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the death does not exist, changing nothing, WHEN its game belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const otherBossId = await insertBossRow({
+				gameId: otherGameId,
+				name: "Hornet",
+				totalDeath: 2,
+			});
+			const otherDeathId = await insertDeathRow({
+				bossId: otherBossId,
+				date: new Date("2017-02-24T20:00:00.000Z"),
+			});
+			const otherDeathRowBefore = await selectDeathRow(otherDeathId);
+
+			// Act
+			const response = await player.agent
+				.patch(updateDeathUrl(otherDeathId))
+				.send({ comment: "Fantôme" });
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
+				`No death with id : ${otherDeathId}`,
+			);
+			expect(await selectDeathRow(otherDeathId)).toStrictEqual(
+				otherDeathRowBefore,
+			);
+		});
+
 		it("SHOULD answer that the death does not exist", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(NON_EXISTENT_ID))
 				.send({ comment: "Fantôme" });
 
@@ -621,6 +667,18 @@ describe("updateDeath", () => {
 				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
 				`No death with id : ${NON_EXISTENT_ID}`,
 			);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.patch(updateDeathUrl(1))
+				.send({ comment: "Fantôme" });
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 
@@ -634,12 +692,12 @@ describe("updateDeath", () => {
 			});
 			const deathRowBefore = await selectDeathRow(deathId);
 			const errorLogWatcher = await watchErrorLogs();
-			vi.spyOn(Death, "findByPk").mockRejectedValueOnce(
+			vi.spyOn(Death, "findOne").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "Les archers sur les remparts" });
 
@@ -666,7 +724,7 @@ describe("updateDeath", () => {
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(updateDeathUrl(deathId))
 				.send({ comment: "Le dernier boss" });
 

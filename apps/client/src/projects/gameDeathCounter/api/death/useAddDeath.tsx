@@ -26,7 +26,7 @@ export function useAddDeath(ids: Ids) {
 		buildRequest: () => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			pathParams: { bossId },
 		}),
 		// Le serveur recalcule aussi les dates de première et dernière tentative du boss

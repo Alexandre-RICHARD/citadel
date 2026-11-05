@@ -14,7 +14,7 @@ export interface GetOneBoss extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetOneBossPathParamDto;
 	};
 	response: {

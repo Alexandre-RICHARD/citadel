@@ -5,7 +5,7 @@ import type { SetBossDefeated } from "@citadel/specs/src/projects/gameDeathCount
 import type { UpdateBoss } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/bosses/updateBoss/updateBossEndpoint.interface.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
-import { asyncRequestHandler } from "../../../common/routing/asyncRequestHandler.ts";
+import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
 import { fromBossBeanToBossDto } from "../mapper/dtoBean/boss/fromBossBeanToBossDto.ts";
 import { fromBossSummaryBeanToBossSummaryDto } from "../mapper/dtoBean/boss/fromBossSummaryBeanToBossSummaryDto.ts";
 import { fromCreateBossDtoToCreateBossBean } from "../mapper/dtoBean/boss/fromCreateBossDtoToCreateBossBean.ts";
@@ -16,50 +16,41 @@ import { fromUpdateBossDtoToUpdateBossBean } from "../mapper/dtoBean/boss/fromUp
 import { bossService } from "../service/bossService.ts";
 
 export const bossController = {
-	getOne: asyncRequestHandler<GetOneBoss>(async (request, response) => {
-		const getOneBossBean = fromGetOneBossDtoToGetOneBossBean(request.params);
+	getOne: protectedRequestHandler<GetOneBoss>(
+		async (request, response, session) => {
+			const getOneBossBean = fromGetOneBossDtoToGetOneBossBean(request.params);
 
-		const boss = await bossService.getOneBoss(getOneBossBean);
+			const boss = await bossService.getOneBoss(session.userId, getOneBossBean);
 
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromBossBeanToBossDto(boss));
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromBossBeanToBossDto(boss));
+		},
+	),
 
-	create: asyncRequestHandler<CreateBoss>(async (request, response) => {
-		const createBossBean = fromCreateBossDtoToCreateBossBean(
-			request.params,
-			request.body,
-		);
-
-		const boss = await bossService.createBoss(createBossBean);
-
-		return response
-			.status(HttpStatutCodeSuccessEnum.CREATED)
-			.json(fromBossSummaryBeanToBossSummaryDto(boss));
-	}),
-
-	update: asyncRequestHandler<UpdateBoss>(async (request, response) => {
-		const updateBossBean = fromUpdateBossDtoToUpdateBossBean(
-			request.params,
-			request.body,
-		);
-
-		const boss = await bossService.updateBoss(updateBossBean);
-
-		return response
-			.status(HttpStatutCodeSuccessEnum.SUCCESS)
-			.json(fromBossSummaryBeanToBossSummaryDto(boss));
-	}),
-
-	setDefeated: asyncRequestHandler<SetBossDefeated>(
-		async (request, response) => {
-			const setBossDefeatedBean = fromSetBossDefeatedDtoToSetBossDefeatedBean(
+	create: protectedRequestHandler<CreateBoss>(
+		async (request, response, session) => {
+			const createBossBean = fromCreateBossDtoToCreateBossBean(
 				request.params,
 				request.body,
 			);
 
-			const boss = await bossService.setBossDefeated(setBossDefeatedBean);
+			const boss = await bossService.createBoss(session.userId, createBossBean);
+
+			return response
+				.status(HttpStatutCodeSuccessEnum.CREATED)
+				.json(fromBossSummaryBeanToBossSummaryDto(boss));
+		},
+	),
+
+	update: protectedRequestHandler<UpdateBoss>(
+		async (request, response, session) => {
+			const updateBossBean = fromUpdateBossDtoToUpdateBossBean(
+				request.params,
+				request.body,
+			);
+
+			const boss = await bossService.updateBoss(session.userId, updateBossBean);
 
 			return response
 				.status(HttpStatutCodeSuccessEnum.SUCCESS)
@@ -67,11 +58,31 @@ export const bossController = {
 		},
 	),
 
-	delete: asyncRequestHandler<DeleteBoss>(async (request, response) => {
-		const deleteBossBean = fromDeleteBossDtoToDeleteBossBean(request.params);
+	setDefeated: protectedRequestHandler<SetBossDefeated>(
+		async (request, response, session) => {
+			const setBossDefeatedBean = fromSetBossDefeatedDtoToSetBossDefeatedBean(
+				request.params,
+				request.body,
+			);
 
-		await bossService.deleteBoss(deleteBossBean);
+			const boss = await bossService.setBossDefeated(
+				session.userId,
+				setBossDefeatedBean,
+			);
 
-		return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
-	}),
+			return response
+				.status(HttpStatutCodeSuccessEnum.SUCCESS)
+				.json(fromBossSummaryBeanToBossSummaryDto(boss));
+		},
+	),
+
+	delete: protectedRequestHandler<DeleteBoss>(
+		async (request, response, session) => {
+			const deleteBossBean = fromDeleteBossDtoToDeleteBossBean(request.params);
+
+			await bossService.deleteBoss(session.userId, deleteBossBean);
+
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
+		},
+	),
 };

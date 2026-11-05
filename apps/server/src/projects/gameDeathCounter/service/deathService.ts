@@ -11,9 +11,17 @@ import { addDeathQuery } from "../query/death/addDeathQuery.ts";
 import { deleteDeathQuery } from "../query/death/deleteDeathQuery.ts";
 import { updateDeathQuery } from "../query/death/updateDeathQuery.ts";
 
+// Une mort appartient au compte du jeu de son boss : celle d'un autre répond comme une mort qui n'existe pas (404)
 class DeathService {
-	async addDeath(addDeathBean: AddDeathBean): Promise<DeathBean> {
-		const deathEntity = await addDeathQuery(addDeathBean.bossId, dateNow());
+	async addDeath(
+		userId: number,
+		addDeathBean: AddDeathBean,
+	): Promise<DeathBean> {
+		const deathEntity = await addDeathQuery(
+			userId,
+			addDeathBean.bossId,
+			dateNow(),
+		);
 		if (deathEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
@@ -23,8 +31,11 @@ class DeathService {
 		return fromDeathEntityToDeathBean(deathEntity);
 	}
 
-	async updateDeath(updateDeathBean: UpdateDeathBean): Promise<DeathBean> {
-		const deathEntity = await updateDeathQuery(updateDeathBean);
+	async updateDeath(
+		userId: number,
+		updateDeathBean: UpdateDeathBean,
+	): Promise<DeathBean> {
+		const deathEntity = await updateDeathQuery(userId, updateDeathBean);
 		if (deathEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,
@@ -34,8 +45,11 @@ class DeathService {
 		return fromDeathEntityToDeathBean(deathEntity);
 	}
 
-	async deleteDeath(deleteDeathBean: DeleteDeathBean): Promise<void> {
-		const wasDeleted = await deleteDeathQuery(deleteDeathBean.id);
+	async deleteDeath(
+		userId: number,
+		deleteDeathBean: DeleteDeathBean,
+	): Promise<void> {
+		const wasDeleted = await deleteDeathQuery(userId, deleteDeathBean.id);
 		if (!wasDeleted)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.DEATH_NOT_FOUND,

@@ -1,12 +1,16 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import type { UpdateDeathBean } from "../../bean/updateDeathBean.type.ts";
 import { Death } from "../../models/Death.ts";
+import { ownedBossIds } from "../ownership/ownedBossIds.ts";
 
 export async function updateDeathQuery(
+	userId: number,
 	updateDeathBean: UpdateDeathBean,
 ): Promise<Death | null> {
 	try {
-		const death = await Death.findByPk(updateDeathBean.id);
+		const death = await Death.findOne({
+			where: { id: updateDeathBean.id, bossId: ownedBossIds(userId) },
+		});
 		if (death === null) return null;
 
 		const changes: { date?: Date; comment?: string | null } = {};

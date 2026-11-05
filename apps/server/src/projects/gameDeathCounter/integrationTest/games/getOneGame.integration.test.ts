@@ -3,10 +3,12 @@ import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameD
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -19,12 +21,19 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function getOneGameUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${id}`;
 }
 
 async function getOneGame(id: number): Promise<GameDto> {
-	const response = await request(app).get(getOneGameUrl(id));
+	const response = await player.agent.get(getOneGameUrl(id));
 	expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 	return response.body as GameDto;
 }
@@ -35,6 +44,7 @@ describe("getOneGame", () => {
 			// Arrange
 			const startedAt = new Date("2022-02-25T00:00:00.000Z");
 			const gameId = await insertGameRow({
+				userId: player.userId,
 				name: "Elden Ring",
 				createdAt: startedAt,
 			});
@@ -119,6 +129,7 @@ describe("getOneGame", () => {
 			const startedAt = new Date("2025-09-04T16:00:00.000Z");
 			const endedAt = new Date("2025-10-12T22:30:00.000Z");
 			const gameId = await insertGameRow({
+				userId: player.userId,
 				name: "Hollow Knight: Silksong",
 				createdAt: startedAt,
 				endedAt,
@@ -140,7 +151,10 @@ describe("getOneGame", () => {
 
 		it("SHOULD sort the bosses by creation date, then by id WHEN dates are equal", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Bloodborne" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Bloodborne",
+			});
 			const sameCreationDate = new Date("2015-03-24T20:00:00.000Z");
 			const gascoigneId = await insertBossRow({
 				gameId,
@@ -171,7 +185,10 @@ describe("getOneGame", () => {
 
 		it("SHOULD compute first and last try from deaths and victory date", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls III" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls III",
+			});
 
 			const gundyrDefeatedAt = new Date("2016-04-12T18:00:00.000Z");
 			await insertBossRow({
@@ -237,7 +254,10 @@ describe("getOneGame", () => {
 
 		it("SHOULD sum the boss counters WHEN they differ from the number of recorded deaths", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Nine Sols" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Nine Sols",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Eigong",
@@ -258,9 +278,15 @@ describe("getOneGame", () => {
 
 		it("SHOULD only return the bosses of this game", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hades" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades",
+			});
 			const megaeraId = await insertBossRow({ gameId, name: "Megaera" });
-			const otherGameId = await insertGameRow({ name: "Hades II" });
+			const otherGameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades II",
+			});
 			await insertBossRow({ gameId: otherGameId, name: "Chronos" });
 
 			// Act
@@ -276,7 +302,7 @@ describe("getOneGame", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).get(getOneGameUrl(pathValue));
+				const response = await player.agent.get(getOneGameUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["id"], ...issue }]);
@@ -285,9 +311,28 @@ describe("getOneGame", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist WHEN it belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+
+			// Act
+			const response = await player.agent.get(getOneGameUrl(otherGameId));
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${otherGameId}`,
+			);
+		});
+
 		it("SHOULD answer that the game does not exist", async () => {
 			// Act
-			const response = await request(app).get(getOneGameUrl(NON_EXISTENT_ID));
+			const response = await player.agent.get(getOneGameUrl(NON_EXISTENT_ID));
 
 			// Assert
 			expectNotFound(
@@ -298,17 +343,30 @@ describe("getOneGame", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(getOneGameUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error and log it WHEN reading the game fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Lies of P" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Lies of P",
+			});
 			const errorLogWatcher = await watchErrorLogs();
-			vi.spyOn(Game, "findByPk").mockRejectedValueOnce(
+			vi.spyOn(Game, "findOne").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),
 			);
 
 			// Act
-			const response = await request(app).get(getOneGameUrl(gameId));
+			const response = await player.agent.get(getOneGameUrl(gameId));
 
 			// Assert
 			expectInternalServerError(response);
@@ -320,13 +378,16 @@ describe("getOneGame", () => {
 
 		it("SHOULD answer a generic error and log it WHEN computing the tries fails", async () => {
 			// Arrange : sans boss, le calcul des essais n'est jamais lancé
-			const gameId = await insertGameRow({ name: "Ender Lilies" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Ender Lilies",
+			});
 			await insertBossRow({ gameId, name: "Ulv, the Mad Knight" });
 			const errorLogWatcher = await watchErrorLogs();
 			failRawQueryOnce("MIN(date)");
 
 			// Act
-			const response = await request(app).get(getOneGameUrl(gameId));
+			const response = await player.agent.get(getOneGameUrl(gameId));
 
 			// Assert
 			expectInternalServerError(response);

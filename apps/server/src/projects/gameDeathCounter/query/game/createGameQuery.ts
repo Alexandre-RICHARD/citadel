@@ -3,10 +3,12 @@ import type { CreateGameBean } from "../../bean/createGameBean.type.ts";
 import { Game } from "../../models/Game.ts";
 
 export async function createGameQuery(
+	userId: number,
 	createGameBean: CreateGameBean,
 ): Promise<Game> {
 	try {
 		const newGame = await Game.create({
+			userId,
 			name: createGameBean.name,
 			endedAt: null,
 		});

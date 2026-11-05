@@ -14,7 +14,7 @@ export interface AddDeath extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:bossId/deaths`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		pathParams: AddDeathPathParamDto;
 	};
 	response: {

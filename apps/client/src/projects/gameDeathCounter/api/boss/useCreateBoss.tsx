@@ -23,7 +23,7 @@ export function useCreateBoss(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:gameId/bosses`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			pathParams: { gameId },
 			body,
 		}),

@@ -14,7 +14,7 @@ export interface GetOneGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
 		method: HttpMethodEnum.GET;
-		protected: false;
+		protected: true;
 		pathParams: GetOneGamePathParamDto;
 	};
 	response: {

@@ -2,10 +2,11 @@ import type { GameListDto } from "@citadel/specs/src/projects/gameDeathCounter/d
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
-import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { failRawQueryOnce } from "../../../../testUtils/integration/failRawQueryOnce.ts";
 import { insertBossRow } from "../../../../testUtils/integration/gameDeathCounter/insertBossRow.ts";
@@ -15,10 +16,17 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 const GET_ALL_GAMES_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 
 async function getAllGames(): Promise<GameListDto> {
-	const response = await request(app).get(GET_ALL_GAMES_URL);
+	const response = await player.agent.get(GET_ALL_GAMES_URL);
 	expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 	return response.body as GameListDto;
 }
@@ -29,6 +37,7 @@ describe("getAllGames", () => {
 			// Arrange
 			const darkSoulsStartedAt = new Date("2011-09-22T08:00:00.000Z");
 			const darkSoulsId = await insertGameRow({
+				userId: player.userId,
 				name: "Dark Souls",
 				createdAt: darkSoulsStartedAt,
 			});
@@ -46,6 +55,7 @@ describe("getAllGames", () => {
 			const cupheadStartedAt = new Date("2017-09-29T14:30:00.250Z");
 			const cupheadEndedAt = new Date("2017-11-02T21:45:10.500Z");
 			const cupheadId = await insertGameRow({
+				userId: player.userId,
 				name: "Cuphead",
 				createdAt: cupheadStartedAt,
 				endedAt: cupheadEndedAt,
@@ -58,6 +68,7 @@ describe("getAllGames", () => {
 
 			const celesteStartedAt = new Date("2018-01-25T10:00:00.000Z");
 			const celesteId = await insertGameRow({
+				userId: player.userId,
 				name: "Celeste",
 				createdAt: celesteStartedAt,
 			});
@@ -91,7 +102,10 @@ describe("getAllGames", () => {
 
 		it("SHOULD sum the boss counters WHEN they differ from the number of recorded deaths", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Sekiro: Shadows Die Twice",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Isshin, the Sword Saint",
@@ -113,24 +127,46 @@ describe("getAllGames", () => {
 			expect(games.find((game) => game.id === gameId)?.totalDeath).toBe(5);
 		});
 
-		it("SHOULD return every game of the database", async () => {
+		it("SHOULD return only the games of the account", async () => {
 			// Arrange
-			await insertGameRow({ name: "Hollow Knight" });
+			const hollowKnightId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
 
 			// Act
 			const { games } = await getAllGames();
 
 			// Assert
-			expect(games).toHaveLength(await countTableRows("gdc_game"));
+			const gameIds = games.map((game) => game.id);
+			expect(gameIds).toContain(hollowKnightId);
+			expect(gameIds).not.toContain(otherGameId);
 		});
 
 		it("SHOULD sort by name ignoring case and accents, then by id", async () => {
 			// Arrange : insérés volontairement dans le désordre
-			const lowercaseNineSolsId = await insertGameRow({ name: "nine sols" });
-			const fezId = await insertGameRow({ name: "Fez" });
-			const nineSolsId = await insertGameRow({ name: "Nine Sols" });
-			const enderLiliesId = await insertGameRow({ name: "Ēnder Lilies" });
-			const deadCellsId = await insertGameRow({ name: "Dead Cells" });
+			const lowercaseNineSolsId = await insertGameRow({
+				userId: player.userId,
+				name: "nine sols",
+			});
+			const fezId = await insertGameRow({ userId: player.userId, name: "Fez" });
+			const nineSolsId = await insertGameRow({
+				userId: player.userId,
+				name: "Nine Sols",
+			});
+			const enderLiliesId = await insertGameRow({
+				userId: player.userId,
+				name: "Ēnder Lilies",
+			});
+			const deadCellsId = await insertGameRow({
+				userId: player.userId,
+				name: "Dead Cells",
+			});
 			const insertedIds = [
 				lowercaseNineSolsId,
 				fezId,
@@ -157,16 +193,28 @@ describe("getAllGames", () => {
 	});
 
 	describe("204 No Content", () => {
-		it("SHOULD answer without body WHEN there is no game", async () => {
-			// Arrange : la base garde les jeux des autres tests, son contenu est donc simulé vide
-			vi.spyOn(Game, "findAll").mockResolvedValueOnce([]);
+		it("SHOULD answer without body WHEN the account has no game, even if another one has", async () => {
+			// Arrange
+			const newcomer = await openSignedInAgent();
+			const other = await openSignedInAgent();
+			await insertGameRow({ userId: other.userId, name: "Celeste" });
 
 			// Act
-			const response = await request(app).get(GET_ALL_GAMES_URL);
+			const response = await newcomer.agent.get(GET_ALL_GAMES_URL);
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
 			expect(response.text).toBe("");
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(GET_ALL_GAMES_URL);
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 
@@ -179,7 +227,7 @@ describe("getAllGames", () => {
 			);
 
 			// Act
-			const response = await request(app).get(GET_ALL_GAMES_URL);
+			const response = await player.agent.get(GET_ALL_GAMES_URL);
 
 			// Assert
 			expectInternalServerError(response);
@@ -191,12 +239,12 @@ describe("getAllGames", () => {
 
 		it("SHOULD answer a generic error and log it WHEN computing the totals fails", async () => {
 			// Arrange : sans aucun jeu en base, le calcul des totaux n'est jamais lancé
-			await insertGameRow({ name: "Blasphemous" });
+			await insertGameRow({ userId: player.userId, name: "Blasphemous" });
 			const errorLogWatcher = await watchErrorLogs();
 			failRawQueryOnce("SUM(total_death)");
 
 			// Act
-			const response = await request(app).get(GET_ALL_GAMES_URL);
+			const response = await player.agent.get(GET_ALL_GAMES_URL);
 
 			// Assert
 			expectInternalServerError(response);

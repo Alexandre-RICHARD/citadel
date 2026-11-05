@@ -22,7 +22,7 @@ export function useUpdateGame(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 			method: HttpMethodEnum.PUT,
-			protected: false,
+			protected: true,
 			pathParams: { id: gameId },
 			body,
 		}),

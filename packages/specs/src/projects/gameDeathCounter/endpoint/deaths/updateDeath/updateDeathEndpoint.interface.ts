@@ -15,7 +15,7 @@ export interface UpdateDeath extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`;
 		method: HttpMethodEnum.PATCH;
-		protected: false;
+		protected: true;
 		pathParams: UpdateDeathPathParamDto;
 		body: UpdateDeathBodyDto;
 	};

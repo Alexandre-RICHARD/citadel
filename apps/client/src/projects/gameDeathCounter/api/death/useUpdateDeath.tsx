@@ -26,7 +26,7 @@ export function useUpdateDeath(ids: Ids) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/deaths/:id`,
 			method: HttpMethodEnum.PATCH,
-			protected: false,
+			protected: true,
 			pathParams: { id: deathId },
 			body,
 		}),

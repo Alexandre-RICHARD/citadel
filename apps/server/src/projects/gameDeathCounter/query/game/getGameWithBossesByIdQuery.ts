@@ -4,10 +4,12 @@ import { Boss } from "../../models/Boss.ts";
 import { Game } from "../../models/Game.ts";
 
 export async function getGameWithBossesByIdQuery(
+	userId: number,
 	id: number,
 ): Promise<GameWithBossesEntity | null> {
 	try {
-		const gameWithBosses = await Game.findByPk(id, {
+		const gameWithBosses = await Game.findOne({
+			where: { id, userId },
 			include: { model: Boss, as: "bosses" },
 			order: [
 				[{ model: Boss, as: "bosses" }, "createdAt", "ASC"],

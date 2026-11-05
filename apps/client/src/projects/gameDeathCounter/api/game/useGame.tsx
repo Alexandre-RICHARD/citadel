@@ -18,7 +18,7 @@ export function useGame(gameId: number): GameFm {
 					{
 						url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 						method: HttpMethodEnum.GET,
-						protected: false,
+						protected: true,
 						pathParams: { id: gameId },
 					},
 					{ signal },

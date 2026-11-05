@@ -2,10 +2,12 @@ import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameD
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -20,6 +22,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function deleteGameUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/${id}`;
 }
@@ -28,7 +37,10 @@ describe("deleteGame", () => {
 	describe("204 No Content", () => {
 		it("SHOULD delete the game, its bosses and their deaths, with an empty response", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 			const hornetId = await insertBossRow({
 				gameId,
 				name: "Hornet",
@@ -41,7 +53,7 @@ describe("deleteGame", () => {
 			const radianceId = await insertBossRow({ gameId, name: "The Radiance" });
 
 			// Act
-			const response = await request(app).delete(deleteGameUrl(gameId));
+			const response = await player.agent.delete(deleteGameUrl(gameId));
 
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
@@ -54,8 +66,14 @@ describe("deleteGame", () => {
 
 		it("SHOULD not touch other games, their bosses or their deaths", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
-			const otherGameId = await insertGameRow({ name: "Elden Ring" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Sekiro: Shadows Die Twice",
+			});
+			const otherGameId = await insertGameRow({
+				userId: player.userId,
+				name: "Elden Ring",
+			});
 			const otherBossId = await insertBossRow({
 				gameId: otherGameId,
 				name: "Godrick the Grafted",
@@ -70,7 +88,7 @@ describe("deleteGame", () => {
 			const otherDeathRowBefore = await selectDeathRow(otherDeathId);
 
 			// Act
-			await request(app).delete(deleteGameUrl(gameId));
+			await player.agent.delete(deleteGameUrl(gameId));
 
 			// Assert
 			expect(await selectGameRow(otherGameId)).toStrictEqual(
@@ -90,7 +108,7 @@ describe("deleteGame", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).delete(deleteGameUrl(pathValue));
+				const response = await player.agent.delete(deleteGameUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["id"], ...issue }]);
@@ -99,9 +117,29 @@ describe("deleteGame", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the game does not exist, deleting nothing, WHEN it belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+
+			// Act
+			const response = await player.agent.delete(deleteGameUrl(otherGameId));
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
+				`No game with id : ${otherGameId}`,
+			);
+			expect(await selectGameRow(otherGameId)).not.toBeNull();
+		});
+
 		it("SHOULD answer that the game does not exist", async () => {
 			// Act
-			const response = await request(app).delete(
+			const response = await player.agent.delete(
 				deleteGameUrl(NON_EXISTENT_ID),
 			);
 
@@ -115,11 +153,14 @@ describe("deleteGame", () => {
 
 		it("SHOULD answer that the game no longer exists WHEN deleted twice", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Ghosts 'n Goblins" });
-			await request(app).delete(deleteGameUrl(gameId));
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Ghosts 'n Goblins",
+			});
+			await player.agent.delete(deleteGameUrl(gameId));
 
 			// Act
-			const response = await request(app).delete(deleteGameUrl(gameId));
+			const response = await player.agent.delete(deleteGameUrl(gameId));
 
 			// Assert
 			expectNotFound(
@@ -130,10 +171,23 @@ describe("deleteGame", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).delete(deleteGameUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error, log it and delete nothing WHEN the deletion fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Ninja Gaiden" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Ninja Gaiden",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Jaquio" });
 			const errorLogWatcher = await watchErrorLogs();
 			vi.spyOn(Game, "destroy").mockRejectedValueOnce(
@@ -141,7 +195,7 @@ describe("deleteGame", () => {
 			);
 
 			// Act
-			const response = await request(app).delete(deleteGameUrl(gameId));
+			const response = await player.agent.delete(deleteGameUrl(gameId));
 
 			// Assert
 			expectInternalServerError(response);

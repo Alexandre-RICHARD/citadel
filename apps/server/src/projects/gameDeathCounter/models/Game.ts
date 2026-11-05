@@ -15,6 +15,8 @@ export class Game extends Model<
 	InferCreationAttributes<Game>
 > {
 	declare id: CreationOptional<number>;
+	// Le propriétaire : boss et morts lui appartiennent par leur jeu
+	declare userId: number;
 	declare name: string;
 	declare endedAt: CreationOptional<Date | null>;
 	declare createdAt: CreationOptional<Date>;
@@ -29,6 +31,11 @@ Game.init(
 			field: "id",
 			primaryKey: true,
 			autoIncrement: true,
+			allowNull: false,
+		},
+		userId: {
+			type: DataTypes.INTEGER,
+			field: "user_id",
 			allowNull: false,
 		},
 		name: {

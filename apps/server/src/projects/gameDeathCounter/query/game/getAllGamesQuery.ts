@@ -1,9 +1,10 @@
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { Game } from "../../models/Game.ts";
 
-export async function getAllGamesQuery(): Promise<Game[]> {
+export async function getAllGamesQuery(userId: number): Promise<Game[]> {
 	try {
 		const allGames = await Game.findAll({
+			where: { userId },
 			order: [
 				["name", "ASC"],
 				["id", "ASC"],

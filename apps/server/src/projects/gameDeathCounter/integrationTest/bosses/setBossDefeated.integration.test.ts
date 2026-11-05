@@ -4,11 +4,13 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidBooleanCases } from "../../../../testUtils/integration/buildInvalidBooleanCases.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectDateBetween } from "../../../../testUtils/integration/expectDateBetween.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectMalformedJsonError } from "../../../../testUtils/integration/expectMalformedJsonError.ts";
@@ -25,6 +27,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function setBossDefeatedUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}/defeated`;
 }
@@ -33,7 +42,10 @@ describe("setBossDefeated", () => {
 	describe("200 OK", () => {
 		it("SHOULD mark the boss as defeated now and make it its last try", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Elden Ring" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Elden Ring",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Malenia, Blade of Miquella",
@@ -48,7 +60,7 @@ describe("setBossDefeated", () => {
 
 			// Act
 			const requestStartedAt = new Date();
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 			const requestEndedAt = new Date();
@@ -75,7 +87,10 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD replace the victory date with now WHEN the boss was already defeated", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hollow Knight" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hollow Knight",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Soul Master",
@@ -84,7 +99,7 @@ describe("setBossDefeated", () => {
 
 			// Act
 			const requestStartedAt = new Date();
-			await request(app)
+			await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 			const requestEndedAt = new Date();
@@ -99,11 +114,14 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD use the victory date as first and last try WHEN the boss was defeated without dying", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Taurus Demon" });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 
@@ -115,7 +133,10 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD cancel the victory, basing tries on deaths only", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Sekiro: Shadows Die Twice",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Owl (Father)",
@@ -128,7 +149,7 @@ describe("setBossDefeated", () => {
 			await insertDeathRow({ bossId, date: firstDeathDate });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: false });
 
@@ -144,11 +165,14 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD leave undefeated a boss that was not defeated, without tries WHEN it was never fought", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Bloodborne" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Bloodborne",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Lady Maria" });
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: false });
 
@@ -162,7 +186,10 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD not change any other boss", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Cuphead" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Cuphead",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Cagney Carnation" });
 			const otherBossId = await insertBossRow({
 				gameId,
@@ -171,7 +198,7 @@ describe("setBossDefeated", () => {
 			const otherBossRowBefore = await selectBossRow(otherBossId);
 
 			// Act
-			await request(app)
+			await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 
@@ -187,7 +214,7 @@ describe("setBossDefeated", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.patch(setBossDefeatedUrl(pathValue))
 					.send({ defeated: true });
 
@@ -200,12 +227,15 @@ describe("setBossDefeated", () => {
 			"SHOULD reject the request without changing anything WHEN defeated is $reason",
 			async ({ value, issue }) => {
 				// Arrange
-				const gameId = await insertGameRow({ name: "Celeste" });
+				const gameId = await insertGameRow({
+					userId: player.userId,
+					name: "Celeste",
+				});
 				const bossId = await insertBossRow({ gameId, name: "Oshiro" });
 				const bossRowBefore = await selectBossRow(bossId);
 
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.patch(setBossDefeatedUrl(bossId))
 					.send({ defeated: value });
 
@@ -217,7 +247,7 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD report both the invalid id and body, the id first", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl("-3"))
 				.send({ defeated: "oui" });
 
@@ -239,12 +269,15 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD reject a malformed JSON without changing anything", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hades" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Bone Hydra" });
 			const bossRowBefore = await selectBossRow(bossId);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.set("Content-Type", "application/json")
 				.send(MALFORMED_JSON_BODY);
@@ -256,9 +289,36 @@ describe("setBossDefeated", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist, changing nothing, WHEN its game belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const otherBossId = await insertBossRow({
+				gameId: otherGameId,
+				name: "Hornet",
+				totalDeath: 2,
+			});
+
+			// Act
+			const response = await player.agent
+				.patch(setBossDefeatedUrl(otherBossId))
+				.send({ defeated: true });
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${otherBossId}`,
+			);
+			expect((await selectBossRow(otherBossId))?.defeatedAt).toBeNull();
+		});
+
 		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(NON_EXISTENT_ID))
 				.send({ defeated: true });
 
@@ -271,19 +331,34 @@ describe("setBossDefeated", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.patch(setBossDefeatedUrl(1))
+				.send({ defeated: true });
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error, log it and change nothing WHEN reading the boss fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls II" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls II",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Fume Knight" });
 			const bossRowBefore = await selectBossRow(bossId);
 			const errorLogWatcher = await watchErrorLogs();
-			vi.spyOn(Boss, "findByPk").mockRejectedValueOnce(
+			vi.spyOn(Boss, "findOne").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 
@@ -298,7 +373,10 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD answer a generic error, log it and change nothing WHEN the update fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Lords of the Fallen" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Lords of the Fallen",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Pieta, She of Blessed Renewal",
@@ -310,7 +388,7 @@ describe("setBossDefeated", () => {
 			);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 
@@ -325,7 +403,10 @@ describe("setBossDefeated", () => {
 
 		it("SHOULD answer a generic error but keep the victory WHEN computing the tries fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Mortal Shell" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Mortal Shell",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Tarsus, the First Knight",
@@ -334,7 +415,7 @@ describe("setBossDefeated", () => {
 			failRawQueryOnce("MIN(date)");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.patch(setBossDefeatedUrl(bossId))
 				.send({ defeated: true });
 

@@ -3,9 +3,10 @@ import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/techn
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { app } from "../../app.ts";
+import { openSignedInAgent } from "../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildUniqueWord } from "../../testUtils/integration/buildUniqueWord.ts";
 import { countTableRows } from "../../testUtils/integration/countTableRows.ts";
 
@@ -13,11 +14,18 @@ const GAMES_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 const SITE_HOST = "citadel.test";
 const FOREIGN_ORIGIN = "https://evil.test";
 
+// Les jeux du Game Death Counter servent d'exemple : leurs endpoints exigent une session
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 describe("requireSameOrigin", () => {
 	describe("accepted requests", () => {
 		it("SHOULD let the request through WHEN its Origin is the host of the site", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(GAMES_URL)
 				.set("Host", SITE_HOST)
 				.set("Origin", `https://${SITE_HOST}`)
@@ -29,7 +37,7 @@ describe("requireSameOrigin", () => {
 
 		it("SHOULD let the request through WHEN it has no Origin header", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(GAMES_URL)
 				.send({ name: buildUniqueWord() });
 
@@ -39,7 +47,7 @@ describe("requireSameOrigin", () => {
 
 		it("SHOULD let a read through WHEN it comes from another site", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.get(GAMES_URL)
 				.set("Host", SITE_HOST)
 				.set("Origin", FOREIGN_ORIGIN);

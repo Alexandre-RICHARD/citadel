@@ -4,12 +4,31 @@ import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 import { Boss } from "../../models/Boss.ts";
 import { Death } from "../../models/Death.ts";
+import { ownedBossIds } from "../ownership/ownedBossIds.ts";
 
-export async function deleteDeathQuery(id: number): Promise<boolean> {
+/**
+ * La propriété se vérifie avant la transaction. Dedans, sous verrou, la sous-requête de propriété verrouillerait aussi
+ * les boss en partagé, et deux suppressions sur un même boss s'interbloqueraient en décrémentant son compteur ; sans
+ * verrou, elle ouvrirait un instantané, et MariaDB refuserait ensuite de verrouiller un boss modifié depuis. Le boss
+ * d'une mort ne quitte jamais le compte : la vérification reste vraie
+ */
+export async function deleteDeathQuery(
+	userId: number,
+	id: number,
+): Promise<boolean> {
 	try {
+		const ownedDeath = await Death.findOne({
+			where: { id, bossId: ownedBossIds(userId) },
+		});
+		if (ownedDeath === null) return false;
+
 		return await sequelize.transaction(async (transaction) => {
-			// Verrou exclusif dès la lecture : une suppression simultanée de la même mort attend la fin
-			// de celle-ci, puis ne la trouve plus (404) au lieu d'échouer sur une ligne déjà supprimée
+			// Le boss d'abord, en exclusif, comme l'ajout d'une mort : ajouts et suppressions sur un même boss se suivent
+			await Boss.findByPk(ownedDeath.bossId, {
+				transaction,
+				lock: transaction.LOCK.UPDATE,
+			});
+			// Une suppression simultanée de la même mort est passée avant : elle n'existe plus (404)
 			const death = await Death.findByPk(id, {
 				transaction,
 				lock: transaction.LOCK.UPDATE,

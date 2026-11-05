@@ -15,7 +15,7 @@ export interface SetBossDefeated extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id/defeated`;
 		method: HttpMethodEnum.PATCH;
-		protected: false;
+		protected: true;
 		pathParams: SetBossDefeatedPathParamDto;
 		body: SetBossDefeatedBodyDto;
 	};

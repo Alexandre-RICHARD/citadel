@@ -22,7 +22,7 @@ export function useCreateGame() {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`,
 			method: HttpMethodEnum.POST,
-			protected: false,
+			protected: true,
 			body,
 		}),
 		getAffectedQueryKeys: () => [gameDeathCounterQueryKeys.gameList()],

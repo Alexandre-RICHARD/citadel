@@ -15,7 +15,7 @@ export interface UpdateGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`;
 		method: HttpMethodEnum.PUT;
-		protected: false;
+		protected: true;
 		pathParams: UpdateGamePathParamDto;
 		body: UpdateGameBodyDto;
 	};

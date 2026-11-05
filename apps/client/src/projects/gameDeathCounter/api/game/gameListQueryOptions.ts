@@ -15,7 +15,7 @@ export const gameListQueryOptions = queryOptions({
 				{
 					url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`,
 					method: HttpMethodEnum.GET,
-					protected: false,
+					protected: true,
 				},
 				{ signal },
 			)

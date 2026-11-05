@@ -15,7 +15,7 @@ export interface CreateBoss extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:gameId/bosses`;
 		method: HttpMethodEnum.POST;
-		protected: false;
+		protected: true;
 		pathParams: CreateBossPathParamDto;
 		body: CreateBossBodyDto;
 	};

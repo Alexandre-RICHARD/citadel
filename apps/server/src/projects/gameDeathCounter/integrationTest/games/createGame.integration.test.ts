@@ -4,10 +4,12 @@ import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { countTableRows } from "../../../../testUtils/integration/countTableRows.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectDateBetween } from "../../../../testUtils/integration/expectDateBetween.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectMalformedJsonError } from "../../../../testUtils/integration/expectMalformedJsonError.ts";
@@ -20,6 +22,13 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Game } from "../../models/Game.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 const CREATE_GAME_URL = `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games`;
 
 describe("createGame", () => {
@@ -30,7 +39,7 @@ describe("createGame", () => {
 
 			// Act
 			const requestStartedAt = new Date();
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send(createGameBody);
 			const requestEndedAt = new Date();
@@ -52,6 +61,7 @@ describe("createGame", () => {
 			// Assert : base
 			expect(await selectGameRow(gameDto.id)).toStrictEqual({
 				id: gameDto.id,
+				userId: player.userId,
 				name: "Hollow Knight",
 				endedAt: null,
 				createdAt: startedAt,
@@ -61,7 +71,7 @@ describe("createGame", () => {
 
 		it("SHOULD remove the spaces around the name", async () => {
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: "   Elden Ring \t " });
 
@@ -79,7 +89,7 @@ describe("createGame", () => {
 				.slice(0, 255);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: longestName });
 
@@ -95,7 +105,7 @@ describe("createGame", () => {
 			const longestName = "Bloodborne ".repeat(24).slice(0, 255);
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: `   ${longestName}   ` });
 
@@ -109,7 +119,7 @@ describe("createGame", () => {
 			const unicodeName = "Ōkami — 大神 🐺";
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: unicodeName });
 
@@ -122,10 +132,10 @@ describe("createGame", () => {
 
 		it("SHOULD accept two games with the same name", async () => {
 			// Act
-			const firstResponse = await request(app)
+			const firstResponse = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: "Celeste" });
-			const secondResponse = await request(app)
+			const secondResponse = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: "Celeste" });
 
@@ -141,11 +151,14 @@ describe("createGame", () => {
 
 		it("SHOULD ignore unknown body fields, including those imitating the result", async () => {
 			// Arrange
-			const existingGameId = await insertGameRow({ name: "Hades II" });
+			const existingGameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades II",
+			});
 			const existingGameRow = await selectGameRow(existingGameId);
 
 			// Act
-			const response = await request(app).post(CREATE_GAME_URL).send({
+			const response = await player.agent.post(CREATE_GAME_URL).send({
 				name: "Hades",
 				id: existingGameId,
 				totalDeath: 999,
@@ -173,7 +186,7 @@ describe("createGame", () => {
 				const gameCountBefore = await countTableRows("gdc_game");
 
 				// Act
-				const response = await request(app)
+				const response = await player.agent
 					.post(CREATE_GAME_URL)
 					.send({ name });
 
@@ -188,7 +201,7 @@ describe("createGame", () => {
 			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
-			const response = await request(app).post(CREATE_GAME_URL);
+			const response = await player.agent.post(CREATE_GAME_URL);
 
 			// Assert
 			expectValidationError(response, [
@@ -206,7 +219,7 @@ describe("createGame", () => {
 			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send([{ name: "Cuphead" }]);
 
@@ -226,7 +239,7 @@ describe("createGame", () => {
 			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.set("Content-Type", "application/json")
 				.send(MALFORMED_JSON_BODY);
@@ -234,6 +247,18 @@ describe("createGame", () => {
 			// Assert
 			expectMalformedJsonError(response);
 			expect(await countTableRows("gdc_game")).toBe(gameCountBefore);
+		});
+	});
+
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app)
+				.post(CREATE_GAME_URL)
+				.send({ name: "Celeste" });
+
+			// Assert
+			expectAuthenticationRequired(response);
 		});
 	});
 
@@ -247,7 +272,7 @@ describe("createGame", () => {
 			const gameCountBefore = await countTableRows("gdc_game");
 
 			// Act
-			const response = await request(app)
+			const response = await player.agent
 				.post(CREATE_GAME_URL)
 				.send({ name: "Lies of P" });
 

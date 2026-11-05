@@ -13,7 +13,7 @@ export interface DeleteBoss extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`;
 		method: HttpMethodEnum.DELETE;
-		protected: false;
+		protected: true;
 		pathParams: DeleteBossPathParamDto;
 	};
 	response: {

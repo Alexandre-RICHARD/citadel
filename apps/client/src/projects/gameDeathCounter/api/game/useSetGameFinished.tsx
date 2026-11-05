@@ -25,7 +25,7 @@ export function useSetGameFinished(gameId: number) {
 		buildRequest: (body) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id/finished`,
 			method: HttpMethodEnum.PATCH,
-			protected: false,
+			protected: true,
 			pathParams: { id: gameId },
 			body,
 		}),

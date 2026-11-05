@@ -19,9 +19,16 @@ import { updateBossDefeatedAtQuery } from "../query/boss/updateBossDefeatedAtQue
 import { updateBossQuery } from "../query/boss/updateBossQuery.ts";
 import { gameExistsByIdQuery } from "../query/game/gameExistsByIdQuery.ts";
 
+// Un boss appartient au compte de son jeu : celui d'un autre répond comme un boss qui n'existe pas (404)
 class BossService {
-	async getOneBoss(getOneBossBean: GetOneBossBean): Promise<BossBean> {
-		const bossEntity = await getBossWithDeathsByIdQuery(getOneBossBean.id);
+	async getOneBoss(
+		userId: number,
+		getOneBossBean: GetOneBossBean,
+	): Promise<BossBean> {
+		const bossEntity = await getBossWithDeathsByIdQuery(
+			userId,
+			getOneBossBean.id,
+		);
 		if (bossEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
@@ -31,8 +38,11 @@ class BossService {
 		return fromBossEntityToBossBean(bossEntity);
 	}
 
-	async createBoss(createBossBean: CreateBossBean): Promise<BossSummaryBean> {
-		const gameExists = await gameExistsByIdQuery(createBossBean.gameId);
+	async createBoss(
+		userId: number,
+		createBossBean: CreateBossBean,
+	): Promise<BossSummaryBean> {
+		const gameExists = await gameExistsByIdQuery(userId, createBossBean.gameId);
 
 		if (!gameExists)
 			throw new NotFoundError(
@@ -45,15 +55,18 @@ class BossService {
 		return fromBossEntityToBossSummaryBean(bossEntity, null);
 	}
 
-	async updateBoss(updateBossBean: UpdateBossBean): Promise<BossSummaryBean> {
-		const gameExists = await gameExistsByIdQuery(updateBossBean.gameId);
+	async updateBoss(
+		userId: number,
+		updateBossBean: UpdateBossBean,
+	): Promise<BossSummaryBean> {
+		const gameExists = await gameExistsByIdQuery(userId, updateBossBean.gameId);
 		if (!gameExists)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
 				`No game with id : ${updateBossBean.gameId}`,
 			);
 
-		const bossEntity = await updateBossQuery(updateBossBean);
+		const bossEntity = await updateBossQuery(userId, updateBossBean);
 		if (bossEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
@@ -67,11 +80,14 @@ class BossService {
 	}
 
 	async setBossDefeated(
+		userId: number,
+
 		setBossDefeatedBean: SetBossDefeatedBean,
 	): Promise<BossSummaryBean> {
 		const defeatedAt = setBossDefeatedBean.defeated ? dateNow() : null;
 
 		const bossEntity = await updateBossDefeatedAtQuery(
+			userId,
 			setBossDefeatedBean.id,
 			defeatedAt,
 		);
@@ -87,8 +103,11 @@ class BossService {
 		return fromBossEntityToBossSummaryBean(bossEntity, bossDeathDateRange);
 	}
 
-	async deleteBoss(deleteBossBean: DeleteBossBean): Promise<void> {
-		const wasDeleted = await deleteBossQuery(deleteBossBean.id);
+	async deleteBoss(
+		userId: number,
+		deleteBossBean: DeleteBossBean,
+	): Promise<void> {
+		const wasDeleted = await deleteBossQuery(userId, deleteBossBean.id);
 		if (!wasDeleted)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,

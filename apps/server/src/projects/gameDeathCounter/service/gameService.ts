@@ -21,9 +21,10 @@ import { getGameWithBossesByIdQuery } from "../query/game/getGameWithBossesByIdQ
 import { updateGameEndedAtQuery } from "../query/game/updateGameEndedAtQuery.ts";
 import { updateGameQuery } from "../query/game/updateGameQuery.ts";
 
+// Chaque méthode ne voit que les jeux du compte : celui d'un autre répond comme un jeu qui n'existe pas (404)
 class GameService {
-	async getAllGames(): Promise<GameSummaryBean[]> {
-		const gameEntities = await getAllGamesQuery();
+	async getAllGames(userId: number): Promise<GameSummaryBean[]> {
+		const gameEntities = await getAllGamesQuery(userId);
 
 		const gameIds = gameEntities.map((game) => game.id);
 		const gamesTotalDeath = await getGamesTotalDeathQuery(gameIds);
@@ -38,8 +39,14 @@ class GameService {
 		);
 	}
 
-	async getOneGame(getOneGameBean: GetOneGameBean): Promise<GameBean> {
-		const gameEntity = await getGameWithBossesByIdQuery(getOneGameBean.id);
+	async getOneGame(
+		userId: number,
+		getOneGameBean: GetOneGameBean,
+	): Promise<GameBean> {
+		const gameEntity = await getGameWithBossesByIdQuery(
+			userId,
+			getOneGameBean.id,
+		);
 		if (gameEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
@@ -56,13 +63,19 @@ class GameService {
 		return fromGameEntityToGameBean(gameEntity, deathDateRangeByBossId);
 	}
 
-	async createGame(createGameBean: CreateGameBean): Promise<GameSummaryBean> {
-		const gameEntity = await createGameQuery(createGameBean);
+	async createGame(
+		userId: number,
+		createGameBean: CreateGameBean,
+	): Promise<GameSummaryBean> {
+		const gameEntity = await createGameQuery(userId, createGameBean);
 		return fromGameEntityToGameSummaryBean(gameEntity, 0);
 	}
 
-	async updateGame(updateGameBean: UpdateGameBean): Promise<GameSummaryBean> {
-		const gameEntity = await updateGameQuery(updateGameBean);
+	async updateGame(
+		userId: number,
+		updateGameBean: UpdateGameBean,
+	): Promise<GameSummaryBean> {
+		const gameEntity = await updateGameQuery(userId, updateGameBean);
 		if (gameEntity === null)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,
@@ -77,11 +90,13 @@ class GameService {
 	}
 
 	async setGameFinished(
+		userId: number,
 		setGameFinishedBean: SetGameFinishedBean,
 	): Promise<GameSummaryBean> {
 		const endedAt = setGameFinishedBean.finished ? dateNow() : null;
 
 		const gameEntity = await updateGameEndedAtQuery(
+			userId,
 			setGameFinishedBean.id,
 			endedAt,
 		);
@@ -97,8 +112,11 @@ class GameService {
 		return fromGameEntityToGameSummaryBean(gameEntity, gameTotalDeath);
 	}
 
-	async deleteGame(deleteGameBean: DeleteGameBean): Promise<void> {
-		const wasDeleted = await deleteGameQuery(deleteGameBean.id);
+	async deleteGame(
+		userId: number,
+		deleteGameBean: DeleteGameBean,
+	): Promise<void> {
+		const wasDeleted = await deleteGameQuery(userId, deleteGameBean.id);
 		if (!wasDeleted)
 			throw new NotFoundError(
 				GameDeathCounterErrorCodeEnum.GAME_NOT_FOUND,

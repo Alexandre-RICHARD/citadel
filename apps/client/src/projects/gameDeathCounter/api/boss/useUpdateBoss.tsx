@@ -25,7 +25,7 @@ export function useUpdateBoss(ids: Ids) {
 		buildRequest: ({ name }) => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/:id`,
 			method: HttpMethodEnum.PUT,
-			protected: false,
+			protected: true,
 			pathParams: { id: bossId },
 			body: { name, gameId },
 		}),

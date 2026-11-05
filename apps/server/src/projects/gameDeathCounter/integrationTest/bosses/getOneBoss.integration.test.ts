@@ -3,10 +3,12 @@ import { GameDeathCounterErrorCodeEnum } from "@citadel/specs/src/projects/gameD
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { app } from "../../../../app.ts";
+import { openSignedInAgent } from "../../../../testUtils/integration/auth/openSignedInAgent.ts";
 import { buildInvalidPathIdCases } from "../../../../testUtils/integration/buildInvalidPathIdCases.ts";
+import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectInternalServerError } from "../../../../testUtils/integration/expectInternalServerError.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -18,12 +20,19 @@ import { simulatedDatabaseFailure } from "../../../../testUtils/integration/simu
 import { watchErrorLogs } from "../../../../testUtils/integration/watchErrorLogs.ts";
 import { Boss } from "../../models/Boss.ts";
 
+// Le compte de ce fichier : ses jeux, et la session de chaque requête
+let player: Awaited<ReturnType<typeof openSignedInAgent>>;
+
+beforeAll(async () => {
+	player = await openSignedInAgent();
+});
+
 function getOneBossUrl(id: number | string): string {
 	return `${ApiPrefixEnum.GAME_DEATH_COUNTER}/bosses/${id}`;
 }
 
 async function getOneBoss(id: number): Promise<BossDto> {
-	const response = await request(app).get(getOneBossUrl(id));
+	const response = await player.agent.get(getOneBossUrl(id));
 	expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 	return response.body as BossDto;
 }
@@ -32,7 +41,10 @@ describe("getOneBoss", () => {
 	describe("200 OK", () => {
 		it("SHOULD return the boss and its deaths sorted by date, then by id WHEN dates are equal", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Sekiro: Shadows Die Twice" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Sekiro: Shadows Die Twice",
+			});
 			const defeatedAt = new Date("2019-04-02T23:00:00.000Z");
 			const bossId = await insertBossRow({
 				gameId,
@@ -97,7 +109,10 @@ describe("getOneBoss", () => {
 
 		it("SHOULD return empty tries WHEN the boss was never fought", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Elden Ring" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Elden Ring",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Mohg, Lord of Blood",
@@ -120,7 +135,10 @@ describe("getOneBoss", () => {
 
 		it("SHOULD use the victory date as first and last try WHEN the boss was defeated without dying", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Dark Souls" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Dark Souls",
+			});
 			const defeatedAt = new Date("2011-10-01T19:00:00.000Z");
 			const bossId = await insertBossRow({
 				gameId,
@@ -141,7 +159,10 @@ describe("getOneBoss", () => {
 
 		it("SHOULD keep as last try a death recorded after the victory", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Bloodborne" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Bloodborne",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Orphan of Kos",
@@ -160,7 +181,10 @@ describe("getOneBoss", () => {
 
 		it("SHOULD return the boss counter WHEN it differs from the number of recorded deaths", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Lies of P" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Lies of P",
+			});
 			const bossId = await insertBossRow({
 				gameId,
 				name: "Laxasia the Complete",
@@ -181,7 +205,10 @@ describe("getOneBoss", () => {
 
 		it("SHOULD only return the deaths of this boss", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Cuphead" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Cuphead",
+			});
 			const bossId = await insertBossRow({ gameId, name: "King Dice" });
 			const deathId = await insertDeathRow({
 				bossId,
@@ -206,7 +233,7 @@ describe("getOneBoss", () => {
 			"SHOULD reject the request WHEN the id is $reason",
 			async ({ pathValue, issue }) => {
 				// Act
-				const response = await request(app).get(getOneBossUrl(pathValue));
+				const response = await player.agent.get(getOneBossUrl(pathValue));
 
 				// Assert
 				expectValidationError(response, [{ path: ["id"], ...issue }]);
@@ -215,9 +242,33 @@ describe("getOneBoss", () => {
 	});
 
 	describe("404 Not Found", () => {
+		it("SHOULD answer that the boss does not exist WHEN its game belongs to another account", async () => {
+			// Arrange
+			const other = await openSignedInAgent();
+			const otherGameId = await insertGameRow({
+				userId: other.userId,
+				name: "Hollow Knight",
+			});
+			const otherBossId = await insertBossRow({
+				gameId: otherGameId,
+				name: "Hornet",
+				totalDeath: 2,
+			});
+
+			// Act
+			const response = await player.agent.get(getOneBossUrl(otherBossId));
+
+			// Assert
+			expectNotFound(
+				response,
+				GameDeathCounterErrorCodeEnum.BOSS_NOT_FOUND,
+				`No boss with id : ${otherBossId}`,
+			);
+		});
+
 		it("SHOULD answer that the boss does not exist", async () => {
 			// Act
-			const response = await request(app).get(getOneBossUrl(NON_EXISTENT_ID));
+			const response = await player.agent.get(getOneBossUrl(NON_EXISTENT_ID));
 
 			// Assert
 			expectNotFound(
@@ -228,18 +279,31 @@ describe("getOneBoss", () => {
 		});
 	});
 
+	describe("401 Unauthorized", () => {
+		it("SHOULD refuse WHEN there is no session", async () => {
+			// Act
+			const response = await request(app).get(getOneBossUrl(1));
+
+			// Assert
+			expectAuthenticationRequired(response);
+		});
+	});
+
 	describe("500 Internal Server Error", () => {
 		it("SHOULD answer a generic error and log it WHEN reading the boss fails", async () => {
 			// Arrange
-			const gameId = await insertGameRow({ name: "Hades" });
+			const gameId = await insertGameRow({
+				userId: player.userId,
+				name: "Hades",
+			});
 			const bossId = await insertBossRow({ gameId, name: "Theseus" });
 			const errorLogWatcher = await watchErrorLogs();
-			vi.spyOn(Boss, "findByPk").mockRejectedValueOnce(
+			vi.spyOn(Boss, "findOne").mockRejectedValueOnce(
 				simulatedDatabaseFailure(),
 			);
 
 			// Act
-			const response = await request(app).get(getOneBossUrl(bossId));
+			const response = await player.agent.get(getOneBossUrl(bossId));
 
 			// Assert
 			expectInternalServerError(response);

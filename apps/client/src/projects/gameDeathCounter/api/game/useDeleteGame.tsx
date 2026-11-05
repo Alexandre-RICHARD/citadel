@@ -24,7 +24,7 @@ export function useDeleteGame(gameId: number) {
 		buildRequest: () => ({
 			url: `${ApiPrefixEnum.GAME_DEATH_COUNTER}/games/:id`,
 			method: HttpMethodEnum.DELETE,
-			protected: false,
+			protected: true,
 			pathParams: { id: gameId },
 		}),
 		getAffectedQueryKeys: () => [gameDeathCounterQueryKeys.gameList()],
