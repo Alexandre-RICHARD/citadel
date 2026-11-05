@@ -194,8 +194,9 @@ services:
       # restauration l'effacerait avec elle
       AUTH_RESTORE_JOURNAL_DIR: /var/lib/citadel/restore-journal
     volumes:
-      # Dans /Volume1/appdata : config-backup l'archive avec le reste. Le serveur (node,
-      # 1000) y écrit : citadel deploy crée le dossier avec ce propriétaire. Le seul
+      # Dans /Volume1/appdata, mais config-backup l'exclut (CONFIG_EXCLUDES de citadel) : ses
+      # adresses email ne doivent pas survivre dans une archive au-delà de 3 mois. Le serveur
+      # (node, 1000) y écrit : citadel deploy crée le dossier avec ce propriétaire. Le seul
       # dossier où il écrit, le reste de son système de fichiers est en lecture seule
       - /Volume1/appdata/site-prod-server/restore-journal:/var/lib/citadel/restore-journal
     networks:

@@ -514,16 +514,16 @@ Les lignes directrices de la CNIL (délibération n° 2020-091) dispensent de co
 | `sessionStorage` : champs d'un parcours en cours ; intro déjà vue | Reprise après rechargement ; intro jouée une fois par session |
 | Pixel d'ouverture de Brevo dans les mails (« suivi anonyme ») | Statistiques d'envoi du fournisseur |
 
-Tous dispensés de bandeau, à condition d'être décrits dans « Données personnelles ». Une étape de la roadmap vérifie ce point sur le site de la CNIL avant la release, ainsi que l'absence de cookie ajouté par Cloudflare hors sécurité et la position de la CNIL sur les pixels dans les mails : si elle exige un consentement, Brevo est remplacé [nous].
+Tous dispensés de bandeau, à condition d'être décrits dans « Données personnelles ». Une étape de la roadmap vérifie ce point sur le site de la CNIL avant la release, ainsi que l'absence de cookie ajouté par Cloudflare hors sécurité et la position de la CNIL sur les pixels dans les mails. Décision : le pixel de Brevo ne se désactive pas sur son offre, et Brevo reste le meilleur choix d'envoi : le site l'indique tel quel dans « Données personnelles » (écart assumé avec la recommandation CNIL du 12 mars 2026, qui ne dispense que le pixel limité à la date de dernière ouverture).
 
 ### 10.5 Sauvegardes et restauration
 
 - **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
 - **Restauration** (`citadel restore-db` ou la zone de danger de la console). Ce chantier y ajoute la commande « après restauration » du serveur (`build/afterRestore.cjs`), lancée juste après l'import, serveur encore arrêté (un conteneur jetable du service) : aucune requête ne passe avec une session ressuscitée. Elle reçoit la date de la sauvegarde (son nom, sinon la ligne `-- Dump completed on` du dump, lue à l'heure de Paris, moins une heure (elle marque la fin du dump) : un dump envoyé depuis le PC n'a pas forcément de date dans son nom). En échec, le serveur reste arrêté :
-  - **le journal** : lignes JSON (identifiant et pseudo du compte, action, date ; nouvelle adresse pour un changement d'email, projets vidés, empreinte d'un code de secours utilisé) pour chaque suppression de compte ou des données d'un projet, changement d'email, changement de sécurité (mot de passe, facteur, codes de secours) et code de secours utilisé. Écrites en dernière étape de la transaction : une ligne qui ne s'écrit pas annule l'action. Le rejeu ne touche qu'un compte de même identifiant **et** de même pseudo : une restauration redonne des identifiants à d'autres comptes. Un fichier par jour (UTC), effacé quand son dernier instant a 10 semaines. Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/restore-journal/` (donc dans `config-backup`), créé à `node` par `citadel deploy` ;
+  - **le journal** : lignes JSON (identifiant et pseudo du compte, action, date ; nouvelle adresse pour un changement d'email, projets vidés, empreinte d'un code de secours utilisé) pour chaque suppression de compte ou des données d'un projet, changement d'email, changement de sécurité (mot de passe, facteur, codes de secours) et code de secours utilisé. Écrites en dernière étape de la transaction : une ligne qui ne s'écrit pas annule l'action. Le rejeu ne touche qu'un compte de même identifiant **et** de même pseudo : une restauration redonne des identifiants à d'autres comptes. Un fichier par jour (UTC), effacé quand son dernier instant a 10 semaines. Tenu hors de la base (sinon il serait restauré avec elle), dans `/Volume1/appdata/site-prod-server/restore-journal/` créé à `node` par `citadel deploy`, exclu de `config-backup` (une archive de 2 mois y garderait des adresses plus de 3 mois ; sans sauvegarde, la perte du disque ne coûte que le rejeu des dernières semaines) ;
   - **rejouer le journal** après la date de la sauvegarde : suppressions refaites, changements d'email remis ; un compte qui a changé sa sécurité voit son mot de passe invalidé (à refaire par « Mot de passe oublié ») ;
   - **vider toutes les sessions et tous les parcours** : sinon, une session révoquée après la sauvegarde redevient valide.
-- **Bandeau** : le message automatique de restauration gagne la phrase « Si tu as changé de mot de passe ou de double authentification pendant cette période, passe par « Mot de passe oublié ». »
+- **Bandeau** : le message automatique de restauration gagne la phrase « Si vous avez changé de mot de passe ou de double authentification pendant cette période, passez par « Mot de passe oublié ». » (le bandeau est du site : il vouvoie, comme l'application ; seuls les mails tutoient)
 
 ### 10.6 Pages légales
 
@@ -751,10 +751,9 @@ Ordre : 70, 73, 74, 75, 77, puis 76, close par ta validation technique ; ensuite
 En suspens :
 
 - 71 et 72 (de ton côté).
-- 76, le pixel de Brevo : la recommandation CNIL du 12 mars 2026 (délibération 2026-042) ne dispense de consentement un mail transactionnel que si le pixel ne garde que la date de dernière ouverture ; le suivi ne se coupe pas sur l'offre gratuite. À trancher : garder, changer d'offre ou remplacer Brevo, après lecture du texte officiel. En attendant, « Données personnelles » le décrit tel qu'il est. Fait : journaux de Brevo réglés à 1 mois (« Données personnelles » à jour) ; seul cookie vu en prod : `lang=fr`, que ni le site ni Caddy ne posent (probablement ancien : à revérifier en navigation privée).
-- À trancher : sortir le journal de restauration de `config-backup` (une archive de 2 mois qui contient 70 jours de journal dépasse les 3 mois).
+- 76 : fait. Journaux de Brevo à 1 mois (à régler dans son compte) ; pixel de Brevo gardé et indiqué (décision §10.4) ; seul cookie vu en prod : `lang=fr`, que ni le site ni Caddy ne posent (probablement ancien : à revérifier en navigation privée).
 
-Décidé : le bandeau de restauration tutoie, comme les mails ; l'application vouvoie. Les alertes `pnpm audit` de `brace-expansion` (dev seulement) sont ignorées.
+Décidé : le bandeau de restauration vouvoie, comme l'application ; seuls les mails tutoient. Le journal de restauration sort de `config-backup`. Les alertes `pnpm audit` de `brace-expansion` (dev seulement) sont ignorées.
 
 ### Partie D — Recette et release
 
@@ -957,6 +956,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Export : `backlog_series.csv` donne le nom de chaque série de `backlog_user_game.csv`, séries IGDB comprises.
 - [ ] Edge : une seule icône d'œil dans les champs mot de passe (Edge ajoute la sienne à côté de la nôtre).
 - [ ] Se déconnecter juste après une mort comptée dans GDC (requête lente) : avertissement ; « Annuler » garde la session. Sur téléphone, le header tient sur une ligne, profil et déconnexion en icônes.
+- [ ] `citadel config-backup` : l'archive ne contient pas `site-prod-server/restore-journal`.
 - [ ] Journal de restauration : après un premier `citadel deploy`, `/Volume1/appdata/site-prod-server/restore-journal` appartient à 1000 en 700 ; un changement de mot de passe y écrit une ligne ; en `prod:local`, la même ligne dans le volume (`docker exec site-prod-server cat /var/lib/citadel/restore-journal/*.jsonl`).
 - [ ] Journal impossible à écrire (dossier en lecture seule) : l'action échoue (500) et ne change rien ; l'erreur arrive dans `error_log`.
 - [ ] En `prod:local` : restaurer une sauvegarde, créer un compte (il reprend l'identifiant d'un compte perdu), lui changer son email, puis restaurer le dump « avant-restauration » : le compte d'origine garde son email.

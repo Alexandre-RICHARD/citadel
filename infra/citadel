@@ -759,9 +759,9 @@ cmd_restore_db() {
 	say "  serveur relancé"
 
 	# Les visiteurs sont prévenus, trois mois. Un compte qui a changé sa sécurité depuis
-	# la sauvegarde a perdu son mot de passe : la dernière phrase lui dit quoi faire
+	# la sauvegarde a perdu son mot de passe : la dernière phrase lui dit quoi faire (le bandeau est du site : il vouvoie)
 	local message
-	message="Le site a été restauré le $(date +%d/%m) à partir d'une sauvegarde du $(date -d "$backup_date" +%d/%m). Ce qui a été fait entre ces deux dates est perdu. Si tu as changé de mot de passe ou de double authentification pendant cette période, passe par « Mot de passe oublié »."
+	message="Le site a été restauré le $(date +%d/%m) à partir d'une sauvegarde du $(date -d "$backup_date" +%d/%m). Ce qui a été fait entre ces deux dates est perdu. Si vous avez changé de mot de passe ou de double authentification pendant cette période, passez par « Mot de passe oublié »."
 	write_banner restore "$message" "$(date -d '+3 months' -Iseconds)"
 	say "  bandeau du site : « $message »"
 
@@ -996,6 +996,9 @@ CONFIG_EXCLUDES=(
 	radarr/Backups radarr/MediaCover radarr/logs
 	sonarr/Backups sonarr/MediaCover sonarr/logs
 	site-prod-db site-preprod-db
+	# Le journal de restauration (adresses email, 10 semaines) : une archive de 2 mois en garderait
+	# plus de 3 mois au total. Il vit hors de la base, sur le disque seulement
+	site-prod-server/restore-journal
 )
 
 # Le fichier des contrôles du job en cours (une ligne JSON par contrôle)
