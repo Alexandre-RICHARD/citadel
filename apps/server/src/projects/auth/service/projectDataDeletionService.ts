@@ -4,10 +4,12 @@ import type { Transaction } from "sequelize";
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { projectUserData } from "../projectData/projectUserData.ts";
 import { shareLockUserQuery } from "../query/user/shareLockUserQuery.ts";
 import { authEventService } from "./authEventService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
  * Les données du compte dans les projets : supprimées une à une par chaque projet, dans l'ordre que demandent ses clés
@@ -22,6 +24,17 @@ class ProjectDataDeletionService {
 		for (const data of Object.values(projectUserData))
 			// eslint-disable-next-line no-await-in-loop -- une même transaction : ses requêtes se suivent
 			await data.deleteAll(userId, transaction);
+	}
+
+	// Ces projets seulement, dans une transaction déjà ouverte : le profil, et le rejeu du journal après une restauration
+	async deleteProjectsInTransaction(
+		userId: number,
+		projects: readonly UserDataProjectEnum[],
+		transaction: Transaction,
+	): Promise<void> {
+		for (const project of projects)
+			// eslint-disable-next-line no-await-in-loop -- une même transaction : ses requêtes se suivent
+			await projectUserData[project].deleteAll(userId, transaction);
 	}
 
 	/**
@@ -41,11 +54,14 @@ class ProjectDataDeletionService {
 				// Une suppression du compte en même temps passe avant ou après, jamais au milieu
 				if (!(await shareLockUserQuery(userId, transaction)))
 					throw new Error("Project data deletion of a deleted account");
-				for (const project of projects)
-					// eslint-disable-next-line no-await-in-loop -- une même transaction : ses requêtes se suivent
-					await projectUserData[project].deleteAll(userId, transaction);
+				await this.deleteProjectsInTransaction(userId, projects, transaction);
 			},
 		);
+		await restoreJournalService.record({
+			userId: userId,
+			action: RestoreJournalActionEnum.PROJECT_DATA_DELETED,
+			projects,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PROJECT_DATA_DELETED,
 			userId,

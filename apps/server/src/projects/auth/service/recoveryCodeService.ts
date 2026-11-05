@@ -6,6 +6,7 @@ import { authSettings } from "../../../configuration/authSettings.ts";
 import { RejectedRequestError } from "../../../error/RejectedRequestError.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { createRecoveryCodes } from "../helper/recoveryCode/createRecoveryCodes.ts";
 import { hashRecoveryCode } from "../helper/recoveryCode/hashRecoveryCode.ts";
 import { findConfirmedFactorTypesQuery } from "../query/factor/findConfirmedFactorTypesQuery.ts";
@@ -14,6 +15,7 @@ import { useRecoveryCodeQuery } from "../query/recoveryCode/useRecoveryCodeQuery
 import { lockUserQuery } from "../query/user/lockUserQuery.ts";
 import { authEventService } from "./authEventService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
  * Les codes de secours, la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible) : 10 codes à
@@ -59,6 +61,10 @@ class RecoveryCodeService {
 				return this.#replace(userId, transaction);
 			},
 		);
+		await restoreJournalService.record({
+			userId: userId,
+			action: RestoreJournalActionEnum.SECURITY_CHANGED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.RECOVERY_CODES_REGENERATED,
 			userId,

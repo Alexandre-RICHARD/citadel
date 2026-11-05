@@ -5,14 +5,12 @@
 /.vscode
 /node_modules/
 /report/
+/docker/
 
 # Files
 /.env
 /.env.test
 /.env.prod
-
-# Ancienne infra, gardée sur le disque pour référence jusqu'à l'étape 35 : jamais versionnée (secrets)
-/docker/
 
 # ====================
 # =      Admin       =
@@ -37,6 +35,7 @@
 # Folders
 /apps/server/build/
 /apps/server/node_modules/
+/apps/server/.local/
 
 # ====================
 # =      Common      =

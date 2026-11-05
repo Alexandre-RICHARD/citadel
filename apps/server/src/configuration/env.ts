@@ -111,6 +111,8 @@ const envSchema = z.object({
 	AUTH_EVENT_RETENTION_DAYS: positiveInteger(20),
 	ERROR_LOG_RETENTION_DAYS: positiveInteger(20),
 	AUTH_RESTORE_JOURNAL_DAYS: positiveInteger(70),
+	// Dossier du journal de restauration, hors de la base : un volume du NAS en prod, relatif au dossier du serveur en dev
+	AUTH_RESTORE_JOURNAL_DIR: z.string().min(1),
 	// Intervalle de la purge des parcours, des sessions et des facteurs non confirmés expirés
 	AUTH_PURGE_INTERVAL_MINUTES: positiveInteger(15),
 	// [secret] Clé des empreintes HMAC des codes reçus par mail

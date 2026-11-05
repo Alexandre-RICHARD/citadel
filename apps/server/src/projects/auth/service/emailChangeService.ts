@@ -8,6 +8,7 @@ import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { claimFlowQuery } from "../query/flow/claimFlowQuery.ts";
 import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
 import { lockUserQuery } from "../query/user/lockUserQuery.ts";
@@ -17,6 +18,7 @@ import { authEventService } from "./authEventService.ts";
 import { authMailService } from "./authMailService.ts";
 import { flowService } from "./flowService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
  * Le changement d'adresse email du compte connecté : mot de passe redemandé, puis un mail (lien + code) à la nouvelle
@@ -78,6 +80,11 @@ class EmailChangeService {
 				previousEmail,
 			),
 		);
+		await restoreJournalService.record({
+			userId: userId,
+			action: RestoreJournalActionEnum.EMAIL_CHANGED,
+			email: newEmail,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.EMAIL_CHANGED,
 			userId,

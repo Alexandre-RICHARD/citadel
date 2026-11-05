@@ -2,8 +2,13 @@ import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictio
 import { build } from "esbuild";
 
 await build({
-	entryPoints: ["src/index.ts"],
-	outfile: "build/build.server.cjs",
+	// Le serveur, et la commande « après restauration » que citadel restore-db lance dans la même image
+	entryPoints: [
+		{ in: "src/index.ts", out: "build.server" },
+		{ in: "src/afterRestore.ts", out: "afterRestore" },
+	],
+	outdir: "build",
+	outExtension: { ".js": ".cjs" },
 	bundle: true,
 	platform: "node",
 	format: "cjs",

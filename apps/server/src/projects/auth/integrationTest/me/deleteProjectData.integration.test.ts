@@ -11,6 +11,7 @@ import { app } from "../../../../app.ts";
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { isSessionOpen } from "../../../../testUtils/integration/auth/isSessionOpen.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
@@ -19,6 +20,7 @@ import { expectValidationError } from "../../../../testUtils/integration/expectV
 import { countAccountProjectRows } from "../../../../testUtils/integration/projectData/countAccountProjectRows.ts";
 import { seedAccountProjectData } from "../../../../testUtils/integration/projectData/seedAccountProjectData.ts";
 import { AuthEventTypeEnum } from "../../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const GDC_TABLES = ["gdc_game", "gdc_boss", "gdc_death"] as const;
 const BACKLOG_TABLES = [
@@ -152,6 +154,15 @@ describe("deleteProjectData", () => {
 				backlog_series: 0,
 			});
 			expect(await isSessionOpen(session.cookie)).toBe(true);
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{
+					action: RestoreJournalActionEnum.PROJECT_DATA_DELETED,
+					projects: [
+						UserDataProjectEnum.GAME_DEATH_COUNTER,
+						UserDataProjectEnum.BACKLOG,
+					],
+				},
+			]);
 		});
 
 		it("SHOULD answer the same and note it WHEN the project has no data of the account", async () => {
@@ -207,6 +218,7 @@ describe("deleteProjectData", () => {
 				backlog_done_dlc: 1,
 				backlog_series: 1,
 			});
+			expect(await readRestoreJournal(account.userId)).toStrictEqual([]);
 		});
 
 		it("SHOULD refuse a project that keeps no data of the account", async () => {

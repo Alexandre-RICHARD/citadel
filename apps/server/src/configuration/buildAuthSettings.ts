@@ -72,6 +72,7 @@ export function buildAuthSettings(variables: typeof env) {
 			errorLog: variables.ERROR_LOG_RETENTION_DAYS * DurationMsEnum.DAY,
 			restoreJournal: variables.AUTH_RESTORE_JOURNAL_DAYS * DurationMsEnum.DAY,
 		},
+		restoreJournalDirectory: variables.AUTH_RESTORE_JOURNAL_DIR,
 		purgeIntervalMs:
 			variables.AUTH_PURGE_INTERVAL_MINUTES * DurationMsEnum.MINUTE,
 	};

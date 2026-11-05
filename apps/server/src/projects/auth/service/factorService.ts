@@ -15,6 +15,7 @@ import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { TotpFactorSetupBean } from "../bean/totpFactorSetupBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { fromFactorEntityToFactorBean } from "../mapper/beanEntity/factor/fromFactorEntityToFactorBean.ts";
 import { confirmFactorQuery } from "../query/factor/confirmFactorQuery.ts";
 import { createFactorQuery } from "../query/factor/createFactorQuery.ts";
@@ -36,6 +37,7 @@ import { authMailService } from "./authMailService.ts";
 import { flowService } from "./flowService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { recoveryCodeService } from "./recoveryCodeService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 import { totpService } from "./totpService.ts";
 
 // Le compte n'en a qu'un : son nom est toujours celui-là
@@ -233,6 +235,10 @@ class FactorService {
 				user.email,
 			),
 		);
+		await restoreJournalService.record({
+			userId,
+			action: RestoreJournalActionEnum.SECURITY_CHANGED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.SECOND_FACTOR_REMOVED,
 			userId,
@@ -248,6 +254,10 @@ class FactorService {
 				user.email,
 			),
 		);
+		await restoreJournalService.record({
+			userId,
+			action: RestoreJournalActionEnum.SECURITY_CHANGED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.SECOND_FACTOR_ADDED,
 			userId,

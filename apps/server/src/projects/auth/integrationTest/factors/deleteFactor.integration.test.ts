@@ -11,10 +11,12 @@ import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAut
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 async function deleteFactor(
 	factorId: number,
@@ -65,6 +67,9 @@ describe("deleteFactor", () => {
 				kind: MailKindEnum.AUTH_NOTICE_SECOND_FACTOR_REMOVED,
 				to: { email: account.email },
 			});
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 
 		it("SHOULD keep the recovery codes WHEN another factor remains", async () => {
@@ -107,6 +112,7 @@ describe("deleteFactor", () => {
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
 			await mails.expectNone();
+			expect(await readRestoreJournal(account.userId)).toStrictEqual([]);
 		});
 	});
 

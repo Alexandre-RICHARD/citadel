@@ -12,11 +12,13 @@ import { MailKindEnum } from "../../../../mail/mailKind.enum.ts";
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { openTestFlow } from "../../../../testUtils/integration/auth/openTestFlow.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCookie.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { flowCookie } from "../../cookie/flowCookie.ts";
 import { sessionCookie } from "../../cookie/sessionCookie.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 import { passwordService } from "../../service/passwordService.ts";
 
 const SUBMIT_NEW_PASSWORD_URL = `${ApiPrefixEnum.AUTH}/flow/new-password`;
@@ -92,6 +94,9 @@ describe("submitNewPassword", () => {
 				kind: MailKindEnum.AUTH_NOTICE_PASSWORD_CHANGED,
 				to: { email: account.email },
 			});
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 	});
 

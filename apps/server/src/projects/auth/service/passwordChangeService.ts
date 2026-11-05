@@ -5,6 +5,7 @@ import { RejectedRequestError } from "../../../error/RejectedRequestError.ts";
 import { MailKindEnum } from "../../../mail/mailKind.enum.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { deleteOtherSessionsOfUserQuery } from "../query/session/deleteOtherSessionsOfUserQuery.ts";
 import { updateUserPasswordQuery } from "../query/user/updateUserPasswordQuery.ts";
 import { buildSecurityNoticeMail } from "../template/buildSecurityNoticeMail.ts";
@@ -12,6 +13,7 @@ import { authEventService } from "./authEventService.ts";
 import { authMailService } from "./authMailService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { passwordService } from "./passwordService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 
 type PasswordChange = {
 	userId: number;
@@ -59,6 +61,10 @@ class PasswordChangeService {
 				user.email,
 			),
 		);
+		await restoreJournalService.record({
+			userId: userId,
+			action: RestoreJournalActionEnum.SECURITY_CHANGED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PASSWORD_CHANGED,
 			userId,

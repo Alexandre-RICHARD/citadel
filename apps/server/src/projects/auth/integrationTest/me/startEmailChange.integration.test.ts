@@ -14,11 +14,13 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
 import { readCookieHeader } from "../../../../testUtils/integration/auth/readCookieHeader.ts";
 import { readMailSecrets } from "../../../../testUtils/integration/auth/readMailSecrets.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
 import { buildUniqueWord } from "../../../../testUtils/integration/buildUniqueWord.ts";
 import { flowCookie } from "../../cookie/flowCookie.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const START_EMAIL_CHANGE_URL = `${ApiPrefixEnum.AUTH}/me/email`;
 const SUBMIT_CODE_URL = `${ApiPrefixEnum.AUTH}/flow/code`;
@@ -118,6 +120,9 @@ describe("startEmailChange", () => {
 						.set("Cookie", session.cookie)
 				).status,
 			).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.EMAIL_CHANGED, email: newEmail },
+			]);
 		});
 
 		it("SHOULD answer the same and only tell the owner WHEN the address belongs to another account", async () => {
@@ -236,6 +241,7 @@ describe("startEmailChange", () => {
 			expect((await selectAuthRows.user(account.userId))?.email).toBe(
 				account.email,
 			);
+			expect(await readRestoreJournal(account.userId)).toStrictEqual([]);
 		});
 	});
 });

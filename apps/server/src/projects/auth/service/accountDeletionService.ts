@@ -9,6 +9,7 @@ import { TooManyRequestsError } from "../../../error/TooManyRequestsError.ts";
 import { MailKindEnum } from "../../../mail/mailKind.enum.ts";
 import type { ClientContextBean } from "../bean/clientContextBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { authLimiter } from "../limit/authLimiter.ts";
 import type { Factor } from "../models/Factor.ts";
 import { findConfirmedFactorsQuery } from "../query/factor/findConfirmedFactorsQuery.ts";
@@ -21,6 +22,7 @@ import { authMailService } from "./authMailService.ts";
 import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { projectDataDeletionService } from "./projectDataDeletionService.ts";
 import { recoveryCodeService } from "./recoveryCodeService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 import { totpService } from "./totpService.ts";
 
 type DeletionProof = {
@@ -112,6 +114,10 @@ class AccountDeletionService {
 			),
 		);
 		// Sans compte : le journal du compte est parti avec lui par cascade, l'événement n'a plus d'utilisateur
+		await restoreJournalService.record({
+			userId: userId,
+			action: RestoreJournalActionEnum.ACCOUNT_DELETED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.ACCOUNT_DELETED,
 			userId: null,

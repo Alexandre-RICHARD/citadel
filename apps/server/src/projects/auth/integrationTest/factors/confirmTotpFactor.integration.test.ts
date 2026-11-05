@@ -13,9 +13,11 @@ import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAut
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const CONFIRM_TOTP_URL = `${ApiPrefixEnum.AUTH}/factors/totp/confirm`;
 const MINUTE_MS = 60 * 1000;
@@ -71,6 +73,9 @@ describe("confirmTotpFactor", () => {
 				kind: MailKindEnum.AUTH_NOTICE_SECOND_FACTOR_ADDED,
 				to: { email: account.email },
 			});
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 
 		it("SHOULD keep the recovery codes and give none WHEN the account already had a factor", async () => {

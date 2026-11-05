@@ -10,8 +10,10 @@ import { app } from "../../../../app.ts";
 import { insertAuthRows } from "../../../../testUtils/integration/auth/insertAuthRows.ts";
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const REGENERATE_URL = `${ApiPrefixEnum.AUTH}/recovery-codes`;
 
@@ -54,6 +56,9 @@ describe("regenerateRecoveryCodes", () => {
 			expect(newIds).toHaveLength(10);
 			expect(newIds).not.toContain(oldIds[0]);
 			expect(newIds).not.toContain(oldIds[1]);
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 	});
 

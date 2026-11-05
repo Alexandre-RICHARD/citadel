@@ -12,6 +12,7 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { insertTestRecoveryCodes } from "../../../../testUtils/integration/auth/insertTestRecoveryCodes.ts";
 import { insertTestTotpFactor } from "../../../../testUtils/integration/auth/insertTestTotpFactor.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCookie.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
@@ -19,6 +20,7 @@ import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.t
 import { countAccountProjectRows } from "../../../../testUtils/integration/projectData/countAccountProjectRows.ts";
 import { seedAccountProjectData } from "../../../../testUtils/integration/projectData/seedAccountProjectData.ts";
 import { sessionCookie } from "../../cookie/sessionCookie.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const DELETE_ME_URL = `${ApiPrefixEnum.AUTH}/me`;
 const AUTH_TABLES = [
@@ -84,6 +86,9 @@ describe("deleteMe", () => {
 				kind: MailKindEnum.AUTH_NOTICE_ACCOUNT_DELETED,
 				to: { email: account.email },
 			});
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.ACCOUNT_DELETED },
+			]);
 		});
 
 		it("SHOULD delete the data of the account in every project, its own series included, and only theirs", async () => {
@@ -181,6 +186,7 @@ describe("deleteMe", () => {
 			});
 			expect(await selectAuthRows.user(account.userId)).not.toBeNull();
 			await mails.expectNone();
+			expect(await readRestoreJournal(account.userId)).toStrictEqual([]);
 		});
 
 		it("SHOULD keep the account WHEN an authenticator app protects it and no code is given", async () => {

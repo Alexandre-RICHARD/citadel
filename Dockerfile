@@ -104,6 +104,10 @@ ENV APP_VERSION=${APP_VERSION}
 LABEL org.opencontainers.image.source="https://github.com/Alexandre-RICHARD/citadel" \
 	org.opencontainers.image.title="citadel-server" \
 	org.opencontainers.image.version="${APP_VERSION}"
+# Le dossier du journal de restauration, à « node » : un volume Docker neuf monté dessus
+# (pnpm prod:local) en reprend le propriétaire, et le serveur peut y écrire. Sur le NAS,
+# c'est un dossier de l'hôte : citadel deploy le crée lui-même avec ce propriétaire
+RUN mkdir -p /var/lib/citadel/restore-journal 	&& chown node:node /var/lib/citadel/restore-journal
 # L'utilisateur « node » (fourni par l'image) au lieu de root : une faille dans le serveur
 # ne donne pas les droits de root dans le conteneur
 USER node

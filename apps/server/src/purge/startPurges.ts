@@ -4,6 +4,7 @@ import { DurationMsEnum } from "@citadel/common/src/universal/date/durationMs.en
 import { authSettings } from "../configuration/authSettings.ts";
 import { logError } from "../error/logError.ts";
 import { authPurgeService } from "../projects/auth/service/authPurgeService.ts";
+import { restoreJournalService } from "../projects/auth/service/restoreJournalService.ts";
 import { errorLogService } from "../projects/errorLog/service/errorLogService.ts";
 
 type Purge = {
@@ -33,6 +34,11 @@ const PURGES: Purge[] = [
 		name: "Purge des événements de sécurité",
 		intervalMs: DurationMsEnum.DAY,
 		run: async (now) => authPurgeService.purgeOldEvents(now),
+	},
+	{
+		name: "Purge du journal de restauration",
+		intervalMs: DurationMsEnum.DAY,
+		run: async (now) => restoreJournalService.purge(now),
 	},
 	{
 		name: "Purge des erreurs du serveur",

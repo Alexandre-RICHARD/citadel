@@ -10,9 +10,11 @@ import { app } from "../../../../app.ts";
 import { MailKindEnum } from "../../../../mail/mailKind.enum.ts";
 import { insertTestAccount } from "../../../../testUtils/integration/auth/insertTestAccount.ts";
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 import { passwordService } from "../../service/passwordService.ts";
 
 const CHANGE_PASSWORD_URL = `${ApiPrefixEnum.AUTH}/me/password`;
@@ -79,6 +81,9 @@ describe("changePassword", () => {
 				kind: MailKindEnum.AUTH_NOTICE_PASSWORD_CHANGED,
 				to: { email: account.email },
 			});
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 	});
 
@@ -113,6 +118,7 @@ describe("changePassword", () => {
 						.set("Cookie", phone.cookie)
 				).status,
 			).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(await readRestoreJournal(account.userId)).toStrictEqual([]);
 		});
 
 		it("SHOULD refuse WHEN the new password is the current one", async () => {

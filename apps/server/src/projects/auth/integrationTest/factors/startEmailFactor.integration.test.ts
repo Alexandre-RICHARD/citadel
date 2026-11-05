@@ -16,6 +16,7 @@ import { insertTestAccount } from "../../../../testUtils/integration/auth/insert
 import { openTestSession } from "../../../../testUtils/integration/auth/openTestSession.ts";
 import { readCookieHeader } from "../../../../testUtils/integration/auth/readCookieHeader.ts";
 import { readMailSecrets } from "../../../../testUtils/integration/auth/readMailSecrets.ts";
+import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { readSetCookie } from "../../../../testUtils/integration/auth/readSetCookie.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { watchSentMails } from "../../../../testUtils/integration/auth/watchSentMails.ts";
@@ -23,6 +24,7 @@ import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.t
 import { expectConflict } from "../../../../testUtils/integration/expectConflict.ts";
 import { flowCookie } from "../../cookie/flowCookie.ts";
 import { sessionCookie } from "../../cookie/sessionCookie.ts";
+import { RestoreJournalActionEnum } from "../../enum/restoreJournalAction.enum.ts";
 
 const START_EMAIL_FACTOR_URL = `${ApiPrefixEnum.AUTH}/factors/email`;
 const SUBMIT_CODE_URL = `${ApiPrefixEnum.AUTH}/flow/code`;
@@ -113,6 +115,9 @@ describe("startEmailFactor", () => {
 			expect((await mails.waitForOne()).kind).toBe(
 				MailKindEnum.AUTH_NOTICE_SECOND_FACTOR_ADDED,
 			);
+			expect(await readRestoreJournal(account.userId)).toMatchObject([
+				{ action: RestoreJournalActionEnum.SECURITY_CHANGED },
+			]);
 		});
 
 		it("SHOULD give no recovery code WHEN the account already had a TOTP", async () => {

@@ -11,6 +11,7 @@ import type { BrowserContextBean } from "../bean/browserContextBean.type.ts";
 import type { FlowOutcomeBean } from "../bean/flowOutcomeBean.type.ts";
 import type { VerifiedFlowBean } from "../bean/verifiedFlowBean.type.ts";
 import { AuthEventTypeEnum } from "../enum/authEventType.enum.ts";
+import { RestoreJournalActionEnum } from "../enum/restoreJournalAction.enum.ts";
 import { claimFlowQuery } from "../query/flow/claimFlowQuery.ts";
 import { deleteSessionsOfUserQuery } from "../query/session/deleteSessionsOfUserQuery.ts";
 import { findUserByIdQuery } from "../query/user/findUserByIdQuery.ts";
@@ -21,6 +22,7 @@ import { authMailService } from "./authMailService.ts";
 import { flowService } from "./flowService.ts";
 import { loginService } from "./loginService.ts";
 import { passwordService } from "./passwordService.ts";
+import { restoreJournalService } from "./restoreJournalService.ts";
 import { userService } from "./userService.ts";
 
 function flowExpired(): RejectedRequestError {
@@ -127,6 +129,10 @@ class PasswordResetService {
 				user.email,
 			),
 		);
+		await restoreJournalService.record({
+			userId: user.id,
+			action: RestoreJournalActionEnum.SECURITY_CHANGED,
+		});
 		await authEventService.record({
 			type: AuthEventTypeEnum.PASSWORD_CHANGED,
 			userId: user.id,

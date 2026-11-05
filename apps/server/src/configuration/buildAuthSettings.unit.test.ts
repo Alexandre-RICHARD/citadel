@@ -48,6 +48,7 @@ const AUTH_VARIABLES = {
 	AUTH_EVENT_RETENTION_DAYS: 20,
 	ERROR_LOG_RETENTION_DAYS: 20,
 	AUTH_RESTORE_JOURNAL_DAYS: 70,
+	AUTH_RESTORE_JOURNAL_DIR: "/var/lib/citadel/restore-journal",
 	AUTH_PURGE_INTERVAL_MINUTES: 15,
 	AUTH_CODE_HMAC_KEY: HMAC_KEY,
 	AUTH_TOTP_ENCRYPTION_KEY: ENCRYPTION_KEY,
@@ -95,6 +96,9 @@ describe("buildAuthSettings.ts", () => {
 				restoreJournal: 70 * DAY_MS,
 			});
 			expect(settings.purgeIntervalMs).toBe(15 * MINUTE_MS);
+			expect(settings.restoreJournalDirectory).toBe(
+				"/var/lib/citadel/restore-journal",
+			);
 			expect(settings.factorConfirmationMs).toBe(15 * MINUTE_MS);
 		});
 	});

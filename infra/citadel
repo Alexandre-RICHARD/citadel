@@ -101,6 +101,10 @@ BACKUP_SOURCE_PATTERN='^(drive:)?(daily|pre-deploy|pre-restore)/citadel-[0-9]{8}
 HEALTHCHECKS_URL=https://hc-ping.com
 # L'utilisateur de la console dans son image (node) : il doit pouvoir écrire dans queue/
 CONSOLE_UID=1000
+# L'utilisateur du serveur dans son image (node), et le dossier de l'hôte où il écrit son
+# journal de restauration (monté par compose.yml)
+SERVER_UID=1000
+RESTORE_JOURNAL_DIR=$APPDATA_DIR/site-prod-server/restore-journal
 
 # --- Affichage ---
 say() { printf '%s\n' "$*"; }
@@ -187,6 +191,13 @@ host_main() {
 			[[ -n ${2:-} ]] || die "usage : citadel deploy <version>"
 			# Les dossiers montés doivent exister avant de l'être
 			mkdir -p "$BACKUP_DIR" "$APPDATA_DIR"
+			# Celui du journal de restauration, au serveur : Docker créerait un dossier
+			# manquant à root, et le serveur (node) ne pourrait pas y écrire. En 700 : il
+			# contient des adresses email. Ici, sur l'hôte : infra-ops voit /Volume1/appdata
+			# en lecture seule
+			mkdir -p "$RESTORE_JOURNAL_DIR"
+			chown "$SERVER_UID:$SERVER_UID" "$RESTORE_JOURNAL_DIR"
+			chmod 700 "$RESTORE_JOURNAL_DIR"
 			run_ops "$2" "$@"
 			;;
 		*)
@@ -694,9 +705,12 @@ cmd_restore_db() {
 	zstd --quiet --test "$file" || die "dump illisible (pas une archive zstd valide) : $file"
 	zstd --decompress --stdout "$file" | tail -n 1 | grep -q '^-- Dump completed' ||
 		die "dump incomplet : pas de « -- Dump completed » à la fin"
+	local backup_date
+	backup_date=$(backup_date_of "$file") || die "date de la sauvegarde illisible : $file"
 
 	step "Restauration de la base de prod"
 	say "  dump : $file"
+	say "  sauvegarde du : $backup_date"
 	say "  Tout ce qui a été écrit dans la base depuis ce dump sera perdu."
 	local answer=""
 	printf '\nPour confirmer, tape RESTAURER : '
@@ -726,25 +740,53 @@ cmd_restore_db() {
 		CREATE DATABASE citadel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci;"'
 	zstd --decompress --stdout "$file" |
 		docker exec -i site-prod-db sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" exec mariadb --user=root citadel'
-	compose up --detach --wait site-prod-server
-	history_line "$(current_version)  restore-db  ($file)"
 	say "  base restaurée"
 
-	# Les visiteurs sont prévenus, trois mois. La date de la sauvegarde vient de
-	# son nom (citadel-AAAAMMJJ-…) ; un dump envoyé depuis ton PC n'en a pas forcément.
-	local backup_day message
-	backup_day=$(basename "$file" | sed -nE 's/^citadel-[0-9]{4}([0-9]{2})([0-9]{2})-.*/\2\/\1/p')
-	if [[ -n $backup_day ]]; then
-		message="Le site a été restauré le $(date +%d/%m) à partir d'une sauvegarde du $backup_day. Ce qui a été fait entre ces deux dates est perdu."
-	else
-		message="Le site a été restauré le $(date +%d/%m) à partir d'une sauvegarde plus ancienne. Ce qui a été fait entre-temps est perdu."
-	fi
+	# La commande « après restauration » du serveur, serveur encore arrêté : aucune
+	# requête ne passe avec une session que la sauvegarde a ressuscitée. Elle vide les
+	# sessions et les parcours, puis rejoue le journal de restauration écrit depuis la
+	# sauvegarde (comptes et données supprimés, emails changés, mots de passe invalidés
+	# après un changement de sécurité). Même image, mêmes variables et même dossier du
+	# journal que le serveur : un conteneur jetable du service (--no-deps : la base
+	# tourne déjà). En échec, le serveur reste arrêté : une base restaurée sans ce
+	# rejeu rouvrirait des sessions révoquées
+	say "  après restauration :"
+	compose run --rm --no-deps site-prod-server \
+		node --enable-source-maps build/afterRestore.cjs "$backup_date" ||
+		die "commande « après restauration » en échec : serveur laissé arrêté. Relancer citadel restore-db avec le même dump"
+	compose up --detach --wait site-prod-server
+	history_line "$(current_version)  restore-db  ($file)"
+	say "  serveur relancé"
+
+	# Les visiteurs sont prévenus, trois mois. Un compte qui a changé sa sécurité depuis
+	# la sauvegarde a perdu son mot de passe : la dernière phrase lui dit quoi faire
+	local message
+	message="Le site a été restauré le $(date +%d/%m) à partir d'une sauvegarde du $(date -d "$backup_date" +%d/%m). Ce qui a été fait entre ces deux dates est perdu. Si tu as changé de mot de passe ou de double authentification pendant cette période, passe par « Mot de passe oublié »."
 	write_banner restore "$message" "$(date -d '+3 months' -Iseconds)"
 	say "  bandeau du site : « $message »"
 
 	# Le dump envoyé a servi : la base actuelle est désormais la sienne
 	if [[ $source == upload:* ]]; then rm -f "$file"; fi
 	write_backups_index
+}
+
+# backup_date_of <dump> : la date de la sauvegarde, en ISO 8601 avec son fuseau, pour la
+# commande « après restauration ». Celle de son nom (citadel-AAAAMMJJ-HHMMSS, heure de
+# Paris : celle d'infra-ops, prise juste avant le début du dump) ; sinon, pour un dump
+# envoyé depuis ton PC, la dernière ligne de mariadb-dump (« -- Dump completed on
+# AAAA-MM-JJ HH:MM:SS », heure de la machine qui l'a fait). Lue elle aussi comme l'heure
+# de Paris : Paris est en avance sur UTC, c'est la plus tôt des deux lectures possibles,
+# et le rejeu refait au pire une action déjà là plutôt que d'en oublier une
+backup_date_of() {
+	local file=$1 stamp
+	stamp=$(basename "$file" |
+		sed -nE 's/^citadel-([0-9]{4})([0-9]{2})([0-9]{2})-([0-9]{2})([0-9]{2})([0-9]{2})-.*/\1-\2-\3 \4:\5:\6/p')
+	if [[ -z $stamp ]]; then
+		stamp=$(zstd --decompress --stdout "$file" | tail -n 1 |
+			sed -nE 's/^-- Dump completed on ([0-9]{4}-[0-9]{2}-[0-9]{2}) +([0-9]{1,2}:[0-9]{2}:[0-9]{2}).*/\1 \2/p')
+	fi
+	[[ -n $stamp ]] || return 1
+	TZ=Europe/Paris date -d "$stamp" -Iseconds
 }
 
 # --- Le bandeau et la page de maintenance du site ---
