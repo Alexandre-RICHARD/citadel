@@ -5,6 +5,8 @@ const ROOT = "backlog";
  * `userGames()` est le préfixe de toutes les vues du tableau (tri, filtres) : une écriture les met toutes à jour
  */
 export const backlogQueryKeys = {
+	// Le préfixe de toutes les lectures du projet : ses données supprimées depuis le profil quittent le cache
+	all: () => [ROOT] as const,
 	overview: () => [ROOT, "overview"] as const,
 	userGames: () => [ROOT, "userGames"] as const,
 	userGameList: (viewParams: Record<string, string>) =>

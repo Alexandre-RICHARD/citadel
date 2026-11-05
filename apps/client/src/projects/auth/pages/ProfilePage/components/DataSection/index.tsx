@@ -15,13 +15,14 @@ import { PasswordConfirmForm } from "../../../../components/PasswordConfirmForm"
 import { ProfileSection } from "../../../../components/ProfileSection";
 import { TextField } from "../../../../components/TextField";
 import { readSecondFactorAnswer } from "../../../../helper/secondFactor/readSecondFactorAnswer";
+import { ProjectDataDeletion } from "../ProjectDataDeletion";
 import styles from "./dataSection.module.scss";
 
 // Un simple lien : le navigateur le télécharge avec le cookie de session, sans passer par une requête de la page
 const EXPORT_URL = "/api/auth/me/export";
 
-// Mes données : le téléchargement de tout ce que le site garde sur le compte, et la suppression du compte, immédiate et
-// définitive. Avec une application d'authentification, un de ses codes (ou un code de secours) est demandé en plus du mot
+// Mes données : le téléchargement de tout ce que le site garde sur le compte, la suppression des données d'un projet, et
+// la suppression du compte, immédiate et définitive. Avec une application d'authentification, un de ses codes (ou un code de secours) est demandé en plus du mot
 // de passe
 export function DataSection() {
 	const fieldId = useId();
@@ -62,6 +63,8 @@ export function DataSection() {
 					passe, ni clé de double authentification).
 				</p>
 			</div>
+
+			<ProjectDataDeletion />
 
 			<div className={styles.danger}>
 				<h3 className={styles.dangerTitle}>Supprimer mon compte</h3>
