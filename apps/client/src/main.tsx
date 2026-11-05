@@ -1,3 +1,5 @@
+// Avant tout autre import : aucun schéma ne doit être validé avant ce réglage
+import "./configuration/zodWithoutEval";
 import "@citadel/design-system/src/styles/reset.scss";
 import "@citadel/design-system/src/styles/global.scss";
 
