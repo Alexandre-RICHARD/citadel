@@ -2,7 +2,16 @@ import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodySchema";
-import { Castle, Flame, Moon, Plus, Save, Sun, X } from "lucide-react";
+import {
+	Castle,
+	Flame,
+	Moon,
+	Plus,
+	Save,
+	Sun,
+	UserRound,
+	X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -10,6 +19,7 @@ import { checkInput } from "../../../../../../common/validation/checkInput";
 import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
 import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
+import { AuthPathEnum } from "../../../../../auth/routing/authPath.enum";
 import { useCreateGame } from "../../../../api/game/useCreateGame";
 import { useGameListTotalDeath } from "../../../../api/game/useGameListTotalDeath";
 import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
@@ -82,6 +92,13 @@ export function Header() {
 						icon={colorScheme === ColorSchemeEnum.Dark ? Moon : Sun}
 						label={`Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`}
 						onClick={toggleColorScheme}
+					/>
+					<IconButton
+						icon={UserRound}
+						label="Mon profil"
+						onClick={() => {
+							void navigate(AuthPathEnum.PROFILE);
+						}}
 					/>
 					<IconButton
 						icon={Castle}

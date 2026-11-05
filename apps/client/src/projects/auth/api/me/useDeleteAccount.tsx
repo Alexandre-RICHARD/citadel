@@ -5,7 +5,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
-import { authQueryKeys } from "../authQueryKeys";
+import { forgetSignedInAccount } from "../cache/forgetSignedInAccount";
 
 // Supprime le compte, immédiatement et définitivement. Plus rien de lui ne reste dans le cache
 export function useDeleteAccount() {
@@ -21,8 +21,7 @@ export function useDeleteAccount() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.clear();
-			queryClient.setQueryData(authQueryKeys.me(), null);
+			forgetSignedInAccount(queryClient);
 		},
 	});
 }

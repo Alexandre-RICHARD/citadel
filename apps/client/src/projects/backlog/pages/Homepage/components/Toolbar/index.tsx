@@ -9,6 +9,7 @@ import {
 	Moon,
 	PencilLine,
 	Sun,
+	UserRound,
 } from "lucide-react";
 import type { RefObject } from "react";
 import { useNavigate } from "react-router";
@@ -16,6 +17,7 @@ import { useNavigate } from "react-router";
 import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
 import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
+import { AuthPathEnum } from "../../../../../auth/routing/authPath.enum";
 import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
@@ -33,7 +35,8 @@ type Props = {
 	onOpenModal: (modal: BacklogModal) => void;
 };
 
-// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition, le thème et le retour à la Citadel
+// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition, le thème, le profil et le retour à la
+// Citadel
 export function Toolbar({
 	searchInputRef,
 	outsideBacklogGameCount,
@@ -119,6 +122,16 @@ export function Toolbar({
 					tooltip={colorSchemeLabel}
 					tooltipPlacement="bottom"
 					onClick={toggleColorScheme}
+				/>
+				<Button
+					icon={UserRound}
+					variant="ghost"
+					ariaLabel="Mon profil"
+					tooltip="Mon profil"
+					tooltipPlacement="bottom"
+					onClick={() => {
+						void navigate(AuthPathEnum.PROFILE);
+					}}
 				/>
 				<Button
 					icon={Castle}

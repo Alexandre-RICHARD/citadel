@@ -4,7 +4,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
-import { authQueryKeys } from "../authQueryKeys";
+import { forgetSignedInAccount } from "../cache/forgetSignedInAccount";
 
 // « Tout déconnecter », cette session comprise : plus personne n'est connecté, et rien du compte ne reste dans le cache
 export function useDeleteAllSessions() {
@@ -19,8 +19,7 @@ export function useDeleteAllSessions() {
 			});
 		},
 		onSuccess: () => {
-			queryClient.clear();
-			queryClient.setQueryData(authQueryKeys.me(), null);
+			forgetSignedInAccount(queryClient);
 		},
 	});
 }

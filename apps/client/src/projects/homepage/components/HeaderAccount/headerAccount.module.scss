@@ -1,0 +1,69 @@
+.loginButton,
+.profileLink,
+.logoutButton {
+  @include vars.button;
+
+  height: 4.2rem;
+
+  @include vars.phone {
+    height: 3.6rem;
+  }
+}
+
+.loginButton {
+  @include vars.display-font;
+
+  padding: 0 2rem;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+
+  @include vars.phone {
+    padding: 0 1.2rem;
+    font-size: 1.1rem;
+  }
+}
+
+.profileLink {
+  max-width: 24rem;
+  padding: 0 1.6rem;
+  font-size: 1.4rem;
+
+  @include vars.phone {
+    width: 3.6rem;
+    padding: 0;
+  }
+}
+
+// Un pseudo affiché va jusqu'à 64 caractères : coupé plutôt que de pousser le header hors de l'écran. Sur téléphone,
+// les icônes seules : le header tient sur une ligne à côté du nom du site
+.displayName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @include vars.phone {
+    display: none;
+  }
+}
+
+.logoutButton {
+  padding: 0 1.6rem;
+  font-size: 1.3rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  @include vars.phone {
+    width: 3.6rem;
+    padding: 0;
+  }
+}
+
+// Sur téléphone, l'icône seule, comme pour le profil
+.logoutLabel {
+  @include vars.phone {
+    display: none;
+  }
+}

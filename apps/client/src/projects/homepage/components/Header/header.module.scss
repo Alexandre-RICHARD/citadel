@@ -67,21 +67,3 @@
   }
 }
 
-.loginButton {
-  @include vars.button;
-  @include vars.display-font;
-
-  padding: 1.2rem 2rem;
-  font-size: 1.3rem;
-  text-transform: uppercase;
-
-  &[aria-disabled="true"] {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  @include vars.phone {
-    padding: 0.9rem 1.2rem;
-    font-size: 1.1rem;
-  }
-}

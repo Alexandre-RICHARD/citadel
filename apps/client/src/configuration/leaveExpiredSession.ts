@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { authQueryKeys } from "../projects/auth/api/authQueryKeys";
+import { forgetSignedInAccount } from "../projects/auth/api/cache/forgetSignedInAccount";
 import { findSessionExpiredRedirect } from "../projects/auth/routing/findSessionExpiredRedirect";
 import { router } from "../react/appNavigation/routes";
 
@@ -9,8 +9,7 @@ import { router } from "../react/appNavigation/routes";
  * autre), le site se sait déconnecté sans relire GET /auth/me, et la connexion ramènera à la page où l'on était
  */
 export function leaveExpiredSession(queryClient: QueryClient): void {
-	queryClient.clear();
-	queryClient.setQueryData(authQueryKeys.me(), null);
+	forgetSignedInAccount(queryClient);
 	const { pathname, search, hash } = window.location;
 	const redirect = findSessionExpiredRedirect(`${pathname}${search}${hash}`);
 	if (redirect !== null) void router.navigate(redirect, { replace: true });
