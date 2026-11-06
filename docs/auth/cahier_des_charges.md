@@ -1,6 +1,6 @@
 # Authentification de Citadel — Cahier des charges
 
-2 novembre 2026 · v7 : tables `mailing_*`, pseudo en `A-Z a-z 0-9 _ -`, pseudo sensible à chaque caractère, email sans distinction de casse, réglages des mails dans le `.env`, tests partout, modèles par phase · v6 : relecture après les mails (quota, second facteur, restauration, règle des 3 mois), roadmap en fondations, mise en place, correctifs, modèle de Claude par phase · 30 octobre 2026 · v5 : dernières réponses intégrées, restauration et sujets d'infra passés au cahier de l'hébergement · v4 : réponses du 30 octobre intégrées · v3 : plus de MVP · v2 : aligné sur le dépôt · v1 : brouillon du 27 octobre
+6 novembre 2026 · v8 : étapes 1 à 69 faites, retirées de la roadmap, écarts du §3.2 retirés · 2 novembre 2026 · v7 : tables `mailing_*`, pseudo en `A-Z a-z 0-9 _ -`, pseudo sensible à chaque caractère, email sans distinction de casse, réglages des mails dans le `.env`, tests partout, modèles par phase · v6 : relecture après les mails (quota, second facteur, restauration, règle des 3 mois), roadmap en fondations, mise en place, correctifs, modèle de Claude par phase · 30 octobre 2026 · v5 : dernières réponses intégrées, restauration et sujets d'infra passés au cahier de l'hébergement · v4 : réponses du 30 octobre intégrées · v3 : plus de MVP · v2 : aligné sur le dépôt · v1 : brouillon du 27 octobre
 
 [Citadel](../../README.md) › Authentification : cahier des charges
 
@@ -12,7 +12,7 @@ Dans la roadmap, **[toi]**, **[moi]** ou **[nous]** dit qui fait l'étape.
 
 1. Objectif, périmètre, mode de travail
 2. Principes
-3. Existant à réutiliser, écarts à corriger
+3. Existant à réutiliser
 4. Session et cookie
 5. Données
 6. Parcours, feature par feature
@@ -71,9 +71,7 @@ Je code, avec des tests unitaires et d'intégration pour tout ; tu testes à par
 
 ---
 
-## 3. Existant à réutiliser, écarts à corriger
-
-### 3.1 À réutiliser
+## 3. Existant à réutiliser
 
 - **Console d'administration** (`apps/admin/src/server/auth/`) : `hashPassword.ts`, `verifyPassword.ts` (format sans `$`, `timingSafeEqual`), `hashPasswordCli.ts`, `sessionStore.ts` (jeton de 32 octets en `base64url`), `authRouter.ts`, `requireSession.ts`, `loginThrottle.ts`, `requireSameOrigin.ts`, `writeAuditLog`.
 - **Lecture du cookie** : `readCookieValue` (`packages/common/src/universal/cookie/`).
@@ -85,10 +83,9 @@ Je code, avec des tests unitaires et d'intégration pour tout ; tu testes à par
 - **Node 24.22.1** dans l'image : `argon2id` natif (`crypto.argon2`).
 - **MariaDB 11.8** : collations `utf8mb4_bin` (chaque caractère compte) et UCA 14 `utf8mb4_uca1400_as_ci` (accents distingués, casse ignorée).
 
-### 3.2 À corriger dans le chantier
+Les mails (fournisseur, DNS, `contact@`, `mailService` et son quota, IP réelle, `429` et `Retry-After`) sont dans le [cahier de l'hébergement](../ci_cd/cahier_des_charges.md).
 
-| # | Constat | Correction |
-|---|---|---|
+---|---|---|
 | 1 | `scryptSync` dans la console : synchrone, paramètres faibles | `argon2id` asynchrone partagé (§6.3, §11.2) |
 | 2 | Serveur limité à 256 Mo | Concurrence des hashs plafonnée (§6.3) |
 | 3 | `packages/common` sans environnement Node ; code Node et fonctions pures en double entre la console et le serveur | `src/node/` et son bloc ESLint, code commun regroupé (§11.2) |
@@ -209,7 +206,7 @@ Migrations du chantier à partir de V013 (V011 et V012 sont celles des mails) : 
 ### 5.3 Collations et types
 
 - Empreintes en `BINARY(32)` : comparaison octet par octet.
-- Email : `utf8mb4_uca1400_as_ci` sur la colonne (et sur `auth_flow.email`), comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie. La collation confond aussi `ａ` (pleine chasse) et `a`, `ﬁ` et `fi`, et ignore les caractères invisibles : la règle de format de l'email les refuse (étape 33).
+- Email : `utf8mb4_uca1400_as_ci` sur la colonne (et sur `auth_flow.email`), comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie. La collation confond aussi `ａ` (pleine chasse) et `a`, `ﬁ` et `fi`, et ignore les caractères invisibles : la règle de format de l'email les refuse.
 - Pseudo : `utf8mb4_bin`, toute différence de caractère compte : `Alex` et `alex` peuvent coexister.
 - Aucune migration de collation sur les tables existantes.
 
@@ -457,16 +454,16 @@ Les règles de format (longueurs du mot de passe, de l'email, du pseudo, du code
 | `AUTH_RESTORE_JOURNAL_DIR` | `/var/lib/citadel/restore-journal` (image) ; `./.local/restore-journal` en dev |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |
 
-Mails (section existante, valeurs écrites et non plus commentées dans `.env.example` et `.env.test`) :
+Mails (section `mail`) :
 
 | Variable | Valeur |
 |---|---|
-| `MAIL_REGISTRATION_STOP`, `MAIL_CONTACT_STOP`, `MAIL_DAILY_LIMIT` | 250, 280, 300 (existent déjà) |
-| `CONTACT_HOURLY_LIMIT_PER_IP` | 5 (existe déjà) |
-| `BREVO_DAILY_CREDITS` | 300 (crédits de l'offre gratuite, en dur dans `brevoClient.ts`) |
-| `MAIL_QUOTA_READING_SECONDS` | 60 (relevé du compteur de Brevo, en dur dans `createMailQuota.ts`) |
-| `MAIL_FAILURE_RETENTION_DAYS` | 90 (en dur dans `createMailFailureQuery.ts`) |
-| `MAIL_FAILURE_WINDOW_DAYS` | 7 (échecs résumés pour la console, en dur dans `mailService.ts`) |
+| `MAIL_REGISTRATION_STOP`, `MAIL_CONTACT_STOP`, `MAIL_DAILY_LIMIT` | 250, 280, 300 |
+| `CONTACT_HOURLY_LIMIT_PER_IP` | 5 |
+| `BREVO_DAILY_CREDITS` | 300 (crédits de l'offre gratuite) |
+| `MAIL_QUOTA_READING_SECONDS` | 60 (relevé du compteur de Brevo) |
+| `MAIL_FAILURE_RETENTION_DAYS` | 90 |
+| `MAIL_FAILURE_WINDOW_DAYS` | 7 (échecs résumés pour la console) |
 
 ### 9.3 Secrets (`.env.prod` + Bitwarden, créés avant d'être écrits)
 
@@ -561,12 +558,7 @@ Bloc ESLint d'environnement pour `src/node/**` (`packages/eslint-config/eslintCo
 
 ### 12.1 Ordre
 
-Après les mails du cahier de l'hébergement, sur une branche dédiée, en trois parties puis la release :
-
-1. **Fondations** : nettoyage, `packages/common/src/node`, tables `auth_*`, socle serveur (sessions, `protected`, purges, `auth_event`, limiteurs). Rien de visible ; les projets existants marchent comme avant.
-2. **Mise en place** : mails, parcours, 2FA, profil, chacun serveur puis front. L'authentification marche seule ; GDC et Backlog restent publics.
-3. **Correctifs** : l'existant passe aux comptes. Migration `user_id` et services filtrés dans le même commit, projet par projet ; accès des projets et `401` côté front ; données des projets dans l'export et les suppressions ; header et icônes ; restauration ; pages légales ; revue de sécurité.
-4. **Recette et release** : critères §12.2 en `prod:local`, fusion de la branche, `pnpm release`.
+Trois parties sur la branche `feat/auth`, faites : les **fondations** (nettoyage, `packages/common/src/node`, tables `auth_*`, socle serveur), la **mise en place** (mails, parcours, 2FA, profil, chacun serveur puis front) et les **correctifs** (GDC et Backlog passés aux comptes, `user_id` et services filtrés dans le même commit). Restent l'interface, la restauration et les pages légales, puis la **recette et la release** : critères §12.2 en `prod:local`, fusion de la branche, `pnpm release`.
 
 ### 12.2 Critères de fin
 
@@ -626,114 +618,13 @@ Hors de la définition de « fini » :
 
 ## 15. Roadmap
 
-Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'intégration (§12.2) ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce que les tests doivent prouver en plus. Avant la recette visuelle (étape 71), j'enchaîne sans test de ta part : les tests font foi. Trois parties (§12.1) : les **fondations**, puis la **mise en place** de l'authentification, seule, puis les **correctifs** qui font passer l'existant aux comptes ; enfin la recette et la release.
+Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'intégration (§12.2) ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce que les tests doivent prouver en plus. Avant la recette visuelle (étape 71), j'enchaîne sans test de ta part : les tests font foi. 
 
-**Modèle de Claude Code**, effort medium, une session par phase :
+**Modèle de Claude Code**, effort medium, une session par phase : **Opus 5.5** pour la phase 9 ; **Sonnet 5.5** pour la phase 10 (docs), suivie d'une revue par Opus (`/code-review` sur le diff de la phase).
 
-- **Opus 5.5** : phases 0 à 3, 5, 6, 8 et 9 (sécurité, données, parcours) ;
-- **Sonnet 5.5** : phases 4, 7 et 10 (gabarits, profil sur un socle déjà testé, docs), suivies d'une revue par Opus (`/code-review` sur le diff de la phase).
-
-### Partie A — Fondations
-
-**Phase 0 — Départ**
-
-1. [moi] Branche `feat/auth` depuis `main` à jour. Vérif : `pnpm validate-all`.
-2. [moi] Relecture du cahier contre le code du moment (écarts du §3.2, hook de `citadel restore-db`, bandeau) ; corrections du cahier si besoin, relues par toi.
-
-**Phase 1 — Nettoyage et socle transverse**
-
-3. [moi] Suppression de `POST /error-log/entries` (endpoint, specs, tests) ; `logError` et `error_log` restent.
-4. [moi] `logError` n'enregistre jamais de corps de requête (§7.5).
-5. [moi] Front : faux `Authorization: Bearer` retiré du `fetchHandler`.
-6. [moi] Serveur : erreur 401 dans `AppError` et `globalErrorHandler` (`ForbiddenError` et `TooManyRequestsError` existent déjà).
-7. [moi] Migration V013 : `mail_failure` → `mailing_failure`, `contact_message_unsent` → `mailing_contact_message_unsent`, index compris ; modèles, `countTableRows`, tests, textes de la console, `infra/citadel`, cahier de l'hébergement. Non rétrocompatible : sort avec la release, dont le retour arrière passe déjà par `citadel restore-db pre-deploy` (étape 81). Vérif : en tests, la migration garde les lignes.
-8. [moi] Réglages des mails en variables (§9.2) : nouvelles variables dans `env.ts`, toutes écrites avec leur valeur dans `.env.example` et `.env.test`.
-9. [moi] `packages/common/src/node/` et son bloc ESLint. Dans `universal/`, les fonctions pures en double (§11.2) : `fetchWithTimeout`, limiteur à fenêtre glissante, contrôle d'origine, `getParisDay`, `daysBefore`, avec la console et le serveur passés dessus. Vérif : un import de `node/` depuis le front échoue au lint ; console et formulaire de contact se comportent comme avant, en tests.
-10. [moi] `common/node` : jeton aléatoire, SHA-256, HMAC, comparaison à temps constant ; la console (`sessionStore`, `newRequestId`) passe sur le jeton commun.
-11. [moi] `common/node` : hash `argon2id` au format auto-descriptif, vérification, détection « à refaire », normalisation NFC, 2 hashs simultanés et 20 en attente au plus (file pleine : une erreur que le serveur traduit en `503` `AUTH_BUSY` à l'étape 40, `common` ne connaissant pas les codes des specs).
-12. [moi] Console sur le même `argon2id` (`pnpm admin:password`, `citadel admin-password`). Vérif : connexion à la console avec un hash `argon2id`, en tests.
-13. [moi] IP réelle, déjà lue par le serveur (formulaire de contact) : regroupement `/64` en IPv6. Vérif : deux IPv6 du même `/64` comptées ensemble, en tests.
-14. [moi] Contrôle de l'en-tête `Origin` sur les requêtes non sûres, avec la fonction commune de l'étape 9.
-15. [moi] Section `auth` de `env.ts`, `authSettings`, `.env.example`, `.env.test` (durées de la prod, hash léger, secrets de test) ; outil de test pour avancer l'horloge, qui remplace des durées raccourcies.
-16. [moi] Chiffrement AES-256-GCM avec version de clé, identifiant en donnée associée, clé précédente pour la rotation (§6.7).
-
-**Phase 2 — Base de l'authentification**
-
-17. [moi] Migration `auth_user`, collations de l'email (`utf8mb4_uca1400_as_ci`) et du pseudo (`utf8mb4_bin`). Vérif : `Alex@` et `alex@` refusés ensemble, `josé@` et `jose@` acceptés ; `Alex` et `alex` acceptés, `Alex` en double refusé.
-18. [moi] Migrations `auth_session` et `auth_flow`.
-19. [moi] Migrations `auth_factor`, `auth_recovery_code`, `auth_event`.
-20. [moi] Modèles Sequelize des tables `auth_*`.
-
-**Phase 3 — Socle serveur**
-
-21. [moi] Projet `auth` : `ApiPrefixEnum.AUTH`, registre d'endpoints, `router.ts`, `AuthErrorCodeEnum`, `authErrorReasons` côté front.
-22. [moi] Service des sessions : création, lecture avec les trois expirations, prolongation toutes les 5 minutes, suppression.
-23. [moi] Cookie de session : nom, attributs, `Max-Age` selon « se souvenir de moi ».
-24. [moi] `protected` lu par le routeur typé : session exigée, `401` ajouté aux erreurs de l'endpoint, identifiant de l'utilisateur passé au contrôleur.
-25. [moi] `GET /auth/me` et `POST /auth/logout`. Vérif : critère 7.
-26. [moi] Purges : parcours et sessions toutes les 15 minutes, `auth_event` et `error_log` à 20 jours chaque jour.
-27. [moi] Écriture des `auth_event` (§7.4), IP tronquée.
-28. [moi] Limiteurs en mémoire : 2 s par compte, couple compte + IP banni après 15 échecs, bannissement d'IP, limites d'inscriptions et de mails (20 par heure et 40 par jour par IP). Vérif : critère 3 en tests.
-
-### Partie B — Mise en place
-
-**Phase 4 — Mail**
-
-29. [moi] Gabarits de tous les mails (§8.3) sur `buildMailBodies`, avec la brique « code en gros » et un `MailKindEnum` par mail, chacun avec sa story dans le Storybook du design system (`src/mailPreview`, cahier de l'hébergement §6), durée floue de la dernière connexion.
-30. [moi] Mails des réponses neutres envoyés après la réponse, échec dans `mailing_failure` sans erreur visible ; `403` `MAIL_CLOSED` quand le quota est épuisé (§8.1).
-
-**Phase 5 — Parcours**
-
-31. [moi] Service `auth_flow` : création, cookie `__Host-citadel_flow`, un parcours par navigateur, code HMAC, lien haché, essais remis à zéro au renvoi, expiration ; `GET` et `DELETE /auth/flow`, `POST /auth/flow/resend`.
-32. [moi] `POST /auth/flow/code` et `/link`, lien lié au navigateur.
-33. [moi] Règles de format dans les specs (pseudo en `A-Z a-z 0-9 _ -`, pseudo affiché libre en NFC, email inchangé par NFKC et sans caractère invisible, mot de passe en NFC, code) ; `GET /auth/usernames/:username/availability`.
-34. [moi] Serveur, inscription : honeypot, interrupteur et quota (`REGISTRATION_CLOSED`), limites, réponse neutre, deux mails, remplacement d'un parcours en attente, pseudo pris à la confirmation, création du compte et de la session. Vérif : critère 1.
-35. [moi] Front : projet `auth` (`ProjectsEnum.Auth`, routes, thème de la homepage), `useMe`, bandeau et bouton d'inscription fermés selon `GET /mail/status`.
-36. [moi] Front, composants : champ mot de passe avec œil, barre de force et son « ? », champ code, temps restant, compte à rebours.
-37. [moi] Front : reprise des parcours (`GET /auth/flow` au chargement et au retour sur l'onglet, `sessionStorage`).
-38. [moi] Page d'inscription.
-39. [moi] Étape « code ou lien » commune et page `/auth/verify`. Vérif : critère 4.
-40. [moi] Serveur, connexion par mot de passe : hash factice, délais, rehash, méthodes fermées, `last_login_at`, passage au second facteur s'il existe.
-41. [moi] Serveur, connexion par mail : TOTP ou code de secours ensuite, jamais le code par mail.
-42. [moi] Page de connexion (mot de passe, lien par mail), déjà connecté redirigé. Vérif : critère 2 sans 2FA.
-43. [moi] Serveur, mot de passe oublié : parcours, `/flow/new-password`, même mot de passe refusé, sessions supprimées, notification.
-44. [moi] Page « mot de passe oublié ».
-
-**Phase 6 — Double authentification**
-
-45. [moi] TOTP et Base32 écrits à la main. Vérif : vecteurs officiels de la RFC 6238, dérive de ±1 pas, anti-rejeu.
-46. [moi] Facteur TOTP : `POST /auth/factors/totp` et `/confirm`, secret chiffré.
-47. [moi] Facteur mail : `POST /auth/factors/email` (parcours `email_factor`).
-48. [moi] Codes de secours : création au premier facteur, usage unique, `POST /auth/recovery-codes`.
-49. [moi] `/flow/second-factor` (TOTP, code par mail, code de secours) dans la connexion et le mot de passe oublié, échecs comptés par les limiteurs, code par mail grisé quand le quota est épuisé ; `GET` et `DELETE /auth/factors` ; notifications.
-50. [moi] Front : étape « second facteur » de la connexion et du mot de passe oublié. Vérif : critère 2 avec 2FA.
-
-**Phase 7 — Profil**
-
-51. [moi] Serveur : `PATCH /auth/me` (pseudo affiché, méthodes de connexion).
-52. [moi] Page de profil : structure, identité, méthodes de connexion.
-53. [moi] Serveur : `POST /auth/me/password`.
-54. [moi] Serveur : `POST /auth/me/email` (parcours `email_change`, notification à l'ancienne adresse, adresse déjà prise, `EMAIL_TAKEN`).
-55. [moi] Profil : mot de passe et email. Vérif : critère 9.
-56. [moi] Profil : 2FA (QR code dans le navigateur, bibliothèque choisie ici), codes de secours affichés une fois et téléchargeables. Le facteur mail s'active aussi par son lien : `/auth/verify` reçoit alors les `recoveryCodes` et doit les montrer (le parcours `email_factor` mène aujourd'hui à la connexion, `findFlowPagePath`).
-57. [moi] Étape facultative « Protège ton compte » après l'inscription.
-58. [moi] Serveur : sessions (`GET /auth/sessions`, navigateur et système déduits du user agent, suppressions, `DELETE /auth/sessions/others`).
-59. [moi] Profil : sessions actives. Vérif : critère 8.
-60. [moi] Serveur : export ZIP de CSV des tables de l'auth, sans aucun secret.
-61. [moi] Serveur : `DELETE /auth/me`, mail.
-62. [moi] Profil : mes données (export, suppression du compte).
+Étapes 1 à 69 (phases 0 à 8 : fondations, mise en place, comptes de GDC et du Backlog) : **faites**.
 
 ### Partie C — Correctifs : l'existant passe aux comptes
-
-**Phase 8 — Game Death Counter et Backlog**
-
-63. [moi] GDC, jeux, dans un seul commit : migration `user_id` de `gdc_game` (lignes existantes supprimées : rien à garder, §1.2), données de test rattachées à un utilisateur, endpoints `protected`, filtrage par `user_id`, `404` chez un autre.
-64. [moi] GDC, boss et morts : propriété par jointure jusqu'à `gdc_game`.
-65. [moi] Backlog, dans un seul commit : migration `user_id` (`backlog_user_game`, `backlog_user_version`, `backlog_series`), données de test rattachées, tous les endpoints `protected` (IGDB compris), jeux suivis et versions filtrés par `user_id`.
-66. [moi] Backlog, séries manuelles et DLC par utilisateur ; un jeu ne se range que dans une série IGDB ou une des siennes. Vérif : critère 10 sur GDC et Backlog.
-67. [moi] Serveur : suppression ordonnée du Backlog (§5.1) dans `DELETE /auth/me`, `DELETE /auth/me/projects`, export étendu aux tables des projets.
-68. [moi] Front : accès des projets avec retour à la page demandée, gestion du `401` `AUTHENTICATION_REQUIRED`.
-69. [moi] Profil : suppression des données d'un projet. Vérif : critère 11.
 
 **Phase 9 — Interface, restauration et RGPD**
 
