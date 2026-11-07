@@ -1242,7 +1242,7 @@ GO
 -- AS
 -- BEGIN
 --     SET NOCOUNT ON;
---     INSERT INTO [' + @deleted_database_name + '].dbo.' + t.name + ' 
+--     INSERT INTO [' + @deleted_database_name + '].dbo.' + t.name + '
 --     SELECT *, SYSDATETIMEOFFSET()
 --     FROM DELETED;
 --     -- Suppression effectuée automatiquement

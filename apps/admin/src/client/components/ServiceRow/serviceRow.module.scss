@@ -114,6 +114,12 @@
 
     svg {
       animation: spin 0.9s linear infinite;
+
+      // Le spinner garde sa rotation (plus lente) : sans elle, rien ne dit que ça charge
+      @media (prefers-reduced-motion: reduce) {
+        animation-duration: 1.6s !important;
+        animation-iteration-count: infinite !important;
+      }
     }
   }
 

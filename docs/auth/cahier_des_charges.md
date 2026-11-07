@@ -618,7 +618,7 @@ Hors de la définition de « fini » :
 
 ## 15. Roadmap
 
-Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'intégration (§12.2) ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce que les tests doivent prouver en plus. Avant la recette visuelle (étape 71), j'enchaîne sans test de ta part : les tests font foi. 
+Chaque étape [moi] est un commit relisible, avec ses tests unitaires et d'intégration (§12.2) ; `pnpm validate-all` passe à chaque commit. « Vérif » dit ce que les tests doivent prouver en plus. Avant la recette visuelle (étape 71), j'enchaîne sans test de ta part : les tests font foi.
 
 **Modèle de Claude Code**, effort medium, une session par phase : **Opus 5.5** pour la phase 9 ; **Sonnet 5.5** pour la phase 10 (docs), suivie d'une revue par Opus (`/code-review` sur le diff de la phase).
 
@@ -651,7 +651,7 @@ Décidé : le bandeau de restauration vouvoie, comme l'application ; seuls les m
 **Phase 10 — Recette et release**
 
 78. [moi] (faite) Variables et secrets dans `.env.example` et `infra/compose.yml` ; `docs/architecture.md` et README à jour.
-79. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH` (fait en local par `pnpm admin:password` : l'image de la nouvelle version n'existe pas encore).
+79. [toi] Secrets créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, nouveau `ADMIN_PASSWORD_HASH` (fait en local par `pnpm tools hashAdminPassword` : l'image de la nouvelle version n'existe pas encore).
 80. [nous] Recette en `pnpm prod:local` : les 16 critères du §12.2, un par un.
 81. [nous] Fusion (`git merge --no-ff`), puis `pnpm release`. Les migrations suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
 82. [toi] En prod : inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
@@ -679,7 +679,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] `MAIL_REGISTRATION_STOP` abaissé en dev : inscriptions fermées au bon seuil ; valeurs remises après.
 - [ ] Le serveur refuse de démarrer sans `AUTH_CODE_HMAC_KEY`, avec une clé qui n'a pas 64 caractères hexadécimaux, ou avec une clé précédente et une version 1, en nommant la variable fautive.
 - [ ] `pnpm prod:local` démarre ; la pré-prod démarre avec les clés de `.env.prod`.
-- [ ] Console : `citadel admin-password` (dans l'image) et `pnpm admin:password` donnent une ligne `argon2id:` ; connexion avec ; un ancien hash `scrypt` empêche la console de démarrer, avec le message qui dit quoi faire.
+- [ ] Console : `citadel admin-password` (dans l'image) et `pnpm tools hashAdminPassword` donnent une ligne `argon2id:` ; connexion avec ; un ancien hash `scrypt` empêche la console de démarrer, avec le message qui dit quoi faire.
 - [ ] Console : 6 mauvais mots de passe d'affilée → `429` avec les minutes restantes ; un bon mot de passe après l'attente remet le compteur à zéro.
 - [ ] Console : boutons d'action (démarrer, arrêter, bandeau) toujours acceptés depuis la console, refusés (`403`) par un `curl` sans `Origin`.
 - [ ] Site : un formulaire posté depuis une page d'un autre domaine → `403` `FOREIGN_ORIGIN`, message traduit ; les `GET` d'un autre site passent.

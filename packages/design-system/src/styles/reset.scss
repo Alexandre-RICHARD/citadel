@@ -42,11 +42,18 @@ ol {
 
 // Accessibilité motion-reduce
 @media (prefers-reduced-motion: reduce) {
+  // Une seule itération : les animations infinies (pulsations, dérives) s'arrêtent sur leur image finale
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+
+  // Le défilement n'est plus animé, même avec scroll-behavior: smooth ci-dessus
+  html {
+    scroll-behavior: auto !important;
   }
 }
 

@@ -19,12 +19,15 @@ export function switchView({
 	onSwap,
 }: Options): gsap.core.Timeline {
 	const duration = reducedMotion ? 0.15 : 0.3;
+	// Sans mouvement : fondu seul, pas de glissement vertical
+	const fromY = reducedMotion ? 0 : isTowardPage ? -10 : 10;
+	const toY = reducedMotion ? 0 : isTowardPage ? 16 : -16;
 	gsap.killTweensOf([from, to]);
 	return gsap
 		.timeline()
 		.to(from, {
 			opacity: 0,
-			y: isTowardPage ? -10 : 10,
+			y: fromY,
 			duration,
 			ease: "power1.in",
 		})
@@ -35,7 +38,7 @@ export function switchView({
 		})
 		.fromTo(
 			to,
-			{ opacity: 0, y: isTowardPage ? 16 : -16 },
+			{ opacity: 0, y: toY },
 			{ opacity: 1, y: 0, duration: duration * 1.7, ease: "power3.out" },
 		);
 }

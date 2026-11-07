@@ -13,7 +13,7 @@
 #   pnpm db:migrate  applique les nouvelles migrations à la base de dev
 #   pnpm db:down     arrête les deux bases (les données de dev restent)
 #   pnpm db:reset    efface la base de dev et la recrée, migrations comprises
-#   pnpm test:integration
+#   pnpm -r test-integration
 #                    recrée la base de test, la migre, puis lance les tests
 #                    (fait par apps/server/vitestIntegrationGlobalSetup.ts)
 #

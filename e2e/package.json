@@ -1,0 +1,33 @@
+{
+  "name": "@citadel/e2e",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "=== Installation ===": "",
+    "install-browser": "playwright install chromium",
+    "=== Environnement de test (stack complète sur ton PC) ===": "",
+    "stack-up": "bash ../scripts/docker/localStack.sh e2e up",
+    "stack-down": "bash ../scripts/docker/localStack.sh e2e down",
+    "=== Lancer les tests (la stack doit tourner : pnpm stack-up) ===": "",
+    "test-e2e": "playwright test --project=chromium --shuffle",
+    "test-e2e-ui": "playwright test --ui --project=chromium",
+    "test-e2e-headed": "playwright test --headed --project=chromium --shuffle",
+    "test-e2e-slow": "playwright test --project=slow --workers=1",
+    "test-e2e-report": "playwright show-report report-e2e/html",
+    "=== Écrire un test ===": "",
+    "test-e2e-record": "playwright codegen --ignore-https-errors https://citadel.localhost:8443",
+    "=== Validation ===": "",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@citadel/eslint-config": "workspace:*",
+    "@citadel/typescript-config": "workspace:*",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "typescript": "catalog:"
+  }
+}
