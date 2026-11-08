@@ -9,9 +9,7 @@
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
-    "unit-test-once": "vitest run",
-    "unit-test-watch": "vitest watch",
-    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm unit-test-once && pnpm build",
+    "test-unit": "vitest run",
     "=== Build & Production ===": "",
     "build": "vite build && node esbuildConfig.mjs"
   },
