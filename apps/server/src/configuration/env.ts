@@ -43,6 +43,8 @@ const envSchema = z.object({
 	// Qui envoie : brevo (la prod) ; journal (une ligne dans le log, sans contenu : dev, pré-prod) ; memory (tests)
 	MAIL_SENDER: z.enum(MailSenderKindEnum).default(MailSenderKindEnum.JOURNAL),
 	BREVO_API_KEY: z.string().default(""),
+	// Adresse de l'API de Brevo, sans « / » final : changée seulement pour les tests end-to-end (faux Brevo)
+	BREVO_API_URL: z.url().default("https://api.brevo.com/v3"),
 	// Seuils du quota quotidien de Brevo, en mails envoyés dans la journée : les inscriptions, puis le formulaire
 	// de contact, puis tout le reste s'arrêtent
 	MAIL_REGISTRATION_STOP: z.coerce.number().int().positive().default(250),

@@ -5,5 +5,9 @@ import { BrevoClient } from "./brevoClient.ts";
 // Brevo seulement quand MAIL_SENDER le dit : la pré-prod, qui tourne sur .env.prod (et sa clé), n'envoie jamais rien
 export const activeBrevoClient =
 	env.MAIL_SENDER === MailSenderKindEnum.BREVO
-		? new BrevoClient(env.BREVO_API_KEY, env.BREVO_DAILY_CREDITS)
+		? new BrevoClient(
+				env.BREVO_API_KEY,
+				env.BREVO_DAILY_CREDITS,
+				env.BREVO_API_URL,
+			)
 		: null;

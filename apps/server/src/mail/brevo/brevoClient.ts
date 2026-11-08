@@ -7,7 +7,6 @@ import type { Mail } from "../mail.type.ts";
 import type { MailAddress } from "../mailAddress.type.ts";
 import type { BrevoAccount } from "./brevoAccount.type.ts";
 
-const BREVO_API_URL = "https://api.brevo.com/v3";
 const REQUEST_TIMEOUT_MS = 10_000;
 const DAILY_SEND_LIMIT_CREDITS = "sendLimit";
 
@@ -43,9 +42,13 @@ export class BrevoClient {
 	// Crédits de l'offre par jour, remis à zéro chaque jour. Indépendants de MAIL_DAILY_LIMIT, qu'on abaisse en dev
 	readonly #dailyCredits: number;
 
-	constructor(apiKey: string, dailyCredits: number) {
+	// Adresse de l'API (sans « / » final) : celle de Brevo, ou le faux Brevo des tests end-to-end
+	readonly #apiUrl: string;
+
+	constructor(apiKey: string, dailyCredits: number, apiUrl: string) {
 		this.#apiKey = apiKey;
 		this.#dailyCredits = dailyCredits;
+		this.#apiUrl = apiUrl;
 	}
 
 	async sendEmail(mail: Mail): Promise<void> {
@@ -92,7 +95,7 @@ export class BrevoClient {
 	async #request(path: string, init: RequestInit): Promise<Response> {
 		try {
 			return await fetchWithTimeout(
-				`${BREVO_API_URL}${path}`,
+				`${this.#apiUrl}${path}`,
 				REQUEST_TIMEOUT_MS,
 				{
 					...init,
