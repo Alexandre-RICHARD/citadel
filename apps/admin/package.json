@@ -4,7 +4,6 @@
   "scripts": {
     "=== Dev ===": "",
     "dev:local": "vite --open",
-    "hash-password": "tsx src/server/auth/hashPasswordCli.ts",
     "=== Validation ===": "",
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",

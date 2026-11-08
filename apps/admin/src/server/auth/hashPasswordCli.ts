@@ -3,7 +3,7 @@ import { OWASP_ARGON2_PARAMETERS } from "@citadel/common/src/node/password/owasp
 
 // Fabrique ADMIN_PASSWORD_HASH, à coller dans .env.prod :
 //   sur le NAS : citadel admin-password
-//   sur ton PC : pnpm admin:password
+//   sur ton PC : pnpm tools hashAdminPassword
 // Le mot de passe est tapé deux fois, sans s'afficher, et n'est écrit nulle part.
 
 const MIN_LENGTH = 12;

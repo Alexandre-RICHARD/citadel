@@ -5,6 +5,7 @@
 #
 #   pnpm release             valide, tague, pousse, attend les images, déploie
 #   pnpm release --dry-run   s'arrête juste avant de créer le tag : rien ne part
+#   Sans argument, depuis un terminal (aussi via `pnpm tools release`), il demande lequel des deux.
 #
 # Les étapes :
 #   1. Vérifications : branche main, rien de non commité, pas de retard sur GitHub.
@@ -51,6 +52,11 @@ confirm() {
 }
 
 dry_run=""
+source "$(dirname "$0")/lib/prompt.sh"
+if [ $# -eq 0 ] && isInteractive; then
+	askChoice "Quelle release ?" "Réelle : valide, tague, pousse, déploie" "Simulation (--dry-run) : s'arrête avant de créer le tag, rien ne part"
+	[ "$CHOICE" = "2" ] && set -- --dry-run
+fi
 case ${1:-} in
 	--dry-run) dry_run=1 ;;
 	"") ;;

@@ -28,7 +28,7 @@ Sur ton PC :
 | `pnpm prod:local:down` | arrête tout et efface les volumes jetables |
 | `pnpm release` | valide, tague, pousse, attend les images, puis lance le déploiement sur le NAS, qui montre son plan et attend ton « o » |
 | `pnpm release --dry-run` | s'arrête juste avant le tag : rien ne part |
-| `pnpm admin:password` | hachage du mot de passe de la console, pour `ADMIN_PASSWORD_HASH` |
+| `pnpm tools hashAdminPassword` | hachage du mot de passe de la console, pour `ADMIN_PASSWORD_HASH` |
 
 Sur le NAS (`ssh nas`), en secours de la console :
 

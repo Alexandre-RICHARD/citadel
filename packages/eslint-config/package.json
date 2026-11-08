@@ -11,8 +11,7 @@
   "scripts": {
     "=== Validation ===": "",
     "lint": "eslint .",
-    "lint-fix": "eslint . --fix",
-    "validate-all": "pnpm lint-fix"
+    "lint-fix": "eslint . --fix"
   },
   "devDependencies": {
     "@citadel/typescript-config": "workspace:*",

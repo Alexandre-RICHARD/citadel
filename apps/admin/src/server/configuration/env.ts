@@ -6,7 +6,7 @@ const envSchema = z.object({
 	ADMIN_PORT: z.coerce.number().int().positive(),
 	// Gravée dans l'image à sa construction (tag git) ; « dev » hors de Docker
 	APP_VERSION: z.string().min(1).default("dev"),
-	// Fabriqué par `citadel admin-password` (ou `pnpm admin:password` sur ton PC). Un ancien hash scrypt est refusé
+	// Fabriqué par `citadel admin-password` (ou `pnpm tools hashAdminPassword` sur ton PC). Un ancien hash scrypt est refusé
 	ADMIN_PASSWORD_HASH: z
 		.string()
 		.refine(
