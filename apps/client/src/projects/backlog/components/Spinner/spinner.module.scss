@@ -6,10 +6,12 @@
   animation: spin 0.8s linear infinite;
 }
 
-// La roue tourne même si l'OS réduit les animations : sans elle, rien ne dit que ça charge
+// La roue tourne même si l'OS réduit les animations : sans elle, rien ne dit que ça charge.
+// Plus lente, et en boucle (le reset global ne laisse qu'une itération)
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 
