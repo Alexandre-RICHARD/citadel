@@ -1,0 +1,12 @@
+{
+  "extends": "@citadel/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "target": "esnext",
+    "lib": ["ESNext", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["**/*.ts", "eslint.config.js"],
+  "exclude": ["node_modules", "test-results", "playwright-report"]
+}
