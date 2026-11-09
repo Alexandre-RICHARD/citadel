@@ -90,20 +90,22 @@ test.describe("Inscription", () => {
 			).toBeVisible();
 		});
 
-		await test.step("« Continuer » transforme « Annuler » en « Plus tard »", async () => {
+		await test.step("« Continuer » garde le bouton « Passer cette étape »", async () => {
 			await expect(
-				verifyPage.getByRole("button", { name: "Annuler" }),
+				verifyPage.getByRole("button", { name: "Passer cette étape" }),
 			).toBeVisible();
 			await verifyPage.getByRole("button", { name: "Continuer" }).click();
 			await expect(
-				verifyPage.getByRole("button", { name: "Plus tard" }),
+				verifyPage.getByRole("button", { name: "Passer cette étape" }),
 			).toBeVisible();
 		});
 
 		// PROBLÈME (voir e2e/problemes.md, P1) : scenarios.md attend /backlog, mais l'onglet du lien n'a pas la page
 		// demandée au départ (gardée dans le sessionStorage de l'onglet d'origine) : il atterrit sur le profil
-		await test.step("« Plus tard » mène hors de l'étape, connecté (profil : l'onglet du lien ignore la page demandée)", async () => {
-			await verifyPage.getByRole("button", { name: "Plus tard" }).click();
+		await test.step("« Passer cette étape » mène hors de l'étape, connecté (profil : l'onglet du lien ignore la page demandée)", async () => {
+			await verifyPage
+				.getByRole("button", { name: "Passer cette étape" })
+				.click();
 			await expect(verifyPage).toHaveURL(
 				new RegExp(`${E2EUrlEnum.AUTH_PROFILE}$`),
 			);

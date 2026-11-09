@@ -791,7 +791,7 @@ Petites choses à tester à la main pendant la recette (étapes 80 et 82), en pl
 - [ ] Changement de mot de passe : l'ancien redemandé, le même refusé, les autres sessions fermées, celle-ci gardée.
 - [ ] Ajout d'une application : le QR code se scanne (Google Authenticator, Aegis, Bitwarden), la clé saisie à la main marche aussi, le premier code active ; les codes de secours s'affichent une seule fois, se téléchargent, et ne reviennent pas au rechargement.
 - [ ] Facteur mail activé par son lien (`/auth/verify`) plutôt que par son code : les codes de secours s'affichent sur le profil.
-- [ ] Étape « Protège ton compte » après l'inscription : « Plus tard » mène à la page demandée ; la fin de l'activation montre les codes de secours avant d'y mener.
+- [ ] Étape « Protège ton compte » après l'inscription : « Passer cette étape » mène à la page demandée ; la fin de l'activation montre les codes de secours avant d'y mener.
 - [ ] Suppression du compte avec une application d'authentification : le code (ou un code de secours) est demandé en plus du mot de passe.
 - [ ] Export : le ZIP s'ouvre avec l'explorateur Windows et 7-Zip ; les CSV gardent accents et émojis dans Excel ; aucun hash, empreinte ni secret.
 - [ ] Suppression des données du Backlog seul : GDC intact ; suppression du compte : plus aucune ligne, mail de confirmation, reconnexion impossible.

@@ -10,7 +10,7 @@ import { TotpSetupForm } from "../../components/TotpSetupForm";
 import { useAuthRedirect } from "../../hooks/useAuthRedirect";
 import { AuthPathEnum } from "../../routing/authPath.enum";
 
-// L'étape facultative qui suit l'inscription : protéger le compte avec une application d'authentification. « Plus tard »
+// L'étape facultative qui suit l'inscription : protéger le compte avec une application d'authentification. « Passer cette étape »
 // et la fin des codes de secours mènent à la page demandée au départ ; le profil propose la même chose à tout moment
 export function SecureAccountPage() {
 	const me = useMe();
@@ -53,6 +53,7 @@ export function SecureAccountPage() {
 				defaultName="Mon application"
 				onDone={() => undefined}
 				onCancel={leave}
+				exitLabel="Passer cette étape"
 			/>
 		</AuthCard>
 	);

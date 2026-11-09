@@ -24,13 +24,20 @@ type Props = {
 	// Le TOTP est actif
 	onDone: () => void;
 	onCancel: () => void;
+	// Le bouton de sortie, avant comme après le QR code ; sans lui, « Annuler » puis « Plus tard »
+	exitLabel?: string;
 };
 
 /**
  * L'ajout d'une application d'authentification : son nom, puis le QR code (dessiné dans ce navigateur) ou la clé à saisir
  * à la main, puis le premier code qu'elle affiche. Rien ne protège le compte tant que ce code n'est pas validé
  */
-export function TotpSetupForm({ defaultName, onDone, onCancel }: Props) {
+export function TotpSetupForm({
+	defaultName,
+	onDone,
+	onCancel,
+	exitLabel,
+}: Props) {
 	const fieldId = useId();
 	const [name, setName] = useState(defaultName);
 	const [code, setCode] = useState("");
@@ -178,7 +185,7 @@ export function TotpSetupForm({ defaultName, onDone, onCancel }: Props) {
 				className={styles.cancel}
 				onClick={onCancel}
 			>
-				{setup === null ? "Annuler" : "Plus tard"}
+				{exitLabel ?? (setup === null ? "Annuler" : "Plus tard")}
 				<ArrowRight aria-hidden />
 			</button>
 		</form>
