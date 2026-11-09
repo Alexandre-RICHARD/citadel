@@ -19,6 +19,7 @@ import type { TableSettings } from "../../tableSettings.type";
 import { ColumnFilterCell } from "../ColumnFilterCell";
 import { ColumnHeader } from "../ColumnHeader";
 import { GameRowGroup } from "../GameRowGroup";
+import { PlayTimeRecap } from "../PlayTimeRecap";
 
 type Props = {
 	rows: BacklogRowFm[];
@@ -103,6 +104,18 @@ export function BacklogTable({
 							<span className={styles.captionSeparator}>·</span>
 							<strong>{userVersionCount}</strong>{" "}
 							{userVersionCount > 1 ? "versions jouées" : "version jouée"}
+							{overview !== null && (
+								<>
+									<span className={styles.captionSeparator}>·</span>
+									<strong>{overview.finishedGameCount}</strong>{" "}
+									{overview.finishedGameCount > 1 ? "jeux finis" : "jeu fini"}
+									<span className={styles.captionSeparator}>·</span>
+									<PlayTimeRecap
+										trackedPlayTimeMinutes={overview.trackedPlayTimeMinutes}
+										estimatedPlayTimeMinutes={overview.estimatedPlayTimeMinutes}
+									/>
+								</>
+							)}
 						</>
 					)}
 				</span>

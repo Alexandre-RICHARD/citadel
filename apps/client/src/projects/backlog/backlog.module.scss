@@ -2248,3 +2248,28 @@
   gap: 1.6rem;
   align-items: center;
 }
+
+// Un chiffre du récap qui change au clic (le temps de jeu)
+.captionToggle {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  border-radius: vars.$radius-xs;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: vars.$text-subtle;
+  }
+
+  &:hover .captionToggleLabel {
+    color: vars.$accent-text;
+  }
+}
+
+.captionToggleLabel {
+  color: vars.$text-subtle;
+}

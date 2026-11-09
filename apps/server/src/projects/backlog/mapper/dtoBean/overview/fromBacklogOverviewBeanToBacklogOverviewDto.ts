@@ -8,6 +8,9 @@ export function fromBacklogOverviewBeanToBacklogOverviewDto(
 	return {
 		gameCount: overview.gameCount,
 		userVersionCount: overview.userVersionCount,
+		finishedGameCount: overview.finishedGameCount,
+		trackedPlayTimeMinutes: overview.playTimes.trackedMinutes,
+		estimatedPlayTimeMinutes: overview.playTimes.estimatedMinutes,
 		outsideBacklogGameCount: overview.outsideBacklogGameCount,
 		playedPlatforms: overview.playedPlatforms,
 	};

@@ -56,7 +56,11 @@ export function useUpdateUserVersion(
 			pathParams: { id: userVersionId },
 			body,
 		}),
-		getAffectedQueryKeys: () => [backlogQueryKeys.userGames()],
+		// Le récap (jeux finis, temps de jeu) suit le statut et les temps
+		getAffectedQueryKeys: () => [
+			backlogQueryKeys.userGames(),
+			backlogQueryKeys.overview(),
+		],
 		applyOptimistic: (queryClient, body) => {
 			const current = findCachedUserGame(
 				queryClient,
