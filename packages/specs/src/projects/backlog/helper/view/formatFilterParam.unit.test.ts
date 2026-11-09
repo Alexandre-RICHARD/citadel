@@ -33,9 +33,18 @@ describe("formatFilterParam.ts", () => {
 				filter: {
 					column: BacklogColumnEnum.PLATFORM,
 					kind: ColumnFilterKindEnum.VALUE,
-					value: "PS2",
+					values: ["PS2"],
 				},
 				expected: "PS2",
+			},
+			{
+				reason: "several values",
+				filter: {
+					column: BacklogColumnEnum.STATUS,
+					kind: ColumnFilterKindEnum.VALUE,
+					values: ["finished", "platinum"],
+				},
+				expected: "finished|platinum",
 			},
 			{
 				reason: "a checked box",

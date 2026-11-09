@@ -1,3 +1,5 @@
+import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
+
 import { isoDateSchema } from "../../../../specUtils/schemaValidator/date/isoDateSchema.ts";
 import type { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
@@ -54,10 +56,16 @@ export function parseFilterParam(
 				? null
 				: { column, kind: ColumnFilterKindEnum.TEXT, text: searched, isExact };
 		}
-		case ColumnFilterKindEnum.VALUE:
-			return text === ""
+		case ColumnFilterKindEnum.VALUE: {
+			const values = getUniqueValues(
+				text
+					.split(ViewParamSyntaxEnum.VALUE_SEPARATOR)
+					.filter((value) => value !== ""),
+			);
+			return values.length === 0
 				? null
-				: { column, kind: ColumnFilterKindEnum.VALUE, value: text };
+				: { column, kind: ColumnFilterKindEnum.VALUE, values };
+		}
 		case ColumnFilterKindEnum.BOOLEAN:
 			return text === String(ViewParamSyntaxEnum.YES) ||
 				text === String(ViewParamSyntaxEnum.NO)

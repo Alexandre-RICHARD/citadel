@@ -115,10 +115,31 @@ describe("filterUserGameViews.ts", () => {
 					{
 						column: BacklogColumnEnum.PLATFORM,
 						kind: ColumnFilterKindEnum.VALUE,
-						value: "PS4",
+						values: ["PS4"],
 					},
 				]),
 			).toStrictEqual(["multi"]);
+		});
+
+		it("SHOULD keep a game WHEN one of its played versions has any of the checked values", () => {
+			const views = [
+				buildView({ name: "multi", platformName: null }, [
+					{ platformName: "PS2" },
+					{ platformName: "PS4" },
+				]),
+				buildView({ name: "pc only", platformName: "PC" }),
+				buildView({ name: "switch only", platformName: "Switch" }),
+			];
+
+			expect(
+				filterNames(views, [
+					{
+						column: BacklogColumnEnum.PLATFORM,
+						kind: ColumnFilterKindEnum.VALUE,
+						values: ["PS4", "PC"],
+					},
+				]),
+			).toStrictEqual(["multi", "pc only"]);
 		});
 	});
 

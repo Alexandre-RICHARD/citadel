@@ -37,7 +37,17 @@ describe("parseFilterParam.ts", () => {
 				expected: {
 					column: BacklogColumnEnum.STATUS,
 					kind: ColumnFilterKindEnum.VALUE,
-					value: "finished",
+					values: ["finished"],
+				},
+			},
+			{
+				reason: "several list values",
+				column: BacklogColumnEnum.PLATFORM,
+				text: "PS4|PC",
+				expected: {
+					column: BacklogColumnEnum.PLATFORM,
+					kind: ColumnFilterKindEnum.VALUE,
+					values: ["PS4", "PC"],
 				},
 			},
 			{
@@ -78,6 +88,23 @@ describe("parseFilterParam.ts", () => {
 				const filter = parseFilterParam(column, text);
 				expect(filter).toStrictEqual(expected);
 				expect(filter === null ? null : formatFilterParam(filter)).toBe(text);
+			},
+		);
+
+		it("SHOULD drop the empty and repeated values of a list", () => {
+			expect(
+				parseFilterParam(BacklogColumnEnum.PLATFORM, "PS4||PC|PS4"),
+			).toStrictEqual({
+				column: BacklogColumnEnum.PLATFORM,
+				kind: ColumnFilterKindEnum.VALUE,
+				values: ["PS4", "PC"],
+			});
+		});
+
+		it.each(["", "|", "||"])(
+			"SHOULD read nothing WHEN the list is %j",
+			(text) => {
+				expect(parseFilterParam(BacklogColumnEnum.STATUS, text)).toBeNull();
 			},
 		);
 	});

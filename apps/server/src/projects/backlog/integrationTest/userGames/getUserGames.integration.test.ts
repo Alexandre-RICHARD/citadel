@@ -137,6 +137,39 @@ describe("getUserGames", () => {
 			).toHaveLength(kept.userVersionIds.length);
 		});
 
+		it("SHOULD keep a game WHEN it has any of several checked statuses", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} platinum`,
+				userVersionStatuses: [StatusEnum.PLATINUM],
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} finished`,
+				userVersionStatuses: [StatusEnum.FINISHED],
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} started`,
+				userVersionStatuses: [StatusEnum.STARTED],
+			});
+
+			// Act
+			const response = await player.agent.get(USER_GAMES_URL).query({
+				name: word,
+				status: `${StatusEnum.FINISHED}|${StatusEnum.PLATINUM}`,
+				sort: "name:asc",
+			});
+
+			// Assert
+			expect(gameNames(response.body)).toStrictEqual([
+				`${word} finished`,
+				`${word} platinum`,
+			]);
+		});
+
 		it("SHOULD filter on an exact series name and a number range", async () => {
 			// Arrange
 			const word = buildUniqueWord();

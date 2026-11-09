@@ -18,6 +18,7 @@ import { EndingTypeLabel } from "../EndingTypeLabel";
 import { NumberRangeFilter } from "../NumberRangeFilter";
 import { StatusBadge } from "../StatusBadge";
 import { TextFilter } from "../TextFilter";
+import { ValueFilter } from "../ValueFilter";
 
 const ALL_VALUES = "";
 const YES = String(ViewParamSyntaxEnum.YES);
@@ -72,27 +73,12 @@ export function ColumnFilterCell({
 			);
 		case ColumnFilterKindEnum.VALUE:
 			return (
-				<Select
-					value={
-						filter?.kind === ColumnFilterKindEnum.VALUE
-							? filter.value
-							: ALL_VALUES
-					}
-					options={[
-						{ value: ALL_VALUES, label: "Tous" },
-						...getValueOptions(column, platformNames),
-					]}
-					ariaLabel={label}
-					size="sm"
-					isHighlighted={filter?.kind === ColumnFilterKindEnum.VALUE}
-					className={styles.filterSelect}
-					onChange={(value) =>
-						onChange(
-							value === ALL_VALUES
-								? null
-								: { column, kind: ColumnFilterKindEnum.VALUE, value },
-						)
-					}
+				<ValueFilter
+					column={column}
+					filter={filter?.kind === ColumnFilterKindEnum.VALUE ? filter : null}
+					label={label}
+					options={getValueOptions(column, platformNames)}
+					onChange={onChange}
 				/>
 			);
 		case ColumnFilterKindEnum.BOOLEAN: {

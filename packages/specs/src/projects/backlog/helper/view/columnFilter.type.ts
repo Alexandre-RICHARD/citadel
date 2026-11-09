@@ -10,11 +10,11 @@ export type ColumnFilter =
 			text: string;
 			isExact: boolean;
 	  }
-	// Une valeur de liste : clé du type de fin ou du statut, nom de la plateforme
+	// Des valeurs de liste, cumulables : une ligne passe si elle a l'une d'elles. Clé du type de fin ou du statut, nom de la plateforme
 	| {
 			column: BacklogColumnEnum;
 			kind: ColumnFilterKindEnum.VALUE;
-			value: string;
+			values: string[];
 	  }
 	| {
 			column: BacklogColumnEnum;

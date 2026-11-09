@@ -2343,3 +2343,14 @@
 .captionToggleLabel {
   color: vars.$text-subtle;
 }
+
+// Les cases d'un filtre à liste, l'une sous l'autre dans son panneau
+.valueFilterList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 16rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

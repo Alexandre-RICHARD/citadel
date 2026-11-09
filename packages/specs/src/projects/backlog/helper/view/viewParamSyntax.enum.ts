@@ -8,6 +8,8 @@ export enum ViewParamSyntaxEnum {
 	EXACT_PREFIX = "=",
 	// Bornes d'un intervalle, chacune facultative : `10..`, `..18`
 	RANGE_SEPARATOR = "..",
+	// Valeurs cumulables d'un filtre à liste : `status=finished|platinum`
+	VALUE_SEPARATOR = "|",
 	YES = "oui",
 	NO = "non",
 }

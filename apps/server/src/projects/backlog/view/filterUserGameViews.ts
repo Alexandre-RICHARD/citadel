@@ -40,6 +40,7 @@ function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
 				: texts.some((text) => text.includes(searched));
 		}
 		case ColumnFilterKindEnum.VALUE:
+			return filter.values.includes(String(getColumnValue(filter.column, row)));
 		case ColumnFilterKindEnum.BOOLEAN:
 			return getColumnValue(filter.column, row) === filter.value;
 		case ColumnFilterKindEnum.NUMBER_RANGE:

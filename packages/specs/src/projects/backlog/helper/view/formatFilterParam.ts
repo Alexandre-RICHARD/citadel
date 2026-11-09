@@ -10,7 +10,7 @@ export function formatFilterParam(filter: ColumnFilter): string {
 				? `${ViewParamSyntaxEnum.EXACT_PREFIX}${filter.text}`
 				: filter.text;
 		case ColumnFilterKindEnum.VALUE:
-			return filter.value;
+			return filter.values.join(ViewParamSyntaxEnum.VALUE_SEPARATOR);
 		case ColumnFilterKindEnum.BOOLEAN:
 			return filter.value ? ViewParamSyntaxEnum.YES : ViewParamSyntaxEnum.NO;
 		case ColumnFilterKindEnum.NUMBER_RANGE:
