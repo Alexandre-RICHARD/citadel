@@ -27,7 +27,7 @@ import { SearchBar } from "../SearchBar";
 
 type Props = {
 	searchInputRef: RefObject<HTMLInputElement | null>;
-	// Jeux en base hors backlog, comptés sur « Ma base » ; null tant que la vue d'ensemble n'est pas chargée
+	// Jeux en base hors backlog, comptés sur le bouton ; null tant que la vue d'ensemble n'est pas chargée
 	outsideBacklogGameCount: number | null;
 	isEditMode: boolean;
 	onEditModeChange: (isEditMode: boolean) => void;
@@ -35,7 +35,7 @@ type Props = {
 	onOpenModal: (modal: BacklogModal) => void;
 };
 
-// Barre du haut : la recherche IGDB, « Ma base », les colonnes, le mode édition, le thème, le profil et le retour à la
+// Barre du haut : la recherche IGDB, l'ajout depuis la base, les colonnes, le mode édition, le thème, le profil et le retour à la
 // Citadel
 export function Toolbar({
 	searchInputRef,
@@ -73,7 +73,7 @@ export function Toolbar({
 				disabled={outsideBacklogGameCount === 0}
 				onClick={() => onOpenModal({ kind: "addFromDatabase" })}
 			>
-				Ma base
+				Ajouter un jeu depuis la Citadel
 				{outsideBacklogGameCount !== null && (
 					<span className={styles.countBadge}>{outsideBacklogGameCount}</span>
 				)}
