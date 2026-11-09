@@ -1,4 +1,5 @@
 import type { BacklogEndpointRegistry } from "@citadel/specs/src/projects/backlog/backlogEndpointRegistry.type.ts";
+import { deleteStoredGamePathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/games/deleteStoredGame/deleteStoredGamePathParamSchema.ts";
 import { getStoredGamePathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/games/getStoredGame/getStoredGamePathParamSchema.ts";
 import { getStoredGamesQueryParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/games/getStoredGames/getStoredGamesQueryParamSchema.ts";
 import { importGameContentBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/games/importGameContent/importGameContentBodySchema.ts";
@@ -84,6 +85,12 @@ typedRouter.POST(
 		params: importGameContentPathParamSchema,
 		body: importGameContentBodySchema,
 	}),
+);
+
+typedRouter.DELETE(
+	`${ApiPrefixEnum.BACKLOG}/games/:gameId`,
+	gameController.deleteOne,
+	requestValidator({ params: deleteStoredGamePathParamSchema }),
 );
 
 // ==== OVERVIEW ====

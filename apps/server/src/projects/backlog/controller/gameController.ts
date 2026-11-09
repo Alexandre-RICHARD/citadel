@@ -1,3 +1,4 @@
+import type { DeleteStoredGame } from "@citadel/specs/src/projects/backlog/endpoint/games/deleteStoredGame/deleteStoredGameEndpoint.interface.ts";
 import type { GetStoredGame } from "@citadel/specs/src/projects/backlog/endpoint/games/getStoredGame/getStoredGameEndpoint.interface.ts";
 import type { GetStoredGames } from "@citadel/specs/src/projects/backlog/endpoint/games/getStoredGames/getStoredGamesEndpoint.interface.ts";
 import type { ImportGameContent } from "@citadel/specs/src/projects/backlog/endpoint/games/importGameContent/importGameContentEndpoint.interface.ts";
@@ -5,6 +6,7 @@ import type { StoreGame } from "@citadel/specs/src/projects/backlog/endpoint/gam
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 
 import { protectedRequestHandler } from "../../../common/routing/protectedRequestHandler.ts";
+import { fromDeleteStoredGameDtoToDeleteStoredGameBean } from "../mapper/dtoBean/game/fromDeleteStoredGameDtoToDeleteStoredGameBean.ts";
 import { fromGetStoredGameDtoToGetStoredGameBean } from "../mapper/dtoBean/game/fromGetStoredGameDtoToGetStoredGameBean.ts";
 import { fromGetStoredGamesDtoToGetStoredGamesBean } from "../mapper/dtoBean/game/fromGetStoredGamesDtoToGetStoredGamesBean.ts";
 import { fromImportGameContentDtoToImportGameContentBean } from "../mapper/dtoBean/game/fromImportGameContentDtoToImportGameContentBean.ts";
@@ -69,6 +71,16 @@ export const gameController = {
 			return response
 				.status(HttpStatutCodeSuccessEnum.SUCCESS)
 				.json(fromStoredGameBeanToStoredGameDto(game));
+		},
+	),
+
+	deleteOne: protectedRequestHandler<DeleteStoredGame>(
+		async (request, response) => {
+			await gameService.deleteStoredGame(
+				fromDeleteStoredGameDtoToDeleteStoredGameBean(request.params),
+			);
+
+			return response.status(HttpStatutCodeSuccessEnum.NO_CONTENT).end();
 		},
 	),
 };

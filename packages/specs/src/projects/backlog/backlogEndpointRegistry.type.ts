@@ -1,3 +1,4 @@
+import type { DeleteStoredGame } from "./endpoint/games/deleteStoredGame/deleteStoredGameEndpoint.interface.ts";
 import type { GetStoredGame } from "./endpoint/games/getStoredGame/getStoredGameEndpoint.interface.ts";
 import type { GetStoredGames } from "./endpoint/games/getStoredGames/getStoredGamesEndpoint.interface.ts";
 import type { ImportGameContent } from "./endpoint/games/importGameContent/importGameContentEndpoint.interface.ts";
@@ -22,6 +23,7 @@ export type BacklogEndpointRegistry =
 	| CreateUserGame
 	| CreateUserVersion
 	| CustomizeUserGame
+	| DeleteStoredGame
 	| DeleteUserGame
 	| DeleteUserVersion
 	| GetAllSeries

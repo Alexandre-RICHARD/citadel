@@ -1,9 +1,11 @@
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
+import { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
 import { ConflictError } from "../../../error/ConflictError.ts";
 import { NotFoundError } from "../../../error/NotFoundError.ts";
+import type { DeleteStoredGameBean } from "../bean/deleteStoredGameBean.type.ts";
 import type { GameImportBean } from "../bean/gameImportBean.type.ts";
 import type { GetStoredGameBean } from "../bean/getStoredGameBean.type.ts";
 import type { GetStoredGamesBean } from "../bean/getStoredGamesBean.type.ts";
@@ -19,9 +21,12 @@ import { insertCompaniesQuery } from "../query/company/insertCompaniesQuery.ts";
 import { insertDlcsQuery } from "../query/dlc/insertDlcsQuery.ts";
 import { countOutsideBacklogGamesQuery } from "../query/game/countOutsideBacklogGamesQuery.ts";
 import { createGameQuery } from "../query/game/createGameQuery.ts";
+import { deleteGameQuery } from "../query/game/deleteGameQuery.ts";
 import { gameExistsQuery } from "../query/game/gameExistsQuery.ts";
 import { getGamesPlatformNamesQuery } from "../query/game/getGamesPlatformNamesQuery.ts";
 import { getOutsideBacklogGamesQuery } from "../query/game/getOutsideBacklogGamesQuery.ts";
+import { isGameInAnyBacklogQuery } from "../query/game/isGameInAnyBacklogQuery.ts";
+import { lockGameQuery } from "../query/game/lockGameQuery.ts";
 import { insertPlatformsQuery } from "../query/platform/insertPlatformsQuery.ts";
 import { findOrCreateProposedSeriesQuery } from "../query/series/findOrCreateProposedSeriesQuery.ts";
 import { insertVersionsQuery } from "../query/version/insertVersionsQuery.ts";
@@ -202,6 +207,27 @@ class GameService {
 		);
 
 		return this.getStoredGame(userId, { gameId });
+	}
+
+	/**
+	 * « Supprimer de la base » : possible seulement si aucun compte n'a le jeu dans son backlog. Le refus révèle donc
+	 * aux autres comptes que quelqu'un l'a, ce qui est acceptable ici
+	 */
+	async deleteStoredGame({ gameId }: DeleteStoredGameBean): Promise<void> {
+		await runInTransaction(
+			"Failed to delete stored game",
+			async (transaction) => {
+				if (!(await lockGameQuery(gameId, transaction)))
+					throw gameNotFound(gameId);
+				if (await isGameInAnyBacklogQuery(gameId, transaction))
+					throw new ConflictError(
+						BacklogErrorCodeEnum.GAME_IN_A_BACKLOG,
+						`Game is in a backlog : ${gameId}`,
+					);
+				await deleteGameQuery(gameId, transaction);
+			},
+			{ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED },
+		);
 	}
 }
 

@@ -132,4 +132,12 @@ export const selectBacklogRows = {
 			dlcIds: dlcs.map(({ id }) => id),
 		};
 	},
+
+	async versionPlatformCount(versionIds: number[]): Promise<number> {
+		const row = await sequelize.query<{ rowCount: number }>(
+			`SELECT COUNT(*) AS rowCount FROM backlog_version_platform WHERE version_id IN (:versionIds)`,
+			{ type: QueryTypes.SELECT, plain: true, replacements: { versionIds } },
+		);
+		return Number(row?.rowCount ?? 0);
+	},
 };

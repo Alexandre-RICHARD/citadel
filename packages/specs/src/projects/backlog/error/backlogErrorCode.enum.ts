@@ -16,6 +16,8 @@ export enum BacklogErrorCodeEnum {
 	// En conflit avec l'état de la base
 	GAME_ALREADY_STORED = "GAME_ALREADY_STORED",
 	USER_GAME_ALREADY_EXISTS = "USER_GAME_ALREADY_EXISTS",
+	// Le jeu est dans le backlog d'un compte : il ne peut pas quitter la base
+	GAME_IN_A_BACKLOG = "GAME_IN_A_BACKLOG",
 	// Même version sur la même plateforme : une seule version jouée
 	USER_VERSION_ALREADY_EXISTS = "USER_VERSION_ALREADY_EXISTS",
 	// Ni une plateforme de la version, ni un émulateur de l'une d'elles

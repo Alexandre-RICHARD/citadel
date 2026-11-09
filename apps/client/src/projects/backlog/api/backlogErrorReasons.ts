@@ -15,6 +15,8 @@ export const backlogErrorReasons: Record<BacklogErrorCodeEnum, string> = {
 	[BacklogErrorCodeEnum.GAME_ALREADY_STORED]: "ce jeu est déjà en base",
 	[BacklogErrorCodeEnum.USER_GAME_ALREADY_EXISTS]:
 		"ce jeu est déjà dans le backlog",
+	[BacklogErrorCodeEnum.GAME_IN_A_BACKLOG]:
+		"ce jeu est dans le backlog d'un compte",
 	[BacklogErrorCodeEnum.USER_VERSION_ALREADY_EXISTS]:
 		"cette version est déjà jouée sur cette plateforme",
 	[BacklogErrorCodeEnum.PLATFORM_NOT_ALLOWED]:
