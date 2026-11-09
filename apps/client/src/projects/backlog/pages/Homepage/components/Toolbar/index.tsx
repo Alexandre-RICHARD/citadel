@@ -12,7 +12,6 @@ import {
 	UserRound,
 } from "lucide-react";
 import type { RefObject } from "react";
-import { useNavigate } from "react-router";
 
 import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
 import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
@@ -21,6 +20,7 @@ import { AuthPathEnum } from "../../../../../auth/routing/authPath.enum";
 import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
+import { LinkButton } from "../../../../components/LinkButton";
 import { Tooltip } from "../../../../components/Tooltip";
 import type { BacklogModal } from "../../backlogModal.type";
 import { SearchBar } from "../SearchBar";
@@ -45,7 +45,6 @@ export function Toolbar({
 	onSelectHit,
 	onOpenModal,
 }: Props) {
-	const navigate = useNavigate();
 	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
 		ProjectsEnum.Backlog,
 	);
@@ -123,25 +122,19 @@ export function Toolbar({
 					tooltipPlacement="bottom"
 					onClick={toggleColorScheme}
 				/>
-				<Button
+				<LinkButton
+					to={AuthPathEnum.PROFILE}
 					icon={UserRound}
-					variant="ghost"
 					ariaLabel="Mon profil"
 					tooltip="Mon profil"
 					tooltipPlacement="bottom"
-					onClick={() => {
-						void navigate(AuthPathEnum.PROFILE);
-					}}
 				/>
-				<Button
+				<LinkButton
+					to={buildReturnToHomepagePath(ProjectsEnum.Backlog)}
 					icon={Castle}
-					variant="ghost"
 					ariaLabel="Retour à la Citadel"
 					tooltip="Retour à la Citadel"
 					tooltipPlacement="bottom"
-					onClick={() => {
-						void navigate(buildReturnToHomepagePath(ProjectsEnum.Backlog));
-					}}
 				/>
 			</div>
 		</header>

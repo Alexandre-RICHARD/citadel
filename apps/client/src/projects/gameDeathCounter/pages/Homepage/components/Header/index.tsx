@@ -1,5 +1,6 @@
 import { CountBadge } from "@citadel/design-system/src/atoms/CountBadge";
 import { IconButton } from "@citadel/design-system/src/atoms/IconButton";
+import { IconLink } from "@citadel/design-system/src/atoms/IconLink";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import { createGameBodySchema } from "@citadel/specs/src/projects/gameDeathCounter/endpoint/games/createGame/createGameBodySchema";
 import {
@@ -25,6 +26,10 @@ import { useGameListTotalDeath } from "../../../../api/game/useGameListTotalDeat
 import { gameDeathCounterFieldLabels } from "../../../../api/gameDeathCounterFieldLabels";
 import globalStyles from "../../../../globalStyles.module.scss";
 import styles from "./header.module.scss";
+
+const returnToHomepagePath = buildReturnToHomepagePath(
+	ProjectsEnum.GameDeathCount,
+);
 
 export function Header() {
 	const navigate = useNavigate();
@@ -93,20 +98,20 @@ export function Header() {
 						label={`Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`}
 						onClick={toggleColorScheme}
 					/>
-					<IconButton
+					<IconLink
 						icon={UserRound}
 						label="Mon profil"
-						onClick={() => {
+						href={AuthPathEnum.PROFILE}
+						onNavigate={() => {
 							void navigate(AuthPathEnum.PROFILE);
 						}}
 					/>
-					<IconButton
+					<IconLink
 						icon={Castle}
 						label="Retour à la Citadel"
-						onClick={() => {
-							void navigate(
-								buildReturnToHomepagePath(ProjectsEnum.GameDeathCount),
-							);
+						href={returnToHomepagePath}
+						onNavigate={() => {
+							void navigate(returnToHomepagePath);
 						}}
 					/>
 				</div>

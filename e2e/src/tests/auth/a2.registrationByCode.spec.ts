@@ -44,7 +44,7 @@ test.describe("Inscription", () => {
 			await page.getByRole("button", { name: "Annuler" }).click();
 			await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.BACKLOG}$`));
 			await expect(
-				page.getByRole("button", { name: "Mon profil" }),
+				page.getByRole("link", { name: "Mon profil" }),
 			).toBeVisible();
 		});
 	});

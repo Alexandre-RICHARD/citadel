@@ -11,6 +11,7 @@
   justify-content: center;
   font-weight: 500;
   white-space: nowrap;
+  text-decoration: none; // Un lien (LinkButton) prend la même allure
   border: 1px solid transparent;
   border-radius: vars.$radius-md;
   transition:

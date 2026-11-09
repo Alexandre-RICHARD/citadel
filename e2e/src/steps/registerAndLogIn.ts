@@ -18,7 +18,7 @@ export async function registerAndLogIn(
 	const identity = await registerAccount(page, label);
 
 	await test.step("Revenir sur le formulaire de connexion", async () => {
-		await page.getByRole("button", { name: "Retour à la Citadel" }).click();
+		await page.getByRole("link", { name: "Retour à la Citadel" }).click();
 		await logOut(page);
 		await page.getByRole("link", { name: "Se connecter" }).click();
 	});
