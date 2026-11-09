@@ -19,7 +19,7 @@
     "lint-fix": "pnpm -r lint-fix",
     "check-types": "pnpm -r check-types",
     "audit:prod": "pnpm audit --prod --audit-level high",
-    "validate-all": "pnpm check-types && pnpm lint-fix && pnpm -r test-unit && pnpm -r test-integration && pnpm -r build && pnpm audit:prod",
+    "validate-all": "bash scripts/validation/validateAll.sh",
     "test-report": "vitest run --config vitest.report.config.ts && vite preview --outDir report --open",
     "=== Build & Production ===": "",
     "build": "pnpm --filter \"./apps/*\" build",

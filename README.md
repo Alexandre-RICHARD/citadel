@@ -28,7 +28,7 @@ Autres docs : [architecture et conventions](docs/architecture.md), [hébergement
 
 ### Autres commandes
 
-- `pnpm validate-all` : types, lint, tests (la base de test est recréée à chaque lancement), builds
+- `pnpm validate-all` : lint, types, tests unitaires, d'intégration et end-to-end, builds, audit. La validation d'avant mise en prod, longue : elle se saute si rien n'a changé depuis son dernier succès (`--force` pour relancer quand même)
 - `pnpm db:reset` : repart d'une base de dev vide
 - `pnpm prod:local` : les images de prod sur ton PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter)
 - `pnpm release` : la mise en prod ([hébergement](docs/ci_cd/README.md))

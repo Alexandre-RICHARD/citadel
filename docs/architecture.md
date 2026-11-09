@@ -63,7 +63,7 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 
 - Unitaires à côté du fichier testé : `foo.unit.test.ts`. Intégration : `<endpoint>.integration.test.ts`.
 - Structure imposée (`citadel/test-structure`) : `describe` du fichier testé (ou de l'endpoint), `describe` du comportement, puis `it("SHOULD … WHEN …")`, en anglais.
-- `pnpm validate-all` lance tout : types, lint, tests unitaires, tests d'intégration et builds.
+- `pnpm validate-all` lance tout : lint, types, tests unitaires, d'intégration et end-to-end, builds, audit ([scripts/validation/validateAll.sh](../scripts/validation/validateAll.sh)).
 
 ## 3. Specs
 

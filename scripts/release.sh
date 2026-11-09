@@ -9,7 +9,8 @@
 #
 # Les étapes :
 #   1. Vérifications : branche main, rien de non commité, pas de retard sur GitHub.
-#   2. pnpm validate-all (la base de test démarre seule). Si un fichier a changé pendant
+#   2. pnpm validate-all (la base de test et la stack e2e démarrent seules ; sauté si rien
+#      n'a changé depuis sa dernière réussite). Si un fichier a changé pendant
 #      la validation (lint-fix), arrêt : le commit tagué doit être celui qui a été validé.
 #   3. Résumé : version en prod (demandée au NAS), commits qui partent, nouvelles
 #      migrations, nom du tag. Puis ta confirmation.
