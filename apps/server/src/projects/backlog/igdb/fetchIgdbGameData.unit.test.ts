@@ -45,7 +45,7 @@ const REMAKE_ATTACHED = {
 	version_parent: 393025,
 	url: "u",
 };
-const DLC = { id: 5001, name: "Some DLC", game_type: 1 };
+const DLC = { id: 5001, name: "Some DLC", game_type: 1, url: "u" };
 const UPDATE = { id: 5002, name: "Patch 1.1", game_type: 14 };
 
 describe("fetchIgdbGameData.ts", () => {

@@ -57,14 +57,19 @@ export function buildGamePreview({
 	).map((version) => ({ ...version, isStored: true }));
 
 	const versions = mergeInIgdbOrder(igdbVersions, storedVersions);
-	const dlcs = mergeInIgdbOrder(gameImport.dlcs, storedGame?.dlcs ?? []).map(
-		({ id, name }) => ({
-			id,
-			name,
-			isStored: storedDlcIds.has(id),
-			storedGameId: dlcGameIds.get(id) ?? null,
-		}),
+	const igdbDlcUrls = new Map(
+		gameImport.dlcs.map(({ id, igdbUrl }) => [id, igdbUrl]),
 	);
+	const dlcs = mergeInIgdbOrder(
+		gameImport.dlcs.map(({ id, name }) => ({ id, name })),
+		storedGame?.dlcs ?? [],
+	).map(({ id, name }) => ({
+		id,
+		name,
+		igdbUrl: igdbDlcUrls.get(id) ?? null,
+		isStored: storedDlcIds.has(id),
+		storedGameId: dlcGameIds.get(id) ?? null,
+	}));
 
 	return {
 		game:

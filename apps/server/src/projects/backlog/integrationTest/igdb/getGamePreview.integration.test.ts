@@ -156,6 +156,7 @@ describe("getGamePreview", () => {
 					{
 						id: dlcId,
 						name: "Okami Art Book",
+						igdbUrl: `https://www.igdb.com/games/${dlcId}`,
 						isStored: false,
 						storedGameId: null,
 					},
@@ -244,6 +245,7 @@ describe("getGamePreview", () => {
 				{
 					id: dlcAsGame.gameId,
 					name: "The Lost and Damned",
+					igdbUrl: `https://www.igdb.com/games/${dlcAsGame.gameId}`,
 					isStored: false,
 					storedGameId: dlcAsGame.gameId,
 				},

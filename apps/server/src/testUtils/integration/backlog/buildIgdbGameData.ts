@@ -92,7 +92,11 @@ export function buildIgdbGameData(spec: IgdbGameSpec): IgdbGameData {
 				),
 			})),
 		],
-		dlcs: (spec.dlcs ?? []).map(({ id, name }) => ({ id, name })),
+		dlcs: (spec.dlcs ?? []).map(({ id, name }) => ({
+			id,
+			name,
+			url: `https://www.igdb.com/games/${id}`,
+		})),
 		gameStatus: spec.gameStatus ?? null,
 		skippedEntries: [],
 	};

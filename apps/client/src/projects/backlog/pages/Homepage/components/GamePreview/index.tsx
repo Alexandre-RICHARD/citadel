@@ -1,6 +1,6 @@
 import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import { CalendarDays, ExternalLink, Puzzle } from "lucide-react";
+import { ExternalLink, Puzzle } from "lucide-react";
 
 import type { GamePreviewFm } from "../../../../api/model/gamePreviewFm.type";
 import styles from "../../../../backlog.module.scss";
@@ -9,7 +9,7 @@ import { Checkbox } from "../../../../components/Checkbox";
 import type { ImportSelection } from "../../importSelection.type";
 import { CompanyLabel } from "../CompanyLabel";
 import { Cover } from "../Cover";
-import { ReleaseDateLabel } from "../ReleaseDateLabel";
+import { GameReleaseLine } from "../GameReleaseLine";
 import { SectionTitle } from "../SectionTitle";
 import { VersionPlatformDates } from "../VersionPlatformDates";
 
@@ -45,25 +45,11 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 					{game.frenchName !== null && (
 						<p className={styles.secondaryName}>{game.name}</p>
 					)}
-					<p className={styles.previewMeta}>
-						<span className={styles.previewRelease}>
-							<CalendarDays aria-hidden />
-							Sortie :
-							<ReleaseDateLabel
-								date={game.firstReleaseDate}
-								isCancelled={game.isCancelled}
-							/>
-						</span>
-						<a
-							className={styles.externalLink}
-							href={game.igdbUrl}
-							target="_blank"
-							rel="noreferrer"
-						>
-							Ouvrir sur IGDB
-							<ExternalLink aria-hidden />
-						</a>
-					</p>
+					<GameReleaseLine
+						firstReleaseDate={game.firstReleaseDate}
+						isCancelled={game.isCancelled}
+						igdbUrl={game.igdbUrl}
+					/>
 				</div>
 			</section>
 
@@ -143,7 +129,7 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 					<p className={styles.emptyHint}>Aucun DLC</p>
 				) : (
 					<ul className={styles.choiceList}>
-						{dlcs.map(({ id, name, isStored, storedGameId }) => (
+						{dlcs.map(({ id, name, igdbUrl, isStored, storedGameId }) => (
 							<li
 								key={id}
 								className={joinClassNames(styles.choiceItem, styles.dlcChoice)}
@@ -160,26 +146,43 @@ export function GamePreview({ preview, selection, onSelectionChange }: Props) {
 										})
 									}
 								/>
-								{/* Indépendante de la case DLC : un DLC peut être les deux */}
-								<Checkbox
-									variant="chip"
-									icon={Puzzle}
-									label="Comme jeu"
-									ariaLabel={`${name} : comme jeu`}
-									checked={selection.dlcAsGameIds.includes(id)}
-									disabled={storedGameId !== null}
-									tooltip={
-										storedGameId === null
-											? "Après « Valider », ouvre l’ajout de ce DLC comme jeu à part ; il peut rester DLC en même temps"
-											: "Déjà en base comme jeu"
-									}
-									onChange={() =>
-										onSelectionChange({
-											...selection,
-											dlcAsGameIds: toggleArrayItem(selection.dlcAsGameIds, id),
-										})
-									}
-								/>
+								<div className={styles.dlcAside}>
+									{igdbUrl !== null && (
+										<a
+											className={styles.externalLink}
+											href={igdbUrl}
+											target="_blank"
+											rel="noreferrer"
+											aria-label={`${name} sur IGDB`}
+										>
+											IGDB
+											<ExternalLink aria-hidden />
+										</a>
+									)}
+									{/* Indépendante de la case DLC : un DLC peut être les deux */}
+									<Checkbox
+										variant="chip"
+										icon={Puzzle}
+										label="Comme jeu"
+										ariaLabel={`${name} : comme jeu`}
+										checked={selection.dlcAsGameIds.includes(id)}
+										disabled={storedGameId !== null}
+										tooltip={
+											storedGameId === null
+												? "Après « Valider », ouvre l’ajout de ce DLC comme jeu à part ; il peut rester DLC en même temps"
+												: "Déjà en base comme jeu"
+										}
+										onChange={() =>
+											onSelectionChange({
+												...selection,
+												dlcAsGameIds: toggleArrayItem(
+													selection.dlcAsGameIds,
+													id,
+												),
+											})
+										}
+									/>
+								</div>
 							</li>
 						))}
 					</ul>

@@ -61,7 +61,7 @@ export function fromIgdbGameDataToGameImportBean(
 			igdbUrl: version.url,
 			platforms: fromIgdbVersionToVersionPlatformBeans(version),
 		})),
-		dlcs: data.dlcs.map(({ id, name }) => ({ id, name })),
+		dlcs: data.dlcs.map(({ id, name, url }) => ({ id, name, igdbUrl: url })),
 		// La cover de l'original d'abord, puis les artworks
 		imageIds: [
 			...(originalVersion?.cover === undefined

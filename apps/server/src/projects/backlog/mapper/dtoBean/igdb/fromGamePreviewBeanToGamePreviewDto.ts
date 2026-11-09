@@ -24,6 +24,7 @@ export function fromGamePreviewBeanToGamePreviewDto(
 		dlcs: preview.dlcs.map((dlc) => ({
 			id: dlc.id,
 			name: dlc.name,
+			igdbUrl: dlc.igdbUrl,
 			isStored: dlc.isStored,
 			storedGameId: dlc.storedGameId,
 		})),

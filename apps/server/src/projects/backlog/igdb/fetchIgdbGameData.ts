@@ -146,7 +146,7 @@ export async function fetchIgdbGameData(
 			? []
 			: await igdbClient.request<IgdbDlcGame[]>(
 					"games",
-					`fields name, game_type; where id = (${dlcIds.join(",")}); limit ${FETCH_LIMIT};`,
+					`fields name, game_type, url; where id = (${dlcIds.join(",")}); limit ${FETCH_LIMIT};`,
 				);
 
 	return {

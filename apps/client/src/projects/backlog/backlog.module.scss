@@ -2240,3 +2240,11 @@
   opacity: 0.6;
   transition: opacity vars.$duration vars.$ease;
 }
+
+// À droite d'un DLC : son lien IGDB, puis la case « Comme jeu »
+.dlcAside {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.6rem;
+  align-items: center;
+}
