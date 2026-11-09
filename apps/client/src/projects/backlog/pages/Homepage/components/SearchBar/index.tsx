@@ -30,7 +30,7 @@ type Props = {
 };
 
 /**
- * Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « Ma base ».
+ * Recherche sur IGDB seulement ; les jeux en base hors backlog passent par « Ajouter un jeu depuis la Citadel ».
  * Le curseur reste dans le champ : ↓ et ↑ parcourent les résultats, Entrée choisit, Échap ferme la liste
  */
 export function SearchBar({ inputRef, onSelect }: Props) {
@@ -64,8 +64,11 @@ export function SearchBar({ inputRef, onSelect }: Props) {
 			document.removeEventListener("pointerdown", closeOnOutsideClick);
 	}, [isOpen]);
 
+	// Le choix ouvre la modale d'ajout, qui rend le focus au champ en se fermant : un champ gardant sa saisie rouvrirait
+	// la liste et relancerait la recherche. Il est donc vidé dès le choix
 	function select(hit: GameHitFm) {
 		setIsOpen(false);
+		setQuery("");
 		onSelect(hit);
 	}
 
