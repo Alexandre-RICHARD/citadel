@@ -20,6 +20,7 @@ import type { CustomizationDraft } from "../../../../helper/series/customization
 import { DEFAULT_USER_VERSION_DRAFT } from "../../defaultUserVersionDraft";
 import type { UserVersionDraft } from "../../userVersionDraft.type";
 import { FinishDateModal } from "../FinishDateModal";
+import { GameReleaseLine } from "../GameReleaseLine";
 import { ModalActions } from "../ModalActions";
 import { SectionTitle } from "../SectionTitle";
 import { UserGameFields } from "../UserGameFields";
@@ -140,6 +141,11 @@ export function AddUserVersionForm({
 			}
 			onClose={onClose}
 		>
+			<GameReleaseLine
+				firstReleaseDate={storedGame.firstReleaseDate}
+				isCancelled={storedGame.isCancelled}
+				igdbUrl={storedGame.igdbUrl}
+			/>
 			{isNewToBacklog && (
 				<section className={styles.modalSection}>
 					<SectionTitle>Personnalisation</SectionTitle>
