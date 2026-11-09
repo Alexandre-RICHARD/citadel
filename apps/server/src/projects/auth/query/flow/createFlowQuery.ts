@@ -1,5 +1,6 @@
 import { FlowKindEnum } from "@citadel/specs/src/projects/auth/enum/flowKind.enum.ts";
 import type { FlowStepEnum } from "@citadel/specs/src/projects/auth/enum/flowStep.enum.ts";
+import { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../../common/database/runInTransaction.ts";
 import { Flow } from "../../models/Flow.ts";
@@ -27,41 +28,47 @@ type Replaced = {
 	registrationEmail: string | null;
 };
 
-// Crée le parcours, après avoir supprimé ceux qu'il remplace, ensemble
+// Crée le parcours, après avoir supprimé ceux qu'il remplace, ensemble. READ_COMMITTED : en REPEATABLE READ, un
+// DELETE qui ne trouve rien verrouille un intervalle de l'index, et deux inscriptions simultanées s'interbloquent à
+// l'INSERT (deadlock 1213), même avec des adresses différentes
 export async function createFlowQuery(
 	row: FlowRow,
 	{ browserTokenHash, registrationEmail }: Replaced,
 ): Promise<Flow> {
-	return runInTransaction("Failed to create flow", async (transaction) => {
-		if (browserTokenHash !== null)
-			await Flow.destroy({
-				where: { tokenHash: browserTokenHash },
-				transaction,
-			});
-		if (registrationEmail !== null)
-			await Flow.destroy({
-				where: {
-					email: registrationEmail,
-					kind: FlowKindEnum.REGISTRATION,
+	return runInTransaction(
+		"Failed to create flow",
+		async (transaction) => {
+			if (browserTokenHash !== null)
+				await Flow.destroy({
+					where: { tokenHash: browserTokenHash },
+					transaction,
+				});
+			if (registrationEmail !== null)
+				await Flow.destroy({
+					where: {
+						email: registrationEmail,
+						kind: FlowKindEnum.REGISTRATION,
+					},
+					transaction,
+				});
+			return Flow.create(
+				{
+					tokenHash: row.tokenHash,
+					kind: row.kind,
+					step: row.step,
+					userId: row.userId,
+					email: row.email,
+					payload: row.payload,
+					codeHmac: row.codeHmac,
+					linkTokenHash: row.linkTokenHash,
+					remember: row.remember,
+					lastSentAt: row.sentAt,
+					sendCount: row.sentAt === null ? 0 : 1,
+					expiresAt: row.expiresAt,
 				},
-				transaction,
-			});
-		return Flow.create(
-			{
-				tokenHash: row.tokenHash,
-				kind: row.kind,
-				step: row.step,
-				userId: row.userId,
-				email: row.email,
-				payload: row.payload,
-				codeHmac: row.codeHmac,
-				linkTokenHash: row.linkTokenHash,
-				remember: row.remember,
-				lastSentAt: row.sentAt,
-				sendCount: row.sentAt === null ? 0 : 1,
-				expiresAt: row.expiresAt,
-			},
-			{ transaction },
-		);
-	});
+				{ transaction },
+			);
+		},
+		{ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED },
+	);
 }
