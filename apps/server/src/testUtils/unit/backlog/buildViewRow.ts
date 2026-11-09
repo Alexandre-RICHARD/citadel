@@ -29,6 +29,7 @@ export function buildViewRow(row: Partial<ViewRow> = {}): ViewRow {
 		totalPlayTimeMinutes: 0,
 		rating: null,
 		comment: null,
+		commentCount: 0,
 		...row,
 	};
 }

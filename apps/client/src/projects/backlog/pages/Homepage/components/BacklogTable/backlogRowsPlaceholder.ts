@@ -43,6 +43,7 @@ function buildPlaceholderRow(gameId: number, name: string): BacklogRowFm {
 		totalPlayTimeMinutes: 0,
 		rating: null,
 		comment: null,
+		commentCount: 0,
 		userVersionRows: [],
 		isTemporary: false,
 	};

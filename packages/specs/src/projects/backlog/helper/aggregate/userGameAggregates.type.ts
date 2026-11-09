@@ -22,4 +22,6 @@ export type UserGameAggregates = {
 	rating: number | null;
 	// Le commentaire s'il n'y en a qu'un
 	comment: string | null;
+	// Versions jouées qui ont un commentaire : la ligne n'en montre le texte que s'il n'y en a qu'un, sinon ce nombre
+	commentCount: number;
 };

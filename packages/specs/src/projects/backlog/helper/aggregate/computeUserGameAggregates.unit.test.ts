@@ -54,6 +54,7 @@ describe("computeUserGameAggregates.ts", () => {
 				totalPlayTimeMinutes: 690,
 				rating: 18,
 				comment: "Excellent",
+				commentCount: 1,
 			});
 		});
 	});
@@ -111,8 +112,22 @@ describe("computeUserGameAggregates.ts", () => {
 			expect(aggregates).toMatchObject({ isUpNext: true, isOwned: false });
 		});
 
-		it("SHOULD show no comment WHEN several versions have one", () => {
-			expect(aggregates.comment).toBeNull();
+		it("SHOULD show no comment but count them WHEN several versions have one", () => {
+			expect(aggregates).toMatchObject({ comment: null, commentCount: 2 });
+		});
+
+		it("SHOULD count only the versions that have a comment", () => {
+			expect(
+				computeUserGameAggregates(
+					[
+						{ ...BLANK_USER_VERSION, comment: "PS3" },
+						BLANK_USER_VERSION,
+						{ ...BLANK_USER_VERSION, comment: "PC" },
+						{ ...BLANK_USER_VERSION, comment: "Switch" },
+					],
+					[],
+				).commentCount,
+			).toBe(3);
 		});
 	});
 });

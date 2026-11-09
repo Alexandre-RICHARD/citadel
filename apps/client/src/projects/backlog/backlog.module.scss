@@ -2359,3 +2359,23 @@
 .scrollTopHidden {
   visibility: hidden;
 }
+
+// Ligne de jeu dont plusieurs versions jouées ont un commentaire : leur nombre, à la place du texte
+.commentCount {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.1rem 0.8rem;
+  font-size: vars.$text-sm;
+  font-weight: 500;
+  color: vars.$text-muted;
+  white-space: nowrap;
+  background: vars.$surface-3;
+  border-radius: vars.$radius-full;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: vars.$text-subtle;
+  }
+}

@@ -1,11 +1,17 @@
 import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
+import { pluralize } from "@citadel/common/src/universal/string/pluralize";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
 import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
-import { Bookmark, type LucideIcon, PackageCheck } from "lucide-react";
+import {
+	Bookmark,
+	type LucideIcon,
+	MessageSquareText,
+	PackageCheck,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
@@ -284,7 +290,15 @@ export function UserVersionDataCell({
 				</span>
 			);
 		case BacklogColumnEnum.COMMENT:
-			if (editableUserVersion === null)
+			if (editableUserVersion === null) {
+				// Ligne de jeu dont plusieurs versions ont un commentaire : leur nombre, les textes sont sur les sous-lignes
+				if ("commentCount" in values && values.commentCount > 1)
+					return (
+						<span className={styles.commentCount}>
+							<MessageSquareText aria-hidden />
+							{pluralize(values.commentCount, "commentaire")}
+						</span>
+					);
 				return values.comment === null ? null : (
 					<Tooltip
 						content={values.comment}
@@ -294,6 +308,7 @@ export function UserVersionDataCell({
 						<span className={styles.comment}>{values.comment}</span>
 					</Tooltip>
 				);
+			}
 			return (
 				<TextField
 					value={editableUserVersion.comment}

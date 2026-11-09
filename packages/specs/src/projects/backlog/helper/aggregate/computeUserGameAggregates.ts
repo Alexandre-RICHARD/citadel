@@ -48,5 +48,6 @@ export function computeUserGameAggregates(
 		totalPlayTimeMinutes: trackedPlayTimeMinutes + estimatedPlayTimeMinutes,
 		rating: getHighestKnownValue(userVersions.map(({ rating }) => rating)),
 		comment: comments.length === 1 ? (comments.at(0) ?? null) : null,
+		commentCount: comments.length,
 	};
 }
