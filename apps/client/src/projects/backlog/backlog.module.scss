@@ -1070,6 +1070,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+
+  // Seuls le libellé et le champ réagissent au clic, comme dans .formField
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
 }
 
 .rangeInputGroup {
@@ -1709,6 +1716,14 @@
   flex-direction: column;
   gap: 0.6rem;
   min-width: 0;
+
+  // Le <label> s'étire à la hauteur de la ligne et à la largeur de la colonne, bien au-delà de son libellé et de son champ :
+  // un clic à côté focaliserait le champ. Seuls le libellé et le champ réagissent, le reste du <label> laisse passer le clic
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
 }
 
 .formLabel {
@@ -1721,6 +1736,7 @@
 .formHint {
   font-size: vars.$text-sm;
   color: vars.$text-subtle;
+  pointer-events: none;
 }
 
 .formRow {
