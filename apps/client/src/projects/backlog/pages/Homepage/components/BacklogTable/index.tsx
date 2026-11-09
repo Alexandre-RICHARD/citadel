@@ -125,6 +125,15 @@ export function BacklogTable({
 						{filters.length > 1
 							? `${filters.length} filtres actifs`
 							: "1 filtre actif"}
+						<Button
+							icon={FunnelX}
+							variant="ghost"
+							size="sm"
+							tooltip="Retirer tous les filtres d'un coup"
+							onClick={clearFilters}
+						>
+							Réinitialiser les filtres
+						</Button>
 					</span>
 				)}
 				{isStale && (
