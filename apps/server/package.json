@@ -19,7 +19,7 @@
     "@citadel/common": "workspace:*",
     "@citadel/specs": "workspace:*",
     "express": "catalog:",
-    "mariadb": "^3.5.4",
+    "mariadb": "^3.5.5",
     "sequelize": "6.37.8",
     "zod": "catalog:"
   },

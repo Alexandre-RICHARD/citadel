@@ -23,7 +23,7 @@
     "@citadel/eslint-config": "workspace:*",
     "@citadel/server": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
-    "@storybook/react-vite": "^10.6.5",
+    "@storybook/react-vite": "^10.6.6",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
@@ -32,7 +32,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "sass": "catalog:",
-    "storybook": "^10.6.5",
+    "storybook": "^10.6.6",
     "typescript": "catalog:",
     "vite": "catalog:"
   }
