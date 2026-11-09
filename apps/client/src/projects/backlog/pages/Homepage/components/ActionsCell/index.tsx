@@ -24,10 +24,10 @@ type Props = {
 	table: TableControls;
 };
 
-// Menu « 3 points verticaux » : ouvrir sur IGDB reste disponible en lecture seule
+// Menu « 3 points verticaux » : toutes ses entrées servent aussi en lecture seule. Le clic droit sur la ligne l'ouvre aussi (GameRowGroup)
 export function ActionsCell({ row, userVersion, table }: Props) {
 	const triggerRef = useRef<HTMLButtonElement>(null);
-	const { isEditMode, popover, setPopover, openModal } = table;
+	const { popover, setPopover, openModal } = table;
 	const { gameId, series } = row;
 	const userVersionId = userVersion?.userVersionId ?? null;
 	const gameName = row.frenchName ?? row.name;
@@ -35,8 +35,6 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 		popover?.kind === "actionsMenu" &&
 		popover.gameId === gameId &&
 		popover.userVersionId === userVersionId;
-	// Entrée inactive en lecture seule, avec sa raison en info-bulle
-	const editOnlyReason = isEditMode ? null : "Disponible en mode édition";
 	let seriesReason: string | null = null;
 	if (series === null) seriesReason = "Ce jeu n’a pas de série";
 	else if (series.id < 0) seriesReason = "Série en cours de création";
@@ -55,14 +53,14 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 						label: "Personnaliser",
 						icon: Palette,
 						href: null,
-						disabledReason: editOnlyReason,
+						disabledReason: null,
 						onSelect: () => openModal({ kind: "customizeGame", gameId }),
 					},
 					{
 						label: "Réorganiser la série",
 						icon: ListOrdered,
 						href: null,
-						disabledReason: editOnlyReason ?? seriesReason,
+						disabledReason: seriesReason,
 						onSelect: () => {
 							if (series !== null)
 								openModal({
@@ -76,14 +74,14 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 						label: "Modifier le jeu",
 						icon: SquarePen,
 						href: null,
-						disabledReason: editOnlyReason,
+						disabledReason: null,
 						onSelect: () => openModal({ kind: "editGame", gameId }),
 					},
 					{
 						label: "Ajouter une version jouée",
 						icon: CopyPlus,
 						href: null,
-						disabledReason: editOnlyReason,
+						disabledReason: null,
 						onSelect: () =>
 							openModal({
 								kind: "addUserVersion",
@@ -105,7 +103,7 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 						label: "Retirer le jeu du backlog",
 						icon: Trash2,
 						href: null,
-						disabledReason: editOnlyReason,
+						disabledReason: null,
 						isDanger: true,
 						isGroupStart: true,
 						onSelect: () =>
@@ -128,7 +126,7 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 						label: "Retirer la version jouée",
 						icon: Trash2,
 						href: null,
-						disabledReason: editOnlyReason,
+						disabledReason: null,
 						isDanger: true,
 						isGroupStart: true,
 						onSelect: () =>

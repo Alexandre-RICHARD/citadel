@@ -1,7 +1,8 @@
+import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronRight, CornerDownRight, Layers, Pencil } from "lucide-react";
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.type";
@@ -118,6 +119,21 @@ export function GameRowGroup({
 		? null
 		: (userVersionRows.at(0) ?? null);
 
+	// Le clic droit focalise la ligne et ouvre son menu d'actions ; dans un champ de saisie, le menu du navigateur reste
+	function openActionsMenu(
+		event: MouseEvent<HTMLTableRowElement>,
+		userVersionId: number | null,
+	) {
+		if (isTextField(event.target)) return;
+		event.preventDefault();
+		event.currentTarget.focus({ preventScroll: true });
+		table.setPopover({
+			kind: "actionsMenu",
+			gameId: row.gameId,
+			userVersionId,
+		});
+	}
+
 	function renderDataCell(
 		column: BacklogColumnEnum,
 		values: BacklogRowFm | UserVersionRowFm,
@@ -210,6 +226,8 @@ export function GameRowGroup({
 				inert={row.isTemporary}
 				// Focalisable au clic, pas au Tab : les contrôles de la ligne ont déjà le leur
 				tabIndex={-1}
+				// Ligne à version jouée unique : le menu du jeu ; ligne dépliable : celui du jeu aussi, les versions ont leurs sous-lignes
+				onContextMenu={(event) => openActionsMenu(event, null)}
 			>
 				{/* Chevron et badge du nombre de versions jouées sur une ligne dépliable, espace vide sur une ligne simple */}
 				<td className={styles.expandCell}>
@@ -265,6 +283,9 @@ export function GameRowGroup({
 						)}
 						inert={userVersionRow.isTemporary}
 						tabIndex={-1}
+						onContextMenu={(event) =>
+							openActionsMenu(event, userVersionRow.userVersionId)
+						}
 					>
 						<td className={styles.expandCell} />
 						{columns.map((column) => (
