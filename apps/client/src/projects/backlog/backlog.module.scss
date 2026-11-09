@@ -2354,3 +2354,8 @@
   padding: 0;
   list-style: none;
 }
+
+// « Remonter en haut », dans la barre fixe : invisible tant que la page n'est pas défilée, sans décaler le reste
+.scrollTopHidden {
+  visibility: hidden;
+}

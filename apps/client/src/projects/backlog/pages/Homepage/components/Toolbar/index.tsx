@@ -1,6 +1,9 @@
+import { useIsScrolled } from "@citadel/common/src/react/hooks/useIsScrolled";
+import { usePrefersReducedMotion } from "@citadel/common/src/react/hooks/usePrefersReducedMotion";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { ColorSchemeEnum } from "@citadel/design-system/src/theme/colorScheme/colorScheme.enum";
 import {
+	ArrowUp,
 	Castle,
 	Columns3,
 	Gamepad2,
@@ -25,6 +28,9 @@ import { Tooltip } from "../../../../components/Tooltip";
 import type { BacklogModal } from "../../backlogModal.type";
 import { SearchBar } from "../SearchBar";
 
+// Défilement à partir duquel « Remonter en haut » apparaît : l'en-tête du tableau a quitté l'écran
+const SCROLL_TOP_THRESHOLD_PIXELS = 300;
+
 type Props = {
 	searchInputRef: RefObject<HTMLInputElement | null>;
 	// Jeux en base hors backlog, comptés sur le bouton ; null tant que la vue d'ensemble n'est pas chargée
@@ -48,6 +54,9 @@ export function Toolbar({
 	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
 		ProjectsEnum.Backlog,
 	);
+	// Le bouton de la barre fixe reste à sa place (il ne décale rien) mais ne se montre qu'une fois la page défilée
+	const isScrolled = useIsScrolled(SCROLL_TOP_THRESHOLD_PIXELS);
+	const prefersReducedMotion = usePrefersReducedMotion();
 	const colorSchemeLabel = `Passer au thème ${colorScheme === ColorSchemeEnum.Dark ? "clair" : "sombre"}`;
 
 	return (
@@ -114,6 +123,20 @@ export function Toolbar({
 						/>
 					</button>
 				</Tooltip>
+				<Button
+					icon={ArrowUp}
+					variant="ghost"
+					ariaLabel="Remonter en haut"
+					tooltip="Remonter en haut du tableau"
+					tooltipPlacement="bottom"
+					className={isScrolled ? undefined : styles.scrollTopHidden}
+					onClick={() =>
+						window.scrollTo({
+							top: 0,
+							behavior: prefersReducedMotion ? "instant" : "smooth",
+						})
+					}
+				/>
 				<Button
 					icon={colorScheme === ColorSchemeEnum.Dark ? Moon : Sun}
 					variant="ghost"
