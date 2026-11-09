@@ -82,6 +82,9 @@ $up-next-row: var(--bl-up-next-row);
 $up-next-row-hover: var(--bl-up-next-row-hover);
 $subrow: var(--bl-subrow);
 $subrow-hover: var(--bl-subrow-hover);
+$row-accent: var(--bl-row-accent);
+$row-sheen: var(--bl-row-sheen);
+$up-next-sheen: var(--bl-up-next-sheen);
 $shadow-xs: var(--bl-shadow-xs);
 $shadow-sm: var(--bl-shadow-sm);
 $shadow-md: var(--bl-shadow-md);
@@ -152,6 +155,11 @@ $tooltip-border: var(--bl-tooltip-border);
   --bl-subrow: #f8f9fb;
   --bl-subrow-hover: #f2f4f7;
 
+  // Ligne focalisée (pointillés) et reflet de son survol : gris neutre, ou jaune pour une ligne « À jouer bientôt »
+  --bl-row-accent: #667085;
+  --bl-row-sheen: rgb(0 0 0 / 6%);
+  --bl-up-next-sheen: rgb(245 158 11 / 14%);
+
   // Teintes des statuts et des notes
   --bl-gray-fg: #4a5465;
   --bl-gray-bg: #f2f4f7;
@@ -217,6 +225,9 @@ $tooltip-border: var(--bl-tooltip-border);
     --bl-up-next-row-hover: #1f1c12;
     --bl-subrow: #14171d;
     --bl-subrow-hover: #191d24;
+    --bl-row-accent: #98a2b3;
+    --bl-row-sheen: rgb(255 255 255 / 3.5%);
+    --bl-up-next-sheen: rgb(251 191 36 / 7%);
     --bl-gray-fg: #b4bac6;
     --bl-gray-bg: rgb(148 160 180 / 12%);
     --bl-violet-fg: #bda9ff;

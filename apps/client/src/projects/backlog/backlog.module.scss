@@ -1110,9 +1110,79 @@
   }
 }
 
+// Survol et focus, communs aux lignes et aux sous-lignes ; --row-accent et --row-sheen suivent le thème de la ligne.
+// Focus : bordures haut et bas en pointillés, fixes. Survol : un reflet balaie la ligne en boucle
+.gameRow,
+.userVersionRow {
+  --row-accent: #{vars.$row-accent};
+  --row-sheen: #{vars.$row-sheen};
+
+  position: relative;
+  outline: none;
+
+  // Une bande de 60 % de la largeur, hors de la ligne tant qu'elle n'est pas survolée : 250 % la place juste à droite, -150 % juste à gauche
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    content: "";
+    background: linear-gradient(
+      110deg,
+      transparent 35%,
+      var(--row-sheen) 50%,
+      transparent 65%
+    );
+    background-repeat: no-repeat;
+    background-position-x: 250%;
+    background-size: 60% 100%;
+  }
+
+  &:hover::after {
+    animation: row-sheen 2.25s linear infinite;
+  }
+
+  &:focus-within > td {
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        var(--row-accent) 0 5px,
+        transparent 5px 10px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        var(--row-accent) 0 5px,
+        transparent 5px 10px
+      );
+    background-repeat: no-repeat;
+    background-position:
+      0 0,
+      0 100%;
+    background-size: 100% 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes row-sheen {
+  from {
+    background-position-x: 250%;
+  }
+
+  to {
+    background-position-x: -150%;
+  }
+}
+
 // « À jouer bientôt » : la ligne est mise en valeur, teintée et marquée d'un trait à gauche
 .upNextRow {
   --row-bg: #{vars.$up-next-row};
+  --row-accent: #{vars.$up-next};
+  --row-sheen: #{vars.$up-next-sheen};
 
   &:hover {
     --row-bg: #{vars.$up-next-row-hover};

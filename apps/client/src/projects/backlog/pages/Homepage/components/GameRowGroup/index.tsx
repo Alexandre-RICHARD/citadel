@@ -208,6 +208,8 @@ export function GameRowGroup({
 					row.isTemporary && styles.temporaryRow,
 				)}
 				inert={row.isTemporary}
+				// Focalisable au clic, pas au Tab : les contrôles de la ligne ont déjà le leur
+				tabIndex={-1}
 			>
 				{/* Chevron et badge du nombre de versions jouées sur une ligne dépliable, espace vide sur une ligne simple */}
 				<td className={styles.expandCell}>
@@ -262,6 +264,7 @@ export function GameRowGroup({
 							userVersionRow.isTemporary && styles.temporaryRow,
 						)}
 						inert={userVersionRow.isTemporary}
+						tabIndex={-1}
 					>
 						<td className={styles.expandCell} />
 						{columns.map((column) => (
