@@ -6,7 +6,7 @@ import { useFlow } from "../../api/flow/useFlow";
 import { useMe } from "../../api/me/useMe";
 import { MailCodeStep } from "../../components/MailCodeStep";
 import { PageLoading } from "../../components/PageLoading";
-import { RecoveryCodesPanel } from "../../components/RecoveryCodesPanel";
+import { RecoveryCodesDialog } from "../../components/RecoveryCodesDialog";
 import { AuthPathEnum } from "../../routing/authPath.enum";
 import { buildLoginPath } from "../../routing/buildLoginPath";
 import { DataSection } from "./components/DataSection";
@@ -21,7 +21,7 @@ const PROFILE_REDIRECT = buildLoginPath(AuthPathEnum.PROFILE);
 
 // Le profil : tout ce que le compte permet de changer. Un parcours du profil en cours (nouvelle adresse email, code par
 // email à activer) prend la place de la page jusqu'à la saisie du code ou du lien ; les codes de secours qui viennent
-// d'être donnés passent avant tout, car ils ne reviendront pas
+// d'être donnés s'affichent dans une fenêtre au-dessus de la page, car ils ne reviendront pas
 export function ProfilePage() {
 	const me = useMe();
 	const { flow } = useFlow();
@@ -58,7 +58,7 @@ export function ProfilePage() {
 	return (
 		<div className={styles.page}>
 			{recoveryCodes !== null && (
-				<RecoveryCodesPanel
+				<RecoveryCodesDialog
 					codes={recoveryCodes}
 					email={me.email}
 					onAcknowledge={acknowledge}

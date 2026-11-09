@@ -1,0 +1,18 @@
+// La fenêtre ne dessine rien : la carte du panneau (ProfileSection) fait office de fenêtre
+.dialog {
+  box-sizing: border-box;
+  width: calc(100% - 3.2rem);
+  max-width: 56rem;
+  max-height: calc(100svh - 3.2rem);
+  padding: 0;
+  overflow: auto;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: rgb(10 12 20 / 62%);
+    backdrop-filter: blur(3px);
+  }
+}
