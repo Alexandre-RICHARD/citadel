@@ -1,14 +1,11 @@
+import { useWheelStep } from "@citadel/common/src/react/hooks/useWheelStep";
 import type { IsoDate } from "@citadel/common/src/universal/date/isoDate.type";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import {
-	ChevronLeft,
-	ChevronRight,
-	ChevronsLeft,
-	ChevronsRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import styles from "./calendar.module.scss";
+import { NavButton } from "./NavButton";
 import { useCalendar } from "./useCalendar";
 
 type Props = {
@@ -36,9 +33,12 @@ const dayFormat = new Intl.DateTimeFormat("fr-FR", {
 /** Calendrier d'un mois, semaine du lundi au dimanche ; au clavier, voir `useCalendar` */
 export function Calendar({ value, onSelect, onClose }: Props) {
 	const gridRef = useRef<HTMLTableElement>(null);
+	const monthRowRef = useRef<HTMLDivElement>(null);
+	const yearRowRef = useRef<HTMLDivElement>(null);
 	const {
 		focusedDate,
-		monthLabel,
+		monthName,
+		yearLabel,
 		weeks,
 		today,
 		showPreviousMonth,
@@ -47,6 +47,15 @@ export function Calendar({ value, onSelect, onClose }: Props) {
 		showNextYear,
 		handleKeyDown,
 	} = useCalendar({ value, onSelect, onClose });
+	const monthLabel = `${monthName} ${yearLabel}`;
+
+	// La molette change le mois ou l'année, vers le bas : plus tard
+	useWheelStep(monthRowRef, (step) =>
+		step === 1 ? showNextMonth() : showPreviousMonth(),
+	);
+	useWheelStep(yearRowRef, (step) =>
+		step === 1 ? showNextYear() : showPreviousYear(),
+	);
 
 	// Le jour actif prend le focus à l'ouverture et quand il change (flèches, autre mois)
 	useEffect(() => {
@@ -55,52 +64,52 @@ export function Calendar({ value, onSelect, onClose }: Props) {
 			?.focus({ preventScroll: true });
 	}, [focusedDate]);
 
-	const navigation = [
-		{
-			label: "Année précédente",
-			icon: ChevronsLeft,
-			onClick: showPreviousYear,
-		},
-		{ label: "Mois précédent", icon: ChevronLeft, onClick: showPreviousMonth },
-	];
-	const nextNavigation = [
-		{ label: "Mois suivant", icon: ChevronRight, onClick: showNextMonth },
-		{ label: "Année suivante", icon: ChevronsRight, onClick: showNextYear },
-	];
-
 	return (
 		<div className={styles.calendar}>
-			<div className={styles.header}>
-				{navigation.map(({ label, icon: Icon, onClick }) => (
-					<button
-						key={label}
-						type="button"
-						tabIndex={-1}
-						className={styles.navButton}
-						aria-label={label}
-						onClick={onClick}
-					>
-						<Icon aria-hidden />
-					</button>
-				))}
+			{/* Mois et année, chacun sur sa ligne : les flèches ou la molette (vers le bas : plus tard) les changent */}
+			<div
+				ref={monthRowRef}
+				className={styles.header}
+				title="Molette : changer de mois"
+			>
+				<NavButton
+					label="Mois précédent"
+					icon={ChevronLeft}
+					onClick={showPreviousMonth}
+				/>
 				<span
-					className={styles.monthLabel}
+					className={joinClassNames(styles.headerLabel, styles.monthName)}
 					aria-live="polite"
 				>
-					{monthLabel}
+					{monthName}
 				</span>
-				{nextNavigation.map(({ label, icon: Icon, onClick }) => (
-					<button
-						key={label}
-						type="button"
-						tabIndex={-1}
-						className={styles.navButton}
-						aria-label={label}
-						onClick={onClick}
-					>
-						<Icon aria-hidden />
-					</button>
-				))}
+				<NavButton
+					label="Mois suivant"
+					icon={ChevronRight}
+					onClick={showNextMonth}
+				/>
+			</div>
+			<div
+				ref={yearRowRef}
+				className={styles.header}
+				title="Molette : changer d'année"
+			>
+				<NavButton
+					label="Année précédente"
+					icon={ChevronLeft}
+					onClick={showPreviousYear}
+				/>
+				<span
+					className={styles.headerLabel}
+					aria-live="polite"
+				>
+					{yearLabel}
+				</span>
+				<NavButton
+					label="Année suivante"
+					icon={ChevronRight}
+					onClick={showNextYear}
+				/>
 			</div>
 			<table
 				ref={gridRef}

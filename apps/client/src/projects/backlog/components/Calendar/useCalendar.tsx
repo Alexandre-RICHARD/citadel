@@ -8,8 +8,12 @@ import { type KeyboardEvent, useState } from "react";
 
 import { getCalendarWeeks } from "../../helper/date/getCalendarWeeks";
 
-const monthFormat = new Intl.DateTimeFormat("fr-FR", {
+const monthNameFormat = new Intl.DateTimeFormat("fr-FR", {
 	month: "long",
+	timeZone: "UTC",
+});
+
+const yearFormat = new Intl.DateTimeFormat("fr-FR", {
 	year: "numeric",
 	timeZone: "UTC",
 });
@@ -61,7 +65,8 @@ export function useCalendar({
 
 	return {
 		focusedDate,
-		monthLabel: monthFormat.format(parseUtcIsoDate(focusedDate)),
+		monthName: monthNameFormat.format(parseUtcIsoDate(focusedDate)),
+		yearLabel: yearFormat.format(parseUtcIsoDate(focusedDate)),
 		weeks: getCalendarWeeks(focusedDate),
 		today: getTodayIsoDate(),
 		showPreviousMonth: () =>

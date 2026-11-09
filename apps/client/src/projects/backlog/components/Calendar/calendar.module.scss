@@ -7,18 +7,21 @@
   display: flex;
   gap: 0.2rem;
   align-items: center;
-  margin-bottom: 0.6rem;
+
+  &:nth-child(2) {
+    margin-bottom: 0.6rem;
+  }
 }
 
-.monthLabel {
+.headerLabel {
   flex: 1;
   font-size: vars.$text-md;
   font-weight: 600;
   text-align: center;
+}
 
-  &::first-letter {
-    text-transform: uppercase;
-  }
+.monthName::first-letter {
+  text-transform: uppercase;
 }
 
 .navButton {
