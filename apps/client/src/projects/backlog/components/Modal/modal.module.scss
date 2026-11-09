@@ -131,3 +131,58 @@
     transform: translateY(8px) scale(0.985);
   }
 }
+
+// Réduite : la fenêtre reste montée (sa saisie est gardée) mais disparaît, avec son flou
+.hidden {
+  display: none;
+}
+
+// Le bandeau de la fenêtre réduite, sous la barre du haut : un clic la rouvre
+.minimizedBar {
+  @include vars.reset-button;
+  @include vars.focus-visible;
+
+  position: fixed;
+  top: calc(vars.$toolbar-height + 0.8rem);
+  left: 50%;
+  z-index: vars.$z-modal;
+  box-sizing: border-box;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  max-width: min(64rem, calc(100vw - 3.2rem));
+  padding: 0.9rem 1.4rem;
+  font-size: vars.$text-md;
+  color: vars.$text;
+  background: vars.$surface;
+  border: 1px solid vars.$accent-border;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-lg;
+  translate: -50% 0;
+  animation: rise-in 200ms vars.$ease;
+
+  &:hover {
+    background: vars.$surface-2;
+  }
+
+  svg {
+    flex-shrink: 0;
+    width: 1.7rem;
+    height: 1.7rem;
+    color: vars.$accent-text;
+  }
+}
+
+.minimizedTitle {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.minimizedSubtitle {
+  overflow: hidden;
+  color: vars.$text-subtle;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

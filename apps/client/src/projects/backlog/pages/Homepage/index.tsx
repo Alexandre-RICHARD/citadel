@@ -19,6 +19,7 @@ import type { BacklogOverviewFm } from "../../api/model/backlogOverviewFm.type";
 import { useBacklogOverview } from "../../api/overview/useBacklogOverview";
 import { useBacklogRows } from "../../api/userGame/useBacklogRows";
 import styles from "../../backlog.module.scss";
+import { ModalMinimizeContext } from "../../components/Modal/modalMinimizeContext";
 import type { BacklogView } from "../../helper/view/backlogView.type";
 import { buildViewParams } from "../../helper/view/buildViewParams";
 import type { ColumnSetting } from "../../helper/view/columnSetting.type";
@@ -82,6 +83,8 @@ export function Homepage() {
 	const [modal, setModal] = useState<BacklogModal | null>(null);
 	const [popover, setPopover] = useState<TablePopover | null>(null);
 	const [isEditMode, setIsEditMode] = useState(false);
+	// Une fenêtre d'ajout réduite en bandeau laisse le tableau accessible, mais en lecture seule
+	const [isModalMinimized, setIsModalMinimized] = useState(false);
 	const [expandedGameIds, setExpandedGameIds] = useState<number[]>([]);
 	const [columns, setColumns] = useState<ColumnSetting[]>(
 		() => loadSavedColumns() ?? [...DEFAULT_COLUMNS],
@@ -186,7 +189,7 @@ export function Homepage() {
 	}, [isModalOpen]);
 
 	const table: TableControls = {
-		isEditMode,
+		isEditMode: isEditMode && !isModalMinimized,
 		popover,
 		setPopover,
 		openModal,
@@ -254,16 +257,18 @@ export function Homepage() {
 				</QueryErrorBoundary>
 			</main>
 			{modal !== null && (
-				<ModalHost
-					modal={modal}
-					columns={columns}
-					onOpenModal={openModal}
-					onClose={closeModal}
-					onToggleColumn={changeColumnVisibility}
-					onMoveColumn={(key, offset) =>
-						setColumns(moveColumn(columns, key, offset))
-					}
-				/>
+				<ModalMinimizeContext value={setIsModalMinimized}>
+					<ModalHost
+						modal={modal}
+						columns={columns}
+						onOpenModal={openModal}
+						onClose={closeModal}
+						onToggleColumn={changeColumnVisibility}
+						onMoveColumn={(key, offset) =>
+							setColumns(moveColumn(columns, key, offset))
+						}
+					/>
+				</ModalMinimizeContext>
 			)}
 		</div>
 	);

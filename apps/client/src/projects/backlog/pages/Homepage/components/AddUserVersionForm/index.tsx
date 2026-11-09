@@ -126,6 +126,7 @@ export function AddUserVersionForm({
 			subtitle={gameName}
 			icon={isNewToBacklog ? LibraryBig : CopyPlus}
 			size="lg"
+			canMinimize
 			actions={
 				<ModalActions
 					canValidate={check?.isValid === true && !isTaken}

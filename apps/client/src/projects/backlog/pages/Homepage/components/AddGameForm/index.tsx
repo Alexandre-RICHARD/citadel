@@ -76,6 +76,7 @@ export function AddGameForm({
 			subtitle="Ce qui sera enregistré en base, tel que le donne IGDB"
 			icon={Plus}
 			size="lg"
+			canMinimize
 			footerStart={
 				<Checkbox
 					checked={isAddingToBacklog}

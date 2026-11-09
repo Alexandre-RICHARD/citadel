@@ -1,16 +1,19 @@
 import { getFocusableElements } from "@citadel/common/src/browser/dom/getFocusableElements";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import { type LucideIcon, X } from "lucide-react";
+import { type LucideIcon, Maximize2, Minus, X } from "lucide-react";
 import {
 	type ReactNode,
 	type RefObject,
+	useContext,
 	useEffect,
 	useId,
 	useRef,
+	useState,
 } from "react";
 
 import { Button } from "../Button";
 import styles from "./modal.module.scss";
+import { ModalMinimizeContext } from "./modalMinimizeContext";
 
 type Props = {
 	title: ReactNode;
@@ -18,6 +21,8 @@ type Props = {
 	subtitle?: ReactNode;
 	icon?: LucideIcon | undefined;
 	size?: "sm" | "md" | "lg";
+	/** Bouton « Réduire » : la fenêtre se range en bandeau en haut de la page, sans rien perdre de sa saisie */
+	canMinimize?: boolean;
 	/** Pied de fenêtre, à gauche des boutons (ex. « Ajouter à mon backlog ») */
 	footerStart?: ReactNode;
 	actions: ReactNode;
@@ -37,6 +42,7 @@ export function Modal({
 	subtitle,
 	icon: Icon,
 	size = "md",
+	canMinimize = false,
 	footerStart,
 	actions,
 	onClose,
@@ -47,6 +53,10 @@ export function Modal({
 	const titleId = useId();
 	const subtitleId = useId();
 	const onCloseRef = useRef(onClose);
+	const originFocusRef = useRef<HTMLElement | null>(null);
+	const [isMinimized, setIsMinimized] = useState(false);
+	const isMinimizedRef = useRef(false);
+	const reportMinimized = useContext(ModalMinimizeContext);
 
 	useEffect(() => {
 		onCloseRef.current = onClose;
@@ -55,7 +65,7 @@ export function Modal({
 	/** Échap ferme la fenêtre comme « Annuler » ; une liste ou un calendrier ouvert dedans se ferme d'abord et arrête l'événement */
 	useEffect(() => {
 		function closeOnEscape(event: KeyboardEvent) {
-			if (event.key === "Escape") {
+			if (event.key === "Escape" && !isMinimizedRef.current) {
 				onCloseRef.current();
 			}
 		}
@@ -63,12 +73,23 @@ export function Modal({
 		return () => window.removeEventListener("keydown", closeOnEscape);
 	}, []);
 
+	/** L'élément d'où la fenêtre s'est ouverte récupère le focus à sa fermeture, et la page sait qu'elle n'est plus réduite */
 	useEffect(() => {
-		const dialog = dialogRef.current;
-		const previouslyFocused =
+		originFocusRef.current =
 			document.activeElement instanceof HTMLElement
 				? document.activeElement
 				: null;
+		return () => {
+			reportMinimized(false);
+			if (originFocusRef.current?.isConnected === true)
+				originFocusRef.current.focus({ preventScroll: true });
+		};
+	}, [reportMinimized]);
+
+	/** Réduite, la fenêtre ne verrouille plus ni le défilement ni le focus : la page reprend la main */
+	useEffect(() => {
+		const dialog = dialogRef.current;
+		if (isMinimized) return undefined;
 		(initialFocusRef?.current ?? dialog)?.focus({ preventScroll: true });
 		const root = document.documentElement;
 		const previousOverflow = root.style.overflow;
@@ -101,65 +122,99 @@ export function Modal({
 		return () => {
 			dialog?.removeEventListener("keydown", trapFocus);
 			root.style.overflow = previousOverflow;
-			if (previouslyFocused?.isConnected === true) {
-				previouslyFocused.focus({ preventScroll: true });
-			}
 		};
-	}, [initialFocusRef]);
+	}, [initialFocusRef, isMinimized]);
+
+	function changeMinimized(nextIsMinimized: boolean) {
+		isMinimizedRef.current = nextIsMinimized;
+		setIsMinimized(nextIsMinimized);
+		reportMinimized(nextIsMinimized);
+		if (nextIsMinimized) originFocusRef.current?.focus({ preventScroll: true });
+	}
 
 	return (
-		<div className={styles.overlay}>
+		<>
+			{isMinimized && (
+				<button
+					type="button"
+					className={styles.minimizedBar}
+					aria-label="Rouvrir la fenêtre"
+					onClick={() => changeMinimized(false)}
+				>
+					{Icon !== undefined && <Icon aria-hidden />}
+					<span className={styles.minimizedTitle}>{title}</span>
+					{subtitle !== undefined && (
+						<span className={styles.minimizedSubtitle}>{subtitle}</span>
+					)}
+					<Maximize2 aria-hidden />
+				</button>
+			)}
 			<div
-				ref={dialogRef}
-				className={joinClassNames(styles.dialog, styles[size])}
-				role="dialog"
-				aria-modal="true"
-				// Le sous-titre (souvent le jeu concerné) complète le nom de la fenêtre
-				aria-labelledby={
-					subtitle === undefined ? titleId : `${titleId} ${subtitleId}`
-				}
-				tabIndex={-1}
+				className={joinClassNames(styles.overlay, isMinimized && styles.hidden)}
 			>
-				<header className={styles.header}>
-					{Icon !== undefined && (
-						<span className={styles.headerIcon}>
-							<Icon aria-hidden />
-						</span>
-					)}
-					<div className={styles.headings}>
-						<h2
-							id={titleId}
-							className={styles.title}
-						>
-							{title}
-						</h2>
-						{subtitle !== undefined && (
-							<p
-								id={subtitleId}
-								className={styles.subtitle}
-							>
-								{subtitle}
-							</p>
+				<div
+					ref={dialogRef}
+					className={joinClassNames(styles.dialog, styles[size])}
+					role="dialog"
+					aria-modal="true"
+					// Le sous-titre (souvent le jeu concerné) complète le nom de la fenêtre
+					aria-labelledby={
+						subtitle === undefined ? titleId : `${titleId} ${subtitleId}`
+					}
+					tabIndex={-1}
+				>
+					<header className={styles.header}>
+						{Icon !== undefined && (
+							<span className={styles.headerIcon}>
+								<Icon aria-hidden />
+							</span>
 						)}
-					</div>
-					<Button
-						icon={X}
-						variant="ghost"
-						size="sm"
-						ariaLabel="Fermer"
-						tooltip="Fermer (Échap)"
-						tooltipPlacement="bottom"
-						onClick={onClose}
-					/>
-				</header>
-				<div className={styles.body}>{children}</div>
-				<footer className={styles.footer}>
-					{footerStart !== undefined && (
-						<div className={styles.footerStart}>{footerStart}</div>
-					)}
-					<div className={styles.actions}>{actions}</div>
-				</footer>
+						<div className={styles.headings}>
+							<h2
+								id={titleId}
+								className={styles.title}
+							>
+								{title}
+							</h2>
+							{subtitle !== undefined && (
+								<p
+									id={subtitleId}
+									className={styles.subtitle}
+								>
+									{subtitle}
+								</p>
+							)}
+						</div>
+						{canMinimize && (
+							<Button
+								icon={Minus}
+								variant="ghost"
+								size="sm"
+								ariaLabel="Réduire"
+								tooltip="Réduire : reprendre la page, la saisie est gardée"
+								tooltipPlacement="bottom"
+								onClick={() => changeMinimized(true)}
+							/>
+						)}
+						<Button
+							icon={X}
+							variant="ghost"
+							size="sm"
+							ariaLabel="Fermer"
+							tooltip="Fermer (Échap)"
+							tooltipPlacement="bottom"
+							onClick={onClose}
+						/>
+					</header>
+					<div className={styles.body}>{children}</div>
+					<footer className={styles.footer}>
+						{footerStart !== undefined && (
+							<div className={styles.footerStart}>{footerStart}</div>
+						)}
+						<div className={styles.actions}>{actions}</div>
+					</footer>
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
