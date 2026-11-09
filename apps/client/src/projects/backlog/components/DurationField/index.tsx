@@ -6,6 +6,15 @@ import { useRef } from "react";
 
 import styles from "./durationField.module.scss";
 
+// Largeur des champs, en chiffres : de la place pour un grand nombre d'heures (un jeu de plusieurs centaines d'heures
+// ne doit pas rogner la valeur), et un chiffre de marge pour la saisie
+const MIN_HOURS_WIDTH_CH = 4;
+const MINUTES_WIDTH_CH = 2;
+
+function getHoursWidth(hours: number): number {
+	return Math.max(MIN_HOURS_WIDTH_CH, String(hours).length + 1);
+}
+
 type Props = {
 	minutes: number;
 	label: string;
@@ -70,7 +79,7 @@ export function DurationField({
 				ref={hoursRef}
 				type="number"
 				className={styles.part}
-				style={{ width: `${Math.max(2, String(hours).length)}ch` }}
+				style={{ width: `${getHoursWidth(hours)}ch` }}
 				min={0}
 				step={1}
 				defaultValue={hours}
@@ -87,7 +96,7 @@ export function DurationField({
 				ref={minutesRef}
 				type="number"
 				className={styles.part}
-				style={{ width: "2ch" }}
+				style={{ width: `${MINUTES_WIDTH_CH}ch` }}
 				min={0}
 				step={1}
 				defaultValue={extraMinutesText}
