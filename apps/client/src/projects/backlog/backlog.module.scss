@@ -975,6 +975,7 @@
 
 .filterInput {
   @include vars.field;
+  @include vars.large-search-clear;
 
   width: 100%;
   height: vars.$control-sm;
@@ -2091,6 +2092,7 @@
 
 .filterBoxInput {
   @include vars.field;
+  @include vars.large-search-clear;
 
   width: 100%;
   height: 4rem;
