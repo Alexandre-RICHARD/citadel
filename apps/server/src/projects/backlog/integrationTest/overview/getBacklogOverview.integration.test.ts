@@ -85,7 +85,8 @@ describe("getBacklogOverview", () => {
 				id: SEEDED_PLATFORMS.PS2,
 				shortName: "PS2",
 				technicalName: "ps2",
-				emulatedPlatformId: null,
+				parentPlatformId: null,
+				subPlatformType: null,
 			});
 		});
 	});

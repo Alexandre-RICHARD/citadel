@@ -8,10 +8,10 @@ import { fromCompanyEntityToCompanyBean } from "./fromCompanyEntityToCompanyBean
 import { fromPlatformEntityToPlatformBean } from "./fromPlatformEntityToPlatformBean.ts";
 import { fromSeriesEntityToSeriesBean } from "./fromSeriesEntityToSeriesBean.ts";
 
-// `emulators` : tous ceux en base, pour proposer après chaque console son émulateur
+// `subPlatforms` : toutes celles en base, pour proposer après chaque plateforme ses émulateurs et launchers
 export function fromStoredGameEntityToStoredGameBean(
 	game: StoredGameEntity,
-	emulators: PlatformBean[],
+	subPlatforms: PlatformBean[],
 ): StoredGameBean {
 	const versions = game.versions
 		.map((version): StoredVersionBean => {
@@ -27,7 +27,7 @@ export function fromStoredGameEntityToStoredGameBean(
 				platforms,
 				platformOptions: getPlatformOptions(
 					platforms.map(({ platform }) => platform),
-					emulators,
+					subPlatforms,
 				),
 			};
 		})

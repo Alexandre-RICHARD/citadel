@@ -498,8 +498,8 @@
   }
 }
 
-// Émulateur : bord en pointillé et icône de puce
-.emulator {
+// Sous-plateforme (émulateur, launcher) : bord en pointillé
+.subPlatform {
   border-style: dashed;
   border-color: vars.$border-strong;
 }

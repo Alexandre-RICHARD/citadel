@@ -137,6 +137,38 @@ describe("getUserGames", () => {
 			).toHaveLength(kept.userVersionIds.length);
 		});
 
+		it("SHOULD show only the versions played on the filtered platform, not those on its emulator", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} Dead Space`,
+				userVersionStatuses: [StatusEnum.FINISHED, StatusEnum.STARTED],
+			});
+			await insertBacklogRows.userVersion({
+				userId: player.userId,
+				versionId: backlogGame.versionIds[0] ?? 0,
+				platformId: SEEDED_PLATFORMS.RPCS3,
+			});
+
+			// Act
+			const ps3Response = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ name: word, platform: "PS3" });
+			const emulatorResponse = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ name: word, platform: "RPCS3" });
+
+			// Assert
+			function platformNames(body: unknown) {
+				return (body as UserGameListDto).userGames[0]?.userVersions.map(
+					({ platform }) => platform.shortName,
+				);
+			}
+			expect(platformNames(ps3Response.body)).toStrictEqual(["PS3", "PS3"]);
+			expect(platformNames(emulatorResponse.body)).toStrictEqual(["RPCS3"]);
+		});
+
 		it("SHOULD keep a game WHEN it has any of several checked statuses", async () => {
 			// Arrange
 			const word = buildUniqueWord();

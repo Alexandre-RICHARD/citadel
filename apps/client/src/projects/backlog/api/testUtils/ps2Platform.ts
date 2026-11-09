@@ -4,5 +4,6 @@ export const PS2_PLATFORM: PlatformDto = {
 	id: 8,
 	shortName: "PS2",
 	technicalName: "ps2",
-	emulatedPlatformId: null,
+	parentPlatformId: null,
+	subPlatformType: null,
 };

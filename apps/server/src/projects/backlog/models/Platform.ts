@@ -1,3 +1,4 @@
+import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import {
 	type CreationOptional,
 	DataTypes,
@@ -8,7 +9,7 @@ import {
 
 import { sequelize } from "../../../configuration/sequelize.ts";
 
-// Plateforme IGDB, ou émulateur (id négatif) rattaché à la console qu'il émule
+// Plateforme IGDB, ou sous-plateforme (id négatif : émulateur, launcher) rattachée à sa plateforme parente
 export class Platform extends Model<
 	InferAttributes<Platform>,
 	InferCreationAttributes<Platform>
@@ -16,7 +17,8 @@ export class Platform extends Model<
 	declare id: number;
 	declare shortName: string;
 	declare technicalName: string;
-	declare emulatedPlatformId: number | null;
+	declare parentPlatformId: number | null;
+	declare subPlatformType: SubPlatformTypeEnum | null;
 	declare createdAt: CreationOptional<Date>;
 	declare updatedAt: CreationOptional<Date>;
 }
@@ -39,9 +41,14 @@ Platform.init(
 			field: "technical_name",
 			allowNull: false,
 		},
-		emulatedPlatformId: {
+		parentPlatformId: {
 			type: DataTypes.INTEGER,
-			field: "emulated_platform_id",
+			field: "parent_platform_id",
+			allowNull: true,
+		},
+		subPlatformType: {
+			type: DataTypes.ENUM(...Object.values(SubPlatformTypeEnum)),
+			field: "sub_platform_type",
 			allowNull: true,
 		},
 		createdAt: {

@@ -1,32 +1,41 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import { Cpu } from "lucide-react";
+import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum";
+import { Cpu, Gamepad2, type LucideIcon, Store } from "lucide-react";
 
 import type { PlatformFm } from "../../../../api/model/platformFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
+import { subPlatformTypeLabels } from "../../../../helper/label/subPlatformTypeLabels";
+import { getPlatformIconUrl } from "../../../../helper/platform/getPlatformIconUrl";
 
-// Icônes embarquées dans `icons/` du projet, nommées par le nom technique de leur plateforme (ex. `ps2.svg`)
-const platformIconUrls = import.meta.glob<string>("../../../../icons/*.svg", {
-	eager: true,
-	query: "?url",
-	import: "default",
-});
+// Icône de la plateforme tant que son SVG manque : une par sorte de plateforme
+const defaultIcons: Readonly<
+	Record<SubPlatformTypeEnum | "platform", LucideIcon>
+> = {
+	platform: Gamepad2,
+	[SubPlatformTypeEnum.EMULATOR]: Cpu,
+	[SubPlatformTypeEnum.LAUNCHER]: Store,
+};
 
-// Plateforme : icône et nom, le nom seul si l'icône manque ; un émulateur est signalé
+// Plateforme : son icône (celle par défaut tant que son SVG manque) et son nom ; une sous-plateforme est signalée
 export function PlatformLabel({ platform }: { platform: PlatformFm }) {
-	const iconUrl: string | undefined =
-		platformIconUrls[`../../../../icons/${platform.technicalName}.svg`];
-	const isEmulator = platform.emulatedPlatformId !== null;
+	const iconUrl = getPlatformIconUrl(platform.technicalName);
+	const { subPlatformType } = platform;
+	const DefaultIcon = defaultIcons[subPlatformType ?? "platform"];
 	return (
-		<Tooltip content={isEmulator ? "Émulateur" : null}>
+		<Tooltip
+			content={
+				subPlatformType === null ? null : subPlatformTypeLabels[subPlatformType]
+			}
+		>
 			<span
 				className={joinClassNames(
 					styles.platform,
-					isEmulator && styles.emulator,
+					subPlatformType !== null && styles.subPlatform,
 				)}
 			>
-				{iconUrl === undefined ? (
-					isEmulator && <Cpu aria-hidden />
+				{iconUrl === null ? (
+					<DefaultIcon aria-hidden />
 				) : (
 					<img
 						src={iconUrl}

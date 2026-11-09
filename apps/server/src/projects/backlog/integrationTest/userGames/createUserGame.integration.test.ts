@@ -2,6 +2,7 @@ import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGa
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
+import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
@@ -154,7 +155,8 @@ describe("createUserGame", () => {
 						id: SEEDED_PLATFORMS.PCSX2,
 						shortName: "PCSX2",
 						technicalName: "pcsx2",
-						emulatedPlatformId: SEEDED_PLATFORMS.PS2,
+						parentPlatformId: SEEDED_PLATFORMS.PS2,
+						subPlatformType: SubPlatformTypeEnum.EMULATOR,
 					},
 					// Un émulateur reprend la date de sortie sur la console émulée
 					releaseDate: "2011-11-11",

@@ -11,7 +11,7 @@ type PreviewSources = {
 	storedGame: StoredGameBean | null;
 	// DLC déjà en base comme jeux à part (règle « DLC comme jeu ») : id du DLC → id du jeu
 	dlcGameIds: Map<number, number>;
-	emulators: PlatformBean[];
+	subPlatforms: PlatformBean[];
 };
 
 // Les fiches d'IGDB dans leur ordre, remplacées par celles de la base quand elles y sont, puis celles que seule la base a
@@ -36,7 +36,7 @@ export function buildGamePreview({
 	gameImport,
 	storedGame,
 	dlcGameIds,
-	emulators,
+	subPlatforms,
 }: PreviewSources): GamePreviewBean {
 	const storedVersionIds = new Set(
 		storedGame?.versions.map(({ id }) => id) ?? [],
@@ -48,7 +48,7 @@ export function buildGamePreview({
 			isStored: false,
 			platformOptions: getPlatformOptions(
 				version.platforms.map(({ platform }) => platform),
-				emulators,
+				subPlatforms,
 			),
 		}),
 	);

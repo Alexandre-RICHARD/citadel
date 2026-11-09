@@ -20,7 +20,8 @@ export async function insertPlatformsQuery(
 				id: platform.id,
 				shortName: platform.shortName,
 				technicalName: platform.technicalName,
-				emulatedPlatformId: platform.emulatedPlatformId,
+				parentPlatformId: platform.parentPlatformId,
+				subPlatformType: platform.subPlatformType,
 			})),
 			{ ignoreDuplicates: true, transaction },
 		);

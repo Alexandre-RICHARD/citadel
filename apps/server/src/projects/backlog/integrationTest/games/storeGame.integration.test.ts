@@ -116,7 +116,8 @@ describe("storeGame", () => {
 					id: ids.newPlatformId,
 					shortName: "Switch",
 					technicalName: "switch",
-					emulatedPlatformId: null,
+					parentPlatformId: null,
+					subPlatformType: null,
 				},
 			]);
 

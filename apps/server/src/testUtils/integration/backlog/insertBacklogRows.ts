@@ -1,5 +1,6 @@
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
+import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import { QueryTypes } from "sequelize";
 
 import { sequelize } from "../../../configuration/sequelize.ts";
@@ -24,17 +25,24 @@ export const insertBacklogRows = {
 		id: number;
 		shortName: string;
 		technicalName?: string;
-		emulatedPlatformId?: number | null;
+		parentPlatformId?: number | null;
+		// Obligatoire avec un parent, interdit sans : émulateur par défaut
+		subPlatformType?: SubPlatformTypeEnum | null;
 	}): Promise<void> {
+		const parentPlatformId = row.parentPlatformId ?? null;
 		await sequelize.query(
-			`INSERT INTO backlog_platform (id, short_name, technical_name, emulated_platform_id)
-			VALUES (:id, :shortName, :technicalName, :emulatedPlatformId)`,
+			`INSERT INTO backlog_platform (id, short_name, technical_name, parent_platform_id, sub_platform_type)
+			VALUES (:id, :shortName, :technicalName, :parentPlatformId, :subPlatformType)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
 					technicalName: row.shortName.toLowerCase(),
-					emulatedPlatformId: null,
 					...row,
+					parentPlatformId,
+					subPlatformType:
+						parentPlatformId === null
+							? null
+							: (row.subPlatformType ?? SubPlatformTypeEnum.EMULATOR),
 				},
 			},
 		);

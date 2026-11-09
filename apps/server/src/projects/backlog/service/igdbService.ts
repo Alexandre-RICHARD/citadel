@@ -14,7 +14,7 @@ import { fromPlatformEntityToPlatformBean } from "../mapper/beanEntity/fromPlatf
 import { fromIgdbGameDataToGameImportBean } from "../mapper/igdbBean/fromIgdbGameDataToGameImportBean.ts";
 import { fromIgdbGameImagesToImageIds } from "../mapper/igdbBean/fromIgdbGameImagesToImageIds.ts";
 import { fromIgdbSearchHitToSearchResultBean } from "../mapper/igdbBean/fromIgdbSearchHitToSearchResultBean.ts";
-import { getEmulatorsQuery } from "../query/platform/getEmulatorsQuery.ts";
+import { getSubPlatformsQuery } from "../query/platform/getSubPlatformsQuery.ts";
 import { getStoredVersionsQuery } from "../query/version/getStoredVersionsQuery.ts";
 
 function igdbGameNotFound(igdbId: number): NotFoundError {
@@ -69,9 +69,9 @@ class IgdbService {
 			...gameImport.versions.map(({ id }) => id),
 		];
 		const dlcIds = gameImport.dlcs.map(({ id }) => id);
-		const [storedVersions, emulators] = await Promise.all([
+		const [storedVersions, subPlatforms] = await Promise.all([
 			getStoredVersionsQuery(userId, getUniqueValues([...treeIds, ...dlcIds])),
-			getEmulatorsQuery(),
+			getSubPlatformsQuery(),
 		]);
 		const storedGameId =
 			treeIds
@@ -89,7 +89,7 @@ class IgdbService {
 					.filter(({ id }) => dlcIds.includes(id))
 					.map(({ id, gameId }) => [id, gameId]),
 			),
-			emulators: emulators.map(fromPlatformEntityToPlatformBean),
+			subPlatforms: subPlatforms.map(fromPlatformEntityToPlatformBean),
 		});
 	}
 

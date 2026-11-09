@@ -11,6 +11,7 @@ export function fromIgdbPlatformToPlatformBean(
 		id: platform.id,
 		shortName: trimToNull(platform.abbreviation) ?? platform.name,
 		technicalName: platform.slug,
-		emulatedPlatformId: null,
+		parentPlatformId: null,
+		subPlatformType: null,
 	};
 }

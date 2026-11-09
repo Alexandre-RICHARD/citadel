@@ -1,16 +1,16 @@
 import type { PlatformBean } from "../bean/platformBean.type.ts";
 
-// Plateformes proposées pour une version jouée : celles de la version, puis les émulateurs de ces consoles
+// Plateformes proposées pour une version jouée : celles de la version, puis leurs sous-plateformes (émulateurs, launchers)
 export function getPlatformOptions(
 	versionPlatforms: PlatformBean[],
-	emulators: PlatformBean[],
+	subPlatforms: PlatformBean[],
 ): PlatformBean[] {
-	const consoleIds = new Set(versionPlatforms.map(({ id }) => id));
+	const parentIds = new Set(versionPlatforms.map(({ id }) => id));
 	return [
 		...versionPlatforms,
-		...emulators.filter(
-			({ emulatedPlatformId }) =>
-				emulatedPlatformId !== null && consoleIds.has(emulatedPlatformId),
+		...subPlatforms.filter(
+			({ parentPlatformId }) =>
+				parentPlatformId !== null && parentIds.has(parentPlatformId),
 		),
 	];
 }

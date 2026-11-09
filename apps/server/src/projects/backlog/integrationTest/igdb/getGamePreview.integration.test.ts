@@ -1,4 +1,5 @@
 import type { GamePreviewDto } from "@citadel/specs/src/projects/backlog/dto/igdb/gamePreviewDto.type.ts";
+import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
@@ -33,7 +34,8 @@ const PCSX2 = {
 	id: SEEDED_PLATFORMS.PCSX2,
 	shortName: "PCSX2",
 	technicalName: "pcsx2",
-	emulatedPlatformId: SEEDED_PLATFORMS.PS2,
+	parentPlatformId: SEEDED_PLATFORMS.PS2,
+	subPlatformType: SubPlatformTypeEnum.EMULATOR,
 };
 
 describe("getGamePreview", () => {
@@ -103,7 +105,8 @@ describe("getGamePreview", () => {
 									id: 8,
 									shortName: "PS2",
 									technicalName: "ps2",
-									emulatedPlatformId: null,
+									parentPlatformId: null,
+									subPlatformType: null,
 								},
 								releaseDate: "2006-04-20",
 							},
@@ -113,7 +116,8 @@ describe("getGamePreview", () => {
 								id: 8,
 								shortName: "PS2",
 								technicalName: "ps2",
-								emulatedPlatformId: null,
+								parentPlatformId: null,
+								subPlatformType: null,
 							},
 							PCSX2,
 						],
@@ -131,7 +135,8 @@ describe("getGamePreview", () => {
 									id: 9,
 									shortName: "PS3",
 									technicalName: "ps3",
-									emulatedPlatformId: null,
+									parentPlatformId: null,
+									subPlatformType: null,
 								},
 								releaseDate: "2012-10-30",
 							},
@@ -141,13 +146,15 @@ describe("getGamePreview", () => {
 								id: 9,
 								shortName: "PS3",
 								technicalName: "ps3",
-								emulatedPlatformId: null,
+								parentPlatformId: null,
+								subPlatformType: null,
 							},
 							{
 								id: SEEDED_PLATFORMS.RPCS3,
 								shortName: "RPCS3",
 								technicalName: "rpcs3",
-								emulatedPlatformId: SEEDED_PLATFORMS.PS3,
+								parentPlatformId: SEEDED_PLATFORMS.PS3,
+								subPlatformType: SubPlatformTypeEnum.EMULATOR,
 							},
 						],
 					},

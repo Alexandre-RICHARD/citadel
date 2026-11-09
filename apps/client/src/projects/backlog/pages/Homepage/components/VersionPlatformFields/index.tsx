@@ -1,6 +1,8 @@
 import type { StoredVersionFm } from "../../../../api/model/storedVersionFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Select } from "../../../../components/Select";
+import { getSubPlatformFieldLabel } from "../../../../helper/platform/getSubPlatformFieldLabel";
+import { splitPlatformChoice } from "../../../../helper/platform/splitPlatformChoice";
 import { FormField } from "../FormField";
 
 type Props = {
@@ -13,6 +15,9 @@ type Props = {
 	onChange: (versionId: number, platformId: number | null) => void;
 };
 
+// Valeur du second choix qui laisse la plateforme elle-même
+const NO_SUB_PLATFORM = "";
+
 // Libellé d'une version : son titre, ou le nom du jeu pour l'originale, puis ses plateformes
 function getVersionLabel(version: StoredVersionFm, gameName: string): string {
 	const title = version.title ?? `${gameName} (originale)`;
@@ -24,7 +29,10 @@ function getVersionLabel(version: StoredVersionFm, gameName: string): string {
 		: `${title} · ${platformNames.join(", ")}`;
 }
 
-// Version puis plateforme d'une nouvelle version jouée : plateformes de la version, puis émulateurs de ces consoles
+/**
+ * Version, plateforme, puis, si la plateforme en a, sa sous-plateforme (RPCS3 pour la PS3, Steam pour le PC) : celle
+ * choisie est enregistrée, sinon la plateforme
+ */
 export function VersionPlatformFields({
 	gameName,
 	versions,
@@ -35,6 +43,16 @@ export function VersionPlatformFields({
 }: Props) {
 	const platformOptions =
 		versions.find(({ id }) => id === versionId)?.platformOptions ?? [];
+	const { platforms, parentId, subPlatforms, subPlatformId } =
+		splitPlatformChoice(platformOptions, platformId);
+
+	function isTaken(candidatePlatformId: number): boolean {
+		return takenVersionPlatforms.some(
+			(taken) =>
+				taken.versionId === versionId &&
+				taken.platformId === candidatePlatformId,
+		);
+	}
 
 	return (
 		<div className={styles.formRow}>
@@ -60,21 +78,27 @@ export function VersionPlatformFields({
 				isRequired
 			>
 				<Select
-					value={platformId === null ? null : String(platformId)}
-					options={platformOptions.map((platform) => {
-						const isTaken = takenVersionPlatforms.some(
-							(taken) =>
-								taken.versionId === versionId &&
-								taken.platformId === platform.id,
+					value={parentId === null ? null : String(parentId)}
+					options={platforms.map((platform) => {
+						const hasSubPlatforms = platformOptions.some(
+							({ parentPlatformId }) => parentPlatformId === platform.id,
 						);
-						let hint: string | undefined;
-						if (isTaken) hint = "déjà dans le backlog";
-						else if (platform.emulatedPlatformId !== null) hint = "émulateur";
+						// Une plateforme déjà jouée reste choisissable tant que l'une de ses sous-plateformes ne l'est pas
+						const isExhausted =
+							isTaken(platform.id) &&
+							!platformOptions.some(
+								(option) =>
+									option.parentPlatformId === platform.id &&
+									!isTaken(option.id),
+							);
 						return {
 							value: String(platform.id),
 							label: platform.shortName,
-							hint,
-							disabled: isTaken,
+							hint:
+								isExhausted && !hasSubPlatforms
+									? "déjà dans le backlog"
+									: undefined,
+							disabled: isExhausted,
 						};
 					})}
 					placeholder={
@@ -88,6 +112,43 @@ export function VersionPlatformFields({
 					}}
 				/>
 			</FormField>
+			{subPlatforms.length > 0 && (
+				<FormField label={getSubPlatformFieldLabel(subPlatforms)}>
+					<Select
+						value={
+							subPlatformId === null ? NO_SUB_PLATFORM : String(subPlatformId)
+						}
+						options={[
+							{
+								value: NO_SUB_PLATFORM,
+								label: "Aucun",
+								disabled: parentId !== null && isTaken(parentId),
+								hint:
+									parentId !== null && isTaken(parentId)
+										? "déjà dans le backlog"
+										: undefined,
+							},
+							...subPlatforms.map((subPlatform) => ({
+								value: String(subPlatform.id),
+								label: subPlatform.shortName,
+								hint: isTaken(subPlatform.id)
+									? "déjà dans le backlog"
+									: undefined,
+								disabled: isTaken(subPlatform.id),
+							})),
+						]}
+						ariaLabel={getSubPlatformFieldLabel(subPlatforms)}
+						className={styles.fullWidth}
+						onChange={(value) => {
+							if (versionId === null || parentId === null) return;
+							onChange(
+								versionId,
+								value === NO_SUB_PLATFORM ? parentId : Number(value),
+							);
+						}}
+					/>
+				</FormField>
+			)}
 		</div>
 	);
 }

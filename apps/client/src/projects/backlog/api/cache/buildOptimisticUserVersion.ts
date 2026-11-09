@@ -18,7 +18,7 @@ export function buildOptimisticUserVersion(
 	);
 	if (version === undefined || platform === undefined) return null;
 
-	const releasePlatformId = platform.emulatedPlatformId ?? platform.id;
+	const releasePlatformId = platform.parentPlatformId ?? platform.id;
 	return {
 		id: temporaryId,
 		version: {

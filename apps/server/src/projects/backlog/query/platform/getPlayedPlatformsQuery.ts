@@ -15,7 +15,8 @@ export async function getPlayedPlatformsQuery(
 					p.id,
 					p.short_name AS shortName,
 					p.technical_name AS technicalName,
-					p.emulated_platform_id AS emulatedPlatformId
+					p.parent_platform_id AS parentPlatformId,
+					p.sub_platform_type AS subPlatformType
 				FROM backlog_platform p
 				WHERE EXISTS (
 					SELECT 1 FROM backlog_user_version uv

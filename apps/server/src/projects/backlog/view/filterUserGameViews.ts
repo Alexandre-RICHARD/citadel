@@ -29,6 +29,11 @@ function isInRange<Value extends number | string>(
 	);
 }
 
+// Une ligne sans valeur (plateforme d'un jeu à plusieurs versions jouées) ne correspond à aucune valeur cochée
+function matchesValues(value: unknown, values: string[]): boolean {
+	return typeof value === "string" && values.includes(value);
+}
+
 // Sans accents ni majuscules ; une valeur exacte (clic sur une série) doit être tout le texte
 function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
 	switch (filter.kind) {
@@ -40,7 +45,7 @@ function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
 				: texts.some((text) => text.includes(searched));
 		}
 		case ColumnFilterKindEnum.VALUE:
-			return filter.values.includes(String(getColumnValue(filter.column, row)));
+			return matchesValues(getColumnValue(filter.column, row), filter.values);
 		case ColumnFilterKindEnum.BOOLEAN:
 			return getColumnValue(filter.column, row) === filter.value;
 		case ColumnFilterKindEnum.NUMBER_RANGE:

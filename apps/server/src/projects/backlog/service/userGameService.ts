@@ -32,6 +32,7 @@ import { getGameUserVersionsQuery } from "../query/userVersion/getGameUserVersio
 import { updateUserVersionQuery } from "../query/userVersion/updateUserVersionQuery.ts";
 import { buildUserGameView } from "../view/buildUserGameView.ts";
 import { filterUserGameViews } from "../view/filterUserGameViews.ts";
+import { restrictUserGameViewsToPlatforms } from "../view/restrictUserGameViewsToPlatforms.ts";
 import { sortUserGameViews } from "../view/sortUserGameViews.ts";
 
 function userGameNotFound(gameId: number): NotFoundError {
@@ -82,8 +83,11 @@ class UserGameService {
 	): Promise<UserGamePageBean> {
 		const pageSize = Number(BacklogPageSizeEnum.USER_GAMES);
 		const views = sortUserGameViews(
-			filterUserGameViews(
-				(await loadUserGameBeans(userId, null)).map(buildUserGameView),
+			restrictUserGameViewsToPlatforms(
+				filterUserGameViews(
+					(await loadUserGameBeans(userId, null)).map(buildUserGameView),
+					filters,
+				),
 				filters,
 			),
 			sort,

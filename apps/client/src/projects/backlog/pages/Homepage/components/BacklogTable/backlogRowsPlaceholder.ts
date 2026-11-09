@@ -7,7 +7,8 @@ const PLACEHOLDER_PLATFORM = {
 	id: 1,
 	shortName: "PS2",
 	technicalName: "ps2",
-	emulatedPlatformId: null,
+	parentPlatformId: null,
+	subPlatformType: null,
 };
 
 // Une ligne factice : seules les longueurs de texte comptent ; une seule version jouée, rien à déplier
