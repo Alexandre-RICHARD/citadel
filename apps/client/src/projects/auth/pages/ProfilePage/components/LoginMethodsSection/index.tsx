@@ -1,5 +1,5 @@
 import { LoginMethodEnum } from "@citadel/specs/src/projects/auth/enum/loginMethod.enum";
-import { LogIn } from "lucide-react";
+import { LogIn, TriangleAlert } from "lucide-react";
 
 import { useUpdateMe } from "../../../../api/me/useUpdateMe";
 import type { MeFm } from "../../../../api/model/meFm.type";
@@ -12,7 +12,13 @@ type Props = {
 	me: MeFm;
 };
 
-const OPTIONS: { value: LoginMethodEnum; label: string; hint: string }[] = [
+// `warning` : ce que la méthode ferme, sans confirmation ni indice sur la page de connexion
+const OPTIONS: {
+	value: LoginMethodEnum;
+	label: string;
+	hint: string;
+	warning?: string;
+}[] = [
 	{
 		value: LoginMethodEnum.BOTH,
 		label: "Les deux",
@@ -22,11 +28,15 @@ const OPTIONS: { value: LoginMethodEnum; label: string; hint: string }[] = [
 		value: LoginMethodEnum.MAIL,
 		label: "Par email",
 		hint: "Un lien ou un code reçu par email. Ton mot de passe reste demandé pour les actions sensibles.",
+		warning:
+			"Tu ne pourras plus te connecter avec ton mot de passe : il sera refusé comme des identifiants incorrects.",
 	},
 	{
 		value: LoginMethodEnum.PASSWORD,
 		label: "Par mon pseudo (et mot de passe)",
 		hint: "Ton pseudo ou ton adresse email, et ton mot de passe.",
+		warning:
+			"Tu ne pourras plus te connecter par email : aucun lien ni code ne te sera envoyé, sans message d’erreur.",
 	},
 ];
 
@@ -63,7 +73,7 @@ export function LoginMethodsSection({ me }: Props) {
 				<legend className={styles.legend}>
 					Méthodes de connexion acceptées
 				</legend>
-				{OPTIONS.map(({ value, label, hint }) => (
+				{OPTIONS.map(({ value, label, hint, warning }) => (
 					<div
 						key={value}
 						className={styles.option}
@@ -78,6 +88,12 @@ export function LoginMethodsSection({ me }: Props) {
 						<label htmlFor={`login-methods-${value}`}>
 							{label}
 							<span className={styles.hint}>{hint}</span>
+							{warning !== undefined && (
+								<span className={styles.warning}>
+									<TriangleAlert aria-hidden />
+									{warning}
+								</span>
+							)}
 						</label>
 					</div>
 				))}
