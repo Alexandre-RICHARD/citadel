@@ -202,10 +202,10 @@ Pour plus tard :
 - Console de commande : `²` ouvre une console à la Quake pour aller quelque part en tapant (`goto backlog`).
 - Mini-jeu, par exemple sur le logo hexagonal.
 - Refaire le logo et son intro.
-
----
-
-Autre que moi je note et qu'il faudrait ranger :
+- Faire plus de SSO
+- M'assurer que je peux récupérer n'importe quelle fichier en le déchiffrant depuis la base
+- Tu vas jouer le rôle de Database Analyst expert, observer toute ma base de données et comment elle est utilisée pour en déduire des optimisations.
+- Le bouton Recherche d'autres DLCs est mal placés
 - Envisager le fait de faire une app mobile, pour des widget ou autre... à voir ?
 - Clique droit sur les lignes du tableau backlog pour ouvrir le même menu d'action que celui avec les 3 petits points en fin de ligne
 - Ecrire un guide des tests pour pouvoir l'appliquer partout.
