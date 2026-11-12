@@ -534,10 +534,6 @@
   @include vars.tone(blue);
 }
 
-.toneCyan {
-  @include vars.tone(cyan);
-}
-
 .toneGreen {
   @include vars.tone(green);
 }
@@ -546,16 +542,24 @@
   @include vars.tone(teal);
 }
 
-.toneIndigo {
-  @include vars.tone(indigo);
-}
-
 .toneAmber {
   @include vars.tone(amber);
 }
 
 .toneRed {
   @include vars.tone(red);
+}
+
+.toneOrange {
+  @include vars.tone(orange);
+}
+
+.toneYellow {
+  @include vars.tone(yellow);
+}
+
+.toneGold {
+  @include vars.tone(gold);
 }
 
 .endingType {
