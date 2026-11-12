@@ -25,11 +25,26 @@ describe("isStatusAllowed.ts", () => {
 			{
 				status: StatusEnum.DEEMED_FINISHED,
 				endingType: EndingTypeEnum.RUNS,
+				expected: true,
+			},
+			{
+				status: StatusEnum.DEEMED_FINISHED,
+				endingType: EndingTypeEnum.STORY,
+				expected: false,
+			},
+			{
+				status: StatusEnum.FINISHED,
+				endingType: EndingTypeEnum.RUNS,
 				expected: false,
 			},
 			{
 				status: StatusEnum.WATCHED,
 				endingType: EndingTypeEnum.RUNS,
+				expected: false,
+			},
+			{
+				status: StatusEnum.WATCHED,
+				endingType: EndingTypeEnum.STORY,
 				expected: true,
 			},
 			{

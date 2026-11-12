@@ -20,6 +20,18 @@ describe("convertStatus.ts", () => {
 				expected: StatusEnum.FINISHED,
 			},
 			{
+				reason: "a finished story game becomes runs",
+				status: StatusEnum.FINISHED,
+				endingType: EndingTypeEnum.RUNS,
+				expected: StatusEnum.DEEMED_FINISHED,
+			},
+			{
+				reason: "a watched story game becomes runs",
+				status: StatusEnum.WATCHED,
+				endingType: EndingTypeEnum.RUNS,
+				expected: StatusEnum.NOT_STARTED,
+			},
+			{
 				reason: "a watched story game becomes multiplayer",
 				status: StatusEnum.WATCHED,
 				endingType: EndingTypeEnum.MULTIPLAYER,
