@@ -8,6 +8,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useRef } from "react";
+import { createPortal } from "react-dom";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.type";
@@ -27,6 +28,8 @@ type Props = {
 // Menu « 3 points verticaux » : toutes ses entrées servent aussi en lecture seule. Le clic droit sur la ligne l'ouvre aussi (GameRowGroup)
 export function ActionsCell({ row, userVersion, table }: Props) {
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const pointerAnchorRef = useRef<HTMLSpanElement>(null);
+	const rowRef = useRef<HTMLElement | null>(null);
 	const { popover, setPopover, openModal } = table;
 	const { gameId, series } = row;
 	const userVersionId = userVersion?.userVersionId ?? null;
@@ -35,6 +38,8 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 		popover?.kind === "actionsMenu" &&
 		popover.gameId === gameId &&
 		popover.userVersionId === userVersionId;
+	// Ouvert par clic droit : le menu s'ancre au curseur, pas au bouton
+	const pointer = isOpen ? popover.pointer : null;
 	let seriesReason: string | null = null;
 	if (series === null) seriesReason = "Ce jeu n’a pas de série";
 	else if (series.id < 0) seriesReason = "Série en cours de création";
@@ -153,20 +158,43 @@ export function ActionsCell({ row, userVersion, table }: Props) {
 				ariaExpanded={isOpen}
 				onClick={() =>
 					setPopover(
-						isOpen ? null : { kind: "actionsMenu", gameId, userVersionId },
+						isOpen
+							? null
+							: { kind: "actionsMenu", gameId, userVersionId, pointer: null },
 					)
 				}
 				onKeyDown={(event) => {
 					// ↓ ouvre le menu, comme Entrée
 					if (event.key === "ArrowDown" && !isOpen) {
 						event.preventDefault();
-						setPopover({ kind: "actionsMenu", gameId, userVersionId });
+						setPopover({
+							kind: "actionsMenu",
+							gameId,
+							userVersionId,
+							pointer: null,
+						});
 					}
 				}}
 			/>
+			{pointer !== null &&
+				createPortal(
+					<span
+						ref={(element) => {
+							pointerAnchorRef.current = element;
+							rowRef.current = triggerRef.current?.closest("tr") ?? null;
+						}}
+						className={styles.pointerAnchor}
+						style={{ left: pointer.x, top: pointer.y }}
+						aria-hidden
+						data-popover
+					/>,
+					document.body,
+				)}
 			{isOpen && (
 				<Menu
-					anchorRef={triggerRef}
+					anchorRef={pointer === null ? triggerRef : pointerAnchorRef}
+					returnFocusRef={pointer === null ? undefined : rowRef}
+					placement={pointer === null ? "bottom-end" : "bottom-start"}
 					items={items}
 					ariaLabel="Actions"
 					onClose={() => setPopover(null)}

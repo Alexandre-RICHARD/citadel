@@ -28,6 +28,8 @@ type Props = {
 	focusOnOpen?: "first" | "panel" | "none";
 	/** À la fermeture, le focus resté dans le panneau revient à l'ancre */
 	returnsFocus?: boolean;
+	/** Élément qui reprend le focus à la place de l'ancre (ancre sans focus possible, comme un point sous le curseur) */
+	returnFocusRef?: RefObject<HTMLElement | null> | undefined;
 	role?: "dialog" | undefined;
 	ariaLabel?: string | undefined;
 	id?: string | undefined;
@@ -49,6 +51,7 @@ export function Popover({
 	onKeyDown,
 	focusOnOpen = "none",
 	returnsFocus = false,
+	returnFocusRef,
 	role,
 	ariaLabel,
 	id,
@@ -89,20 +92,25 @@ export function Popover({
 					: panel;
 			target.focus({ preventScroll: true });
 		}
+		// Lu à la fermeture : l'élément à refocaliser peut n'exister qu'après l'ouverture (point sous le curseur)
+		function readFocusTarget() {
+			return returnFocusRef?.current ?? anchor;
+		}
 		return () => {
+			const focusTarget = readFocusTarget();
 			// Panneau retiré (Échap, choix fait) : le focus, perdu avec lui, revient à l'ancre
 			const active = document.activeElement;
 			if (
 				returnsFocus &&
-				anchor?.isConnected === true &&
+				focusTarget?.isConnected === true &&
 				(active === null ||
 					active === document.body ||
 					panel?.contains(active) === true)
 			) {
-				anchor.focus({ preventScroll: true });
+				focusTarget.focus({ preventScroll: true });
 			}
 		};
-	}, [anchorRef, focusOnOpen, returnsFocus]);
+	}, [anchorRef, focusOnOpen, returnFocusRef, returnsFocus]);
 
 	return createPortal(
 		<div

@@ -15,6 +15,8 @@ type Props = {
 	/** Fermeture : Échap, Tab ou entrée choisie ; le clic à côté est géré par la page */
 	onClose: () => void;
 	placement?: PopoverPlacement;
+	/** Reprend le focus à la fermeture à la place de l'ancre (menu ouvert sous le curseur) */
+	returnFocusRef?: RefObject<HTMLElement | null> | undefined;
 };
 
 /**
@@ -28,6 +30,7 @@ export function Menu({
 	ariaLabel,
 	onClose,
 	placement = "bottom-end",
+	returnFocusRef,
 }: Props) {
 	const listRef = useRef<HTMLUListElement>(null);
 
@@ -72,7 +75,7 @@ export function Menu({
 				break;
 			case "Tab":
 				// Le focus repart du bouton du menu : Tab passe à l'élément qui le suit
-				anchorRef.current?.focus();
+				(returnFocusRef ?? anchorRef).current?.focus();
 				onClose();
 				break;
 			default:
@@ -97,6 +100,7 @@ export function Menu({
 			placement={placement}
 			focusOnOpen="first"
 			returnsFocus
+			returnFocusRef={returnFocusRef}
 			className={styles.panel}
 		>
 			<ul

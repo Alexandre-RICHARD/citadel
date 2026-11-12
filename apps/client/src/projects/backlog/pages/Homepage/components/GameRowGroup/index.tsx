@@ -114,6 +114,13 @@ export function GameRowGroup({
 	const userVersionCount = userVersionRows.length;
 	const isExpandable = userVersionCount > 1;
 	const gameName = row.frenchName ?? row.name;
+	function isActionsMenuOpenOn(userVersionId: number | null): boolean {
+		return (
+			table.popover?.kind === "actionsMenu" &&
+			table.popover.gameId === row.gameId &&
+			table.popover.userVersionId === userVersionId
+		);
+	}
 	// Ligne à version jouée unique : ses données se modifient directement sur la ligne du jeu
 	const singleUserVersion = isExpandable
 		? null
@@ -131,6 +138,7 @@ export function GameRowGroup({
 			kind: "actionsMenu",
 			gameId: row.gameId,
 			userVersionId,
+			pointer: { x: event.clientX, y: event.clientY },
 		});
 	}
 
@@ -222,6 +230,7 @@ export function GameRowGroup({
 					row.isUpNext && styles.upNextRow,
 					isExpandable && isExpanded && styles.expandedRow,
 					row.isTemporary && styles.temporaryRow,
+					isActionsMenuOpenOn(null) && styles.menuOpenRow,
 				)}
 				inert={row.isTemporary}
 				// Focalisable au clic, pas au Tab : les contrôles de la ligne ont déjà le leur
@@ -280,6 +289,8 @@ export function GameRowGroup({
 							styles.userVersionRow,
 							index === userVersionCount - 1 && styles.lastUserVersionRow,
 							userVersionRow.isTemporary && styles.temporaryRow,
+							isActionsMenuOpenOn(userVersionRow.userVersionId) &&
+								styles.menuOpenRow,
 						)}
 						inert={userVersionRow.isTemporary}
 						tabIndex={-1}
