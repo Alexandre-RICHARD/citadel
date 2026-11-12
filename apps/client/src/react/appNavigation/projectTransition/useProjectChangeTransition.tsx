@@ -7,6 +7,7 @@ import type { ProjectDictionary } from "../projectDictionary.type";
 import { getTransitionOrigin } from "./getTransitionOrigin";
 import { navigateToProject } from "./navigateToProject";
 import type { TransitionPoint } from "./transitionPoint.type";
+import { usePageTransitionsDisabled } from "./usePageTransitionsDisabled";
 
 type PendingTransition = {
 	origin: TransitionPoint;
@@ -18,7 +19,10 @@ type PendingTransition = {
 // Le routeur retient la navigation pendant que l'écran se couvre, puis la laisse passer. Une navigation retenue
 // pendant une transition est abandonnée, comme un second clic
 export function useProjectChangeTransition(): void {
-	const reducedMotion = usePrefersReducedMotion();
+	// Le réglage du système et le choix du profil coupent la transition de la même façon
+	const prefersReducedMotion = usePrefersReducedMotion();
+	const isDisabledByProfile = usePageTransitionsDisabled();
+	const reducedMotion = prefersReducedMotion || isDisabledByProfile;
 	const pendingRef = useRef<PendingTransition | null>(null);
 
 	const blocker = useBlocker(

@@ -13,6 +13,7 @@ import { DataSection } from "./components/DataSection";
 import { IdentitySection } from "./components/IdentitySection";
 import { LoginMethodsSection } from "./components/LoginMethodsSection";
 import { PasswordSection } from "./components/PasswordSection";
+import { PreferencesSection } from "./components/PreferencesSection";
 import { SecondFactorSection } from "./components/SecondFactorSection";
 import { SessionsSection } from "./components/SessionsSection";
 import styles from "./profilePage.module.scss";
@@ -70,6 +71,7 @@ export function ProfilePage() {
 			<LoginMethodsSection me={me} />
 			<SecondFactorSection />
 			<SessionsSection />
+			<PreferencesSection />
 			<DataSection />
 		</div>
 	);
