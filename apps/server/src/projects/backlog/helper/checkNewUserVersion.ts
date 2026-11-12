@@ -18,7 +18,7 @@ export async function checkNewUserVersion(
 	userId: number,
 	game: StoredGameBean,
 	userVersion: NewUserVersionBean,
-	endingType: EndingTypeEnum,
+	endingType: EndingTypeEnum | null,
 	transaction: Transaction,
 ): Promise<void> {
 	const version = game.versions.find(({ id }) => id === userVersion.versionId);
@@ -45,7 +45,7 @@ export async function checkNewUserVersion(
 	if (!isStatusAllowed(userVersion.status, endingType))
 		throw new ConflictError(
 			BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-			`Status ${userVersion.status} is not offered for ending type : ${endingType}`,
+			`Status ${userVersion.status} is not offered for ending type : ${endingType ?? "none"}`,
 		);
 
 	if (

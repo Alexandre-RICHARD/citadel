@@ -308,7 +308,47 @@ describe("createUserGame", () => {
 		});
 	});
 
+	describe("no ending type", () => {
+		it("SHOULD add a game WHEN it has no ending type and a status that is not a finish", async () => {
+			// Arrange
+			const stored = await seedStoredGame();
+
+			// Act
+			const response = await player.agent.post(CREATE_URL).send({
+				gameId: stored.gameId,
+				customization: { ...DEFAULT_CUSTOMIZATION, endingType: null },
+				userVersion: newUserVersionBody(stored.gameId, SEEDED_PLATFORMS.PS3, {
+					status: StatusEnum.STARTED,
+				}),
+			});
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.CREATED);
+			expect(response.body).toMatchObject({ endingType: null });
+		});
+	});
+
 	describe("400 Bad Request", () => {
+		it("SHOULD refuse a finished status WHEN the game has no ending type", async () => {
+			// Act
+			const response = await player.agent.post(CREATE_URL).send({
+				gameId: 42,
+				customization: { ...DEFAULT_CUSTOMIZATION, endingType: null },
+				userVersion: newUserVersionBody(42, SEEDED_PLATFORMS.PS3, {
+					status: StatusEnum.COMPLETED,
+				}),
+			});
+
+			// Assert
+			expectValidationError(response, [
+				{
+					path: ["userVersion", "status"],
+					code: ValidationIssueCodeEnum.INCOMPATIBLE_VALUE,
+					message: "Status should be offered by the ending type",
+				},
+			]);
+		});
+
 		it("SHOULD refuse a status that the ending type does not offer", async () => {
 			// Act
 			const response = await player.agent.post(CREATE_URL).send({

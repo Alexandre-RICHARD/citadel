@@ -176,6 +176,26 @@ describe("updateUserVersion", () => {
 	});
 
 	describe("409 Conflict", () => {
+		it("SHOULD refuse a finished status WHEN the game has no ending type", async () => {
+			// Arrange
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				endingType: null,
+			});
+
+			// Act
+			const response = await player.agent
+				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
+				.send({ status: StatusEnum.COMPLETED });
+
+			// Assert
+			expectConflict(
+				response,
+				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
+				`Status ${StatusEnum.COMPLETED} is not offered for ending type : none`,
+			);
+		});
+
 		it("SHOULD refuse a status that the ending type of the game does not offer", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({

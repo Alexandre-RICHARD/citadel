@@ -23,7 +23,8 @@ export type BacklogRowFm = UserGameAggregates & {
 	publisher: CompanyFm | null;
 	releaseDate: string | null;
 	isCancelled: boolean;
-	endingType: EndingTypeEnum;
+	// null : pas de type de fin, donc aucun statut de fin
+	endingType: EndingTypeEnum | null;
 	// null si plusieurs versions jouées
 	platform: PlatformFm | null;
 	igdbUrl: string;

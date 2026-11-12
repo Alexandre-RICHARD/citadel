@@ -12,7 +12,7 @@ export type ViewRow = UserGameAggregates & {
 	developerName: string | null;
 	publisherName: string | null;
 	releaseDate: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	// Vide sur la ligne d'un jeu à plusieurs versions jouées
 	platformName: string | null;
 };

@@ -19,7 +19,9 @@ function getSortValue(
 	if (column === BacklogColumnEnum.STATUS)
 		return row.status === null ? null : STATUS_ORDER.indexOf(row.status);
 	if (column === BacklogColumnEnum.ENDING_TYPE)
-		return ENDING_TYPE_ORDER.indexOf(row.endingType);
+		return row.endingType === null
+			? null
+			: ENDING_TYPE_ORDER.indexOf(row.endingType);
 	const value = getColumnValue(column, row);
 	return typeof value === "boolean" ? Number(value) : value;
 }

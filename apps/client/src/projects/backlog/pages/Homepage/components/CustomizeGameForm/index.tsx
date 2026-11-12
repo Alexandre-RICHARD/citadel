@@ -1,9 +1,12 @@
 import { customizeUserGameBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userGames/customizeUserGame/customizeUserGameBodySchema";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
+import { useQueryClient } from "@tanstack/react-query";
 import { Palette } from "lucide-react";
 import { useState } from "react";
 
 import { checkInput } from "../../../../../../common/validation/checkInput";
 import { backlogFieldLabels } from "../../../../api/backlogFieldLabels";
+import { findCachedUserGame } from "../../../../api/cache/findCachedUserGame";
 import type { CustomizationFm } from "../../../../api/model/customizationFm.type";
 import type { StoredGameFm } from "../../../../api/model/storedGameFm.type";
 import { useAllSeries } from "../../../../api/series/useAllSeries";
@@ -14,6 +17,7 @@ import { Modal } from "../../../../components/Modal";
 import type { CustomizationDraft } from "../../../../helper/series/customizationDraft.type";
 import { getChosenSeriesId } from "../../../../helper/series/getChosenSeriesId";
 import { toSeriesChoice } from "../../../../helper/series/toSeriesChoice";
+import { countConvertedStatuses } from "../../../../helper/status/countConvertedStatuses";
 import { ModalActions } from "../ModalActions";
 import { UserGameFields } from "../UserGameFields";
 
@@ -45,6 +49,7 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 	);
 	const allSeries = useAllSeries();
 	const customizeUserGame = useCustomizeUserGame(storedGame.id);
+	const queryClient = useQueryClient();
 	const check =
 		draft === null
 			? null
@@ -62,6 +67,17 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 			chosenSeriesId !== (customization.series?.id ?? null) ||
 			(chosenSeriesId === null ? null : draft.seriesNumber) !==
 				customization.seriesNumber);
+	// Les statuts des versions jouées, lus dans le tableau (le jeu en base ne les porte pas)
+	const statuses =
+		findCachedUserGame(queryClient, storedGame.id)?.userVersions.map(
+			({ status }) => status,
+		) ?? [];
+	const isEndingTypeRequired =
+		draft !== null &&
+		draft.endingType === null &&
+		statuses.some((status) => isFinishedStatus(status));
+	const convertedStatusCount =
+		draft === null ? 0 : countConvertedStatuses(statuses, draft.endingType);
 
 	return (
 		<Modal
@@ -70,7 +86,9 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 			icon={Palette}
 			actions={
 				<ModalActions
-					canValidate={check?.isValid === true && hasChanges}
+					canValidate={
+						check?.isValid === true && hasChanges && !isEndingTypeRequired
+					}
 					onCancel={onClose}
 					onValidate={() => {
 						if (check?.isValid === true) customizeUserGame.mutate(check.data);
@@ -84,10 +102,20 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 				<Callout tone="danger">Ce jeu n’est plus dans le backlog.</Callout>
 			) : (
 				<div className={styles.formStack}>
-					{draft.endingType !== customization.endingType && (
+					{isEndingTypeRequired && (
+						<Callout tone="danger">
+							Une version jouée a un statut de fin : le type de fin peut se
+							changer, pas se retirer.
+						</Callout>
+					)}
+					{convertedStatusCount > 0 && (
 						<Callout tone="warning">
-							Changer le type de fin convertit les statuts devenus incompatibles
-							: Fini ↔ Estimé fini, Vu sans jouer → Pas commencé.
+							Changer le type de fin convertit{" "}
+							{convertedStatusCount > 1
+								? `${convertedStatusCount} statuts`
+								: "un statut"}{" "}
+							devenus incompatibles : Fini ↔ Estimé fini, Vu sans jouer → Pas
+							commencé.
 						</Callout>
 					)}
 					<UserGameFields

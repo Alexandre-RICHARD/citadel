@@ -45,6 +45,28 @@ describe("isStatusAllowed.ts", () => {
 		);
 	});
 
+	describe("no ending type", () => {
+		it.each([
+			StatusEnum.WATCHED,
+			StatusEnum.FINISHED,
+			StatusEnum.DEEMED_FINISHED,
+			StatusEnum.COMPLETED,
+			StatusEnum.PLATINUM,
+			StatusEnum.COMPLETED_AND_PLATINUM,
+		])("SHOULD refuse the finished status %s", (status) => {
+			expect(isStatusAllowed(status, null)).toBe(false);
+		});
+
+		it.each([
+			StatusEnum.NOT_STARTED,
+			StatusEnum.STARTED,
+			StatusEnum.WELL_UNDERWAY,
+			StatusEnum.ABANDONED,
+		])("SHOULD allow the status %s", (status) => {
+			expect(isStatusAllowed(status, null)).toBe(true);
+		});
+	});
+
 	describe("statuses for every ending", () => {
 		it.each(Object.values(EndingTypeEnum))(
 			"SHOULD allow Started and Completed WHEN the ending is %s",

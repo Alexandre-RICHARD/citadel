@@ -19,7 +19,7 @@ export type UserGameBean = {
 		proposedSeries: SeriesBean | null;
 	};
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	series: SeriesBean | null;
 	seriesNumber: number | null;
 	seriesNumberLabel: string | null;

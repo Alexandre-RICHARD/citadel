@@ -143,7 +143,7 @@ export const insertBacklogRows = {
 	async userGame(row: {
 		userId: number;
 		gameId: number;
-		endingType?: EndingTypeEnum;
+		endingType?: EndingTypeEnum | null;
 		imageId?: string | null;
 		seriesId?: number | null;
 		seriesNumber?: number | null;

@@ -14,6 +14,7 @@ import { nextIgdbId } from "../../../../testUtils/integration/backlog/nextIgdbId
 import { seedBacklogGame } from "../../../../testUtils/integration/backlog/seedBacklogGame.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
 import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
+import { expectConflict } from "../../../../testUtils/integration/expectConflict.ts";
 import { expectNotFound } from "../../../../testUtils/integration/expectNotFound.ts";
 import { NON_EXISTENT_ID } from "../../../../testUtils/integration/nonExistentId.ts";
 
@@ -160,6 +161,34 @@ describe("customizeUserGame", () => {
 		});
 	});
 
+	describe("ending type removed", () => {
+		it("SHOULD remove the ending type WHEN no played version has a finished status", async () => {
+			// Arrange
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.ABANDONED],
+			});
+
+			// Act
+			const response = await player.agent
+				.put(customizeUrl(backlogGame.gameId))
+				.send({
+					imageId: null,
+					endingType: null,
+					series: { kind: SeriesChoiceKindEnum.NONE },
+					seriesNumber: null,
+				});
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(response.body).toMatchObject({ endingType: null });
+			expect(
+				(await selectBacklogRows.userGame(player.userId, backlogGame.gameId))
+					?.endingType,
+			).toBeNull();
+		});
+	});
+
 	describe("404 Not Found", () => {
 		it("SHOULD answer that the game is not in the backlog, changing nothing, WHEN only another account has it", async () => {
 			// Arrange
@@ -235,6 +264,37 @@ describe("customizeUserGame", () => {
 				BacklogErrorCodeEnum.SERIES_NOT_FOUND,
 				`No series with id : ${NON_EXISTENT_ID}`,
 			);
+		});
+	});
+
+	describe("409 Conflict", () => {
+		it("SHOULD refuse to remove the ending type, changing nothing, WHEN a played version has a finished status", async () => {
+			// Arrange
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.FINISHED],
+			});
+
+			// Act
+			const response = await player.agent
+				.put(customizeUrl(backlogGame.gameId))
+				.send({
+					imageId: null,
+					endingType: null,
+					series: { kind: SeriesChoiceKindEnum.NONE },
+					seriesNumber: null,
+				});
+
+			// Assert
+			expectConflict(
+				response,
+				BacklogErrorCodeEnum.ENDING_TYPE_REQUIRED,
+				`The ending type of game ${backlogGame.gameId} cannot be removed: a played version has a finished status`,
+			);
+			expect(
+				(await selectBacklogRows.userGame(player.userId, backlogGame.gameId))
+					?.endingType,
+			).toBe(EndingTypeEnum.STORY);
 		});
 	});
 

@@ -11,7 +11,7 @@ type NewUserGame = {
 	userId: number;
 	gameId: number;
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	seriesId: number | null;
 	seriesNumber: number | null;
 };

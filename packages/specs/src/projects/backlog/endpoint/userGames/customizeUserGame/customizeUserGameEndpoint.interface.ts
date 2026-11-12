@@ -31,5 +31,6 @@ export interface CustomizeUserGame extends EndpointModel {
 			| BacklogErrorCodeEnum.USER_GAME_NOT_FOUND
 			| BacklogErrorCodeEnum.SERIES_NOT_FOUND
 		>;
+		[HttpStatutCodeErrorEnum.CONFLICT_WITH_SERVER]: ErrorResponseDto<BacklogErrorCodeEnum.ENDING_TYPE_REQUIRED>;
 	};
 }

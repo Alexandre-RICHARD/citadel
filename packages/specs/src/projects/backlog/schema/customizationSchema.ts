@@ -7,11 +7,11 @@ import { seriesNumberSchema } from "./seriesNumberSchema.ts";
 
 /**
  * Personnalisation d'un jeu du backlog, à l'ajout au backlog ou par « Personnaliser ».
- * `seriesNumber` est ignoré sans série ; avec une série et sans numéro, le jeu passe après les autres
+ * `endingType` est facultatif : sans lui, aucun statut de fin. `seriesNumber` est ignoré sans série ; avec une série et sans numéro, le jeu passe après les autres
  */
 export const customizationSchema = z.object({
 	imageId: igdbImageIdSchema("Image ID").nullable(),
-	endingType: endingTypeSchema,
+	endingType: endingTypeSchema.nullable(),
 	series: seriesChoiceSchema,
 	seriesNumber: seriesNumberSchema("Series number").nullable(),
 });

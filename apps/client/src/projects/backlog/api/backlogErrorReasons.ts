@@ -23,6 +23,8 @@ export const backlogErrorReasons: Record<BacklogErrorCodeEnum, string> = {
 		"cette plateforme n'est pas proposée pour cette version",
 	[BacklogErrorCodeEnum.STATUS_NOT_ALLOWED]:
 		"ce statut n'est pas proposé pour ce type de fin",
+	[BacklogErrorCodeEnum.ENDING_TYPE_REQUIRED]:
+		"une version jouée a un statut de fin : le type de fin ne peut plus être retiré",
 	[BacklogErrorCodeEnum.SERIES_ENTRIES_MISMATCH]:
 		"la série a changé entre-temps",
 };

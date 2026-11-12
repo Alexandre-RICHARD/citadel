@@ -33,6 +33,18 @@ describe("convertStatus.ts", () => {
 		);
 	});
 
+	describe("no ending type", () => {
+		it("SHOULD put a finished status back to not started", () => {
+			expect(convertStatus(StatusEnum.PLATINUM, null)).toBe(
+				StatusEnum.NOT_STARTED,
+			);
+		});
+
+		it("SHOULD keep a status that is not a finish", () => {
+			expect(convertStatus(StatusEnum.STARTED, null)).toBe(StatusEnum.STARTED);
+		});
+	});
+
 	describe("compatible statuses", () => {
 		it("SHOULD keep the status WHEN the new ending type offers it", () => {
 			expect(

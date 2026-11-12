@@ -4,7 +4,7 @@ import type { SeriesBean } from "./seriesBean.type.ts";
 
 export type CustomizationBean = {
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	series: SeriesBean | null;
 	seriesNumber: number | null;
 };

@@ -8,7 +8,7 @@ import { seedStoredGame } from "./seedStoredGame.ts";
 type SeedOptions = Parameters<typeof seedStoredGame>[0] & {
 	// Le compte dont le backlog reçoit le jeu ; le jeu en base, lui, est à tous
 	userId: number;
-	endingType?: EndingTypeEnum;
+	endingType?: EndingTypeEnum | null;
 	seriesId?: number | null;
 	seriesNumber?: number | null;
 	// Statut de chaque version jouée, sur la plateforme de la version (la première de `platformIds`)

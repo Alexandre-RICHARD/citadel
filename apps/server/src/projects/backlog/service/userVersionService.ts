@@ -112,7 +112,7 @@ class UserVersionService {
 					)
 						throw new ConflictError(
 							BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-							`Status ${status} is not offered for ending type : ${userGame.endingType}`,
+							`Status ${status} is not offered for ending type : ${userGame.endingType ?? "none"}`,
 						);
 				}
 				await updateUserVersionQuery(

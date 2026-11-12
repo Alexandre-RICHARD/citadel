@@ -24,6 +24,8 @@ export enum BacklogErrorCodeEnum {
 	PLATFORM_NOT_ALLOWED = "PLATFORM_NOT_ALLOWED",
 	// Statut que le type de fin du jeu ne propose pas
 	STATUS_NOT_ALLOWED = "STATUS_NOT_ALLOWED",
+	// Une version jouée a un statut de fin : le type de fin du jeu ne peut plus être retiré, seulement changé
+	ENDING_TYPE_REQUIRED = "ENDING_TYPE_REQUIRED",
 	// Les jeux envoyés pour « Réorganiser la série » ne sont plus exactement ceux de la série
 	SERIES_ENTRIES_MISMATCH = "SERIES_ENTRIES_MISMATCH",
 }

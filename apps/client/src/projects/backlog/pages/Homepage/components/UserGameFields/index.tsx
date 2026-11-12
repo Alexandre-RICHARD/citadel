@@ -21,6 +21,8 @@ import type { SelectOption } from "../../../../components/Select/selectOption.ty
 import { Spinner } from "../../../../components/Spinner";
 import { endingTypeIcons } from "../../../../helper/label/endingTypeIcons";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
+import { NO_ENDING_TYPE } from "../../../../helper/label/noEndingType";
+import { noEndingTypeLabel } from "../../../../helper/label/noEndingTypeLabel";
 import type { CustomizationDraft } from "../../../../helper/series/customizationDraft.type";
 import { getChosenSeriesId } from "../../../../helper/series/getChosenSeriesId";
 import type { SeriesChoice } from "../../../../helper/series/seriesChoice.type";
@@ -221,19 +223,30 @@ export function UserGameFields({
 
 			<FormField
 				label="Type de fin"
-				hint={endingTypeLabels[draft.endingType].meaning}
-				isRequired
+				hint={
+					draft.endingType === null
+						? noEndingTypeLabel.meaning
+						: endingTypeLabels[draft.endingType].meaning
+				}
 				isGroup
 			>
-				<SegmentedControl
-					value={draft.endingType}
-					options={Object.values(EndingTypeEnum).map((endingType) => ({
-						value: endingType,
-						label: endingTypeLabels[endingType].label,
-						icon: endingTypeIcons[endingType],
-					}))}
+				<SegmentedControl<EndingTypeEnum | typeof NO_ENDING_TYPE>
+					value={draft.endingType ?? NO_ENDING_TYPE}
+					options={[
+						...Object.values(EndingTypeEnum).map((endingType) => ({
+							value: endingType,
+							label: endingTypeLabels[endingType].label,
+							icon: endingTypeIcons[endingType],
+						})),
+						{ value: NO_ENDING_TYPE, label: noEndingTypeLabel.label },
+					]}
 					ariaLabel="Type de fin"
-					onChange={(endingType) => onChange({ ...draft, endingType })}
+					onChange={(choice) =>
+						onChange({
+							...draft,
+							endingType: choice === NO_ENDING_TYPE ? null : choice,
+						})
+					}
 				/>
 			</FormField>
 

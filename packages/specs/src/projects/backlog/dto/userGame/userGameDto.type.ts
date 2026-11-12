@@ -11,7 +11,8 @@ import type { UserVersionDto } from "./userVersionDto.type.ts";
 export type UserGameDto = {
 	game: UserGameGameDto;
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	// null : pas de type de fin, donc aucun statut de fin
+	endingType: EndingTypeEnum | null;
 	series: SeriesDto | null;
 	seriesNumber: number | null;
 	// Avec les décimales de sa famille (3.10 parmi 3.01 … 3.10) ; null sans série

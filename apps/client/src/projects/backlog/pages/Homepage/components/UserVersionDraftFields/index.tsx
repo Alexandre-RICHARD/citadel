@@ -1,7 +1,5 @@
 import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
-import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 
 import type { DlcFm } from "../../../../api/model/dlcFm.type";
 import styles from "../../../../backlog.module.scss";
@@ -12,6 +10,7 @@ import { NumberField } from "../../../../components/NumberField";
 import { Select } from "../../../../components/Select";
 import { TextField } from "../../../../components/TextField";
 import { statusLabels } from "../../../../helper/label/statusLabels";
+import { getStatusChoices } from "../../../../helper/status/getStatusChoices";
 import type { UserVersionDraft } from "../../userVersionDraft.type";
 import { FormField } from "../FormField";
 import { StatusBadge } from "../StatusBadge";
@@ -20,7 +19,7 @@ const MAX_RATING = 20;
 
 type Props = {
 	draft: UserVersionDraft;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	dlcs: DlcFm[];
 	onChange: (draft: UserVersionDraft) => void;
 };
@@ -41,14 +40,16 @@ export function UserVersionDraftFields({
 				>
 					<Select
 						value={draft.status}
-						// Liste filtrée par type de fin
-						options={Object.values(StatusEnum)
-							.filter((status) => isStatusAllowed(status, endingType))
-							.map((status) => ({
+						// Liste filtrée par type de fin ; sans type de fin, les statuts de fin sont grisés
+						options={getStatusChoices(endingType, null).map(
+							({ status, isDisabled }) => ({
 								value: status,
 								label: statusLabels[status].label,
 								content: <StatusBadge status={status} />,
-							}))}
+								disabled: isDisabled,
+								hint: isDisabled ? "type de fin requis" : undefined,
+							}),
+						)}
 						ariaLabel="Statut"
 						className={styles.fullWidth}
 						onChange={(status) => onChange({ ...draft, status })}

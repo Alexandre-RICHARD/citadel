@@ -202,28 +202,29 @@ describe("getUserGames", () => {
 		});
 
 		it("SHOULD keep a game that passes at least one filter WHEN the filters combine with or", async () => {
-			// Arrange
+			// Arrange : un compte à part, car « ou » ne se limite plus au mot cherché
+			const account = await openSignedInAgent();
 			const word = buildUniqueWord();
 			await seedBacklogGame({
-				userId: player.userId,
+				userId: account.userId,
 				name: `${word} started`,
 				userVersionStatuses: [StatusEnum.STARTED],
 			});
 			await seedBacklogGame({
-				userId: player.userId,
+				userId: account.userId,
 				name: `${word} finished`,
 				userVersionStatuses: [StatusEnum.FINISHED],
 			});
 			await seedBacklogGame({
-				userId: player.userId,
+				userId: account.userId,
 				name: `${word} platinum`,
 				userVersionStatuses: [StatusEnum.PLATINUM],
 			});
 
 			// Act
 			const query = { name: word, status: StatusEnum.FINISHED };
-			const andResponse = await player.agent.get(USER_GAMES_URL).query(query);
-			const orResponse = await player.agent
+			const andResponse = await account.agent.get(USER_GAMES_URL).query(query);
+			const orResponse = await account.agent
 				.get(USER_GAMES_URL)
 				.query({ ...query, name: `${word} s`, filterMode: "or" });
 

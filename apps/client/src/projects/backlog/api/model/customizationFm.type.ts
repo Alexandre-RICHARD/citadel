@@ -4,7 +4,7 @@ import type { SeriesFm } from "./seriesFm.type";
 
 export type CustomizationFm = {
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	series: SeriesFm | null;
 	seriesNumber: number | null;
 };

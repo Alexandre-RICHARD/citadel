@@ -2,6 +2,7 @@ import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterM
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount.ts";
 import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus.ts";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus.ts";
 import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 import type { Transaction } from "sequelize";
 
@@ -171,6 +172,20 @@ class UserGameService {
 				if ((await getUserGameQuery(userId, gameId, transaction)) === null)
 					throw userGameNotFound(gameId);
 				const game = await loadStoredGameBean(userId, gameId, transaction);
+				const userVersions = await getGameUserVersionsQuery(
+					userId,
+					gameId,
+					transaction,
+				);
+				// Le type de fin se change, il ne se retire pas tant qu'une version jouée a un statut de fin
+				if (
+					customization.endingType === null &&
+					userVersions.some(({ status }) => isFinishedStatus(status))
+				)
+					throw new ConflictError(
+						BacklogErrorCodeEnum.ENDING_TYPE_REQUIRED,
+						`The ending type of game ${gameId} cannot be removed: a played version has a finished status`,
+					);
 
 				await saveCustomization(
 					userId,
@@ -178,11 +193,6 @@ class UserGameService {
 					game?.proposedSeries?.id ?? null,
 					customization,
 					false,
-					transaction,
-				);
-				const userVersions = await getGameUserVersionsQuery(
-					userId,
-					gameId,
 					transaction,
 				);
 				await Promise.all(

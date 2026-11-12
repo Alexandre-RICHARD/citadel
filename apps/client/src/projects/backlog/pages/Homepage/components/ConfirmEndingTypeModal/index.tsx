@@ -5,6 +5,7 @@ import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Modal } from "../../../../components/Modal";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
+import { noEndingTypeLabel } from "../../../../helper/label/noEndingTypeLabel";
 import type { CustomizationDraft } from "../../../../helper/series/customizationDraft.type";
 
 type Props = {
@@ -50,7 +51,11 @@ export function ConfirmEndingTypeModal({
 			onClose={onClose}
 		>
 			<p className={styles.modalQuestion}>
-				« {endingTypeLabels[customization.endingType].label} » ne permet pas{" "}
+				«{" "}
+				{customization.endingType === null
+					? noEndingTypeLabel.label
+					: endingTypeLabels[customization.endingType].label}{" "}
+				» ne permet pas{" "}
 				{isPlural
 					? `${convertedStatusCount} des statuts de ce jeu`
 					: "un des statuts de ce jeu"}

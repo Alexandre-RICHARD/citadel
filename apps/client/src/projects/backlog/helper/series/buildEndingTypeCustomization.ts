@@ -13,7 +13,7 @@ type CustomizedRow = {
 // La personnalisation du jeu avec un autre type de fin : le reste ne bouge pas (l'envoi les reprend toutes ensemble)
 export function buildEndingTypeCustomization(
 	row: CustomizedRow,
-	endingType: EndingTypeEnum,
+	endingType: EndingTypeEnum | null,
 ): CustomizationDraft {
 	return {
 		imageId: row.imageId,

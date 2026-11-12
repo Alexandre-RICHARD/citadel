@@ -5,7 +5,7 @@ import type { SeriesChoiceBean } from "./seriesChoiceBean.type.ts";
 // Personnalisation saisie : la série est un choix, résolu par le serveur
 export type CustomizationInputBean = {
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	series: SeriesChoiceBean;
 	seriesNumber: number | null;
 };

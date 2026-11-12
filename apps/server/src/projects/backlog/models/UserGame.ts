@@ -20,7 +20,7 @@ export class UserGame extends Model<
 	declare userId: number;
 	declare gameId: number;
 	declare imageId: string | null;
-	declare endingType: EndingTypeEnum;
+	declare endingType: EndingTypeEnum | null;
 	declare seriesId: number | null;
 	declare seriesNumber: number | null;
 	declare createdAt: CreationOptional<Date>;
@@ -52,7 +52,7 @@ UserGame.init(
 		endingType: {
 			type: DataTypes.STRING,
 			field: "ending_type",
-			allowNull: false,
+			allowNull: true,
 		},
 		seriesId: {
 			type: DataTypes.INTEGER,

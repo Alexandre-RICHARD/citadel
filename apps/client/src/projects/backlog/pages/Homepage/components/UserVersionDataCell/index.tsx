@@ -3,9 +3,7 @@ import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNa
 import { pluralize } from "@citadel/common/src/universal/string/pluralize";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
-import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
-import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 import {
 	Bookmark,
 	type LucideIcon,
@@ -29,6 +27,7 @@ import { Tooltip } from "../../../../components/Tooltip";
 import { formatDuration } from "../../../../helper/format/formatDuration";
 import { formatFinishCount } from "../../../../helper/format/formatFinishCount";
 import { statusLabels } from "../../../../helper/label/statusLabels";
+import { getStatusChoices } from "../../../../helper/status/getStatusChoices";
 import type { TableControls } from "../../tableControls.type";
 import { DlcCell } from "../DlcCell";
 import { DlcProgress } from "../DlcProgress";
@@ -45,7 +44,7 @@ type Props = {
 	userVersion: UserVersionRowFm | null;
 	gameId: number;
 	gameName: string;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	dlcs: DlcFm[];
 	table: TableControls;
 };
@@ -118,18 +117,16 @@ export function UserVersionDataCell({
 			return (
 				<Select
 					value={editableUserVersion.status}
-					// Liste filtrée par type de fin, le statut actuel compris
-					options={Object.values(StatusEnum)
-						.filter(
-							(status) =>
-								status === editableUserVersion.status ||
-								isStatusAllowed(status, endingType),
-						)
-						.map((status) => ({
+					// Liste filtrée par type de fin, le statut actuel compris ; sans type de fin, les statuts de fin sont grisés
+					options={getStatusChoices(endingType, editableUserVersion.status).map(
+						({ status, isDisabled }) => ({
 							value: status,
 							label: statusLabels[status].label,
 							content: <StatusBadge status={status} />,
-						}))}
+							disabled: isDisabled,
+							hint: isDisabled ? "type de fin requis" : undefined,
+						}),
+					)}
 					ariaLabel="Statut"
 					variant="inline"
 					size="sm"

@@ -6,7 +6,7 @@ import { UserGame } from "../../models/UserGame.ts";
 
 type UserGameCustomization = {
 	imageId: string | null;
-	endingType: EndingTypeEnum;
+	endingType: EndingTypeEnum | null;
 	seriesId: number | null;
 	seriesNumber: number | null;
 };

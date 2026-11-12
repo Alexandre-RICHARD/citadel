@@ -21,6 +21,7 @@ import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
 import { columnLabels } from "../../../../helper/label/columnLabels";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
+import { noEndingTypeLabel } from "../../../../helper/label/noEndingTypeLabel";
 import { statusLabels } from "../../../../helper/label/statusLabels";
 import { isSortableColumn } from "../../../../helper/view/isSortableColumn";
 import { EndingTypeLabel } from "../EndingTypeLabel";
@@ -38,6 +39,12 @@ const columnHelp: Partial<Record<BacklogColumnEnum, ReactNode>> = {
 					<dd>{endingTypeLabels[endingType].meaning}</dd>
 				</div>
 			))}
+			<div>
+				<dt>
+					<EndingTypeLabel endingType={null} />
+				</dt>
+				<dd>{noEndingTypeLabel.meaning}</dd>
+			</div>
 		</dl>
 	),
 	[BacklogColumnEnum.STATUS]: (

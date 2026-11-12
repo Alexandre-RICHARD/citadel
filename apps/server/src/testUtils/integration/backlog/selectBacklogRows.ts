@@ -5,7 +5,7 @@ import { sequelize } from "../../../configuration/sequelize.ts";
 type UserGameRow = {
 	gameId: number;
 	imageId: string | null;
-	endingType: string;
+	endingType: string | null;
 	seriesId: number | null;
 	seriesNumber: number | null;
 };

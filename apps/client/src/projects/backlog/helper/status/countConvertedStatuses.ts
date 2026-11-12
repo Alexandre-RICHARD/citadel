@@ -5,7 +5,7 @@ import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status
 // Combien de ces statuts le nouveau type de fin convertit (Fini ↔ Estimé fini, Vu sans jouer → Pas commencé)
 export function countConvertedStatuses(
 	statuses: StatusEnum[],
-	endingType: EndingTypeEnum,
+	endingType: EndingTypeEnum | null,
 ): number {
 	return statuses.filter(
 		(status) => convertStatus(status, endingType) !== status,
