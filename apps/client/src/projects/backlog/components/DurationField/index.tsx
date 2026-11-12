@@ -1,8 +1,16 @@
 import { blurOnEnter } from "@citadel/common/src/browser/dom/blurOnEnter";
+import { useWheelStep } from "@citadel/common/src/react/hooks/useWheelStep";
+import type { DurationUnit } from "@citadel/common/src/universal/date/durationUnit.type";
+import { shiftDuration } from "@citadel/common/src/universal/date/shiftDuration";
 import { splitMinutesIntoHours } from "@citadel/common/src/universal/date/splitMinutesIntoHours";
 import { padWithZeros } from "@citadel/common/src/universal/number/padWithZeros";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import { useRef } from "react";
+import {
+	type FormEvent,
+	type KeyboardEvent,
+	type RefObject,
+	useRef,
+} from "react";
 
 import styles from "./durationField.module.scss";
 
@@ -24,7 +32,11 @@ type Props = {
 	className?: string | undefined;
 };
 
-/** Durée saisie en heures et minutes, dans un seul cadre ; enregistrée en minutes quand le focus quitte les deux champs */
+/**
+ * Durée saisie en heures et minutes, dans un seul cadre ; enregistrée en minutes quand le focus quitte les deux champs.
+ * La molette, sur le champ qui a le focus, change la durée en direct (vers le haut : plus) : 59 minutes + 1 passe à 0 et
+ * ajoute une heure, et inversement ; jamais de durée négative
+ */
 export function DurationField({
 	minutes,
 	label,
@@ -37,11 +49,12 @@ export function DurationField({
 	const { hours, minutes: extraMinutes } = splitMinutesIntoHours(minutes);
 	const extraMinutesText = padWithZeros(extraMinutes);
 
-	function commit() {
+	// Le total saisi dans les deux champs ; null si l'un des deux n'est pas un entier positif
+	function readTypedMinutes(): number | null {
 		const hoursInput = hoursRef.current;
 		const minutesInput = minutesRef.current;
 		if (hoursInput === null || minutesInput === null) {
-			return;
+			return null;
 		}
 		const typedHours = Number(hoursInput.value || "0");
 		const typedMinutes = Number(minutesInput.value || "0");
@@ -51,15 +64,81 @@ export function DurationField({
 			typedHours < 0 ||
 			typedMinutes < 0
 		) {
-			hoursInput.value = String(hours);
-			minutesInput.value = extraMinutesText;
+			return null;
+		}
+		return typedHours * 60 + typedMinutes;
+	}
+
+	function showTypedMinutes(totalMinutes: number) {
+		const hoursInput = hoursRef.current;
+		const minutesInput = minutesRef.current;
+		if (hoursInput === null || minutesInput === null) {
 			return;
 		}
-		const total = typedHours * 60 + typedMinutes;
+		const shown = splitMinutesIntoHours(totalMinutes);
+		hoursInput.value = String(shown.hours);
+		hoursInput.style.width = `${getHoursWidth(shown.hours)}ch`;
+		minutesInput.value = padWithZeros(shown.minutes);
+	}
+
+	function commit() {
+		const total = readTypedMinutes();
+		if (total === null) {
+			showTypedMinutes(minutes);
+			return;
+		}
 		if (total !== minutes) {
 			onCommit(total);
 		}
 	}
+
+	function shiftOnWheel(unit: DurationUnit, step: -1 | 1) {
+		// Vers le haut (-1), la durée augmente
+		showTypedMinutes(
+			shiftDuration(readTypedMinutes() ?? minutes, unit, step === -1 ? 1 : -1),
+		);
+	}
+
+	// ↑ ↓ changent la durée comme la molette, avec le report des minutes sur les heures ; Entrée valide
+	function handleKeyDown(
+		event: KeyboardEvent<HTMLInputElement>,
+		unit: DurationUnit,
+	) {
+		if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+			event.preventDefault();
+			showTypedMinutes(
+				shiftDuration(
+					readTypedMinutes() ?? minutes,
+					unit,
+					event.key === "ArrowUp" ? 1 : -1,
+				),
+			);
+			return;
+		}
+		blurOnEnter(event);
+	}
+
+	// Un pas natif du champ (molette ou flèche non interceptée) peut sortir les minutes de 0-59 : on reporte tout de suite sur les heures. La frappe n'est pas touchée
+	function carryNativeStep(event: FormEvent<HTMLInputElement>) {
+		if (event.nativeEvent instanceof InputEvent) return;
+		const total = readTypedMinutes();
+		if (total !== null) showTypedMinutes(total);
+	}
+
+	function isFocused(input: RefObject<HTMLInputElement | null>): boolean {
+		return input.current !== null && document.activeElement === input.current;
+	}
+
+	useWheelStep(
+		hoursRef,
+		(step) => shiftOnWheel("hours", step),
+		() => isFocused(hoursRef),
+	);
+	useWheelStep(
+		minutesRef,
+		(step) => shiftOnWheel("minutes", step),
+		() => isFocused(minutesRef),
+	);
 
 	return (
 		<span
@@ -84,7 +163,7 @@ export function DurationField({
 				step={1}
 				defaultValue={hours}
 				aria-label={`${label} : heures`}
-				onKeyDown={blurOnEnter}
+				onKeyDown={(event) => handleKeyDown(event, "hours")}
 			/>
 			<span
 				className={styles.unit}
@@ -101,7 +180,8 @@ export function DurationField({
 				step={1}
 				defaultValue={extraMinutesText}
 				aria-label={`${label} : minutes`}
-				onKeyDown={blurOnEnter}
+				onInput={carryNativeStep}
+				onKeyDown={(event) => handleKeyDown(event, "minutes")}
 			/>
 		</span>
 	);

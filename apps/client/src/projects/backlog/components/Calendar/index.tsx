@@ -49,12 +49,12 @@ export function Calendar({ value, onSelect, onClose }: Props) {
 	} = useCalendar({ value, onSelect, onClose });
 	const monthLabel = `${monthName} ${yearLabel}`;
 
-	// La molette change le mois ou l'année, vers le bas : plus tard
+	// La molette change le mois ou l'année comme un compteur : vers le haut, plus tard ; vers le bas, plus tôt
 	useWheelStep(monthRowRef, (step) =>
-		step === 1 ? showNextMonth() : showPreviousMonth(),
+		step === -1 ? showNextMonth() : showPreviousMonth(),
 	);
 	useWheelStep(yearRowRef, (step) =>
-		step === 1 ? showNextYear() : showPreviousYear(),
+		step === -1 ? showNextYear() : showPreviousYear(),
 	);
 
 	// Le jour actif prend le focus à l'ouverture et quand il change (flèches, autre mois)
@@ -66,7 +66,7 @@ export function Calendar({ value, onSelect, onClose }: Props) {
 
 	return (
 		<div className={styles.calendar}>
-			{/* Mois et année, chacun sur sa ligne : les flèches ou la molette (vers le bas : plus tard) les changent */}
+			{/* Mois et année, chacun sur sa ligne : les flèches ou la molette (vers le haut : plus tard) les changent */}
 			<div
 				ref={monthRowRef}
 				className={styles.header}

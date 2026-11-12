@@ -56,6 +56,19 @@ describe("useWheelStep.tsx", () => {
 		});
 	});
 
+	describe("wheel refused by shouldHandle", () => {
+		it("SHOULD leave the wheel to the page WHEN shouldHandle answers false", () => {
+			const onStep = vi.fn();
+			const element = document.createElement("div");
+			renderHook(() => useWheelStep({ current: element }, onStep, () => false));
+
+			const event = wheel(element, 100);
+
+			expect(onStep).not.toHaveBeenCalled();
+			expect(event.defaultPrevented).toBe(false);
+		});
+	});
+
 	describe("unmount", () => {
 		it("SHOULD stop listening to the wheel", () => {
 			const onStep = vi.fn();
