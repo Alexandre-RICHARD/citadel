@@ -13,6 +13,7 @@ export type UserVersionRowFm = {
 	platform: PlatformFm;
 	status: StatusEnum;
 	isOwned: boolean;
+	isInProgress: boolean;
 	isUpNext: boolean;
 	finishDate: string | null;
 	sureFinishCount: number;

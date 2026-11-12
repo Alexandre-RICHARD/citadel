@@ -267,6 +267,8 @@ export function GameRowGroup({
 				className={joinClassNames(
 					styles.gameRow,
 					row.isUpNext && styles.upNextRow,
+					// Les deux cochées : le jaune l'emporte (il vient après le bleu dans la feuille de style)
+					row.isInProgress && styles.inProgressRow,
 					isExpandable && isExpanded && styles.expandedRow,
 					row.isTemporary && styles.temporaryRow,
 					isActionsMenuOpenOn(null) && styles.menuOpenRow,

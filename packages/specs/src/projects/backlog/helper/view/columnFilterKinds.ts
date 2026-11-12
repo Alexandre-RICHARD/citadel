@@ -15,6 +15,7 @@ export const columnFilterKinds: Readonly<
 	[BacklogColumnEnum.ENDING_TYPE]: ColumnFilterKindEnum.VALUE,
 	[BacklogColumnEnum.PLATFORM]: ColumnFilterKindEnum.VALUE,
 	[BacklogColumnEnum.STATUS]: ColumnFilterKindEnum.VALUE,
+	[BacklogColumnEnum.IN_PROGRESS]: ColumnFilterKindEnum.BOOLEAN,
 	[BacklogColumnEnum.UP_NEXT]: ColumnFilterKindEnum.BOOLEAN,
 	[BacklogColumnEnum.OWNED]: ColumnFilterKindEnum.BOOLEAN,
 	[BacklogColumnEnum.FINISH_DATE]: ColumnFilterKindEnum.DATE_RANGE,

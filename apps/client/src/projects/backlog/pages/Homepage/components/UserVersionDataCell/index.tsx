@@ -9,6 +9,7 @@ import {
 	type LucideIcon,
 	MessageSquareText,
 	PackageCheck,
+	Play,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -81,13 +82,14 @@ export function UserVersionDataCell({
 		checked: boolean,
 		label: string,
 		Icon: LucideIcon,
-		field: "isUpNext" | "isOwned",
+		field: "isInProgress" | "isUpNext" | "isOwned",
 	) {
 		if (editableUserVersion === null)
 			return checked ? (
 				<span
 					className={joinClassNames(
 						styles.booleanMark,
+						column === BacklogColumnEnum.IN_PROGRESS && styles.inProgressMark,
 						column === BacklogColumnEnum.UP_NEXT && styles.upNextMark,
 					)}
 					role="img"
@@ -148,6 +150,13 @@ export function UserVersionDataCell({
 				/>
 			);
 		}
+		case BacklogColumnEnum.IN_PROGRESS:
+			return renderCheckbox(
+				values.isInProgress,
+				"En cours",
+				Play,
+				"isInProgress",
+			);
 		case BacklogColumnEnum.UP_NEXT:
 			return renderCheckbox(
 				values.isUpNext,

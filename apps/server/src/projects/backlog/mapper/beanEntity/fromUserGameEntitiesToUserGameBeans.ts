@@ -56,6 +56,7 @@ function fromUserVersionEntityToUserVersionBean(
 		releaseDate: releaseDates.get(`${version.id}-${releasePlatformId}`) ?? null,
 		status: userVersion.status,
 		isOwned: userVersion.isOwned,
+		isInProgress: userVersion.isInProgress,
 		isUpNext: userVersion.isUpNext,
 		finishDate: userVersion.finishDate,
 		sureFinishCount: userVersion.sureFinishCount,

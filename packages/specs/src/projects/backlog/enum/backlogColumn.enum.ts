@@ -11,6 +11,7 @@ export enum BacklogColumnEnum {
 	ENDING_TYPE = "endingType",
 	PLATFORM = "platform",
 	STATUS = "status",
+	IN_PROGRESS = "inProgress",
 	UP_NEXT = "upNext",
 	OWNED = "owned",
 	FINISH_DATE = "finishDate",

@@ -81,6 +81,33 @@ describe("updateUserVersion", () => {
 			).toBe(1);
 		});
 
+		it("SHOULD save the in progress box, independently of the status and of the up next box", async () => {
+			// Arrange
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
+
+			// Act
+			const response = await player.agent
+				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
+				.send({ isInProgress: true });
+
+			// Assert
+			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			expect(
+				(
+					await selectBacklogRows.userVersions(
+						player.userId,
+						backlogGame.gameId,
+					)
+				)[0],
+			).toMatchObject({
+				isInProgress: true,
+				isUpNext: false,
+				status: StatusEnum.NOT_STARTED,
+			});
+		});
+
 		it("SHOULD keep the counter sent with the status", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({

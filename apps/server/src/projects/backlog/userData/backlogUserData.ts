@@ -50,6 +50,7 @@ export const backlogUserData: ProjectUserData = {
 				"platformId",
 				"status",
 				"isOwned",
+				"isInProgress",
 				"isUpNext",
 				"finishDate",
 				"sureFinishCount",

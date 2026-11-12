@@ -13,6 +13,7 @@ export function fromUpdateUserVersionDtoToUpdateUserVersionBean(
 		changes: {
 			status: bodyDto.status,
 			isOwned: bodyDto.isOwned,
+			isInProgress: bodyDto.isInProgress,
 			isUpNext: bodyDto.isUpNext,
 			finishDate: bodyDto.finishDate,
 			sureFinishCount: bodyDto.sureFinishCount,

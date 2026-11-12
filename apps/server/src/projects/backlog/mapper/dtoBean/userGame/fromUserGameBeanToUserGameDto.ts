@@ -20,6 +20,7 @@ export function fromUserGameBeanToUserGameDto(
 			releaseDate: userVersion.releaseDate,
 			status: userVersion.status,
 			isOwned: userVersion.isOwned,
+			isInProgress: userVersion.isInProgress,
 			isUpNext: userVersion.isUpNext,
 			finishDate: userVersion.finishDate,
 			sureFinishCount: userVersion.sureFinishCount,

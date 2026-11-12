@@ -1173,7 +1173,8 @@
   }
 }
 
-// « À jouer bientôt » : la ligne est mise en valeur, teintée et marquée d'un trait à gauche
+// « À jouer bientôt » (bleu) et « En cours » (jaune) : la ligne est mise en valeur, teintée et marquée d'un trait à
+// gauche. Cochées toutes les deux, le jaune l'emporte : sa règle vient après
 .upNextRow {
   --row-bg: #{vars.$up-next-row};
   --row-accent: #{vars.$up-next};
@@ -1185,6 +1186,20 @@
 
   .expandCell {
     box-shadow: inset 3px 0 0 vars.$up-next;
+  }
+}
+
+.inProgressRow {
+  --row-bg: #{vars.$in-progress-row};
+  --row-accent: #{vars.$in-progress};
+  --row-sheen: #{vars.$in-progress-sheen};
+
+  &:hover {
+    --row-bg: #{vars.$in-progress-row-hover};
+  }
+
+  .expandCell {
+    box-shadow: inset 3px 0 0 vars.$in-progress;
   }
 }
 
@@ -1355,6 +1370,10 @@
     width: 1.7rem;
     height: 1.7rem;
   }
+}
+
+.inProgressMark {
+  color: vars.$in-progress;
 }
 
 .upNextMark {

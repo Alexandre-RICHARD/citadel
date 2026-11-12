@@ -22,12 +22,28 @@ describe("loadSavedColumns.ts", () => {
 
 			const columns = loadSavedColumns();
 
-			expect(columns?.slice(0, 3)).toStrictEqual([
-				{ key: BacklogColumnEnum.RATING, isVisible: false },
-				{ key: BacklogColumnEnum.NAME, isVisible: true },
-				{ key: BacklogColumnEnum.THUMBNAIL, isVisible: true },
-			]);
+			expect(columns?.[0]).toStrictEqual({
+				key: BacklogColumnEnum.RATING,
+				isVisible: false,
+			});
+			expect(
+				columns?.findIndex(({ key }) => key === BacklogColumnEnum.NAME),
+			).toBeGreaterThan(0);
 			expect(columns).toHaveLength(Object.values(BacklogColumnEnum).length);
+		});
+
+		it("SHOULD place a column missing from the saved layout behind the one that precedes it by default", () => {
+			save(
+				Object.values(BacklogColumnEnum)
+					.filter((key) => key !== BacklogColumnEnum.IN_PROGRESS)
+					.map((key) => ({ key, isVisible: key !== BacklogColumnEnum.RATING })),
+			);
+
+			const keys = loadSavedColumns()?.map(({ key }) => key);
+
+			expect(keys?.indexOf(BacklogColumnEnum.IN_PROGRESS)).toBe(
+				(keys?.indexOf(BacklogColumnEnum.STATUS) ?? 0) + 1,
+			);
 		});
 
 		it("SHOULD ignore unknown, invalid and repeated columns", () => {

@@ -21,6 +21,7 @@ export function buildUserVersionDto(
 		releaseDate: "2001-12-03",
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,
+		isInProgress: false,
 		isUpNext: false,
 		finishDate: null,
 		sureFinishCount: 0,

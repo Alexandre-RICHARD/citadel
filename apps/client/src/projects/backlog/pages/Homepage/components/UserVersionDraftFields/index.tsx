@@ -128,6 +128,14 @@ export function UserVersionDraftFields({
 			<div className={styles.switchRow}>
 				<Checkbox
 					variant="switch"
+					checked={draft.isInProgress}
+					label="En cours"
+					onChange={() =>
+						onChange({ ...draft, isInProgress: !draft.isInProgress })
+					}
+				/>
+				<Checkbox
+					variant="switch"
 					checked={draft.isUpNext}
 					label="À jouer bientôt"
 					onChange={() => onChange({ ...draft, isUpNext: !draft.isUpNext })}

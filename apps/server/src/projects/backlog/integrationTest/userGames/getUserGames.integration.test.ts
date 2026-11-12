@@ -102,6 +102,34 @@ describe("getUserGames", () => {
 			]);
 		});
 
+		it("SHOULD keep the games with a version in progress WHEN the in progress filter is on", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			const inProgress = await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} in progress`,
+				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.STARTED],
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} idle`,
+			});
+			await insertBacklogRows.userVersion({
+				userId: player.userId,
+				versionId: inProgress.versionIds[1] ?? 0,
+				platformId: SEEDED_PLATFORMS.PS2,
+				isInProgress: true,
+			});
+
+			// Act
+			const response = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ name: word, inProgress: "oui" });
+
+			// Assert
+			expect(gameNames(response.body)).toStrictEqual([`${word} in progress`]);
+		});
+
 		it("SHOULD sort on several columns, empty values last", async () => {
 			// Arrange
 			const word = buildUniqueWord();

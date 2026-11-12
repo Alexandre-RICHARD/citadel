@@ -10,6 +10,7 @@ export function fromNewUserVersionDtoToNewUserVersionBean(
 		platformId: userVersionDto.platformId,
 		status: userVersionDto.status,
 		isOwned: userVersionDto.isOwned,
+		isInProgress: userVersionDto.isInProgress,
 		isUpNext: userVersionDto.isUpNext,
 		finishDate: userVersionDto.finishDate,
 		sureFinishCount: userVersionDto.sureFinishCount,

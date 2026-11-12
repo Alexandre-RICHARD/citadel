@@ -7,6 +7,7 @@ export type UserGameAggregates = {
 	// Au moins une version jouée
 	isOwned: boolean;
 	// Au moins une version jouée ; la ligne est mise en valeur
+	isInProgress: boolean;
 	isUpNext: boolean;
 	// La plus ancienne : la première fin
 	finishDate: string | null;

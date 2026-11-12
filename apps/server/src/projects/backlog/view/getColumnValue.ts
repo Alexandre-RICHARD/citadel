@@ -26,6 +26,8 @@ export function getColumnValue(
 			return row.platformName;
 		case BacklogColumnEnum.STATUS:
 			return row.status;
+		case BacklogColumnEnum.IN_PROGRESS:
+			return row.isInProgress;
 		case BacklogColumnEnum.UP_NEXT:
 			return row.isUpNext;
 		case BacklogColumnEnum.OWNED:

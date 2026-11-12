@@ -4,6 +4,7 @@ import type { StatusEnum } from "../../enum/status.enum.ts";
 export type AggregatedUserVersion = {
 	status: StatusEnum;
 	isOwned: boolean;
+	isInProgress: boolean;
 	isUpNext: boolean;
 	finishDate: string | null;
 	sureFinishCount: number;

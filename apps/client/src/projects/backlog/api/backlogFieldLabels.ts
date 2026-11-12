@@ -18,6 +18,7 @@ export const backlogFieldLabels: Readonly<Record<string, string>> = {
 	platformId: "la plateforme",
 	status: "le statut",
 	isOwned: "« possédé »",
+	isInProgress: "« en cours »",
 	isUpNext: "« à jouer bientôt »",
 	isDone: "la case « fait »",
 	finishDate: "la date de fin",

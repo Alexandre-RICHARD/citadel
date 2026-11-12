@@ -27,6 +27,9 @@ export const getUserGamesQueryParamSchema = z.object({
 	),
 	[BacklogColumnEnum.PLATFORM]: filterParamSchema(BacklogColumnEnum.PLATFORM),
 	[BacklogColumnEnum.STATUS]: filterParamSchema(BacklogColumnEnum.STATUS),
+	[BacklogColumnEnum.IN_PROGRESS]: filterParamSchema(
+		BacklogColumnEnum.IN_PROGRESS,
+	),
 	[BacklogColumnEnum.UP_NEXT]: filterParamSchema(BacklogColumnEnum.UP_NEXT),
 	[BacklogColumnEnum.OWNED]: filterParamSchema(BacklogColumnEnum.OWNED),
 	[BacklogColumnEnum.FINISH_DATE]: filterParamSchema(

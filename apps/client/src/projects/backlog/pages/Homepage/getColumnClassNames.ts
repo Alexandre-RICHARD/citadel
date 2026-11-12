@@ -7,6 +7,7 @@ import styles from "../../backlog.module.scss";
 const columnAlignments: Partial<Record<BacklogColumnEnum, string | undefined>> =
 	{
 		[BacklogColumnEnum.SERIES_NUMBER]: styles.alignCenter,
+		[BacklogColumnEnum.IN_PROGRESS]: styles.alignCenter,
 		[BacklogColumnEnum.UP_NEXT]: styles.alignCenter,
 		[BacklogColumnEnum.OWNED]: styles.alignCenter,
 		[BacklogColumnEnum.FINISH_COUNT]: styles.alignEnd,

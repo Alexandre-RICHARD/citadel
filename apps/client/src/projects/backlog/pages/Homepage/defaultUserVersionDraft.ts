@@ -8,6 +8,7 @@ export const DEFAULT_USER_VERSION_DRAFT: UserVersionDraft = {
 	platformId: null,
 	status: StatusEnum.NOT_STARTED,
 	isOwned: true,
+	isInProgress: false,
 	isUpNext: false,
 	finishDate: null,
 	sureFinishCount: 0,

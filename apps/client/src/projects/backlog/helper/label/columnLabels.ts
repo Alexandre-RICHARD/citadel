@@ -12,6 +12,7 @@ export const columnLabels: Readonly<Record<BacklogColumnEnum, string>> = {
 	[BacklogColumnEnum.ENDING_TYPE]: "Type de fin",
 	[BacklogColumnEnum.PLATFORM]: "Plateforme",
 	[BacklogColumnEnum.STATUS]: "Statut",
+	[BacklogColumnEnum.IN_PROGRESS]: "En cours",
 	[BacklogColumnEnum.UP_NEXT]: "À jouer bientôt",
 	[BacklogColumnEnum.OWNED]: "Possédé",
 	[BacklogColumnEnum.FINISH_DATE]: "Date de fin",

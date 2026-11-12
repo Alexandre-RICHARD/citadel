@@ -4,6 +4,7 @@ import type { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status
 export type UserVersionDataBean = {
 	status: StatusEnum;
 	isOwned: boolean;
+	isInProgress: boolean;
 	isUpNext: boolean;
 	finishDate: string | null;
 	sureFinishCount: number;

@@ -75,15 +75,19 @@ $success: var(--bl-success);
 $success-text: var(--bl-success-text);
 $success-subtle: var(--bl-success-subtle);
 $success-border: var(--bl-success-border);
+$in-progress: var(--bl-in-progress);
 $up-next: var(--bl-up-next);
 $row: var(--bl-row);
 $row-hover: var(--bl-row-hover);
+$in-progress-row: var(--bl-in-progress-row);
 $up-next-row: var(--bl-up-next-row);
+$in-progress-row-hover: var(--bl-in-progress-row-hover);
 $up-next-row-hover: var(--bl-up-next-row-hover);
 $subrow: var(--bl-subrow);
 $subrow-hover: var(--bl-subrow-hover);
 $row-accent: var(--bl-row-accent);
 $row-sheen: var(--bl-row-sheen);
+$in-progress-sheen: var(--bl-in-progress-sheen);
 $up-next-sheen: var(--bl-up-next-sheen);
 $shadow-xs: var(--bl-shadow-xs);
 $shadow-sm: var(--bl-shadow-sm);
@@ -149,16 +153,20 @@ $tooltip-border: var(--bl-tooltip-border);
   // Lignes du tableau, opaques : les cellules collantes les reprennent
   --bl-row: #fff;
   --bl-row-hover: #f9fafb;
-  --bl-up-next: #f59e0b;
-  --bl-up-next-row: #fffaeb;
-  --bl-up-next-row-hover: #fff5d6;
+  --bl-in-progress: #f59e0b;
+  --bl-in-progress-row: #fffaeb;
+  --bl-in-progress-row-hover: #fff5d6;
+  --bl-up-next: #2e90fa;
+  --bl-up-next-row: #eff8ff;
+  --bl-up-next-row-hover: #e0f0ff;
   --bl-subrow: #f8f9fb;
   --bl-subrow-hover: #f2f4f7;
 
-  // Ligne focalisée (pointillés) et reflet de son survol : gris neutre, ou jaune pour une ligne « À jouer bientôt »
+  // Ligne focalisée (pointillés) et reflet de son survol : gris neutre, jaune pour une ligne « En cours », bleu pour « À jouer bientôt »
   --bl-row-accent: #667085;
   --bl-row-sheen: rgb(0 0 0 / 6%);
-  --bl-up-next-sheen: rgb(245 158 11 / 14%);
+  --bl-in-progress-sheen: rgb(245 158 11 / 14%);
+  --bl-up-next-sheen: rgb(46 144 250 / 14%);
 
   // Teintes des statuts et des notes
   --bl-gray-fg: #4a5465;
@@ -222,14 +230,18 @@ $tooltip-border: var(--bl-tooltip-border);
     --bl-success-border: #1d4a34;
     --bl-row: #111419;
     --bl-row-hover: #151920;
-    --bl-up-next: #fbbf24;
-    --bl-up-next-row: #18160f;
-    --bl-up-next-row-hover: #1f1c12;
+    --bl-in-progress: #fbbf24;
+    --bl-in-progress-row: #18160f;
+    --bl-in-progress-row-hover: #1f1c12;
+    --bl-up-next: #53b1fd;
+    --bl-up-next-row: #0f1620;
+    --bl-up-next-row-hover: #131c28;
     --bl-subrow: #14171d;
     --bl-subrow-hover: #191d24;
     --bl-row-accent: #98a2b3;
     --bl-row-sheen: rgb(255 255 255 / 3.5%);
-    --bl-up-next-sheen: rgb(251 191 36 / 7%);
+    --bl-in-progress-sheen: rgb(251 191 36 / 7%);
+    --bl-up-next-sheen: rgb(83 177 253 / 7%);
     --bl-gray-fg: #b4bac6;
     --bl-gray-bg: rgb(148 160 180 / 12%);
     --bl-violet-fg: #bda9ff;

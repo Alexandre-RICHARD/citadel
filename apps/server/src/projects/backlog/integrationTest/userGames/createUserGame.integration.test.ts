@@ -163,6 +163,7 @@ describe("createUserGame", () => {
 					releaseDate: "2011-11-11",
 					status: StatusEnum.NOT_STARTED,
 					isOwned: true,
+					isInProgress: false,
 					isUpNext: false,
 					finishDate: null,
 					sureFinishCount: 0,

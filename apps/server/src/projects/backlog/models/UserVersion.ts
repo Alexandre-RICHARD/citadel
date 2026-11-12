@@ -25,6 +25,7 @@ export class UserVersion extends Model<
 	declare platformId: number;
 	declare status: StatusEnum;
 	declare isOwned: boolean;
+	declare isInProgress: boolean;
 	declare isUpNext: boolean;
 	declare finishDate: string | null;
 	declare sureFinishCount: number;
@@ -72,6 +73,11 @@ UserVersion.init(
 		isOwned: {
 			type: DataTypes.BOOLEAN,
 			field: "is_owned",
+			allowNull: false,
+		},
+		isInProgress: {
+			type: DataTypes.BOOLEAN,
+			field: "is_in_progress",
 			allowNull: false,
 		},
 		isUpNext: {

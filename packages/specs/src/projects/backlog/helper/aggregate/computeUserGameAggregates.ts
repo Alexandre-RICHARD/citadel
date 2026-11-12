@@ -28,6 +28,7 @@ export function computeUserGameAggregates(
 	return {
 		status: getGameStatus(userVersions.map(({ status }) => status)),
 		isOwned: userVersions.some(({ isOwned }) => isOwned),
+		isInProgress: userVersions.some(({ isInProgress }) => isInProgress),
 		isUpNext: userVersions.some(({ isUpNext }) => isUpNext),
 		finishDate: getEarliestIsoDate(
 			userVersions.map(({ finishDate }) => finishDate),

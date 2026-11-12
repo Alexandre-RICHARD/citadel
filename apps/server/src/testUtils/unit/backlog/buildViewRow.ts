@@ -18,6 +18,7 @@ export function buildViewRow(row: Partial<ViewRow> = {}): ViewRow {
 		platformName: null,
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,
+		isInProgress: false,
 		isUpNext: false,
 		finishDate: null,
 		sureFinishCount: 0,

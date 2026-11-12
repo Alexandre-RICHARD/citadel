@@ -6,6 +6,7 @@ import { computeUserGameAggregates } from "./computeUserGameAggregates.ts";
 
 const BLANK_USER_VERSION: AggregatedUserVersion = {
 	status: StatusEnum.NOT_STARTED,
+	isInProgress: false,
 	isOwned: false,
 	isUpNext: false,
 	finishDate: null,
@@ -26,6 +27,7 @@ describe("computeUserGameAggregates.ts", () => {
 					[
 						{
 							status: StatusEnum.FINISHED,
+							isInProgress: true,
 							isOwned: true,
 							isUpNext: false,
 							finishDate: "2013-09-20",
@@ -42,6 +44,7 @@ describe("computeUserGameAggregates.ts", () => {
 				),
 			).toStrictEqual({
 				status: StatusEnum.FINISHED,
+				isInProgress: true,
 				isOwned: true,
 				isUpNext: false,
 				finishDate: "2013-09-20",
@@ -110,6 +113,15 @@ describe("computeUserGameAggregates.ts", () => {
 
 		it("SHOULD check a box WHEN at least one version checks it", () => {
 			expect(aggregates).toMatchObject({ isUpNext: true, isOwned: false });
+		});
+
+		it("SHOULD be in progress WHEN at least one version is", () => {
+			expect(
+				computeUserGameAggregates(
+					[BLANK_USER_VERSION, { ...BLANK_USER_VERSION, isInProgress: true }],
+					[],
+				).isInProgress,
+			).toBe(true);
 		});
 
 		it("SHOULD show no comment but count them WHEN several versions have one", () => {

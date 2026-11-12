@@ -34,6 +34,7 @@ function buildPlaceholderRow(gameId: number, name: string): BacklogRowFm {
 		dlcs: [],
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,
+		isInProgress: false,
 		isUpNext: false,
 		finishDate: null,
 		sureFinishCount: 0,

@@ -12,6 +12,7 @@ export function newUserVersionBody(
 		platformId,
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,
+		isInProgress: false,
 		isUpNext: false,
 		finishDate: null,
 		sureFinishCount: 0,

@@ -14,6 +14,7 @@ const MAX_RATING = 20;
 export const userVersionDataSchema = z.object({
 	status: statusSchema,
 	isOwned: booleanSchema("Is owned"),
+	isInProgress: booleanSchema("Is in progress"),
 	isUpNext: booleanSchema("Is up next"),
 	finishDate: isoDateSchema("Finish date").nullable(),
 	sureFinishCount: boundedIntegerSchema(

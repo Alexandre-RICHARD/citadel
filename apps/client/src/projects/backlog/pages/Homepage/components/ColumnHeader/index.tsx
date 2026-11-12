@@ -13,6 +13,7 @@ import {
 	Info,
 	type LucideIcon,
 	PackageCheck,
+	Play,
 	Timer,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -74,6 +75,7 @@ const compactHeaders: Partial<
 	[BacklogColumnEnum.THUMBNAIL]: { icon: ImageIcon },
 	[BacklogColumnEnum.SERIES_NUMBER]: { text: "N°" },
 	[BacklogColumnEnum.RELEASE_DATE]: { text: "Sortie" },
+	[BacklogColumnEnum.IN_PROGRESS]: { icon: Play },
 	[BacklogColumnEnum.UP_NEXT]: { icon: Bookmark },
 	[BacklogColumnEnum.OWNED]: { icon: PackageCheck },
 	[BacklogColumnEnum.TRACKED_PLAY_TIME]: { icon: Timer, text: "Relevé" },

@@ -11,6 +11,7 @@ export type UserVersionDto = {
 	releaseDate: string | null;
 	status: StatusEnum;
 	isOwned: boolean;
+	isInProgress: boolean;
 	isUpNext: boolean;
 	finishDate: string | null;
 	sureFinishCount: number;

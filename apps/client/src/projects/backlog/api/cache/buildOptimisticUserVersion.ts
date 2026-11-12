@@ -34,6 +34,7 @@ export function buildOptimisticUserVersion(
 			)?.releaseDate ?? null,
 		status: body.status,
 		isOwned: body.isOwned,
+		isInProgress: body.isInProgress,
 		isUpNext: body.isUpNext,
 		finishDate: body.finishDate,
 		sureFinishCount: applyFirstFinishCount(body.status, body.sureFinishCount),

@@ -16,6 +16,7 @@ type UserVersionRow = {
 	platformId: number;
 	status: string;
 	isOwned: boolean;
+	isInProgress: boolean;
 	isUpNext: boolean;
 	finishDate: string | null;
 	sureFinishCount: number;
@@ -65,13 +66,14 @@ export const selectBacklogRows = {
 		gameId: number,
 	): Promise<UserVersionRow[]> {
 		const rows = await sequelize.query<
-			Omit<UserVersionRow, "isOwned" | "isUpNext"> & {
+			Omit<UserVersionRow, "isOwned" | "isInProgress" | "isUpNext"> & {
 				isOwned: number;
+				isInProgress: number;
 				isUpNext: number;
 			}
 		>(
 			`SELECT uv.id, uv.version_id AS versionId, uv.platform_id AS platformId, uv.status,
-				uv.is_owned AS isOwned, uv.is_up_next AS isUpNext,
+				uv.is_in_progress AS isInProgress, uv.is_owned AS isOwned, uv.is_up_next AS isUpNext,
 				DATE_FORMAT(uv.finish_date, '%Y-%m-%d') AS finishDate,
 				uv.sure_finish_count AS sureFinishCount, uv.probable_finish_count AS probableFinishCount,
 				uv.tracked_play_time_minutes AS trackedPlayTimeMinutes,
@@ -85,6 +87,7 @@ export const selectBacklogRows = {
 		return rows.map((row) => ({
 			...row,
 			isOwned: Boolean(row.isOwned),
+			isInProgress: Boolean(row.isInProgress),
 			isUpNext: Boolean(row.isUpNext),
 		}));
 	},
