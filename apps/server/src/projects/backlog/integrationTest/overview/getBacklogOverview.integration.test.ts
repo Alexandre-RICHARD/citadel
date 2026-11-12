@@ -148,6 +148,132 @@ describe("getBacklogOverview", () => {
 			});
 		});
 
+		it.each([
+			StatusEnum.FINISHED,
+			StatusEnum.DEEMED_FINISHED,
+			StatusEnum.COMPLETED,
+			StatusEnum.PLATINUM,
+			StatusEnum.COMPLETED_AND_PLATINUM,
+		])(
+			"SHOULD count the game as finished WHEN its version is %s",
+			async (status) => {
+				// Arrange
+				const account = await openSignedInAgent();
+				await seedBacklogGame({
+					userId: account.userId,
+					userVersionStatuses: [status],
+				});
+
+				// Act
+				const response = await account.agent.get(OVERVIEW_URL);
+
+				// Assert
+				expect(response.body).toMatchObject({ finishedGameCount: 1 });
+			},
+		);
+
+		it.each([
+			StatusEnum.NOT_STARTED,
+			StatusEnum.WATCHED,
+			StatusEnum.STARTED,
+			StatusEnum.WELL_UNDERWAY,
+			StatusEnum.ABANDONED,
+		])(
+			"SHOULD not count the game as finished WHEN its version is %s",
+			async (status) => {
+				// Arrange
+				const account = await openSignedInAgent();
+				await seedBacklogGame({
+					userId: account.userId,
+					userVersionStatuses: [status],
+				});
+
+				// Act
+				const response = await account.agent.get(OVERVIEW_URL);
+
+				// Assert
+				expect(response.body).toMatchObject({ finishedGameCount: 0 });
+			},
+		);
+
+		it("SHOULD not count the games finished by another account", async () => {
+			// Arrange
+			const account = await openSignedInAgent();
+			const other = await openSignedInAgent();
+			await seedBacklogGame({
+				userId: other.userId,
+				userVersionStatuses: [StatusEnum.PLATINUM],
+			});
+
+			// Act
+			const response = await account.agent.get(OVERVIEW_URL);
+
+			// Assert
+			expect(response.body).toMatchObject({ finishedGameCount: 0 });
+		});
+
+		it("SHOULD follow the status of the version WHEN it is changed to a finish and back", async () => {
+			// Arrange
+			const account = await openSignedInAgent();
+			const backlogGame = await seedBacklogGame({ userId: account.userId });
+			const versionUrl = `${ApiPrefixEnum.BACKLOG}/user-versions/${backlogGame.userVersionIds[0] ?? 0}`;
+
+			// Act
+			await account.agent
+				.patch(versionUrl)
+				.send({ status: StatusEnum.COMPLETED });
+			const whileFinished = await account.agent.get(OVERVIEW_URL);
+			await account.agent
+				.patch(versionUrl)
+				.send({ status: StatusEnum.STARTED });
+			const afterReopening = await account.agent.get(OVERVIEW_URL);
+
+			// Assert
+			expect(whileFinished.body).toMatchObject({ finishedGameCount: 1 });
+			expect(afterReopening.body).toMatchObject({ finishedGameCount: 0 });
+		});
+
+		it("SHOULD stop counting the game WHEN its finished version is removed", async () => {
+			// Arrange
+			const account = await openSignedInAgent();
+			const backlogGame = await seedBacklogGame({
+				userId: account.userId,
+				userVersionStatuses: [StatusEnum.FINISHED],
+			});
+
+			// Act
+			await account.agent.delete(
+				`${ApiPrefixEnum.BACKLOG}/user-versions/${backlogGame.userVersionIds[0] ?? 0}`,
+			);
+			const response = await account.agent.get(OVERVIEW_URL);
+
+			// Assert
+			expect(response.body).toMatchObject({ finishedGameCount: 0 });
+		});
+
+		it("SHOULD add the play times WHEN they are set on a played version", async () => {
+			// Arrange
+			const account = await openSignedInAgent();
+			await seedBacklogGame({ userId: account.userId });
+			const before = (await account.agent.get(OVERVIEW_URL))
+				.body as BacklogOverviewDto;
+			const backlogGame = await seedBacklogGame({ userId: account.userId });
+
+			// Act
+			await account.agent
+				.patch(
+					`${ApiPrefixEnum.BACKLOG}/user-versions/${backlogGame.userVersionIds[0] ?? 0}`,
+				)
+				.send({ trackedPlayTimeMinutes: 45, estimatedPlayTimeMinutes: 15 });
+			const response = await account.agent.get(OVERVIEW_URL);
+
+			// Assert
+			expect(response.body).toMatchObject({
+				trackedPlayTimeMinutes: before.trackedPlayTimeMinutes + 45,
+				estimatedPlayTimeMinutes: before.estimatedPlayTimeMinutes + 15,
+			});
+		});
+
 		it("SHOULD give zeros WHEN the backlog is empty", async () => {
 			// Arrange
 			const newcomer = await openSignedInAgent();
