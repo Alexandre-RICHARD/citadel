@@ -13,7 +13,7 @@ import { getRowKeyAction } from "../../../../helper/table/getRowKeyAction";
 import type { TableControls } from "../../tableControls.type";
 import { ActionsCell } from "../ActionsCell";
 import { CompanyLabel } from "../CompanyLabel";
-import { EndingTypeLabel } from "../EndingTypeLabel";
+import { EndingTypeCell } from "../EndingTypeCell";
 import { PlatformLabel } from "../PlatformLabel";
 import { ReleaseDateLabel } from "../ReleaseDateLabel";
 import { Thumbnail } from "../Thumbnail";
@@ -52,9 +52,6 @@ const gameInfoRenderers: Partial<
 			date={row.releaseDate}
 			isCancelled={row.isCancelled}
 		/>
-	),
-	[BacklogColumnEnum.ENDING_TYPE]: (row) => (
-		<EndingTypeLabel endingType={row.endingType} />
 	),
 	[BacklogColumnEnum.PLATFORM]: (row) =>
 		row.platform === null ? null : <PlatformLabel platform={row.platform} />,
@@ -229,6 +226,13 @@ export function GameRowGroup({
 				</span>
 			);
 		}
+		if (column === BacklogColumnEnum.ENDING_TYPE)
+			return (
+				<EndingTypeCell
+					row={row}
+					table={table}
+				/>
+			);
 		if (column === BacklogColumnEnum.ACTIONS)
 			return (
 				<ActionsCell
