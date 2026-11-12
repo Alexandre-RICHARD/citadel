@@ -1,6 +1,6 @@
+import { externalLinks } from "@citadel/specs/src/links/externalLinks";
 import { ExternalLink } from "lucide-react";
 
-import { externalLinks } from "../../../../common/links/externalLinks";
 import { parseLinkedText } from "../../../../common/links/parseLinkedText";
 import styles from "./linkedText.module.scss";
 

@@ -1,6 +1,7 @@
 import type { GamePreviewDto } from "@citadel/specs/src/projects/backlog/dto/igdb/gamePreviewDto.type.ts";
 import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -78,7 +79,7 @@ describe("getGamePreview", () => {
 					frenchName: null,
 					firstReleaseDate: "2006-04-20",
 					isCancelled: false,
-					igdbUrl: `https://www.igdb.com/games/${gameId}`,
+					igdbUrl: buildIgdbGameUrl(gameId),
 				},
 				isStored: false,
 				proposedSeriesName: "Okami",
@@ -97,7 +98,7 @@ describe("getGamePreview", () => {
 						id: gameId,
 						title: null,
 						coverImageId: `co${gameId}`,
-						igdbUrl: `https://www.igdb.com/games/${gameId}`,
+						igdbUrl: buildIgdbGameUrl(gameId),
 						isStored: false,
 						platforms: [
 							{
@@ -127,7 +128,7 @@ describe("getGamePreview", () => {
 						// Même nom que le jeu, sans titre : son type et son année
 						title: "Remaster 2012",
 						coverImageId: null,
-						igdbUrl: `https://www.igdb.com/games/${remasterId}`,
+						igdbUrl: buildIgdbGameUrl(remasterId),
 						isStored: false,
 						platforms: [
 							{
@@ -163,7 +164,7 @@ describe("getGamePreview", () => {
 					{
 						id: dlcId,
 						name: "Okami Art Book",
-						igdbUrl: `https://www.igdb.com/games/${dlcId}`,
+						igdbUrl: buildIgdbGameUrl(dlcId),
 						isStored: false,
 						storedGameId: null,
 					},
@@ -252,7 +253,7 @@ describe("getGamePreview", () => {
 				{
 					id: dlcAsGame.gameId,
 					name: "The Lost and Damned",
-					igdbUrl: `https://www.igdb.com/games/${dlcAsGame.gameId}`,
+					igdbUrl: buildIgdbGameUrl(dlcAsGame.gameId),
 					isStored: false,
 					storedGameId: dlcAsGame.gameId,
 				},

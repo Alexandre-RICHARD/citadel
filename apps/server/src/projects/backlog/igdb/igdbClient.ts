@@ -1,12 +1,12 @@
 import { wait } from "@citadel/common/src/universal/async/wait.ts";
 import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
+import { externalLinks } from "@citadel/specs/src/links/externalLinks.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 
 import { env } from "../../../configuration/env.ts";
 import { BadGatewayError } from "../../../error/BadGatewayError.ts";
 import type { TwitchToken } from "./type/twitchToken.type.ts";
 
-const IGDB_API_URL = "https://api.igdb.com/v4";
 const TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 // IGDB accepte 4 requêtes par seconde : un peu plus d'un quart de seconde entre deux départs
 const REQUEST_GAP_MS = 260;
@@ -53,7 +53,7 @@ class IgdbClient {
 		await this.#waitForSlot();
 		try {
 			return await fetchWithTimeout(
-				`${IGDB_API_URL}/${endpoint}`,
+				`${externalLinks.igdbApi}/${endpoint}`,
 				REQUEST_TIMEOUT_MS,
 				{
 					method: "POST",

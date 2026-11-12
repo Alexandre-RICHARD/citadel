@@ -1,8 +1,8 @@
-import { CONTACT_EMAIL } from "@citadel/specs/src/projects/contact/contactEmail";
+import { CONTACT_EMAIL } from "../projects/contact/contactEmail.ts";
 
 /**
- * Tous les liens vers l'extérieur de l'application, à un seul endroit : un lien qui meurt se corrige ici, et un coup
- * d'œil de temps en temps suffit à les contrôler. Le texte des pages du footer y renvoie par la clé
+ * Tous les liens vers l'extérieur de l'application, à un seul endroit (client, serveur, tests) : un lien qui meurt
+ * se corrige ici, et un coup d'œil de temps en temps suffit à les contrôler. Le texte des pages du footer y renvoie par la clé
  * (« [Cloudflare](cloudflare) »). On pointe la page utile (politique de confidentialité, formulaire de plainte,
  * licence) plutôt que l'accueil du site quand c'est elle que le texte évoque.
  *
@@ -41,6 +41,8 @@ export const externalLinks = {
 
 	// Les données des projets
 	igdb: "https://www.igdb.com/",
+	igdbApi: "https://api.igdb.com/v4",
+	igdbImages: "https://images.igdb.com/igdb/image/upload",
 	twitchPrivacy: "https://legal.twitch.com/legal/privacy-notice/",
 	openStreetMapCopyright: "https://www.openstreetmap.org/copyright",
 	openStreetMapPrivacy: "https://osmfoundation.org/wiki/Privacy_Policy",

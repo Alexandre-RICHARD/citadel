@@ -4,6 +4,7 @@ import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/s
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
 import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { ValidationIssueCodeEnum } from "@citadel/specs/src/specUtils/error/validationIssueCode.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
@@ -149,7 +150,7 @@ describe("createUserGame", () => {
 						id: stored.gameId,
 						title: null,
 						coverImageId: "co1abc",
-						igdbUrl: `https://www.igdb.com/games/${stored.gameId}`,
+						igdbUrl: buildIgdbGameUrl(stored.gameId),
 					},
 					platform: {
 						id: SEEDED_PLATFORMS.PCSX2,

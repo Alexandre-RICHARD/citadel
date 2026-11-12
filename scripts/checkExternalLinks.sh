@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Teste chaque lien du dictionnaire des liens externes (apps/client/src/common/links/externalLinks.ts) : un lien
+# Teste chaque lien du dictionnaire des liens externes (packages/specs/src/links/externalLinks.ts) : un lien
 # qui ne répond plus se corrige dans ce fichier. À lancer de temps en temps ; demande Internet.
 #
 # Pour chaque lien : le code HTTP final (après redirections) et, si le lien a été redirigé ailleurs, où il arrive.
@@ -13,7 +13,7 @@
 set -euo pipefail
 
 root="$(realpath "$(dirname "$0")/..")"
-dictionary="$root/apps/client/src/common/links/externalLinks.ts"
+dictionary="$root/packages/specs/src/links/externalLinks.ts"
 
 # Un navigateur courant : certains sites refusent l'agent de curl
 userAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"

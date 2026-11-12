@@ -1,3 +1,4 @@
+import { externalLinks } from "@citadel/specs/src/links/externalLinks.ts";
 import { describe, expect, it } from "vitest";
 
 import type { IgdbVersionGame } from "../../igdb/type/igdbVersionGame.type.ts";
@@ -8,7 +9,7 @@ const GAME_NAME = "Final Fantasy VII";
 const RELEASE_1998 = 898646400;
 
 function buildVersion(version: Partial<IgdbVersionGame>): IgdbVersionGame {
-	return { id: 2, name: GAME_NAME, url: "https://www.igdb.com", ...version };
+	return { id: 2, name: GAME_NAME, url: externalLinks.igdb, ...version };
 }
 
 describe("getIgdbVersionTitle.ts", () => {

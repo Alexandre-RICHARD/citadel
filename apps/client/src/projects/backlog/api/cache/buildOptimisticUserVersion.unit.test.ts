@@ -1,6 +1,7 @@
 import type { StoredGameDto } from "@citadel/specs/src/projects/backlog/dto/game/storedGameDto.type";
 import type { CreateUserVersionBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodyDto.type";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl";
 import { describe, expect, it } from "vitest";
 
 import { PCSX2_PLATFORM } from "../testUtils/pcsx2Platform";
@@ -13,7 +14,7 @@ const STORED_GAME: StoredGameDto = {
 	frenchName: null,
 	firstReleaseDate: "2001-09-24",
 	isCancelled: false,
-	igdbUrl: "https://www.igdb.com/games/ico",
+	igdbUrl: buildIgdbGameUrl("ico"),
 	proposedSeries: null,
 	developer: null,
 	publisher: null,
@@ -22,7 +23,7 @@ const STORED_GAME: StoredGameDto = {
 			id: 100,
 			title: null,
 			coverImageId: "cover100",
-			igdbUrl: "https://www.igdb.com/games/ico",
+			igdbUrl: buildIgdbGameUrl("ico"),
 			platforms: [{ platform: PS2_PLATFORM, releaseDate: "2001-09-24" }],
 			platformOptions: [PS2_PLATFORM, PCSX2_PLATFORM],
 		},
@@ -56,7 +57,7 @@ describe("buildOptimisticUserVersion.ts", () => {
 					id: 100,
 					title: null,
 					coverImageId: "cover100",
-					igdbUrl: "https://www.igdb.com/games/ico",
+					igdbUrl: buildIgdbGameUrl("ico"),
 				},
 				platform: PS2_PLATFORM,
 				releaseDate: "2001-09-24",

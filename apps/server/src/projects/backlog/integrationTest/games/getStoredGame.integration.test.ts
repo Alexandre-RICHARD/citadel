@@ -1,6 +1,7 @@
 import type { StoredGameDto } from "@citadel/specs/src/projects/backlog/dto/game/storedGameDto.type.ts";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeSuccessEnum } from "@citadel/specs/src/specUtils/httpStatutCodeSuccess.enum.ts";
 import request from "supertest";
@@ -70,7 +71,7 @@ describe("getStoredGame", () => {
 			expect(game).toMatchObject({
 				id: stored.gameId,
 				name: "Final Fantasy X",
-				igdbUrl: `https://www.igdb.com/games/${stored.gameId}`,
+				igdbUrl: buildIgdbGameUrl(stored.gameId),
 				dlcs: [{ id: stored.dlcIds[0], name: "Eternal Calm" }],
 				customization: null,
 			});

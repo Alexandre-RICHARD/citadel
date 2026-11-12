@@ -1,4 +1,5 @@
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl";
 import { describe, expect, it } from "vitest";
 
 import { buildUserGameDto } from "../testUtils/buildUserGameDto";
@@ -23,7 +24,7 @@ describe("fromUserGameDtoToBacklogRowFm.ts", () => {
 								id: 101,
 								title: "Director's Cut",
 								coverImageId: null,
-								igdbUrl: "https://www.igdb.com/games/game-101",
+								igdbUrl: buildIgdbGameUrl("game-101"),
 							},
 						}),
 					],
@@ -102,7 +103,7 @@ describe("fromUserGameDtoToBacklogRowFm.ts", () => {
 				doneDlcCount: 2,
 				dlcCount: 2,
 				totalPlayTimeMinutes: 60,
-				igdbUrl: "https://www.igdb.com/games/game-100",
+				igdbUrl: buildIgdbGameUrl("game-100"),
 				isTemporary: false,
 			});
 		});

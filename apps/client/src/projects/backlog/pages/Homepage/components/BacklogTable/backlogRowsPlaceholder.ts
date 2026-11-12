@@ -1,3 +1,4 @@
+import { externalLinks } from "@citadel/specs/src/links/externalLinks";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 
@@ -29,7 +30,7 @@ function buildPlaceholderRow(gameId: number, name: string): BacklogRowFm {
 		isCancelled: false,
 		endingType: EndingTypeEnum.STORY,
 		platform: PLACEHOLDER_PLATFORM,
-		igdbUrl: "https://www.igdb.com",
+		igdbUrl: externalLinks.igdb,
 		dlcs: [],
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,

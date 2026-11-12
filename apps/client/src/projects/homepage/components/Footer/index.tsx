@@ -1,6 +1,6 @@
+import { externalLinks } from "@citadel/specs/src/links/externalLinks";
 import { NavLink } from "react-router";
 
-import { externalLinks } from "../../../../common/links/externalLinks";
 import { footerPages } from "../../content/footerPages";
 import { buildHomepagePath } from "../../routing/buildHomepagePath";
 import { GitHubMark } from "../GitHubMark";

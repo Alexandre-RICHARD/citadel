@@ -1,3 +1,4 @@
+import { externalLinks } from "@citadel/specs/src/links/externalLinks.ts";
 import { describe, expect, it } from "vitest";
 
 import { fromIgdbVersionToVersionPlatformBeans } from "./fromIgdbVersionToVersionPlatformBeans.ts";
@@ -12,7 +13,7 @@ describe("fromIgdbVersionToVersionPlatformBeans.ts", () => {
 			const beans = fromIgdbVersionToVersionPlatformBeans({
 				id: 1,
 				name: "Game",
-				url: "https://www.igdb.com",
+				url: externalLinks.igdb,
 				platforms: [
 					{
 						id: 6,
@@ -41,7 +42,7 @@ describe("fromIgdbVersionToVersionPlatformBeans.ts", () => {
 				fromIgdbVersionToVersionPlatformBeans({
 					id: 1,
 					name: "Game",
-					url: "https://www.igdb.com",
+					url: externalLinks.igdb,
 				}),
 			).toStrictEqual([]);
 		});

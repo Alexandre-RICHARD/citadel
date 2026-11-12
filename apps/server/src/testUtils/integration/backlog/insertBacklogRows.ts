@@ -1,6 +1,7 @@
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
 import { SubPlatformTypeEnum } from "@citadel/specs/src/projects/backlog/enum/subPlatformType.enum.ts";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
 import { QueryTypes } from "sequelize";
 
 import { sequelize } from "../../../configuration/sequelize.ts";
@@ -113,7 +114,7 @@ export const insertBacklogRows = {
 				replacements: {
 					title: null,
 					coverImageId: null,
-					igdbUrl: `https://www.igdb.com/games/${row.id}`,
+					igdbUrl: buildIgdbGameUrl(row.id),
 					...row,
 				},
 			},

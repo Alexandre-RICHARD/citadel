@@ -1,8 +1,9 @@
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
 import { describe, expect, it } from "vitest";
 
 import { getIgdbFirstReleaseTime } from "./getIgdbFirstReleaseTime.ts";
 
-const VERSION = { id: 1, name: "Game", url: "https://www.igdb.com/games/game" };
+const VERSION = { id: 1, name: "Game", url: buildIgdbGameUrl("game") };
 
 describe("getIgdbFirstReleaseTime.ts", () => {
 	describe("release dates", () => {

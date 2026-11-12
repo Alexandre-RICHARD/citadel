@@ -1,4 +1,5 @@
 import type { GamePreviewDto } from "@citadel/specs/src/projects/backlog/dto/igdb/gamePreviewDto.type";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl";
 import { describe, expect, it } from "vitest";
 
 import { PS2_PLATFORM } from "../testUtils/ps2Platform";
@@ -9,7 +10,7 @@ function buildVersion(id: number, title: string | null) {
 		id,
 		title,
 		coverImageId: null,
-		igdbUrl: `https://www.igdb.com/games/game-${id}`,
+		igdbUrl: buildIgdbGameUrl(`game-${id}`),
 		isStored: false,
 		platforms: [{ platform: PS2_PLATFORM, releaseDate: "2001-12-03" }],
 		platformOptions: [PS2_PLATFORM],
@@ -23,7 +24,7 @@ const PREVIEW: GamePreviewDto = {
 		frenchName: null,
 		firstReleaseDate: "2001-09-24",
 		isCancelled: false,
-		igdbUrl: "https://www.igdb.com/games/ico",
+		igdbUrl: buildIgdbGameUrl("ico"),
 	},
 	isStored: false,
 	proposedSeriesName: "Team Ico",

@@ -1,5 +1,6 @@
 import type { UserVersionDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userVersionDto.type";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl";
 
 import { PS2_PLATFORM } from "./ps2Platform";
 
@@ -14,7 +15,7 @@ export function buildUserVersionDto(
 			id: 100,
 			title: null,
 			coverImageId: "cover100",
-			igdbUrl: "https://www.igdb.com/games/game-100",
+			igdbUrl: buildIgdbGameUrl("game-100"),
 		},
 		platform: PS2_PLATFORM,
 		releaseDate: "2001-12-03",

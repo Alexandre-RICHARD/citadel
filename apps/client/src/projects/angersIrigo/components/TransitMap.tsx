@@ -1,4 +1,5 @@
 /* eslint-disable citadel/component-folder-case -- projet importé tel quel depuis un répo externe, structure d’origine conservée */
+import { externalLinks } from "@citadel/specs/src/links/externalLinks";
 import { point, Popup, setOptions } from "leaflet";
 import {
 	type JSX,
@@ -15,7 +16,6 @@ import {
 	ZoomControl,
 } from "react-leaflet";
 
-import { externalLinks } from "../../../common/links/externalLinks";
 import { MAP_CENTER, MAP_ZOOM } from "../config";
 import type { TripUpdate } from "../types/gtfs-realtime";
 import type { StopFocusRequest, StopGroup } from "../types/stop";

@@ -1,3 +1,5 @@
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl.ts";
+
 import type { IgdbGameData } from "../../../projects/backlog/igdb/type/igdbGameData.type.ts";
 import type { IgdbPlatform } from "../../../projects/backlog/igdb/type/igdbPlatform.type.ts";
 
@@ -72,7 +74,7 @@ export function buildIgdbGameData(spec: IgdbGameSpec): IgdbGameData {
 				name: spec.name,
 				game_type: { type: "Main Game" },
 				cover: { image_id: `co${spec.id}` },
-				url: `https://www.igdb.com/games/${spec.id}`,
+				url: buildIgdbGameUrl(spec.id),
 				platforms: spec.platforms,
 				release_dates: buildReleaseDates(spec.platforms, spec.releaseDate),
 				dlcs: (spec.dlcs ?? []).map(({ id }) => id),
@@ -84,7 +86,7 @@ export function buildIgdbGameData(spec: IgdbGameSpec): IgdbGameData {
 					version_title: version.versionTitle,
 				}),
 				game_type: { type: version.typeName ?? "Main Game" },
-				url: `https://www.igdb.com/games/${version.id}`,
+				url: buildIgdbGameUrl(version.id),
 				platforms: version.platforms,
 				release_dates: buildReleaseDates(
 					version.platforms,
@@ -95,7 +97,7 @@ export function buildIgdbGameData(spec: IgdbGameSpec): IgdbGameData {
 		dlcs: (spec.dlcs ?? []).map(({ id, name }) => ({
 			id,
 			name,
-			url: `https://www.igdb.com/games/${id}`,
+			url: buildIgdbGameUrl(id),
 		})),
 		gameStatus: spec.gameStatus ?? null,
 		skippedEntries: [],

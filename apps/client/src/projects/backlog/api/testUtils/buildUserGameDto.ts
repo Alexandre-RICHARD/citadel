@@ -1,5 +1,6 @@
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type";
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
+import { buildIgdbGameUrl } from "@citadel/specs/src/projects/backlog/helper/igdb/buildIgdbGameUrl";
 
 import { buildUserVersionDto } from "./buildUserVersionDto";
 
@@ -15,7 +16,7 @@ export function buildUserGameDto(
 			frenchName: null,
 			firstReleaseDate: "2001-12-03",
 			isCancelled: false,
-			igdbUrl: `https://www.igdb.com/games/game-${gameId}`,
+			igdbUrl: buildIgdbGameUrl(`game-${gameId}`),
 			developer: null,
 			publisher: null,
 			proposedSeries: null,
