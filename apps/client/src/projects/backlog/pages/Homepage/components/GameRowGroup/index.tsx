@@ -2,12 +2,14 @@ import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronRight, CornerDownRight, Layers, Pencil } from "lucide-react";
-import type { MouseEvent, ReactNode } from "react";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
+import { focusSiblingRow } from "../../../../helper/dom/focusSiblingRow";
+import { getRowKeyAction } from "../../../../helper/table/getRowKeyAction";
 import type { TableControls } from "../../tableControls.type";
 import { ActionsCell } from "../ActionsCell";
 import { CompanyLabel } from "../CompanyLabel";
@@ -142,6 +144,39 @@ export function GameRowGroup({
 		});
 	}
 
+	// La ligne elle-même a le focus (pas un contrôle à l'intérieur) : ↑ ↓ changent de ligne, Entrée déplie ou replie, Suppr retire
+	function handleRowKeyDown(
+		event: KeyboardEvent<HTMLTableRowElement>,
+		userVersion: UserVersionRowFm | null,
+	) {
+		if (
+			event.target !== event.currentTarget ||
+			event.ctrlKey ||
+			event.metaKey ||
+			event.altKey
+		)
+			return;
+		const action = getRowKeyAction(
+			event.key,
+			userVersion === null && isExpandable,
+		);
+		if (action === null) return;
+		event.preventDefault();
+		if (action === "previousRow")
+			focusSiblingRow(event.currentTarget, "previous");
+		else if (action === "nextRow") focusSiblingRow(event.currentTarget, "next");
+		else if (action === "toggleExpanded") table.toggleExpanded(row.gameId);
+		else
+			table.openModal({
+				kind: "confirmRemoval",
+				gameId: row.gameId,
+				gameName,
+				userVersionId: userVersion?.userVersionId ?? null,
+				platformName: userVersion?.platform.shortName ?? null,
+				userVersionCount,
+			});
+	}
+
 	function renderDataCell(
 		column: BacklogColumnEnum,
 		values: BacklogRowFm | UserVersionRowFm,
@@ -237,6 +272,7 @@ export function GameRowGroup({
 				tabIndex={-1}
 				// Ligne à version jouée unique : le menu du jeu ; ligne dépliable : celui du jeu aussi, les versions ont leurs sous-lignes
 				onContextMenu={(event) => openActionsMenu(event, null)}
+				onKeyDown={(event) => handleRowKeyDown(event, null)}
 			>
 				{/* Chevron et badge du nombre de versions jouées sur une ligne dépliable, espace vide sur une ligne simple */}
 				<td className={styles.expandCell}>
@@ -294,6 +330,7 @@ export function GameRowGroup({
 						)}
 						inert={userVersionRow.isTemporary}
 						tabIndex={-1}
+						onKeyDown={(event) => handleRowKeyDown(event, userVersionRow)}
 						onContextMenu={(event) =>
 							openActionsMenu(event, userVersionRow.userVersionId)
 						}
