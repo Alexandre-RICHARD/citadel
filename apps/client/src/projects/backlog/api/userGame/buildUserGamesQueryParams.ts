@@ -6,12 +6,13 @@ import type { BacklogView } from "../../helper/view/backlogView.type";
 
 // Query du tableau : la même écriture que l'URL de la page, plus le numéro de page
 export function buildUserGamesQueryParams(
-	{ sort, filters }: BacklogView,
+	{ sort, filters, filterMode }: BacklogView,
 	page: number,
 ): GetUserGamesQueryParamDto {
 	return {
 		page,
 		sort: formatSortParam(sort),
+		filterMode,
 		...Object.fromEntries(
 			filters.map((filter) => [filter.column, formatFilterParam(filter)]),
 		),

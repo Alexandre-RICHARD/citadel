@@ -18,6 +18,7 @@ import type { TableControls } from "../../tableControls.type";
 import type { TableSettings } from "../../tableSettings.type";
 import { ColumnFilterCell } from "../ColumnFilterCell";
 import { ColumnHeader } from "../ColumnHeader";
+import { FilterModeToggle } from "../FilterModeToggle";
 import { GameRowGroup } from "../GameRowGroup";
 import { PlayTimeRecap } from "../PlayTimeRecap";
 import { ScrollTopButton } from "../ScrollTopButton";
@@ -51,6 +52,7 @@ export function BacklogTable({
 		expandedGameIds,
 		onToggleSort,
 		onFilterChange,
+		onFilterModeChange,
 		onClearFilters,
 		onFocusSearch,
 	} = settings;
@@ -126,6 +128,12 @@ export function BacklogTable({
 						{filters.length > 1
 							? `${filters.length} filtres actifs`
 							: "1 filtre actif"}
+						{filters.length > 1 && (
+							<FilterModeToggle
+								value={view.filterMode}
+								onChange={onFilterModeChange}
+							/>
+						)}
 						<Button
 							icon={FunnelX}
 							variant="ghost"

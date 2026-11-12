@@ -3,6 +3,7 @@ import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArray
 import { Skeleton } from "@citadel/design-system/src/atoms/Skeleton";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 import {
 	Suspense,
@@ -214,7 +215,15 @@ export function Homepage() {
 				sort: toggleSort(current.sort, column),
 			})),
 		onFilterChange: changeFilter,
-		onClearFilters: () => setView((current) => ({ ...current, filters: [] })),
+		onFilterModeChange: (filterMode) =>
+			setView((current) => ({ ...current, filterMode })),
+		// Sans filtre, la combinaison revient à « et »
+		onClearFilters: () =>
+			setView((current) => ({
+				...current,
+				filters: [],
+				filterMode: FilterModeEnum.AND,
+			})),
 		onFocusSearch: () => searchInputRef.current?.focus(),
 	};
 

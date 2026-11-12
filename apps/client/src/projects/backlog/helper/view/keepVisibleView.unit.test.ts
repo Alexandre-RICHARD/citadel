@@ -1,5 +1,6 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
 import { SortDirectionEnum } from "@citadel/specs/src/projects/backlog/enum/sortDirection.enum";
 import { describe, expect, it } from "vitest";
 
@@ -38,6 +39,7 @@ describe("keepVisibleView.ts", () => {
 							isExact: false,
 						},
 					],
+					filterMode: FilterModeEnum.OR,
 				},
 				COLUMNS,
 			);
@@ -48,6 +50,15 @@ describe("keepVisibleView.ts", () => {
 			expect(view.filters.map(({ column }) => column)).toStrictEqual([
 				BacklogColumnEnum.NAME,
 			]);
+		});
+
+		it("SHOULD keep the way the filters combine", () => {
+			expect(
+				keepVisibleView(
+					{ sort: [], filters: [], filterMode: FilterModeEnum.OR },
+					COLUMNS,
+				).filterMode,
+			).toBe(FilterModeEnum.OR);
 		});
 	});
 });

@@ -10,5 +10,6 @@ export function keepVisibleView(
 	return {
 		sort: keepVisibleColumns(view.sort, columns),
 		filters: keepVisibleColumns(view.filters, columns),
+		filterMode: view.filterMode,
 	};
 }

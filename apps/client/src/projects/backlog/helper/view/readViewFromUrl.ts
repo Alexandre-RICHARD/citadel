@@ -1,4 +1,5 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
 import { parseFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/parseFilterParam";
 import { parseSortParam } from "@citadel/specs/src/projects/backlog/helper/view/parseSortParam";
 import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
@@ -11,6 +12,10 @@ export function readViewFromUrl(search: string): BacklogView {
 	return {
 		sort:
 			parseSortParam(params.get(ViewParamSyntaxEnum.SORT_PARAM) ?? "") ?? [],
+		filterMode:
+			params.get(ViewParamSyntaxEnum.FILTER_MODE_PARAM) === FilterModeEnum.OR
+				? FilterModeEnum.OR
+				: FilterModeEnum.AND,
 		filters: Object.values(BacklogColumnEnum).flatMap((column) => {
 			const text = params.get(column);
 			const filter = text === null ? null : parseFilterParam(column, text);

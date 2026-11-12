@@ -1,4 +1,5 @@
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
+import type { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
 import type { BacklogOverviewFm } from "../../api/model/backlogOverviewFm.type";
@@ -16,6 +17,7 @@ export type TableSettings = {
 		column: BacklogColumnEnum,
 		filter: ColumnFilter | null,
 	) => void;
+	onFilterModeChange: (filterMode: FilterModeEnum) => void;
 	onClearFilters: () => void;
 	// Le backlog vide propose d'aller à la recherche
 	onFocusSearch: () => void;

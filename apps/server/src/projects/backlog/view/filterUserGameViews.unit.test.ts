@@ -1,5 +1,6 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum.ts";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
 import { describe, expect, it } from "vitest";
 
@@ -23,8 +24,14 @@ function buildView(
 	};
 }
 
-function filterNames(views: UserGameView[], filters: ColumnFilter[]): string[] {
-	return filterUserGameViews(views, filters).map(({ row }) => row.name);
+function filterNames(
+	views: UserGameView[],
+	filters: ColumnFilter[],
+	filterMode = FilterModeEnum.AND,
+): string[] {
+	return filterUserGameViews(views, filters, filterMode).map(
+		({ row }) => row.name,
+	);
 }
 
 describe("filterUserGameViews.ts", () => {
@@ -143,11 +150,45 @@ describe("filterUserGameViews.ts", () => {
 		});
 	});
 
+	describe("filter mode", () => {
+		const views = [
+			buildView({ name: "Zelda", platformName: "Switch" }),
+			buildView({ name: "Biz", platformName: "PS5" }),
+			buildView({ name: "Mario", platformName: "Switch" }),
+			buildView({ name: "Other", platformName: "PS5" }),
+		];
+		const filters: ColumnFilter[] = [
+			{
+				column: BacklogColumnEnum.PLATFORM,
+				kind: ColumnFilterKindEnum.VALUE,
+				values: ["PS5"],
+			},
+			{
+				column: BacklogColumnEnum.NAME,
+				kind: ColumnFilterKindEnum.TEXT,
+				text: "zel",
+				isExact: false,
+			},
+		];
+
+		it("SHOULD keep the games that pass every filter WHEN the mode is and", () => {
+			expect(filterNames(views, filters, FilterModeEnum.AND)).toStrictEqual([]);
+		});
+
+		it("SHOULD keep the games that pass at least one filter WHEN the mode is or", () => {
+			expect(filterNames(views, filters, FilterModeEnum.OR)).toStrictEqual([
+				"Zelda",
+				"Biz",
+				"Other",
+			]);
+		});
+	});
+
 	describe("no filter", () => {
 		it("SHOULD keep every game WHEN there is no filter", () => {
 			const views = [buildView({ name: "A" })];
 
-			expect(filterUserGameViews(views, [])).toBe(views);
+			expect(filterUserGameViews(views, [], FilterModeEnum.AND)).toBe(views);
 		});
 	});
 });

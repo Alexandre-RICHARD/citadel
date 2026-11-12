@@ -1,6 +1,7 @@
 import { normalizeText } from "@citadel/common/src/universal/string/normalizeText.ts";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum.ts";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
 
 import { getColumnValue } from "./getColumnValue.ts";
@@ -66,18 +67,21 @@ function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
 }
 
 /**
- * Un jeu reste affiché si sa ligne, ou au moins une de ses versions jouées, correspond à tous les filtres :
- * Plateforme = PS4 garde les jeux qui ont une version jouée sur PS4
+ * Un jeu reste affiché si sa ligne, ou au moins une de ses versions jouées, correspond à tous les filtres (et), ou à au
+ * moins un (ou) : Plateforme = PS4 garde les jeux qui ont une version jouée sur PS4
  */
 export function filterUserGameViews(
 	views: UserGameView[],
 	filters: ColumnFilter[],
+	filterMode: FilterModeEnum,
 ): UserGameView[] {
 	if (filters.length === 0) return views;
 
 	return views.filter(({ row, userVersionRows }) =>
 		[row, ...userVersionRows].some((candidate) =>
-			filters.every((filter) => matchesFilter(candidate, filter)),
+			filterMode === FilterModeEnum.AND
+				? filters.every((filter) => matchesFilter(candidate, filter))
+				: filters.some((filter) => matchesFilter(candidate, filter)),
 		),
 	);
 }

@@ -12,6 +12,7 @@ export function fromGetUserGamesDtoToGetUserGamesBean(
 	return {
 		page: queryParamDto.page,
 		sort: parseSortParam(queryParamDto.sort) ?? [],
+		filterMode: queryParamDto.filterMode,
 		filters: Object.values(BacklogColumnEnum).flatMap((column) => {
 			const text: unknown = (queryParamDto as Record<string, unknown>)[column];
 			const filter =

@@ -1,3 +1,4 @@
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount.ts";
 import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus.ts";
@@ -79,17 +80,19 @@ class UserGameService {
 	 */
 	async getUserGames(
 		userId: number,
-		{ page, sort, filters }: GetUserGamesBean,
+		{ page, sort, filters, filterMode }: GetUserGamesBean,
 	): Promise<UserGamePageBean> {
 		const pageSize = Number(BacklogPageSizeEnum.USER_GAMES);
+		const filteredViews = filterUserGameViews(
+			(await loadUserGameBeans(userId, null)).map(buildUserGameView),
+			filters,
+			filterMode,
+		);
+		// Avec « ou », un jeu peut passer par un autre filtre que la plateforme : toutes ses versions restent
 		const views = sortUserGameViews(
-			restrictUserGameViewsToPlatforms(
-				filterUserGameViews(
-					(await loadUserGameBeans(userId, null)).map(buildUserGameView),
-					filters,
-				),
-				filters,
-			),
+			filterMode === FilterModeEnum.AND
+				? restrictUserGameViewsToPlatforms(filteredViews, filters)
+				: filteredViews,
 			sort,
 		);
 		return {

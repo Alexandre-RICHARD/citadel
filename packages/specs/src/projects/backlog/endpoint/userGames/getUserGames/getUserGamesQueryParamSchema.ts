@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { queryParamPageSchema } from "../../../../../specUtils/schemaValidator/number/queryParamPageSchema.ts";
 import { BacklogColumnEnum } from "../../../enum/backlogColumn.enum.ts";
+import { ViewParamSyntaxEnum } from "../../../helper/view/viewParamSyntax.enum.ts";
+import { filterModeParamSchema } from "../../../schema/filterModeParamSchema.ts";
 import { filterParamSchema } from "../../../schema/filterParamSchema.ts";
 import { sortParamSchema } from "../../../schema/sortParamSchema.ts";
 
@@ -9,6 +11,7 @@ import { sortParamSchema } from "../../../schema/sortParamSchema.ts";
 export const getUserGamesQueryParamSchema = z.object({
 	page: queryParamPageSchema("Page"),
 	sort: sortParamSchema,
+	[ViewParamSyntaxEnum.FILTER_MODE_PARAM]: filterModeParamSchema,
 	[BacklogColumnEnum.NAME]: filterParamSchema(BacklogColumnEnum.NAME),
 	[BacklogColumnEnum.SERIES]: filterParamSchema(BacklogColumnEnum.SERIES),
 	[BacklogColumnEnum.SERIES_NUMBER]: filterParamSchema(

@@ -4,6 +4,8 @@ export enum ViewParamSyntaxEnum {
 	SORT_PARAM = "sort",
 	SORT_SEPARATOR = ",",
 	SORT_DIRECTION_SEPARATOR = ":",
+	// Combinaison des filtres : `filterMode=or` ; sans ce paramètre, ils se cumulent (et)
+	FILTER_MODE_PARAM = "filterMode",
 	// Filtre texte à valeur exacte, après un clic sur une série
 	EXACT_PREFIX = "=",
 	// Bornes d'un intervalle, chacune facultative : `10..`, `..18`

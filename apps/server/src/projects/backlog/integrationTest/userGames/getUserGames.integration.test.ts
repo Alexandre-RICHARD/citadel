@@ -201,6 +201,40 @@ describe("getUserGames", () => {
 			expect(platformNames(emulatorResponse.body)).toStrictEqual(["RPCS3"]);
 		});
 
+		it("SHOULD keep a game that passes at least one filter WHEN the filters combine with or", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} started`,
+				userVersionStatuses: [StatusEnum.STARTED],
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} finished`,
+				userVersionStatuses: [StatusEnum.FINISHED],
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} platinum`,
+				userVersionStatuses: [StatusEnum.PLATINUM],
+			});
+
+			// Act
+			const query = { name: word, status: StatusEnum.FINISHED };
+			const andResponse = await player.agent.get(USER_GAMES_URL).query(query);
+			const orResponse = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ ...query, name: `${word} s`, filterMode: "or" });
+
+			// Assert : « et » : le nom ET le statut ; « ou » : le nom (started) OU le statut (finished)
+			expect(gameNames(andResponse.body)).toStrictEqual([`${word} finished`]);
+			expect(gameNames(orResponse.body).toSorted()).toStrictEqual([
+				`${word} finished`,
+				`${word} started`,
+			]);
+		});
+
 		it("SHOULD keep a game WHEN it has any of several checked statuses", async () => {
 			// Arrange
 			const word = buildUniqueWord();
@@ -363,6 +397,22 @@ describe("getUserGames", () => {
 					code: ValidationIssueCodeEnum.INVALID_VALUE,
 					message:
 						'Sort is not readable: sortable columns with asc or desc, each once (e.g. "releaseDate:desc,name:asc")',
+				},
+			]);
+		});
+
+		it("SHOULD refuse an unknown way of combining the filters", async () => {
+			// Act
+			const response = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ filterMode: "xor" });
+
+			// Assert
+			expectValidationError(response, [
+				{
+					path: ["filterMode"],
+					code: ValidationIssueCodeEnum.INVALID_VALUE,
+					message: "Filter mode should be and or or",
 				},
 			]);
 		});
