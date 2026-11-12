@@ -31,6 +31,8 @@ type Props = {
 	storedGame: StoredGameFm;
 	versionId: number | null;
 	imageIds: string[] | null;
+	// Recommence avec une nouvelle version jouée du même jeu, sans fermer la fenêtre
+	onAddAnother: () => void;
 	onClose: () => void;
 };
 
@@ -43,6 +45,7 @@ export function AddUserVersionForm({
 	storedGame,
 	versionId,
 	imageIds,
+	onAddAnother,
 	onClose,
 }: Props) {
 	const isNewToBacklog = storedGame.customization === null;
@@ -63,7 +66,10 @@ export function AddUserVersionForm({
 			? versionId
 			: null,
 	}));
-	const [isAskingFinishDate, setIsAskingFinishDate] = useState(false);
+	// La date de fin demandée avant l'envoi, et ce qui suit : fermer, ou ajouter une autre version jouée
+	const [askingFinishDateFor, setAskingFinishDateFor] = useState<
+		"close" | "addAnother" | null
+	>(null);
 	const takenVersionPlatforms = useTakenVersionPlatforms(storedGame.id);
 	const createUserGame = useCreateUserGame(storedGame.id);
 	const createUserVersion = useCreateUserVersion(storedGame.id);
@@ -99,7 +105,7 @@ export function AddUserVersionForm({
 				);
 	const check = isNewToBacklog ? userGameCheck : userVersionCheck;
 
-	function submit(finishDate: string | null) {
+	function submit(finishDate: string | null, next: "close" | "addAnother") {
 		if (isNewToBacklog && userGameCheck?.isValid === true)
 			createUserGame.mutate({
 				...userGameCheck.data,
@@ -107,15 +113,23 @@ export function AddUserVersionForm({
 			});
 		else if (!isNewToBacklog && userVersionCheck?.isValid === true)
 			createUserVersion.mutate({ ...userVersionCheck.data, finishDate });
-		onClose();
+		if (next === "addAnother") onAddAnother();
+		else onClose();
 	}
 
-	if (isAskingFinishDate)
+	// Au rang 5 ou plus sans date de fin, la date est demandée avant l'envoi
+	function validate(next: "close" | "addAnother") {
+		if (isFinishedByPlayingStatus(draft.status) && draft.finishDate === null)
+			setAskingFinishDateFor(next);
+		else submit(draft.finishDate, next);
+	}
+
+	if (askingFinishDateFor !== null)
 		return (
 			<FinishDateModal
 				subtitle={gameName}
-				onCancel={() => submit(null)}
-				onValidate={submit}
+				onCancel={() => submit(null, askingFinishDateFor)}
+				onValidate={(finishDate) => submit(finishDate, askingFinishDateFor)}
 			/>
 		);
 
@@ -131,15 +145,10 @@ export function AddUserVersionForm({
 			actions={
 				<ModalActions
 					canValidate={check?.isValid === true && !isTaken}
+					chainLabel="Valider et en ajouter une autre"
 					onCancel={onClose}
-					onValidate={() => {
-						if (
-							isFinishedByPlayingStatus(draft.status) &&
-							draft.finishDate === null
-						)
-							setIsAskingFinishDate(true);
-						else submit(draft.finishDate);
-					}}
+					onValidate={() => validate("close")}
+					onValidateAndChain={() => validate("addAnother")}
 				/>
 			}
 			onClose={onClose}

@@ -17,6 +17,7 @@ import { insertCachedUserGame } from "../cache/insertCachedUserGame";
 import { removeCachedUserGame } from "../cache/removeCachedUserGame";
 import { resolveOptimisticSeries } from "../cache/resolveOptimisticSeries";
 import { shiftOverviewCounts } from "../cache/shiftOverviewCounts";
+import { updateCachedStoredGame } from "../cache/updateCachedStoredGame";
 import { updateCachedUserGame } from "../cache/updateCachedUserGame";
 
 type Rollback = { isInserted: boolean };
@@ -74,6 +75,17 @@ export function useCreateUserGame(gameId: number) {
 				);
 				const seriesNumber =
 					series === null ? null : customization.seriesNumber;
+				// Le jeu en base porte sa personnalisation tout de suite : une modale ouverte aussitôt (« ajouter une autre version
+				// jouée ») le voit déjà dans le backlog
+				updateCachedStoredGame(queryClient, gameId, (game) => ({
+					...game,
+					customization: {
+						imageId: customization.imageId,
+						endingType: customization.endingType,
+						series,
+						seriesNumber,
+					},
+				}));
 				insertCachedUserGame(queryClient, {
 					game: {
 						id: storedGame.id,
@@ -108,7 +120,13 @@ export function useCreateUserGame(gameId: number) {
 					userVersionCount: -1,
 					outsideBacklogGameCount: 1,
 				});
-				if (isInserted) removeCachedUserGame(queryClient, gameId);
+				if (isInserted) {
+					removeCachedUserGame(queryClient, gameId);
+					updateCachedStoredGame(queryClient, gameId, (game) => ({
+						...game,
+						customization: null,
+					}));
+				}
 			},
 			applyServerResponse: (queryClient, userGame, _body, { isInserted }) => {
 				if (isInserted)

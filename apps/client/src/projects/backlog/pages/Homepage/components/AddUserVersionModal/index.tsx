@@ -1,4 +1,5 @@
 import { LibraryBig } from "lucide-react";
+import { useState } from "react";
 
 import { useStoredGame } from "../../../../api/game/useStoredGame";
 import { Modal } from "../../../../components/Modal";
@@ -23,6 +24,8 @@ export function AddUserVersionModal({
 }: Props) {
 	const storedGame = useStoredGame(gameId);
 	const isFresh = useIsFreshOnce(storedGame);
+	// Chaque « ajouter une autre version jouée » repart d'un formulaire neuf, sur le même jeu (désormais au backlog)
+	const [round, setRound] = useState(0);
 
 	if (storedGame.data === undefined || !isFresh)
 		return (
@@ -49,9 +52,11 @@ export function AddUserVersionModal({
 		);
 	return (
 		<AddUserVersionForm
+			key={round}
 			storedGame={storedGame.data}
-			versionId={versionId}
+			versionId={round === 0 ? versionId : null}
 			imageIds={imageIds}
+			onAddAnother={() => setRound((current) => current + 1)}
 			onClose={onClose}
 		/>
 	);
