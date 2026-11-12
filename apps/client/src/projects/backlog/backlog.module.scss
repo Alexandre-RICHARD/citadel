@@ -81,11 +81,7 @@
   width: 3.2rem;
   height: 3.2rem;
   color: #fff;
-  background: linear-gradient(
-    140deg,
-    vars.$accent,
-    color-mix(in srgb, vars.$accent 55%, #d946ef)
-  );
+  background: linear-gradient(140deg, vars.$accent, color-mix(in srgb, vars.$accent 55%, #d946ef));
   border-radius: vars.$radius-lg;
   box-shadow:
     0 6px 14px -6px color-mix(in srgb, vars.$accent 70%, transparent),
@@ -774,11 +770,7 @@
   width: 0.8rem;
   pointer-events: none;
   content: "";
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, vars.$text 5%, transparent),
-    transparent
-  );
+  background: linear-gradient(to right, color-mix(in srgb, vars.$text 5%, transparent), transparent);
   border-left: 1px solid vars.$border;
 }
 
@@ -1126,6 +1118,8 @@
   --row-sheen: #{vars.$row-sheen};
 
   position: relative;
+  // Passer d'une ligne à l'autre au clavier : la ligne s'arrête sous l'en-tête collant
+  scroll-margin-top: calc(vars.$toolbar-height + 6rem);
   outline: none;
 
   // Une bande de 60 % de la largeur, hors de la ligne tant qu'elle n'est pas survolée : 250 % la place juste à droite, -150 % juste à gauche
@@ -1135,12 +1129,7 @@
     z-index: 2;
     pointer-events: none;
     content: "";
-    background: linear-gradient(
-      110deg,
-      transparent 35%,
-      var(--row-sheen) 50%,
-      transparent 65%
-    );
+    background: linear-gradient(110deg, transparent 35%, var(--row-sheen) 50%, transparent 65%);
     background-repeat: no-repeat;
     background-position-x: 250%;
     background-size: 60% 100%;
@@ -1150,18 +1139,12 @@
     animation: row-sheen 2.25s linear infinite;
   }
 
-  &:focus-within > td {
+  // Le menu d'actions s'ouvre dans un portail : le focus y quitte la ligne, qui garde pourtant son focus visuel
+  &:focus-within > td,
+  &.menuOpenRow > td {
     background-image:
-      repeating-linear-gradient(
-        90deg,
-        var(--row-accent) 0 5px,
-        transparent 5px 10px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        var(--row-accent) 0 5px,
-        transparent 5px 10px
-      );
+      repeating-linear-gradient(90deg, var(--row-accent) 0 5px, transparent 5px 10px),
+      repeating-linear-gradient(90deg, var(--row-accent) 0 5px, transparent 5px 10px);
     background-repeat: no-repeat;
     background-position:
       0 0,
@@ -2373,9 +2356,40 @@
   list-style: none;
 }
 
-// « Remonter en haut », dans la barre fixe : invisible tant que la page n'est pas défilée, sans décaler le reste
-.scrollTopHidden {
-  visibility: hidden;
+// « Remonter en haut », en tête du tableau : une pulsation signale sa présence quand la page est bien défilée
+.scrollTopPulse {
+  color: vars.$accent-text;
+  animation: scroll-top-flash 700ms vars.$ease 2;
+
+  // La flèche se soulève et grossit deux fois, comme pour inviter à remonter
+  svg {
+    animation: scroll-top-nudge 700ms vars.$ease 2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+
+    svg {
+      animation: none;
+    }
+  }
+}
+
+// Un très léger voile derrière l'icône, au plus fort du soulèvement
+@keyframes scroll-top-flash {
+  40% {
+    background-color: color-mix(in srgb, vars.$text 8%, transparent);
+  }
+}
+
+@keyframes scroll-top-nudge {
+  40% {
+    transform: translateY(-0.4rem) scale(1.2);
+  }
+
+  70% {
+    transform: translateY(0.05rem) scale(1);
+  }
 }
 
 // Ligne de jeu dont plusieurs versions jouées ont un commentaire : leur nombre, à la place du texte
@@ -2388,12 +2402,18 @@
   font-weight: 500;
   color: vars.$text-muted;
   white-space: nowrap;
-  background: vars.$surface-3;
-  border-radius: vars.$radius-full;
 
   svg {
     width: 1.4rem;
     height: 1.4rem;
     color: vars.$text-subtle;
   }
+}
+
+// Point invisible à la position du curseur : le menu d'actions ouvert par clic droit s'ancre dessus
+.pointerAnchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }

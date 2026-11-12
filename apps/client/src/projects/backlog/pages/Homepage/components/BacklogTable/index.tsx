@@ -20,6 +20,7 @@ import { ColumnFilterCell } from "../ColumnFilterCell";
 import { ColumnHeader } from "../ColumnHeader";
 import { GameRowGroup } from "../GameRowGroup";
 import { PlayTimeRecap } from "../PlayTimeRecap";
+import { ScrollTopButton } from "../ScrollTopButton";
 
 type Props = {
 	rows: BacklogRowFm[];
@@ -103,7 +104,7 @@ export function BacklogTable({
 							<strong>{gameCount}</strong> {gameCount > 1 ? "jeux" : "jeu"}
 							<span className={styles.captionSeparator}>·</span>
 							<strong>{userVersionCount}</strong>{" "}
-							{userVersionCount > 1 ? "versions jouées" : "version jouée"}
+							{userVersionCount > 1 ? "versions" : "version"}
 							{overview !== null && (
 								<>
 									<span className={styles.captionSeparator}>·</span>
@@ -166,7 +167,9 @@ export function BacklogTable({
 						<th
 							className={styles.expandCell}
 							aria-label="Versions jouées"
-						/>
+						>
+							<ScrollTopButton />
+						</th>
 						{visibleColumns.map((column) => (
 							<ColumnHeader
 								key={column}
