@@ -11,6 +11,7 @@ import {
 	useState,
 } from "react";
 
+import { getTwoButtonsNeighbor } from "../../helper/dom/getTwoButtonsNeighbor";
 import { Button } from "../Button";
 import styles from "./modal.module.scss";
 import { ModalMinimizeContext } from "./modalMinimizeContext";
@@ -54,6 +55,8 @@ export function Modal({
 	const subtitleId = useId();
 	const onCloseRef = useRef(onClose);
 	const originFocusRef = useRef<HTMLElement | null>(null);
+	const bodyRef = useRef<HTMLDivElement>(null);
+	const footerRef = useRef<HTMLElement>(null);
 	const [isMinimized, setIsMinimized] = useState(false);
 	const isMinimizedRef = useRef(false);
 	const reportMinimized = useContext(ModalMinimizeContext);
@@ -90,7 +93,25 @@ export function Modal({
 	useEffect(() => {
 		const dialog = dialogRef.current;
 		if (isMinimized) return undefined;
-		(initialFocusRef?.current ?? dialog)?.focus({ preventScroll: true });
+		/** Fenêtre sans champ (confirmation) : les boutons de son pied, sinon null */
+		function getConfirmationButtons(): HTMLElement[] | null {
+			const body = bodyRef.current;
+			const footer = footerRef.current;
+			if (
+				body === null ||
+				footer === null ||
+				getFocusableElements(body).length > 0
+			)
+				return null;
+			return getFocusableElements(footer);
+		}
+
+		// Une confirmation s'ouvre sur « Annuler » (le premier bouton) : Entrée valide ce qui a le focus, ← → choisissent
+		(
+			initialFocusRef?.current ??
+			getConfirmationButtons()?.at(0) ??
+			dialog
+		)?.focus({ preventScroll: true });
 		const root = document.documentElement;
 		const previousOverflow = root.style.overflow;
 		root.style.overflow = "hidden";
@@ -118,9 +139,21 @@ export function Modal({
 			}
 		}
 
+		/** Une fenêtre sans champ, avec seulement deux boutons (confirmation) : ← et → passent de l'un à l'autre */
+		function moveBetweenTwoButtons(event: KeyboardEvent) {
+			const buttons = getConfirmationButtons();
+			if (buttons === null) return;
+			const neighbor = getTwoButtonsNeighbor(buttons, event.key);
+			if (neighbor === null) return;
+			event.preventDefault();
+			neighbor.focus();
+		}
+
 		dialog?.addEventListener("keydown", trapFocus);
+		dialog?.addEventListener("keydown", moveBetweenTwoButtons);
 		return () => {
 			dialog?.removeEventListener("keydown", trapFocus);
+			dialog?.removeEventListener("keydown", moveBetweenTwoButtons);
 			root.style.overflow = previousOverflow;
 		};
 	}, [initialFocusRef, isMinimized]);
@@ -206,8 +239,16 @@ export function Modal({
 							onClick={onClose}
 						/>
 					</header>
-					<div className={styles.body}>{children}</div>
-					<footer className={styles.footer}>
+					<div
+						ref={bodyRef}
+						className={styles.body}
+					>
+						{children}
+					</div>
+					<footer
+						ref={footerRef}
+						className={styles.footer}
+					>
 						{footerStart !== undefined && (
 							<div className={styles.footerStart}>{footerStart}</div>
 						)}
