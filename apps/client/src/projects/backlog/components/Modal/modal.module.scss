@@ -153,23 +153,25 @@
   max-width: min(64rem, calc(100vw - 3.2rem));
   padding: 0.9rem 1.4rem;
   font-size: vars.$text-md;
-  color: vars.$text;
-  background: vars.$surface;
+  color: #fff;
+  background: vars.$accent;
   border: 1px solid vars.$accent-border;
   border-radius: vars.$radius-lg;
-  box-shadow: vars.$shadow-lg;
+  box-shadow:
+    0 10px 28px -8px color-mix(in srgb, vars.$accent 65%, transparent),
+    vars.$shadow-lg;
   translate: -50% 0;
   animation: rise-in 200ms vars.$ease;
 
   &:hover {
-    background: vars.$surface-2;
+    background: color-mix(in srgb, vars.$accent 88%, #000);
   }
 
   svg {
     flex-shrink: 0;
     width: 1.7rem;
     height: 1.7rem;
-    color: vars.$accent-text;
+    color: #fff;
   }
 }
 
@@ -181,8 +183,8 @@
 }
 
 .minimizedSubtitle {
+  opacity: 0.85;
   overflow: hidden;
-  color: vars.$text-subtle;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
