@@ -182,12 +182,14 @@ export const insertBacklogRows = {
 		estimatedPlayTimeMinutes?: number;
 		rating?: number | null;
 		comment?: string | null;
+		// Création et dernière modification ; maintenant par défaut
+		touchedAt?: Date;
 	}): Promise<number> {
 		const [insertedId] = await sequelize.query(
 			`INSERT INTO backlog_user_version (user_id, version_id, platform_id, status, is_owned, is_up_next, finish_date,
-				sure_finish_count, probable_finish_count, tracked_play_time_minutes, estimated_play_time_minutes, rating, comment)
+				sure_finish_count, probable_finish_count, tracked_play_time_minutes, estimated_play_time_minutes, rating, comment, created_at, updated_at)
 			VALUES (:userId, :versionId, :platformId, :status, :isOwned, :isUpNext, :finishDate,
-				:sureFinishCount, :probableFinishCount, :trackedPlayTimeMinutes, :estimatedPlayTimeMinutes, :rating, :comment)`,
+				:sureFinishCount, :probableFinishCount, :trackedPlayTimeMinutes, :estimatedPlayTimeMinutes, :rating, :comment, :touchedAt, :touchedAt)`,
 			{
 				type: QueryTypes.INSERT,
 				replacements: {
@@ -201,6 +203,7 @@ export const insertBacklogRows = {
 					estimatedPlayTimeMinutes: 0,
 					rating: null,
 					comment: null,
+					touchedAt: new Date(),
 					...row,
 				},
 			},

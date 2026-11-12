@@ -25,4 +25,7 @@ export type UserGameBean = {
 	seriesNumberLabel: string | null;
 	dlcs: DlcBean[];
 	userVersions: UserVersionBean[];
+	// La dernière création ou modification d'une donnée personnelle (jeu au backlog ou version jouée) ; les données
+	// communes (fiche IGDB, série, plateformes) ne comptent pas. Sert au tri quand aucun n'est choisi
+	lastActivityAt: Date;
 };

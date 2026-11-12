@@ -30,7 +30,7 @@ function gameNames(body: unknown): string[] {
 
 describe("getUserGames", () => {
 	describe("200 OK", () => {
-		it("SHOULD give the rows in the order they were added, with what the row needs", async () => {
+		it("SHOULD give the most recently touched row first, with what the row needs", async () => {
 			// Arrange
 			const word = buildUniqueWord();
 			const seriesId = await insertBacklogRows.series({
@@ -59,17 +59,47 @@ describe("getUserGames", () => {
 			// Assert
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
 			expect(gameNames(response.body)).toStrictEqual([
-				`${word} B`,
 				`${word} A`,
+				`${word} B`,
 			]);
 			expect((response.body as UserGameListDto).matchedCount).toBe(2);
-			expect((response.body as UserGameListDto).userGames[1]).toMatchObject({
+			expect((response.body as UserGameListDto).userGames[0]).toMatchObject({
 				game: { id: second.gameId },
 				series: { id: seriesId, name: `${word} series` },
 				seriesNumber: 3.1,
 				seriesNumberLabel: "3.1",
 				dlcs: [{ id: second.dlcIds[0], name: "DLC" }],
 			});
+		});
+
+		it("SHOULD put a game first WHEN one of its played versions was just changed", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			const old = await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} old`,
+				createdAt: new Date("2026-01-01T00:00:00Z"),
+			});
+			await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} recent`,
+				createdAt: new Date("2026-01-02T00:00:00Z"),
+			});
+			const [oldUserVersionId = 0] = old.userVersionIds;
+
+			// Act
+			await player.agent
+				.patch(`${ApiPrefixEnum.BACKLOG}/user-versions/${oldUserVersionId}`)
+				.send({ rating: 12 });
+			const response = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ name: word });
+
+			// Assert
+			expect(gameNames(response.body)).toStrictEqual([
+				`${word} old`,
+				`${word} recent`,
+			]);
 		});
 
 		it("SHOULD sort on several columns, empty values last", async () => {
@@ -111,11 +141,13 @@ describe("getUserGames", () => {
 				userId: player.userId,
 				name: `${word} kept`,
 				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.FINISHED],
+				createdAt: new Date("2026-01-02T00:00:00Z"),
 			});
 			await seedBacklogGame({
 				userId: player.userId,
 				name: `${word} other`,
 				userVersionStatuses: [StatusEnum.STARTED],
+				createdAt: new Date("2026-01-01T00:00:00Z"),
 			});
 
 			// Act

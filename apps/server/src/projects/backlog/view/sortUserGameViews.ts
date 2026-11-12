@@ -57,12 +57,17 @@ function compareRows(
 	return 0;
 }
 
-// Tri multi-colonnes sur ce qu'affichent les lignes des jeux ; sans tri, l'ordre d'ajout reste
+// Tri multi-colonnes sur ce qu'affichent les lignes des jeux ; sans tri, le jeu touché en dernier passe en premier
 export function sortUserGameViews(
 	views: UserGameView[],
 	sort: SortCriterion[],
 ): UserGameView[] {
-	if (sort.length === 0) return views;
+	if (sort.length === 0)
+		return views.toSorted(
+			(first, second) =>
+				second.userGame.lastActivityAt.getTime() -
+				first.userGame.lastActivityAt.getTime(),
+		);
 	return views.toSorted((first, second) =>
 		compareRows(sort, first.row, second.row),
 	);

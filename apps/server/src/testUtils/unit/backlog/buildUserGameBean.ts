@@ -27,5 +27,6 @@ export function buildUserGameBean(
 		seriesNumberLabel: null,
 		dlcs: [],
 		userVersions,
+		lastActivityAt: new Date(0),
 	};
 }

@@ -13,6 +13,7 @@ type SeedOptions = Parameters<typeof seedStoredGame>[0] & {
 	seriesNumber?: number | null;
 	// Statut de chaque version jouée, sur la plateforme de la version (la première de `platformIds`)
 	userVersionStatuses?: StatusEnum[];
+	// Création du jeu au backlog et de ses versions jouées ; maintenant par défaut
 	createdAt?: Date;
 };
 
@@ -55,6 +56,7 @@ export async function seedBacklogGame({
 				userId,
 				versionId: stored.versionIds[index] ?? stored.gameId,
 				platformId,
+				touchedAt: createdAt,
 				...(status !== undefined && { status }),
 			}),
 		);

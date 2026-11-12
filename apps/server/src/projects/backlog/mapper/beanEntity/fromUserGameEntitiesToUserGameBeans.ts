@@ -140,6 +140,12 @@ export function fromUserGameEntitiesToUserGameBeans({
 				userVersions: gameUserVersions.map((userVersion) =>
 					fromUserVersionEntityToUserVersionBean(userVersion, releaseDates),
 				),
+				lastActivityAt: new Date(
+					Math.max(
+						userGame.updatedAt.getTime(),
+						...gameUserVersions.map(({ updatedAt }) => updatedAt.getTime()),
+					),
+				),
 			},
 		];
 	});

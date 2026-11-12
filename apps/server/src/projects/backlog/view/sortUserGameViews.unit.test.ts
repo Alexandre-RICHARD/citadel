@@ -10,9 +10,12 @@ import type { UserGameView } from "./userGameView.type.ts";
 import type { ViewRow } from "./viewRow.type.ts";
 
 // Le tri ne lit que la ligne : le jeu stocké n'est qu'un passager
-function buildView(row: Partial<ViewRow>): UserGameView {
+function buildView(
+	row: Partial<ViewRow>,
+	lastActivityAt = "2026-01-01T00:00:00Z",
+): UserGameView {
 	return {
-		userGame: {} as UserGameBean,
+		userGame: { lastActivityAt: new Date(lastActivityAt) } as UserGameBean,
 		row: buildViewRow(row),
 		userVersionRows: [],
 	};
@@ -124,10 +127,18 @@ describe("sortUserGameViews.ts", () => {
 			).toStrictEqual(["C", "A", "B"]);
 		});
 
-		it("SHOULD keep the order of addition WHEN there is no criterion", () => {
-			const views = [buildView({ name: "B" }), buildView({ name: "A" })];
+		it("SHOULD put the most recently touched game first WHEN there is no criterion", () => {
+			const views = [
+				buildView({ name: "old" }, "2026-01-01T00:00:00Z"),
+				buildView({ name: "recent" }, "2026-03-01T00:00:00Z"),
+				buildView({ name: "middle" }, "2026-02-01T00:00:00Z"),
+			];
 
-			expect(sortUserGameViews(views, [])).toBe(views);
+			expect(getNames(sortUserGameViews(views, []))).toStrictEqual([
+				"recent",
+				"middle",
+				"old",
+			]);
 		});
 	});
 });
