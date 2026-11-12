@@ -141,11 +141,13 @@ export function AddUserVersionForm({
 			}
 			onClose={onClose}
 		>
-			<GameReleaseLine
-				firstReleaseDate={storedGame.firstReleaseDate}
-				isCancelled={storedGame.isCancelled}
-				igdbUrl={storedGame.igdbUrl}
-			/>
+			<section className={styles.modalSection}>
+				<GameReleaseLine
+					firstReleaseDate={storedGame.firstReleaseDate}
+					isCancelled={storedGame.isCancelled}
+					igdbUrl={storedGame.igdbUrl}
+				/>
+			</section>
 			{isNewToBacklog && (
 				<section className={styles.modalSection}>
 					<SectionTitle>Personnalisation</SectionTitle>
