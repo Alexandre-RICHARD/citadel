@@ -148,8 +148,8 @@ export function AddFromDatabaseModal({ onSelect, onClose }: Props) {
 				onClose={() => setGameToDelete(null)}
 			>
 				<p className={styles.modalQuestion}>
-					Le jeu quitte la base avec ses versions et ses DLC, pour tous les
-					comptes. Impossible si l’un d’eux l’a dans son backlog.
+					Le jeu, ses versions et ses DLC seront retirés de la base. Si un
+					backlog le contient encore, la suppression sera refusée.
 				</p>
 			</Modal>
 		);
