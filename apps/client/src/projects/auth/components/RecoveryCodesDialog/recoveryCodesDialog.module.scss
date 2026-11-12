@@ -1,9 +1,11 @@
 // La fenêtre ne dessine rien : la carte du panneau (ProfileSection) fait office de fenêtre
+// margin: auto recentre la fenêtre : une remise à zéro globale des marges la collerait en haut à gauche
 .dialog {
   box-sizing: border-box;
   width: calc(100% - 3.2rem);
   max-width: 56rem;
   max-height: calc(100svh - 3.2rem);
+  margin: auto;
   padding: 0;
   overflow: auto;
   color: inherit;
