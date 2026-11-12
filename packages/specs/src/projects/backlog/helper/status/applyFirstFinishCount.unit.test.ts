@@ -15,7 +15,7 @@ describe("applyFirstFinishCount.ts", () => {
 	});
 
 	describe("unfinished status", () => {
-		it.each([StatusEnum.STARTED, StatusEnum.ABANDONED])(
+		it.each([StatusEnum.STARTED, StatusEnum.ABANDONED, StatusEnum.WATCHED])(
 			"SHOULD keep the count WHEN the status is %s",
 			(status) => {
 				expect(applyFirstFinishCount(status, 0)).toBe(0);

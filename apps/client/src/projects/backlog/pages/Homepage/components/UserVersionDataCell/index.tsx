@@ -4,7 +4,7 @@ import { pluralize } from "@citadel/common/src/universal/string/pluralize";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
-import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
+import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
 import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 import {
 	Bookmark,
@@ -137,7 +137,7 @@ export function UserVersionDataCell({
 						updateUserVersion.mutate({ status });
 						// Au rang 5 ou plus sans date de fin, une petite fenêtre la propose
 						if (
-							isFinishedStatus(status) &&
+							isFinishedByPlayingStatus(status) &&
 							editableUserVersion.finishDate === null
 						)
 							table.openModal({

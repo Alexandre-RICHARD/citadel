@@ -1,6 +1,6 @@
 import { StatusEnum } from "../../enum/status.enum.ts";
 import { getHighestStatus } from "./getHighestStatus.ts";
-import { isFinishedStatus } from "./isFinishedStatus.ts";
+import { isFinishedByPlayingStatus } from "./isFinishedByPlayingStatus.ts";
 
 /**
  * Statut de la ligne d'un jeu : les « Pas commencé » sont ignorées tant qu'une autre version jouée
@@ -11,8 +11,9 @@ export function getGameStatus(statuses: StatusEnum[]): StatusEnum | null {
 	// Toutes « Pas commencé »
 	if (played.length === 0) return StatusEnum.NOT_STARTED;
 
-	// Au moins une au rang 5 ou plus : le plus haut de ces statuts
-	const finished = played.filter(isFinishedStatus);
+	// Au moins une au rang 5 ou plus : le plus haut de ces statuts. « Vu sans jouer » compte au récap, mais pas ici :
+	// la ligne montre la progression la plus avancée
+	const finished = played.filter(isFinishedByPlayingStatus);
 	if (finished.length > 0) return getHighestStatus(finished);
 
 	// Toutes « Abandonné »

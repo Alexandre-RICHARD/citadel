@@ -6,6 +6,7 @@ import { isFinishedStatus } from "./isFinishedStatus.ts";
 describe("isFinishedStatus.ts", () => {
 	describe("finished statuses", () => {
 		it.each([
+			StatusEnum.WATCHED,
 			StatusEnum.FINISHED,
 			StatusEnum.DEEMED_FINISHED,
 			StatusEnum.COMPLETED,
@@ -19,7 +20,6 @@ describe("isFinishedStatus.ts", () => {
 	describe("other statuses", () => {
 		it.each([
 			StatusEnum.NOT_STARTED,
-			StatusEnum.WATCHED,
 			StatusEnum.STARTED,
 			StatusEnum.WELL_UNDERWAY,
 			StatusEnum.ABANDONED,

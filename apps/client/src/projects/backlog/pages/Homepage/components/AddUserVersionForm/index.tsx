@@ -3,7 +3,7 @@ import { createUserVersionBodySchema } from "@citadel/specs/src/projects/backlog
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
 import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
-import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
+import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
 import { CopyPlus, LibraryBig } from "lucide-react";
 import { useState } from "react";
 
@@ -133,7 +133,10 @@ export function AddUserVersionForm({
 					canValidate={check?.isValid === true && !isTaken}
 					onCancel={onClose}
 					onValidate={() => {
-						if (isFinishedStatus(draft.status) && draft.finishDate === null)
+						if (
+							isFinishedByPlayingStatus(draft.status) &&
+							draft.finishDate === null
+						)
 							setIsAskingFinishDate(true);
 						else submit(draft.finishDate);
 					}}

@@ -149,6 +149,7 @@ describe("getBacklogOverview", () => {
 		});
 
 		it.each([
+			StatusEnum.WATCHED,
 			StatusEnum.FINISHED,
 			StatusEnum.DEEMED_FINISHED,
 			StatusEnum.COMPLETED,
@@ -174,7 +175,6 @@ describe("getBacklogOverview", () => {
 
 		it.each([
 			StatusEnum.NOT_STARTED,
-			StatusEnum.WATCHED,
 			StatusEnum.STARTED,
 			StatusEnum.WELL_UNDERWAY,
 			StatusEnum.ABANDONED,

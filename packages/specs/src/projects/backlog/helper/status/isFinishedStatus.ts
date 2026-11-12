@@ -1,9 +1,15 @@
-import type { StatusEnum } from "../../enum/status.enum.ts";
-import { statusRanks } from "./statusRanks.ts";
+import { StatusEnum } from "../../enum/status.enum.ts";
 
-const FIRST_FINISHED_RANK = 5;
+// Les statuts de fin : ils comptent le jeu comme fini (récap, statut de la ligne d'un jeu). « Vu sans jouer » en est un
+const FINISHED_STATUSES: readonly StatusEnum[] = [
+	StatusEnum.WATCHED,
+	StatusEnum.FINISHED,
+	StatusEnum.DEEMED_FINISHED,
+	StatusEnum.COMPLETED,
+	StatusEnum.PLATINUM,
+	StatusEnum.COMPLETED_AND_PLATINUM,
+];
 
-// Rang 5 ou plus : la version jouée est finie
 export function isFinishedStatus(status: StatusEnum): boolean {
-	return (statusRanks[status] ?? 0) >= FIRST_FINISHED_RANK;
+	return FINISHED_STATUSES.includes(status);
 }
