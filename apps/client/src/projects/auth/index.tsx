@@ -10,7 +10,7 @@ import { SecureAccountPage } from "./pages/SecureAccountPage";
 import { VerifyPage } from "./pages/VerifyPage";
 import { AuthPathEnum } from "./routing/authPath.enum";
 
-// /auth/login, /auth/register, /auth/forgot-password, /auth/profile, /auth/secure-account (étape facultative après
+// /auth/login, /auth/register, /auth/forgot-password, /auth/profile/<catégorie>, /auth/secure-account (étape facultative après
 // l'inscription), /auth/verify (lien des mails) ; toute autre adresse mène à la connexion
 export function Auth() {
 	return (
@@ -30,7 +30,7 @@ export function Auth() {
 						element={<ForgotPasswordPage />}
 					/>
 					<Route
-						path="profile"
+						path="profile/*"
 						element={<ProfilePage />}
 					/>
 					<Route

@@ -10,8 +10,8 @@ describe("findCompletionPath.ts", () => {
 	describe("paths", () => {
 		it.each([
 			{ kind: FlowKindEnum.REGISTRATION, path: AuthPathEnum.SECURE_ACCOUNT },
-			{ kind: FlowKindEnum.EMAIL_CHANGE, path: AuthPathEnum.PROFILE },
-			{ kind: FlowKindEnum.EMAIL_FACTOR, path: AuthPathEnum.PROFILE },
+			{ kind: FlowKindEnum.EMAIL_CHANGE, path: "/auth/profile/identity" },
+			{ kind: FlowKindEnum.EMAIL_FACTOR, path: "/auth/profile/security" },
 			{ kind: FlowKindEnum.LOGIN, path: REDIRECT },
 			{ kind: FlowKindEnum.MAIL_LOGIN, path: REDIRECT },
 			{ kind: FlowKindEnum.PASSWORD_RESET, path: REDIRECT },
