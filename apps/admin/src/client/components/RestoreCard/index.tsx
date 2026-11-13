@@ -111,7 +111,7 @@ export function RestoreCard({ status, send, onError }: Props) {
 			) : null}
 			<label className={styles.field}>
 				<span>
-					{`Pour confirmer, tape ${CONFIRMATION}`}
+					{`Pour confirmer, tapez ${CONFIRMATION}`}
 					<RequiredMark />
 				</span>
 				<input

@@ -228,7 +228,7 @@ export function SecondFactorStep({ flow, purpose }: Props) {
 				</FormField>
 				{isMailExhausted && (
 					<FormAlert tone="error">
-						Tous les essais de ce code sont faits : demande un nouvel email.
+						Tous les essais de ce code sont faits : demandez un nouvel email.
 					</FormAlert>
 				)}
 				{!isMailExhausted && codeFailure.failure !== null && (

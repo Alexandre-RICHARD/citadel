@@ -102,8 +102,8 @@ export function ReorderSeriesForm({
 			onClose={onClose}
 		>
 			<Callout className={styles.seriesHint}>
-				Glisse un jeu par sa poignée entre deux lignes, un peu à droite pour en
-				faire un sous-jeu, ou tape son numéro (3, 3.1).
+				Glissez un jeu par sa poignée entre deux lignes, un peu à droite pour en
+				faire un sous-jeu, ou tapez son numéro (3, 3.1).
 			</Callout>
 			<ol className={styles.seriesList}>
 				{entries.map(({ gameId, seriesNumber }, index) => {

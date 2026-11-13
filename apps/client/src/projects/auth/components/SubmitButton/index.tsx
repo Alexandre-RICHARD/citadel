@@ -16,7 +16,7 @@ type Props = {
 
 const REFRESH_MS = 1000;
 
-// Le bouton qui envoie le formulaire : « Envoi… » pendant la requête, « Patiente 12 s » pendant une attente imposée
+// Le bouton qui envoie le formulaire : « Envoi… » pendant la requête, « Patientez 12 s » pendant une attente imposée
 export function SubmitButton({
 	label,
 	pendingLabel,

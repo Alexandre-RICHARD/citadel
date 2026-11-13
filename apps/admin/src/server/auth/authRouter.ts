@@ -43,7 +43,7 @@ async function isConsolePassword(password: string): Promise<boolean> {
 		if (error instanceof QueueFullError)
 			throw new HttpError(
 				429,
-				"Trop de connexions en cours : réessaie dans un instant",
+				"Trop de connexions en cours : réessayez dans un instant",
 			);
 		throw error;
 	}

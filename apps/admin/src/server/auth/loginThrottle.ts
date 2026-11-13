@@ -20,7 +20,7 @@ export const loginThrottle = {
 		const retryAfterMs = attempts.record(ip);
 		if (retryAfterMs === null) return;
 		const minutes = Math.ceil(retryAfterMs / MINUTE_MS);
-		throw new HttpError(429, `Trop d'essais : réessaie dans ${minutes} min`);
+		throw new HttpError(429, `Trop d'essais : réessayez dans ${minutes} min`);
 	},
 
 	recordSuccess(ip: string): void {

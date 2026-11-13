@@ -160,7 +160,7 @@ export function MailCodeStep({
 				</FormField>
 				{isExhausted && (
 					<FormAlert tone="error">
-						Tous les essais de ce code sont faits : demande un nouvel email.
+						Tous les essais de ce code sont faits : demandez un nouvel email.
 					</FormAlert>
 				)}
 				{!isExhausted && codeFailure.failure !== null && (

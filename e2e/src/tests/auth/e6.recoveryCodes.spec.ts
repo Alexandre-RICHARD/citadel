@@ -105,7 +105,7 @@ test.describe("Double authentification", () => {
 			await submitSecondFactor(page, newCodes[9], "accepted");
 			await expectRemainingCodes(
 				page,
-				"Aucun code de secours utilisable : refais-en.",
+				"Aucun code de secours utilisable : refaites-en.",
 			);
 		});
 	});

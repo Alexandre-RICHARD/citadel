@@ -104,8 +104,8 @@ export function VerifyPage() {
 				lead="Ce lien est abîmé : votre messagerie l’a peut-être coupé en deux."
 			>
 				<FormAlert tone="info">
-					Saisis plutôt le code de l’email sur la page restée ouverte, ou
-					demande un nouvel email.
+					Saisissez plutôt le code de l’email sur la page restée ouverte, ou
+					demandez un nouvel email.
 				</FormAlert>
 			</AuthCard>
 		);

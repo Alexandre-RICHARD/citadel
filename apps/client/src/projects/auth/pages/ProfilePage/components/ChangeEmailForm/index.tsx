@@ -66,7 +66,7 @@ export function ChangeEmailForm() {
 				</button>
 				{!isMailOpen && (
 					<p className={styles.hint}>
-						Plus aucun email ne part aujourd’hui : réessaie demain.
+						Plus aucun email ne part aujourd’hui : réessayez demain.
 					</p>
 				)}
 			</div>

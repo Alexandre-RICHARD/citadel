@@ -28,7 +28,7 @@ test.describe("Connexion", () => {
 			await expect(page.getByRole("alert")).toBeVisible();
 			await fillLoginForm(page, wrongLogin);
 			const waitingButton = page.getByRole("button", {
-				name: /^Patiente \d+ s$/,
+				name: /^Patientez \d+ s$/,
 			});
 			await expect(waitingButton).toBeVisible();
 			await expect(waitingButton).toBeDisabled();

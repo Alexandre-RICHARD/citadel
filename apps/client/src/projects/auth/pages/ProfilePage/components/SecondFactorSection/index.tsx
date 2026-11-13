@@ -208,7 +208,7 @@ export function SecondFactorSection() {
 						<strong>Codes de secours</strong>
 						<p className={styles.empty}>
 							{factors.remainingRecoveryCodes === 0
-								? "Aucun code de secours utilisable : refais-en."
+								? "Aucun code de secours utilisable : refaites-en."
 								: `${factors.remainingRecoveryCodes} code${factors.remainingRecoveryCodes > 1 ? "s" : ""} de secours utilisable${factors.remainingRecoveryCodes > 1 ? "s" : ""}.`}
 						</p>
 					</div>
