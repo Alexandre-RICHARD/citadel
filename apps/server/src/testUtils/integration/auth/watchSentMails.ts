@@ -4,8 +4,8 @@ import type { Mail } from "../../../mail/mail.type.ts";
 import { memoryMailSender } from "../../../mail/sender/memoryMailSender.ts";
 
 /**
- * À appeler avant la requête : les mails de l'authentification partent après la réponse, sans être attendus.
- * `waitFor(count)` attend que `count` mails soient partis depuis, et les renvoie ; `expectNone` vérifie qu'aucun n'est
+ * À appeler avant la requête : les emails de l'authentification partent après la réponse, sans être attendus.
+ * `waitFor(count)` attend que `count` emails soient partis depuis, et les renvoie ; `expectNone` vérifie qu'aucun n'est
  * parti, après avoir laissé aux envois en cours le temps de finir
  */
 export function watchSentMails() {
@@ -24,7 +24,7 @@ export function watchSentMails() {
 
 	return {
 		waitFor,
-		// Le seul mail parti depuis
+		// Le seul email parti depuis
 		async waitForOne(): Promise<Mail> {
 			const [mail] = await waitFor(1);
 			if (mail === undefined) throw new Error("No mail sent");

@@ -18,7 +18,7 @@ test.describe("Lien, code et reprise", () => {
 		const mail = await waitForMail(identity.email);
 
 		const linkPage =
-			await test.step("Ouvrir le lien du mail dans un second onglet et confirmer", async () => {
+			await test.step("Ouvrir le lien de l'email dans un second onglet et confirmer", async () => {
 				const tab = await openMailLink(page, mail.link!);
 				await tab.getByRole("button", { name: "Confirmer" }).click();
 				await expect(

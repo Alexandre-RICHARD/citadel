@@ -5,7 +5,7 @@ type MethodChoice = {
 	offered: readonly SecondFactorMethodEnum[];
 	// Ce que l'utilisateur a choisi ; null tant qu'il n'a rien choisi
 	chosen: SecondFactorMethodEnum | null;
-	// Le quota de mails : fermé, le code par email ne peut plus partir
+	// Le quota d'emails : fermé, le code par email ne peut plus partir
 	isMailOpen: boolean;
 };
 

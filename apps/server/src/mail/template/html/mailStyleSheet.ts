@@ -35,7 +35,7 @@ const PHONE_RULES = [
 	"}",
 ].join("");
 
-// Le mode sombre des clients qui le laissent au mail (Apple Mail, iOS, Thunderbird…) : les couleurs sombres du thème.
+// Le mode sombre des clients qui le laissent à l'email (Apple Email, iOS, Thunderbird…) : les couleurs sombres du thème.
 // Gmail et Outlook inversent les couleurs eux-mêmes et ignorent ces règles
 const DARK_RULES = [
 	`${DARK_SCHEME_MEDIA}{`,

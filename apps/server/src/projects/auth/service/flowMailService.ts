@@ -39,7 +39,7 @@ const VERIFICATION_MAIL_BUILDERS: Partial<
 	Record<FlowKindEnum, (parameters: VerificationMailParameters) => Mail>
 > = {
 	[FlowKindEnum.REGISTRATION]: buildRegistrationMail,
-	// La connexion par mot de passe n'envoie de mail qu'à son étape « second facteur » : le code par email
+	// La connexion par mot de passe n'envoie d'email qu'à son étape « second facteur » : le code par email
 	[FlowKindEnum.LOGIN]: buildSecondFactorMail,
 	[FlowKindEnum.MAIL_LOGIN]: buildMailLoginMail,
 	[FlowKindEnum.PASSWORD_RESET]: buildPasswordResetMail,
@@ -48,14 +48,14 @@ const VERIFICATION_MAIL_BUILDERS: Partial<
 };
 
 class FlowMailService {
-	// Les inscriptions ont leur seuil, plus bas que celui des autres mails
+	// Les inscriptions ont leur seuil, plus bas que celui des autres emails
 	async assertOpen(kind: FlowKindEnum): Promise<void> {
 		if (kind === FlowKindEnum.REGISTRATION)
 			await authMailService.assertRegistrationOpen();
 		else await authMailService.assertSendingOpen();
 	}
 
-	// Décidé à chaque envoi : une adresse peut avoir été inscrite entre un mail et son renvoi
+	// Décidé à chaque envoi : une adresse peut avoir été inscrite entre un email et son renvoi
 	async plan(facts: FlowFacts): Promise<StepMail> {
 		const { kind, email } = facts;
 		if (isDecoyFlow(facts))

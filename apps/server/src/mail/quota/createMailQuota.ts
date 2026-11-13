@@ -4,14 +4,14 @@ import type { MailQuotaLimits } from "./mailQuotaLimits.type.ts";
 import type { MailStatusBean } from "./mailStatusBean.type.ts";
 import { MailThresholdEnum } from "./mailThreshold.enum.ts";
 
-// Le dernier mail du jour est gardé pour l'alerte de fermeture totale
+// Le dernier email du jour est gardé pour l'alerte de fermeture totale
 const ALERT_RESERVE = 1;
 
 type Options = {
 	limits: MailQuotaLimits;
 	// Le compteur du fournisseur est relu au plus une fois par cette durée
 	readingLifetimeMs: number;
-	// Mails envoyés aujourd'hui selon le fournisseur ; null sans compteur (journal, tests) : le serveur compte seul
+	// Emails envoyés aujourd'hui selon le fournisseur ; null sans compteur (journal, tests) : le serveur compte seul
 	readSentToday: () => Promise<number | null>;
 	// Au premier franchissement de chaque seuil du jour, une seule fois
 	onThresholdCrossed: (threshold: MailThresholdEnum, sentToday: number) => void;
@@ -27,7 +27,7 @@ type Reading = {
 };
 
 /**
- * Le quota quotidien du fournisseur : combien de mails sont partis aujourd'hui, et donc ce qui reste ouvert.
+ * Le quota quotidien du fournisseur : combien d'emails sont partis aujourd'hui, et donc ce qui reste ouvert.
  * Le décompte vient du fournisseur (il inclut les réponses envoyées depuis Gmail et survit aux déploiements), relu au
  * plus une fois par minute ; entre deux relevés, et si le fournisseur ne répond pas, le serveur ajoute ses propres envois
  */
@@ -131,7 +131,7 @@ export function createMailQuota({
 		};
 	}
 
-	// Un mail vient de partir. Premier envoi d'un nouveau jour : un relevé local, à relire au prochain appel
+	// Un email vient de partir. Premier envoi d'un nouveau jour : un relevé local, à relire au prochain appel
 	function recordSend(): void {
 		if (reading?.day !== today()) startReading(0, -Infinity);
 		sentSinceReading += 1;

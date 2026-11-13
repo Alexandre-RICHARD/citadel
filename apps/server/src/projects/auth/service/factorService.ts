@@ -61,7 +61,7 @@ async function requireUser(userId: number) {
 }
 
 /**
- * Les seconds facteurs du compte connecté : des TOTP nommés, autant que voulu, et un seul facteur mail. Un facteur ne
+ * Les seconds facteurs du compte connecté : des TOTP nommés, autant que voulu, et un seul facteur email. Un facteur ne
  * protège rien tant que son premier code n'est pas validé. Le premier activé donne les codes de secours, le dernier
  * retiré les emporte : chaque changement verrouille le compte, deux activations simultanées ne donnent jamais deux lots
  * de codes. Chaque ajout et chaque retrait est notifié à l'adresse du compte
@@ -152,7 +152,7 @@ class FactorService {
 		return recoveryCodes;
 	}
 
-	// Le facteur mail s'active par un mail à l'adresse du compte : son lien ou son code prouve que la boîte répond
+	// Le facteur email s'active par un email à l'adresse du compte : son lien ou son code prouve que la boîte répond
 	async startEmailFactor(
 		userId: number,
 		browser: BrowserContextBean,
@@ -173,8 +173,8 @@ class FactorService {
 	}
 
 	/**
-	 * Le mail d'activation validé : le facteur mail est actif, le parcours terminé, sans nouvelle session (le compte
-	 * était connecté pour le demander). Activé entre-temps depuis un autre onglet : 409, sans second facteur mail
+	 * L'email d'activation validé : le facteur email est actif, le parcours terminé, sans nouvelle session (le compte
+	 * était connecté pour le demander). Activé entre-temps depuis un autre onglet : 409, sans second facteur email
 	 */
 	async completeEmailFactorMailStep(
 		verified: VerifiedFlowBean,

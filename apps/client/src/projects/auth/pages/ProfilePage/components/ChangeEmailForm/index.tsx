@@ -16,7 +16,7 @@ import { TextField } from "../../../../components/TextField";
 import { useAuthFailure } from "../../../../hooks/useAuthFailure";
 import styles from "./changeEmailForm.module.scss";
 
-// Le mot de passe et la nouvelle adresse. Le mail de confirmation part à celle-ci ; la page passe ensuite à l'étape
+// Le mot de passe et la nouvelle adresse. L'email de confirmation part à celle-ci ; la page passe ensuite à l'étape
 // « lien ou code » (le parcours en cours)
 export function ChangeEmailForm() {
 	const fieldId = useId();

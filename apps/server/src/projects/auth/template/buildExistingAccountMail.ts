@@ -8,7 +8,7 @@ import { describeElapsedTime } from "./describeElapsedTime.ts";
 
 /**
  * À l'adresse qui s'inscrit alors qu'elle a déjà un compte. La page d'inscription répond comme pour une adresse
- * nouvelle : c'est ce mail, dans la seule boîte concernée, qui dit la vérité. Ni lien à jeton ni code, rien à confirmer
+ * nouvelle : c'est cet email, dans la seule boîte concernée, qui dit la vérité. Ni lien à jeton ni code, rien à confirmer
  */
 export function buildExistingAccountMail(
 	email: string,

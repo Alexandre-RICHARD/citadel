@@ -29,7 +29,7 @@ async function submitNewPassword(password: string, cookie?: string) {
 	return cookie === undefined ? pending : pending.set("Cookie", cookie);
 }
 
-// Un mot de passe oublié dont le mail a été validé : il attend le nouveau mot de passe
+// Un mot de passe oublié dont l'email a été validé : il attend le nouveau mot de passe
 async function openResetAtNewPassword() {
 	const account = await insertTestAccount();
 	const flow = await openTestFlow({

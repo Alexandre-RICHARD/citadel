@@ -8,7 +8,7 @@ import { mailService } from "../../../mail/mailService.ts";
 import type { MailStatusBean } from "../../../mail/quota/mailStatusBean.type.ts";
 
 class AuthMailService {
-	// L'état des mails tel que le site l'annonce (GET /mail/status) : l'interrupteur d'urgence ferme aussi les inscriptions
+	// L'état des emails tel que le site l'annonce (GET /mail/status) : l'interrupteur d'urgence ferme aussi les inscriptions
 	async getStatus(): Promise<MailStatusBean> {
 		const status = await mailService.getStatus();
 		return {
@@ -18,7 +18,7 @@ class AuthMailService {
 		};
 	}
 
-	// Les inscriptions s'arrêtent avant le reste des mails : leur seuil du quota est plus bas
+	// Les inscriptions s'arrêtent avant le reste des emails : leur seuil du quota est plus bas
 	async assertRegistrationOpen(): Promise<void> {
 		const { isRegistrationOpen } = await this.getStatus();
 		if (!isRegistrationOpen)
@@ -29,7 +29,7 @@ class AuthMailService {
 	}
 
 	/**
-	 * Les parcours qui envoient un mail (connexion par mail, mot de passe oublié, changement d'email, facteur mail)
+	 * Les parcours qui envoient un email (connexion par email, mot de passe oublié, changement d'email, facteur email)
 	 * s'arrêtent quand le quota du jour est épuisé, pour tout le monde : la réponse ne dépend donc pas du compte.
 	 * L'inscription a son propre seuil (`REGISTRATION_CLOSED`), plus bas
 	 */

@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { MailPreview } from "./MailPreview";
 
-// Les mails à lien et à code de l'authentification : le lien ne marche que dans le navigateur du parcours, le code
+// Les emails à lien et à code de l'authentification : le lien ne marche que dans le navigateur du parcours, le code
 // vaut partout
 const meta = {
 	title: "Mails/Authentification : lien et code",

@@ -11,7 +11,7 @@ type Advance = {
 	expiresAt: Date;
 };
 
-// Le parcours passe à son étape suivante : essais remis à zéro, aucun mail encore envoyé pour elle
+// Le parcours passe à son étape suivante : essais remis à zéro, aucun email encore envoyé pour elle
 export async function advanceFlowQuery(
 	{ flowId, step, expiresAt }: Advance,
 	transaction: Transaction,

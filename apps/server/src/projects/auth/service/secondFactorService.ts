@@ -50,7 +50,7 @@ function invalidCode(message: string): RejectedRequestError {
 }
 
 /**
- * L'étape « second facteur », après le mot de passe (connexion), ou après le mail (connexion par email, mot de passe
+ * L'étape « second facteur », après le mot de passe (connexion), ou après l'email (connexion par email, mot de passe
  * oublié, qui ne la passent que si le compte a un TOTP). Chaque échec compte comme un mauvais mot de passe, pour le
  * compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus. Un code accepté ne sert qu'une fois
  */
@@ -112,7 +112,7 @@ class SecondFactorService {
 	}
 
 	/**
-	 * Le lien du code par email, ouvert dans le navigateur de la connexion : il vaut le code. Le facteur mail a pu être
+	 * Le lien du code par email, ouvert dans le navigateur de la connexion : il vaut le code. Le facteur email a pu être
 	 * retiré depuis l'envoi : le lien ne vaut plus
 	 */
 	async completeMailLink(
@@ -137,7 +137,7 @@ class SecondFactorService {
 		return this.#outcome(verified, null, browser);
 	}
 
-	// null : le code n'est pas bon. Le code par email compte aussi parmi les essais de son mail
+	// null : le code n'est pas bon. Le code par email compte aussi parmi les essais de son email
 	async #verify(
 		flow: Flow,
 		userId: number,

@@ -5,7 +5,7 @@ import { insertAuthRows } from "./insertAuthRows.ts";
 type Options = {
 	loginMethods?: string;
 	lastLoginAt?: Date | null;
-	// Un TOTP ou un facteur mail actif
+	// Un TOTP ou un facteur email actif
 	confirmedFactorType?: "totp" | "email" | undefined;
 };
 

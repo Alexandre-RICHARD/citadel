@@ -10,7 +10,7 @@ import type { FlowStatusDto } from "../../../dto/flowStatusDto.type.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 
 /**
- * Commence l'activation du code par email : un parcours `email_factor`, dont le mail (lien + code) part à l'adresse du
+ * Commence l'activation du code par email : un parcours `email_factor`, dont l'email (lien + code) part à l'adresse du
  * compte. Le lien ou le code validé (`POST /auth/flow/link` ou `/code`) active le facteur
  */
 export interface StartEmailFactor extends EndpointModel {
@@ -25,7 +25,7 @@ export interface StartEmailFactor extends EndpointModel {
 	};
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
-		// Plus aucun mail ne part aujourd'hui
+		// Plus aucun email ne part aujourd'hui
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.MAIL_CLOSED>;
 		[HttpStatutCodeErrorEnum.CONFLICT_WITH_SERVER]: ErrorResponseDto<AuthErrorCodeEnum.EMAIL_FACTOR_ALREADY_ACTIVE>;
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;

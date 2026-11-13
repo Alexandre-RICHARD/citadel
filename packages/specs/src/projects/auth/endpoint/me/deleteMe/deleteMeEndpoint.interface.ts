@@ -12,7 +12,7 @@ import type { DeleteMeBodyDto } from "./deleteMeBodyDto.type.ts";
 /**
  * Supprime le compte et tout ce qui s'y rattache, immédiatement et sans retour possible. Mot de passe redemandé, et un
  * code de l'application d'authentification (ou un code de secours) si le compte en a une. Le cookie de session est
- * effacé, et un mail confirme la suppression
+ * effacé, et un email confirme la suppression
  */
 export interface DeleteMe extends EndpointModel {
 	request: {

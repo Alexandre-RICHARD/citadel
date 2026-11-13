@@ -440,7 +440,7 @@ describe("startRegistration", () => {
 		});
 
 		it("SHOULD not count the registrations of the IP WHEN the mail limit refused them", async () => {
-			// Arrange : l'adresse a déjà reçu ses 5 mails de l'heure, depuis d'autres IP
+			// Arrange : l'adresse a déjà reçu ses 5 emails de l'heure, depuis d'autres IP
 			const ip = buildUniqueIp();
 			const email = `${buildUniqueWord().toLowerCase()}@example.com`;
 			for (let index = 0; index < 5; index++)

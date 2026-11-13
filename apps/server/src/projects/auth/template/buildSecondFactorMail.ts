@@ -22,7 +22,7 @@ const CONTENT: VerificationMailContent = {
 		"Si tu n'es pas à l'origine de cette connexion, ton compte reste protégé : personne ne peut ouvrir de session sans ce code. Quelqu'un connaît cependant ton mot de passe, change-le dès que possible.",
 };
 
-// Après un mot de passe correct, pour qui a choisi le code par mail comme double authentification
+// Après un mot de passe correct, pour qui a choisi le code par email comme double authentification
 export function buildSecondFactorMail(
 	parameters: VerificationMailParameters,
 ): Mail {

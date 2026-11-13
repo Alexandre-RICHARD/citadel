@@ -58,7 +58,7 @@ describe("createAuthFlowTable", () => {
 			await expect(insertion).rejects.toThrow(DatabaseError);
 		});
 
-		// Chacun à une étape qu'il permet : seule l'absence de compte le fait refuser. Connexion par mail et mot de passe
+		// Chacun à une étape qu'il permet : seule l'absence de compte le fait refuser. Connexion par email et mot de passe
 		// oublié l'acceptent depuis V020 (allowDecoyAuthFlows)
 		it.each([
 			{ kind: "login", step: "second_factor" },

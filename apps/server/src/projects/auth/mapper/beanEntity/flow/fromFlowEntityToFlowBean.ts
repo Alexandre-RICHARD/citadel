@@ -9,7 +9,7 @@ type CodeSettings = {
 };
 
 // Un leurre se lit comme un vrai parcours : mêmes dates, mêmes essais, rien de son compte. Chaque étape repart sans
-// mail envoyé (lastSentAt remis à null) : le délai de renvoi ne vaut qu'après un envoi de cette étape
+// email envoyé (lastSentAt remis à null) : le délai de renvoi ne vaut qu'après un envoi de cette étape
 export function fromFlowEntityToFlowBean(
 	flow: Pick<Flow, "kind" | "step" | "expiresAt" | "lastSentAt" | "attempts">,
 	{ maxAttempts, resendDelayMs }: CodeSettings,

@@ -57,7 +57,7 @@ test.describe("Profil : adresse email", () => {
 			await expect(page.getByRole("alert")).toContainText(
 				"cette adresse email est déjà celle de votre compte",
 			);
-			expect(await countMails(identity.email), "aucun mail envoyé").toBe(
+			expect(await countMails(identity.email), "aucun email envoyé").toBe(
 				mailsBefore,
 			);
 			await page.getByRole("button", { name: "Annuler" }).click();
@@ -105,7 +105,7 @@ test.describe("Profil : adresse email", () => {
 
 		await test.step("Le code envoyé à la nouvelle adresse confirme le changement", async () => {
 			const mail = await waitForMailWithSubject(newIdentity.email, CHANGE_MAIL);
-			expect(mail.code, "le mail contient un code").not.toBeNull();
+			expect(mail.code, "l'email contient un code").not.toBeNull();
 			await page
 				.getByRole("textbox", { name: /Code reçu par email/ })
 				.fill(mail.code!);

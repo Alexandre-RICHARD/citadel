@@ -4,6 +4,6 @@ export enum MailThresholdEnum {
 	REGISTRATION = "registration",
 	// MAIL_CONTACT_STOP : plus de formulaire de contact
 	CONTACT = "contact",
-	// Un mail sous MAIL_DAILY_LIMIT : plus rien, le dernier envoi est l'alerte
+	// Un email sous MAIL_DAILY_LIMIT : plus rien, le dernier envoi est l'alerte
 	DAILY = "daily",
 }

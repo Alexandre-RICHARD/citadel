@@ -11,7 +11,7 @@ type Props = {
 
 const MAIL_LINK_PREFIX = "mailto:";
 
-// Affiche un texte dont les liens viennent du dictionnaire des liens externes. Une adresse mail ouvre le client mail ;
+// Affiche un texte dont les liens viennent du dictionnaire des liens externes. Une adresse email ouvre le client email ;
 // un site s'ouvre dans un nouvel onglet, signalé par une icône
 export function LinkedText({ text }: Props) {
 	return parseLinkedText(text).map((part, index) => {

@@ -12,7 +12,7 @@ import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
 import { NewPasswordForm } from "./components/NewPasswordForm";
 
 /**
- * Mot de passe oublié : l'identifiant, le lien ou le code du mail, le second facteur d'un compte protégé, puis le
+ * Mot de passe oublié : l'identifiant, le lien ou le code de l'email, le second facteur d'un compte protégé, puis le
  * nouveau mot de passe, qui ouvre la session. Connecté sans parcours en cours (déjà, ou à l'instant), la page renvoie
  * vers celle demandée au départ
  */

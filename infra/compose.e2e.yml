@@ -1,21 +1,21 @@
 # =====================================================================================
-# compose.e2e.yml : prod:local + de quoi lire les mails, pour les tests end-to-end
+# compose.e2e.yml : prod:local + de quoi lire les emails, pour les tests end-to-end
 # =====================================================================================
 #
 #   pnpm stack-up      (depuis e2e/) lance la stack de prod:local (compose.local.yml) avec ce fichier par-dessus
-#   pnpm stack-down    arrête tout et efface les données (base, mails) : repart de zéro
+#   pnpm stack-down    arrête tout et efface les données (base, emails) : repart de zéro
 #
 # Puis les tests : pnpm test-e2e, toujours depuis e2e/ (voir docs/e2e/e2e.md).
-#   http://localhost:8025   Mailpit : la boîte de réception de tous les mails du site
+#   http://localhost:8025   Mailpit : la boîte de réception de tous les emails du site
 #
 # Compose superpose ce fichier à compose.yml et compose.local.yml (troisième -f) : on
 # teste donc toujours la vraie stack, avec seulement ces différences :
-#   - le serveur envoie ses mails par le VRAI client Brevo (MAIL_SENDER=brevo : même code,
+#   - le serveur envoie ses emails par le VRAI client Brevo (MAIL_SENDER=brevo : même code,
 #     même format de requête que la prod), mais l'adresse de l'API (BREVO_API_URL) pointe
-#     vers notre faux Brevo, pas vers api.brevo.com. Aucun mail ne sort de ton PC, aucun
+#     vers notre faux Brevo, pas vers api.brevo.com. Aucun email ne sort de ton PC, aucun
 #     crédit Brevo n'est dépensé ;
-#   - le faux Brevo (e2e-fake-brevo) reçoit la requête et dépose le mail dans Mailpit ;
-#   - Mailpit garde les mails, les montre dans une page web, et les rend aux tests par
+#   - le faux Brevo (e2e-fake-brevo) reçoit la requête et dépose l'email dans Mailpit ;
+#   - Mailpit garde les emails, les montre dans une page web, et les rend aux tests par
 #     une API (GET /api/v1/messages…) ;
 #   - les limites par IP sont relevées : tous les tests viennent de la même IP (la tienne)
 #     et inscrire des dizaines de comptes à la suite ferait sinon bannir cette IP.
@@ -41,7 +41,7 @@ services:
   # --- Le faux Brevo ---
   # Un petit serveur Node (e2e/src/fake-brevo/server.mjs, lu depuis le dépôt : pas d'image à
   # construire) qui parle comme l'API de Brevo, juste assez pour notre BrevoClient :
-  #   POST /v3/smtp/email   envoi d'un mail : il le dépose dans Mailpit
+  #   POST /v3/smtp/email   envoi d'un email : il le dépose dans Mailpit
   #   GET  /v3/account      le compteur de crédits (toujours plein : le quota ne bloque jamais)
   e2e-fake-brevo:
     image: node:24.22.1-alpine3.24
@@ -76,7 +76,7 @@ services:
       retries: 20
 
   # --- Mailpit ---
-  # Garde en mémoire tous les mails reçus (donc vidés à chaque redémarrage) et les montre
+  # Garde en mémoire tous les emails reçus (donc vidés à chaque redémarrage) et les montre
   # sur http://localhost:8025. Son port SMTP (1025) ne sert à rien ici : le faux Brevo
   # utilise son API d'envoi. Version fixée, comme toutes les images de l'infra.
   e2e-mailpit:

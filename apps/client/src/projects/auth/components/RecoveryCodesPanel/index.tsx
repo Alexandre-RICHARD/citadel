@@ -41,7 +41,7 @@ export function RecoveryCodesPanel({ codes, email, onAcknowledge }: Props) {
 		<ProfileSection
 			icon={<KeyRound />}
 			title="Vos codes de secours"
-			lead="Chacun ne sert qu’une fois, quand vous ne pouvez plus utiliser votre double authentification (téléphone perdu, boîte mail inaccessible)."
+			lead="Chacun ne sert qu’une fois, quand vous ne pouvez plus utiliser votre double authentification (téléphone perdu, boîte email inaccessible)."
 		>
 			<FormAlert tone="info">
 				Sauvegardez-les en lieu sûr : vous ne pourrez plus jamais les revoir

@@ -33,12 +33,12 @@ function flowExpired(): RejectedRequestError {
 }
 
 /**
- * Mot de passe oublié : le mail à l'adresse du compte (jamais affichée), puis le TOTP s'il existe, jamais le code par
- * mail (une boîte compromise suffirait sinon à contourner la double authentification), puis le nouveau mot de passe.
+ * Mot de passe oublié : l'email à l'adresse du compte (jamais affichée), puis le TOTP s'il existe, jamais le code par
+ * email (une boîte compromise suffirait sinon à contourner la double authentification), puis le nouveau mot de passe.
  * Toujours ouvert, quelles que soient les méthodes de connexion du compte
  */
 class PasswordResetService {
-	// Identifiant inconnu : un parcours leurre, même réponse, aucun mail
+	// Identifiant inconnu : un parcours leurre, même réponse, aucun email
 	async start(
 		identifier: string,
 		browser: BrowserContextBean,
@@ -93,7 +93,7 @@ class PasswordResetService {
 
 	/**
 	 * Le nouveau mot de passe, différent de l'actuel. Toutes les sessions du compte sont fermées (un voleur du mot de
-	 * passe perd la sienne), puis celle de ce navigateur s'ouvre, et le compte est prévenu par mail
+	 * passe perd la sienne), puis celle de ce navigateur s'ouvre, et le compte est prévenu par email
 	 */
 	async setNewPassword(
 		password: string,

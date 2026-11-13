@@ -7,7 +7,7 @@ import { fillRegistrationForm } from "../../steps/fillRegistrationForm.ts";
 import { openRegistrationForm } from "../../steps/openRegistrationForm.ts";
 
 test.describe("Inscription", () => {
-	test("A2 : créer un compte en tapant le code du mail dans l'onglet resté ouvert", async ({
+	test("A2 : créer un compte en tapant le code de l'email dans l'onglet resté ouvert", async ({
 		page,
 	}) => {
 		const identity = createIdentity("alice");
@@ -16,9 +16,9 @@ test.describe("Inscription", () => {
 		await fillRegistrationForm(page, identity);
 
 		const mail =
-			await test.step("Recevoir le mail de confirmation", async () => {
+			await test.step("Recevoir l'email de confirmation", async () => {
 				const received = await waitForMail(identity.email);
-				expect(received.code, "le mail contient un code").not.toBeNull();
+				expect(received.code, "l'email contient un code").not.toBeNull();
 				return received;
 			});
 
@@ -30,7 +30,7 @@ test.describe("Inscription", () => {
 			await expect(validate).toBeDisabled();
 		});
 
-		await test.step("Taper le code du mail, sans ouvrir le lien : le compte est créé", async () => {
+		await test.step("Taper le code de l'email, sans ouvrir le lien : le compte est créé", async () => {
 			await page
 				.getByRole("textbox", { name: /Code reçu par email/ })
 				.fill(mail.code!);

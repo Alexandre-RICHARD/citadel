@@ -16,13 +16,13 @@ export enum E2EUrlEnum {
 	AUTH_LOGIN = "/auth/login",
 	AUTH_REGISTER = "/auth/register",
 	AUTH_FORGOT_PASSWORD = "/auth/forgot-password",
-	// Où mène le lien des mails
+	// Où mène le lien des emails
 	AUTH_VERIFY = "/auth/verify",
 	AUTH_PROFILE = "/auth/profile",
 	// La catégorie où le profil s'ouvre
 	AUTH_PROFILE_IDENTITY = "/auth/profile/identity",
 	AUTH_SECURE_ACCOUNT = "/auth/secure-account",
-	// La boîte de réception de tous les mails du site, à ouvrir dans un navigateur
+	// La boîte de réception de tous les emails du site, à ouvrir dans un navigateur
 	MAILPIT_UI = "http://localhost:8025",
 	MAILPIT_API = "http://127.0.0.1:8025/api/v1",
 }

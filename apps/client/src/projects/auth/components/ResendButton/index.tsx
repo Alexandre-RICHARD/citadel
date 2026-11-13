@@ -17,7 +17,7 @@ type Props = {
 
 const REFRESH_MS = 1000;
 
-// Demande un email, grisé avec son compte à rebours tant que le délai entre deux mails n'est pas passé
+// Demande un email, grisé avec son compte à rebours tant que le délai entre deux emails n'est pas passé
 export function ResendButton({
 	availableAt,
 	isPending,

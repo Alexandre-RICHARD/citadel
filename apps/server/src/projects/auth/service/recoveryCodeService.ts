@@ -18,7 +18,7 @@ import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
- * Les codes de secours, la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible) : 10 codes à
+ * Les codes de secours, la roue de secours du second facteur (téléphone perdu, boîte email inaccessible) : 10 codes à
  * usage unique, créés avec le premier facteur du compte, montrés une seule fois, gardés en empreintes
  */
 class RecoveryCodeService {

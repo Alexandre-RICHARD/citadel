@@ -5,7 +5,7 @@ import { createSlidingWindowLimiter } from "@citadel/common/src/universal/limit/
 import { groupIpForLimits } from "../../../common/network/groupIpForLimits.ts";
 
 /**
- * Les limites du formulaire, pour la réputation du domaine et le quota de mails : des messages par heure et par IP, et un
+ * Les limites du formulaire, pour la réputation du domaine et le quota d'emails : des messages par heure et par IP, et un
  * accusé de réception par adresse et par jour. En mémoire (une seule instance du serveur), remis à zéro à chaque
  * déploiement. Le plafond global du jour, lui, est le seuil MAIL_CONTACT_STOP du quota
  */

@@ -112,7 +112,7 @@ export const footerPages: FooterPage[] = [
 				title: "Ce que le navigateur garde",
 				paragraphs: [
 					"Quelques réglages restent dans votre navigateur, sans jamais partir vers le serveur : le thème clair ou sombre choisi pour chaque projet, la disposition des colonnes du Backlog, les arrêts favoris, filtres et réglages d’Angers Irigo, et le bandeau d’information du site une fois fermé.",
-					"Le temps d’un onglet, le site retient aussi que vous avez vu l’intro, pour ne pas la rejouer, et les champs d’un formulaire du compte en cours, pour ne pas les perdre en rechargeant la page ou en revenant de votre boîte mail. Jamais un mot de passe. Les réglages de votre navigateur permettent de tout effacer.",
+					"Le temps d’un onglet, le site retient aussi que vous avez vu l’intro, pour ne pas la rejouer, et les champs d’un formulaire du compte en cours, pour ne pas les perdre en rechargeant la page ou en revenant de votre boîte email. Jamais un mot de passe. Les réglages de votre navigateur permettent de tout effacer.",
 				],
 			},
 			{

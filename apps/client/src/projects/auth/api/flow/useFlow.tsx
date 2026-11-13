@@ -6,7 +6,7 @@ import { fromReceivedFlowStatusToFlowFm } from "../model/fromReceivedFlowStatusT
 import { flowQueryOptions } from "./flowQueryOptions";
 
 /**
- * Le parcours de ce navigateur, relu au retour sur l'onglet : le lien du mail a pu être ouvert dans un autre onglet, et
+ * Le parcours de ce navigateur, relu au retour sur l'onglet : le lien de l'email a pu être ouvert dans un autre onglet, et
  * la page passe alors d'elle-même à la suite (le parcours terminé, la session est relue). undefined : pas encore lu ;
  * null : aucun parcours
  */

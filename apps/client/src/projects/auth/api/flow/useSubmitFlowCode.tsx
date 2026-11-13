@@ -6,7 +6,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { useFlowMutation } from "./useFlowMutation";
 
-// Le code reçu par mail ; `username` remplace un pseudo pris entre-temps (inscription)
+// Le code reçu par email ; `username` remplace un pseudo pris entre-temps (inscription)
 export function useSubmitFlowCode() {
 	return useFlowMutation(
 		async (body: SubmitFlowCodeBodyDto) =>

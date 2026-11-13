@@ -48,7 +48,7 @@ async function seedUnsent(
 	return seed;
 }
 
-// Les mails envoyés par la relance seulement : ceux des tests précédents restent dans l'expéditeur en mémoire
+// Les emails envoyés par la relance seulement : ceux des tests précédents restent dans l'expéditeur en mémoire
 async function retry(): Promise<{
 	body: ContactUnsentRetryDto;
 	sentMails: Mail[];

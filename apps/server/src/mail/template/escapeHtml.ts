@@ -6,7 +6,7 @@ const HTML_ENTITIES: Record<string, string> = {
 	"'": "&#39;",
 };
 
-// Un texte venu d'un visiteur (sujet, message) s'affiche tel quel dans un mail HTML, sans jamais devenir une balise
+// Un texte venu d'un visiteur (sujet, message) s'affiche tel quel dans un email HTML, sans jamais devenir une balise
 export function escapeHtml(text: string): string {
 	return text.replaceAll(
 		/[&<>"']/g,

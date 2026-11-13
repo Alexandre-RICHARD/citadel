@@ -49,7 +49,7 @@ async function selectFailureIndexNames(): Promise<string[]> {
 	return rows.map((row) => row.indexName);
 }
 
-// Après le test, quoi qu'il arrive : la base retrouve l'état de V013, sans quoi les tests suivants (contact, mails)
+// Après le test, quoi qu'il arrive : la base retrouve l'état de V013, sans quoi les tests suivants (contact, emails)
 // échoueraient tous et masqueraient la vraie panne. Sans effet si la migration rejouée a réussi
 async function restoreTablesAfterMigration(): Promise<void> {
 	await sequelize.query(

@@ -11,8 +11,8 @@ import type { FlowStatusDto } from "../../../dto/flowStatusDto.type.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { StartMailLoginBodyDto } from "./startMailLoginBodyDto.type.ts";
 
-// « Recevoir un lien de connexion par email » : le mail remplace le mot de passe, jamais l'application d'authentification.
-// Réponse neutre : la même pour un identifiant inconnu ou un compte qui a fermé la connexion par email, sans mail
+// « Recevoir un lien de connexion par email » : l'email remplace le mot de passe, jamais l'application d'authentification.
+// Réponse neutre : la même pour un identifiant inconnu ou un compte qui a fermé la connexion par email, sans email
 export interface StartMailLogin extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.AUTH}/login/mail`;
@@ -27,7 +27,7 @@ export interface StartMailLogin extends EndpointModel {
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: ValidationErrorResponseDto;
-		// Plus aucun mail ne part aujourd'hui, pour tout le monde
+		// Plus aucun email ne part aujourd'hui, pour tout le monde
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.MAIL_CLOSED>;
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;
 	};

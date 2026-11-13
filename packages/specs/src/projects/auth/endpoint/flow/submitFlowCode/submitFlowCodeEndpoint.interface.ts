@@ -10,7 +10,7 @@ import type { FlowStatusDto } from "../../../dto/flowStatusDto.type.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { SubmitFlowCodeBodyDto } from "./submitFlowCodeBodyDto.type.ts";
 
-// Le code reçu par mail, tapé dans la page restée ouverte (sur n'importe quel appareil : seul le cookie du parcours
+// Le code reçu par email, tapé dans la page restée ouverte (sur n'importe quel appareil : seul le cookie du parcours
 // compte). Accepté, le parcours passe à son étape suivante, ou se termine en ouvrant la session
 export interface SubmitFlowCode extends EndpointModel {
 	request: {

@@ -9,7 +9,7 @@ type MailField = {
 	isMissing?: boolean;
 };
 
-// Une brique du corps d'un mail ; chacune s'écrit en HTML et en texte brut
+// Une brique du corps d'un email ; chacune s'écrit en HTML et en texte brut
 export type MailBlock =
 	| { kind: "paragraph"; text: string }
 	| { kind: "quote"; label: string; text: string; isProminent: boolean }

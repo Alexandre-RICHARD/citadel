@@ -12,7 +12,7 @@ import { fillRegistrationForm } from "../../steps/fillRegistrationForm.ts";
 import { openRegistrationForm } from "../../steps/openRegistrationForm.ts";
 
 test.describe("Inscription", () => {
-	test("A1 : créer un compte, le confirmer avec le lien du mail, passer l'étape « Protégez votre compte »", async ({
+	test("A1 : créer un compte, le confirmer avec le lien de l'email, passer l'étape « Protégez votre compte »", async ({
 		page,
 		browser,
 	}) => {
@@ -64,10 +64,10 @@ test.describe("Inscription", () => {
 		});
 
 		const mail =
-			await test.step("Recevoir le mail de confirmation", async () => {
+			await test.step("Recevoir l'email de confirmation", async () => {
 				const received = await waitForMail(identity.email);
-				expect(received.link, "le mail contient un lien").not.toBeNull();
-				expect(received.code, "le mail contient un code").not.toBeNull();
+				expect(received.link, "l'email contient un lien").not.toBeNull();
+				expect(received.code, "l'email contient un code").not.toBeNull();
 				return received;
 			});
 

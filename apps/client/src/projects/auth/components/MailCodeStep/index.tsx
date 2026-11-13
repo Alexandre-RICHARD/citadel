@@ -25,7 +25,7 @@ import styles from "./mailCodeStep.module.scss";
 type Props = {
 	flow: FlowFm;
 	title: string;
-	// Où le mail est parti. Une réponse neutre (connexion par email, mot de passe oublié) ne dit jamais si un compte
+	// Où l'email est parti. Une réponse neutre (connexion par email, mot de passe oublié) ne dit jamais si un compte
 	// existe : « si un compte correspond, un email est parti à son adresse »
 	lead: ReactNode;
 	// Ce que le code permet, après « Il vous reste … » : « pour confirmer votre inscription »
@@ -35,7 +35,7 @@ type Props = {
 };
 
 /**
- * L'étape « lien ou code », commune à tous les parcours : le lien du mail ne marche que dans ce navigateur, le code se
+ * L'étape « lien ou code », commune à tous les parcours : le lien de l'email ne marche que dans ce navigateur, le code se
  * tape ici, que l'email soit lu sur le téléphone ou ailleurs. Renvoi après le délai, temps restant, « Recommencer »
  */
 export function MailCodeStep({
@@ -203,7 +203,7 @@ export function MailCodeStep({
 				/>
 				<div className={styles.secondaryActions}>
 					<ResendButton
-						// Un 429 ou un 503 du renvoi impose son attente, même avant le délai entre deux mails
+						// Un 429 ou un 503 du renvoi impose son attente, même avant le délai entre deux emails
 						availableAt={pickLaterTime(
 							flow.resendAvailableAt,
 							resendFailure.waitUntil,

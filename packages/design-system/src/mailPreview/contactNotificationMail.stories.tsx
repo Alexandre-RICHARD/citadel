@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { MailPreview } from "./MailPreview";
 
-// Le mail que reçoit `contact` à chaque message du formulaire
+// L'email que reçoit `contact` à chaque message du formulaire
 const meta = {
 	title: "Mails/Contact : notification",
 	component: MailPreview,

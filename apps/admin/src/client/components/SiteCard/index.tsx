@@ -9,7 +9,7 @@ import styles from "./siteCard.module.scss";
 
 const VISIBLE_HISTORY = 4;
 
-// La version ne change qu'au déploiement : relue chaque minute. Les mails qui n'ont pas pu partir sont seulement
+// La version ne change qu'au déploiement : relue chaque minute. Les emails qui n'ont pas pu partir sont seulement
 // signalés : le détail est en base
 export function SiteCard() {
 	const { data, error } = usePolling<SiteStatus>("/site", 60_000);

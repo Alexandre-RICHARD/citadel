@@ -1,5 +1,5 @@
 // Faux Brevo des tests end-to-end : l'API de Brevo, juste assez pour BrevoClient.
-// Il reçoit un envoi de mail au format Brevo et le dépose dans Mailpit, où les tests
+// Il reçoit un envoi d'email au format Brevo et le dépose dans Mailpit, où les tests
 // (et toi, sur http://localhost:8025) le lisent. Rien ne sort jamais vers Internet.
 //
 // Lancé par infra/compose.e2e.yml (Node seul, aucune dépendance).
@@ -36,7 +36,7 @@ function toMailpitMessage(brevoMail) {
 		Subject: brevoMail.subject,
 		Text: brevoMail.textContent,
 		HTML: brevoMail.htmlContent,
-		// Le type du mail (inscription, contact…) : visible dans Mailpit, filtrable par les tests
+		// Le type de l'email (inscription, contact…) : visible dans Mailpit, filtrable par les tests
 		Tags: brevoMail.tags ?? [],
 	};
 }
@@ -51,14 +51,14 @@ const server = createServer(async (request, response) => {
 				body: JSON.stringify(toMailpitMessage(brevoMail)),
 			});
 			if (!mailpitResponse.ok) {
-				console.error(`Mailpit a refusé le mail (${mailpitResponse.status})`);
+				console.error(`Mailpit a refusé l'email (${mailpitResponse.status})`);
 				return reply(response, 502, { code: "mailpit_refused" });
 			}
-			// Brevo répond 201 avec l'identifiant du mail
+			// Brevo répond 201 avec l'identifiant de l'email
 			return reply(response, 201, { messageId: "<fake@e2e>" });
 		}
 
-		// Le quota : toujours tous les crédits, donc aucun mail n'est jamais compté comme parti
+		// Le quota : toujours tous les crédits, donc aucun email n'est jamais compté comme parti
 		if (request.method === "GET" && request.url === "/v3/account") {
 			return reply(response, 200, {
 				plan: [{ creditsType: "sendLimit", credits: 1_000_000 }],
@@ -74,6 +74,6 @@ const server = createServer(async (request, response) => {
 
 server.listen(port, () => {
 	console.log(
-		`Faux Brevo prêt sur le port ${port}, mails déposés dans ${mailpitUrl}`,
+		`Faux Brevo prêt sur le port ${port}, emails déposés dans ${mailpitUrl}`,
 	);
 });

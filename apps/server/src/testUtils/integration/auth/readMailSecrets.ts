@@ -3,7 +3,7 @@ import type { Mail } from "../../../mail/mail.type.ts";
 const CODE_LINE = /Ton code : (?<code>\d{6})/u;
 const VERIFY_LINK = /\/auth\/verify#(?<linkToken>[\w-]{43})/u;
 
-// Le code et le jeton du lien d'un mail de parcours, lus dans sa version texte comme le ferait le destinataire
+// Le code et le jeton du lien d'un email de parcours, lus dans sa version texte comme le ferait le destinataire
 export function readMailSecrets(mail: Mail): {
 	code: string;
 	linkToken: string;

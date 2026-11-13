@@ -1,4 +1,4 @@
-// Les mails qui n'ont pas pu partir ces derniers jours, pour l'alerte de la console du NAS
+// Les emails qui n'ont pas pu partir ces derniers jours, pour l'alerte de la console du NAS
 export type MailFailureSummaryDto = {
 	// Taille de la fenêtre comptée, en jours
 	windowDays: number;

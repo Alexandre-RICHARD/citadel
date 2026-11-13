@@ -19,7 +19,7 @@ const MAX_LENGTHS = [
 ] as const;
 
 test.describe("Contact", () => {
-	test("L7 : sujet et message obligatoires, longueurs maximales, email au bon format, nom et email facultatifs ; le champ piège ne déclenche aucun mail", async ({
+	test("L7 : sujet et message obligatoires, longueurs maximales, email au bon format, nom et email facultatifs ; le champ piège ne déclenche aucun email", async ({
 		page,
 	}) => {
 		const visitor = createIdentity("visiteur");
@@ -79,7 +79,7 @@ test.describe("Contact", () => {
 				.click();
 		});
 
-		await test.step("Le champ piège rempli : réponse « Sans adresse email… » et aucun mail", async () => {
+		await test.step("Le champ piège rempli : réponse « Sans adresse email… » et aucun email", async () => {
 			await sendContactMessage(page, {
 				email: visitor.email,
 				subject: trapSubject,
@@ -99,7 +99,7 @@ test.describe("Contact", () => {
 				subject: realSubject,
 				message: "Un vrai message.",
 			});
-			// Les mails partent dans l'ordre : quand le vrai est là, celui du robot l'aurait précédé
+			// Les emails partent dans l'ordre : quand le vrai est là, celui du robot l'aurait précédé
 			await waitForMailWithSubject(CONTACT_ADDRESS, `[Contact] ${realSubject}`);
 			expect(
 				await countMailsWithSubject(

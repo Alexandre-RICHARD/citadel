@@ -98,7 +98,7 @@ class LoginService {
 
 	/**
 	 * « Recevoir un lien de connexion par email ». Identifiant inconnu, ou compte qui n'accepte que le mot de passe : un
-	 * parcours leurre, même réponse, aucun mail
+	 * parcours leurre, même réponse, aucun email
 	 */
 	async startMailLogin(
 		{ identifier, remember }: MailLogin,
@@ -122,9 +122,9 @@ class LoginService {
 	}
 
 	/**
-	 * La boîte mail est prouvée : elle remplace le mot de passe, jamais l'application d'authentification. Avec un TOTP,
-	 * il est demandé ensuite (le code par mail n'y est jamais proposé : la boîte vient d'être prouvée) ; sans, la session
-	 * s'ouvre, un facteur mail seul ne protégeant que d'un mot de passe volé
+	 * La boîte email est prouvée : elle remplace le mot de passe, jamais l'application d'authentification. Avec un TOTP,
+	 * il est demandé ensuite (le code par email n'y est jamais proposé : la boîte vient d'être prouvée) ; sans, la session
+	 * s'ouvre, un facteur email seul ne protégeant que d'un mot de passe volé
 	 */
 	async completeMailStep(
 		verified: VerifiedFlowBean,
@@ -191,7 +191,7 @@ class LoginService {
 		return { isCompleted: true, sessionCookie, recoveryCodes: null };
 	}
 
-	// Le compte a pu fermer la connexion par email depuis l'envoi du mail : le lien et le code ne valent plus
+	// Le compte a pu fermer la connexion par email depuis l'envoi de l'email : le lien et le code ne valent plus
 	async #assertStillAcceptsMail(userId: number): Promise<void> {
 		const user = await findUserByIdQuery(userId);
 		if (

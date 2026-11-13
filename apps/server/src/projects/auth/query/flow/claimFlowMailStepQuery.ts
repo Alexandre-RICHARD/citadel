@@ -4,7 +4,7 @@ import { sequelize } from "../../../../configuration/sequelize.ts";
 import { DatabaseError } from "../../../../error/DatabaseError.ts";
 
 /**
- * Efface le code et le lien du mail que l'on vient de valider, s'ils sont toujours ceux-là : deux validations envoyées
+ * Efface le code et le lien de l'email que l'on vient de valider, s'ils sont toujours ceux-là : deux validations envoyées
  * ensemble (double clic, code et lien) n'en font qu'une. false : déjà validé, ou remplacé par un renvoi. Dans la
  * transaction de la suite : si elle échoue (pseudo pris entre-temps), le code et le lien restent valables
  */

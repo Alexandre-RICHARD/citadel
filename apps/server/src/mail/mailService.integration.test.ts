@@ -23,7 +23,7 @@ function sentQuotaAlerts(): Mail[] {
 	);
 }
 
-// Envoie des mails de visiteurs jusqu'à ce que `total` mails soient partis aujourd'hui, alertes comprises
+// Envoie des emails de visiteurs jusqu'à ce que `total` emails soient partis aujourd'hui, alertes comprises
 async function sendUntilTodayCount(total: number): Promise<void> {
 	while (memoryMailSender.sentMails.length < total)
 		// eslint-disable-next-line no-await-in-loop -- chaque envoi doit être compté avant le suivant
@@ -36,7 +36,7 @@ describe("mailService", () => {
 			// Arrange
 			memoryMailSender.sentMails.length = 0;
 
-			// Act : un mail de moins que chaque seuil, puis le mail qui le franchit
+			// Act : un email de moins que chaque seuil, puis l'email qui le franchit
 			await sendUntilTodayCount(env.MAIL_REGISTRATION_STOP - 1);
 			const alertsBeforeRegistrationStop = sentQuotaAlerts().length;
 			await sendUntilTodayCount(env.MAIL_REGISTRATION_STOP);

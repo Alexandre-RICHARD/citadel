@@ -21,9 +21,9 @@ import { passwordConfirmationService } from "./passwordConfirmationService.ts";
 import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
- * Le changement d'adresse email du compte connecté : mot de passe redemandé, puis un mail (lien + code) à la nouvelle
+ * Le changement d'adresse email du compte connecté : mot de passe redemandé, puis un email (lien + code) à la nouvelle
  * adresse, qui doit différer de l'actuelle. Elle ne remplace l'ancienne qu'une fois confirmée, et l'ancienne en est prévenue. Adresse déjà inscrite :
- * même réponse, et son mail dit seulement qu'un autre compte l'a voulue (voir FlowMailService)
+ * même réponse, et son email dit seulement qu'un autre compte l'a voulue (voir FlowMailService)
  */
 class EmailChangeService {
 	async start(

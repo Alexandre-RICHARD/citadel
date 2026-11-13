@@ -10,7 +10,7 @@ import type { FlowStatusDto } from "../../../dto/flowStatusDto.type.ts";
 import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { SubmitFlowLinkBodyDto } from "./submitFlowLinkBodyDto.type.ts";
 
-// Le lien reçu par mail, envoyé par le clic de confirmation de /auth/verify (les antivirus de messagerie ouvrent les liens
+// Le lien reçu par email, envoyé par le clic de confirmation de /auth/verify (les antivirus de messagerie ouvrent les liens
 // pour les analyser : un GET ne valide jamais rien). Il ne marche que dans le navigateur qui a commencé le parcours :
 // sinon, un inconnu qui lance une connexion avec ton email serait connecté par ton clic
 export interface SubmitFlowLink extends EndpointModel {

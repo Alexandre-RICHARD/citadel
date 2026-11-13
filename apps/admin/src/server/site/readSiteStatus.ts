@@ -18,7 +18,7 @@ async function readOptional(fileName: string): Promise<string> {
 }
 
 // Ce que citadel écrit à chaque déploiement, dans /Volume1/citadel/state, et ce que le serveur du site n'a pas pu envoyer :
-// des mails, et des messages de contact (gardés en base)
+// des emails, et des messages de contact (gardés en base)
 export async function readSiteStatus(): Promise<SiteStatus> {
 	const [currentVersion, history, mailFailures, unsentContactMessages] =
 		await Promise.all([

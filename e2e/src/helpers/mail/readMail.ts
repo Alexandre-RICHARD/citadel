@@ -4,7 +4,7 @@ import { fetchMailpit } from "./fetchMailpit.ts";
 import type { MailpitMessage } from "./mailpitMessage.type.ts";
 import type { ReceivedMail } from "./receivedMail.type.ts";
 
-/** Lit un mail en entier dans Mailpit, d'après son identifiant, et en sort le lien et le code */
+/** Lit un email en entier dans Mailpit, d'après son identifiant, et en sort le lien et le code */
 export async function readMail(id: string): Promise<ReceivedMail> {
 	const message = await fetchMailpit<MailpitMessage>(`/message/${id}`);
 	return {

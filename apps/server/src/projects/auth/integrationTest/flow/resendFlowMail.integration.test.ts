@@ -28,7 +28,7 @@ async function resend(cookie?: string, ip = buildUniqueIp()) {
 	return cookie === undefined ? pending : pending.set("Cookie", cookie);
 }
 
-// Un parcours dont le mail est parti il y a 2 minutes : le délai de renvoi est passé
+// Un parcours dont l'email est parti il y a 2 minutes : le délai de renvoi est passé
 async function openFlowReadyForResend(
 	options: Parameters<typeof openTestFlow>[0] = {},
 ) {
@@ -111,7 +111,7 @@ describe("resendFlowMail", () => {
 		});
 
 		it("SHOULD mail the code of the email factor WHEN a login waits for its second factor", async () => {
-			// Arrange : aucun mail encore envoyé à cette étape
+			// Arrange : aucun email encore envoyé à cette étape
 			const account = await insertTestAccount({ confirmedFactorType: "email" });
 			const flow = await openTestFlow({
 				kind: "login",

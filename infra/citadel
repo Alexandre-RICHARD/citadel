@@ -31,7 +31,7 @@
 #   citadel qbittorrent-stats          compteurs de qBittorrent, pour la console
 #   citadel auto-stop                  arrête ce qui tourne depuis trop longtemps
 #   citadel log-retention              vide les logs dont la plus vieille ligne a plus de 90 jours
-#   citadel contact-retry              renvoie les messages de contact dont le mail n'était pas parti
+#   citadel contact-retry              renvoie les messages de contact dont l'email n'était pas parti
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
 #   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #
@@ -1952,7 +1952,7 @@ job_log_retention() {
 # --- contact-retry : chaque soir à 23 h 50 ---
 # Un message du formulaire de contact dont la notification n'a pas pu partir (Brevo en panne, quota épuisé…) est gardé
 # dans la base du site (table mailing_contact_message_unsent) : la personne qui a écrit n'est pas perdue. Chaque soir, le
-# serveur du site renvoie ces messages, du plus ancien au plus récent, tant que le quota de mails du jour le permet :
+# serveur du site renvoie ces messages, du plus ancien au plus récent, tant que le quota d'emails du jour le permet :
 # la notification (même contenu, sujet suivi de « (différé) »), puis l'accusé de réception avec sa mention du retard.
 # 23 h 50, c'est avant la remise à zéro des crédits de Brevo (entre minuit et 1 h) : ce qui reste attend le soir suivant.
 # Ce qui est renvoyé est supprimé de la table ; ces relances n'ajoutent rien à mailing_failure.
@@ -1974,7 +1974,7 @@ job_contact_retry() {
 
 	# Un refus du fournisseur est un échec du job, donc visible dans la console : des visiteurs attendent encore
 	[[ $stopped != SEND_FAILED ]] ||
-		check_fail "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base : le fournisseur de mails refuse les envois"
+		check_fail "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base : le fournisseur d'emails refuse les envois"
 	if [[ $stopped == QUOTA_REACHED ]]; then
 		check_ok "messages de contact renvoyés" "$sent renvoyés, $remaining restent en base : quota du jour atteint, suite demain soir"
 	else

@@ -175,7 +175,7 @@ export function SecondFactorStep({ flow, purpose }: Props) {
 									? "Renvoyer l’email"
 									: "Recevoir un code par email"
 							}
-							// Un 429 ou un 503 de l'envoi impose son attente, même avant le délai entre deux mails
+							// Un 429 ou un 503 de l'envoi impose son attente, même avant le délai entre deux emails
 							availableAt={pickLaterTime(
 								flow.resendAvailableAt,
 								mailFailure.waitUntil,

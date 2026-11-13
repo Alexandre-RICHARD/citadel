@@ -6,7 +6,7 @@ import { totpCodeSchema } from "../../../schema/totpCodeSchema.ts";
 import { typedPasswordSchema } from "../../../schema/typedPasswordSchema.ts";
 
 // Le mot de passe, et, si le compte a une application d'authentification, un code de celle-ci ou un code de secours.
-// Jamais le code par email : il demanderait un mail de plus, pour une boîte que le mot de passe oublié sait déjà ouvrir
+// Jamais le code par email : il demanderait un email de plus, pour une boîte que le mot de passe oublié sait déjà ouvrir
 const secondFactorSchema = z.discriminatedUnion("method", [
 	z.object({
 		method: z.literal(SecondFactorMethodEnum.TOTP),

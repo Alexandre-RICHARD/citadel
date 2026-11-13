@@ -4,8 +4,8 @@ type FlowFacts = {
 };
 
 /**
- * Ce que compte la limite de mails « par adresse » : l'identifiant tapé quand le parcours le garde (connexion par
- * email, mot de passe oublié), sinon l'adresse du mail. Jamais l'email d'un compte trouvé à partir d'un pseudo : un
+ * Ce que compte la limite d'emails « par adresse » : l'identifiant tapé quand le parcours le garde (connexion par
+ * email, mot de passe oublié), sinon l'adresse de l'email. Jamais l'email d'un compte trouvé à partir d'un pseudo : un
  * pseudo et une adresse du même compte partageraient leur compteur, et un 429 dirait qu'ils vont ensemble. Selon le
  * chemin de lecture, la colonne JSON arrive parsée ou en texte
  */

@@ -8,7 +8,7 @@ type Props = {
 	isDisabled?: boolean;
 };
 
-// Le code reçu par mail : 6 chiffres, proposés par le clavier du téléphone (one-time-code). Collé avec des espaces ou
+// Le code reçu par email : 6 chiffres, proposés par le clavier du téléphone (one-time-code). Collé avec des espaces ou
 // un retour à la ligne, il reste accepté : le serveur les retire
 export function CodeInput({
 	id,

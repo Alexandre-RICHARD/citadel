@@ -5,9 +5,9 @@ import { readMail } from "./readMail.ts";
 import type { ReceivedMail } from "./receivedMail.type.ts";
 
 /**
- * Attend, parmi les mails reçus par `address`, le plus récent dont l'objet est `subject` (plusieurs mails peuvent partir à
- * la suite : un code, puis un avis de sécurité). `alreadyReceived` : combien de mails de cet objet l'adresse a déjà
- * reçus (countMailsWithSubject), pour attendre un NOUVEAU mail quand le même objet revient. Échoue avec un message
+ * Attend, parmi les emails reçus par `address`, le plus récent dont l'objet est `subject` (plusieurs emails peuvent partir à
+ * la suite : un code, puis un avis de sécurité). `alreadyReceived` : combien d'emails de cet objet l'adresse a déjà
+ * reçus (countMailsWithSubject), pour attendre un NOUVEAU email quand le même objet revient. Échoue avec un message
  * clair s'il n'arrive pas
  */
 export async function waitForMailWithSubject(
@@ -23,7 +23,7 @@ export async function waitForMailWithSubject(
 
 	await expect
 		.poll(async () => (await findMatching()).length, {
-			message: `Aucun mail « ${subject} » reçu pour ${address} (voir http://localhost:8025)`,
+			message: `Aucun email « ${subject} » reçu pour ${address} (voir http://localhost:8025)`,
 			timeout: 15_000,
 		})
 		.toBeGreaterThan(alreadyReceived);

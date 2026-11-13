@@ -6,7 +6,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { useFlowMutation } from "./useFlowMutation";
 
-// Le lien du mail, envoyé par le clic de confirmation de /auth/verify
+// Le lien de l'email, envoyé par le clic de confirmation de /auth/verify
 export function useSubmitFlowLink() {
 	return useFlowMutation(
 		async (body: SubmitFlowLinkBodyDto) =>

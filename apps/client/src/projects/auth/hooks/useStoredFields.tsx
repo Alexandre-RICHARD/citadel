@@ -2,7 +2,7 @@ import { useSessionStorage } from "@citadel/common/src/react/hooks/useSessionSto
 import { useCallback } from "react";
 
 /**
- * Les champs d'un formulaire du compte, gardés le temps de l'onglet : recharger la page, ou revenir de la boîte mail,
+ * Les champs d'un formulaire du compte, gardés le temps de l'onglet : recharger la page, ou revenir de la boîte email,
  * ne les perd jamais. Jamais un mot de passe : ceux-là restent dans l'état du composant
  */
 export function useStoredFields<Fields extends object>(

@@ -29,7 +29,7 @@ export interface SendContactMessage extends EndpointModel {
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: ValidationErrorResponseDto;
-		// Le quota quotidien de mails a fermé le formulaire
+		// Le quota quotidien d'emails a fermé le formulaire
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<ContactErrorCodeEnum.CONTACT_CLOSED>;
 		// Trop de messages depuis cette IP : Retry-After dit quand réessayer
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;

@@ -4,6 +4,6 @@ export enum ContactFieldMaxLengthEnum {
 	SUBJECT = 150,
 	MESSAGE = 5000,
 	NAME = 100,
-	// La plus longue adresse mail possible (RFC 5321)
+	// La plus longue adresse email possible (RFC 5321)
 	EMAIL = 254,
 }

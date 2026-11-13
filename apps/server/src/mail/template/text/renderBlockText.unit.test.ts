@@ -41,7 +41,7 @@ describe("renderBlockText.ts", () => {
 	});
 
 	describe("links", () => {
-		it("SHOULD follow the label with the address alone WHEN the button opens a new mail", () => {
+		it("SHOULD follow the label with the address alone WHEN the button opens a new email", () => {
 			expect(
 				renderBlockText({
 					kind: "button",
@@ -70,9 +70,9 @@ describe("renderBlockText.ts", () => {
 					value: 250,
 					max: 300,
 					marks: [],
-					caption: "mails aujourd'hui",
+					caption: "emails aujourd'hui",
 				}),
-			).toBe("250 / 300 mails aujourd'hui (83 %)");
+			).toBe("250 / 300 emails aujourd'hui (83 %)");
 		});
 
 		it("SHOULD write one dashed line per status WHEN the block is a list of statuses", () => {

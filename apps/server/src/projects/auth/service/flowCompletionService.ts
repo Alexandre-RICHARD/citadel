@@ -14,7 +14,7 @@ type MailProof =
 	{ kind: "code"; code: string } | { kind: "link"; linkToken: string };
 
 /**
- * Le mail d'un parcours validé, par son code ou par son lien : la suite dépend du parcours. `replacingUsername` : pour
+ * L'email d'un parcours validé, par son code ou par son lien : la suite dépend du parcours. `replacingUsername` : pour
  * une inscription seulement, le pseudo qui remplace celui pris entre-temps
  */
 class FlowCompletionService {

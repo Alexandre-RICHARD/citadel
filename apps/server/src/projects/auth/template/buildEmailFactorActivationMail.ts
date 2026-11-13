@@ -22,7 +22,7 @@ const CONTENT: VerificationMailContent = {
 		"Si tu n'es pas à l'origine de cette demande, ignore cet email : la double authentification par email ne sera pas activée.",
 };
 
-// Pour activer le code par mail comme double authentification : la première réception prouve que la boîte répond
+// Pour activer le code par email comme double authentification : la première réception prouve que la boîte répond
 export function buildEmailFactorActivationMail(
 	parameters: VerificationMailParameters,
 ): Mail {

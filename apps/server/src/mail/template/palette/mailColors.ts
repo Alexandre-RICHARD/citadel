@@ -1,4 +1,4 @@
-// Les couleurs du thème Citadel (design-system, projectThemes/citadelTheme.ts), figées ici : un mail n'a pas de
+// Les couleurs du thème Citadel (design-system, projectThemes/citadelTheme.ts), figées ici : un email n'a pas de
 // variables CSS, et le serveur ne dépend pas du design system
 export const MAIL_COLORS = {
 	light: {

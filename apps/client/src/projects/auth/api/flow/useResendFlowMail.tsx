@@ -5,7 +5,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { useFlowMutation } from "./useFlowMutation";
 
-// Un nouveau mail : nouveau code, nouveau lien, essais remis à zéro
+// Un nouveau email : nouveau code, nouveau lien, essais remis à zéro
 export function useResendFlowMail() {
 	return useFlowMutation(
 		async () =>

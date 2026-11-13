@@ -5,7 +5,7 @@ import { renderBlockText } from "./renderBlockText.ts";
 // Le soulignement du titre s'arrête à cette longueur : un sujet de visiteur peut être long
 const TITLE_RULE_MAX_LENGTH = 60;
 
-// Le mail en texte brut, dans l'ordre du HTML : en-tête, briques, note, puis le site
+// L'email en texte brut, dans l'ordre du HTML : en-tête, briques, note, puis le site
 export function renderMailText({
 	kicker,
 	title,

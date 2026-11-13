@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { MailPreview } from "./MailPreview";
 
-// Les mails de l'authentification sans code : une adresse déjà inscrite, et les notifications de sécurité
+// Les emails de l'authentification sans code : une adresse déjà inscrite, et les notifications de sécurité
 const meta = {
 	title: "Mails/Authentification : compte et sécurité",
 	component: MailPreview,

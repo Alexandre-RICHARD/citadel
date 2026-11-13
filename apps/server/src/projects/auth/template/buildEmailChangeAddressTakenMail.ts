@@ -7,7 +7,7 @@ import { AUTH_MAIL_URLS } from "./authMailUrls.ts";
 
 /**
  * À l'adresse qu'un autre compte a voulu prendre. Celui qui a demandé le changement reçoit la réponse ordinaire, sans
- * savoir que l'adresse est prise : seul son propriétaire l'apprend, par ce mail, sans lien ni code
+ * savoir que l'adresse est prise : seul son propriétaire l'apprend, par cet email, sans lien ni code
  */
 export function buildEmailChangeAddressTakenMail(email: string): Mail {
 	return {

@@ -36,7 +36,7 @@ async function startEmailFactor(cookie: string) {
 		.set("Cookie", cookie);
 }
 
-// Un compte connecté, l'activation commencée, et le code de son mail
+// Un compte connecté, l'activation commencée, et le code de son email
 async function startActivation(confirmedFactorType?: "totp") {
 	const account = await insertTestAccount({ confirmedFactorType });
 	const session = await openTestSession({ userId: account.userId });

@@ -36,7 +36,7 @@ const VIEWPORTS: ToggleOption<Viewport>[] = [
 	{ value: "phone", label: "Mobile" },
 ];
 
-// La largeur d'un téléphone courant : le mail passe en disposition étroite sous 620 px
+// La largeur d'un téléphone courant : l'email passe en disposition étroite sous 620 px
 const FRAME_WIDTHS: Record<Viewport, string> = {
 	desktop: "100%",
 	phone: "390px",
@@ -76,9 +76,9 @@ function Toggle<Value extends string>({
 	);
 }
 
-// Un mail comme le reçoit un destinataire : ses en-têtes, son HTML (dans un cadre isolé : aucun script, aucun style
-// du site) et sa version en texte brut, que les clients mail affichent quand le HTML est refusé. Le cadre prend la
-// largeur d'un téléphone sur demande ; il garde l'origine du Storybook, sans script, pour lire la hauteur du mail et
+// Un email comme le reçoit un destinataire : ses en-têtes, son HTML (dans un cadre isolé : aucun script, aucun style
+// du site) et sa version en texte brut, que les clients email affichent quand le HTML est refusé. Le cadre prend la
+// largeur d'un téléphone sur demande ; il garde l'origine du Storybook, sans script, pour lire la hauteur de l'email et
 // s'y ajuster. Le navigateur ne transmet pas de mode sombre à un cadre : ses règles s'appliquent alors sans condition
 export function MailPreview({ mail }: Props) {
 	const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
@@ -138,7 +138,7 @@ export function MailPreview({ mail }: Props) {
 							// Un nouveau cadre à chaque réglage : il se recharge, et se remesure
 							key={`${colorScheme}-${viewport}`}
 							className={styles.frame}
-							title="Version HTML du mail"
+							title="Version HTML de l'email"
 							sandbox="allow-same-origin"
 							srcDoc={html}
 							style={{

@@ -62,7 +62,7 @@ async function postMessage(
 		.send(body);
 }
 
-// Les mails envoyés par `send` seulement : ceux des tests précédents restent dans l'expéditeur en mémoire
+// Les emails envoyés par `send` seulement : ceux des tests précédents restent dans l'expéditeur en mémoire
 async function collectSentMails(send: () => Promise<unknown>): Promise<Mail[]> {
 	const sentBefore = memoryMailSender.sentMails.length;
 	await send();

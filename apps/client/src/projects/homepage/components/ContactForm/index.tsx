@@ -47,7 +47,7 @@ type Receipt = {
 
 // Le formulaire de la page Contact. Un échec garde le texte saisi et part en toast ; une 429 bloque le bouton le temps
 // annoncé par le serveur ; un accusé de réception qui n'a pas pu partir est signalé par un toast ; fermé par le quota
-// de mails, il reste visible mais désactivé, avec l'adresse pour écrire directement
+// d'emails, il reste visible mais désactivé, avec l'adresse pour écrire directement
 export function ContactForm() {
 	const fieldId = useId();
 	const isContactOpen = useIsContactOpen();

@@ -6,7 +6,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { useFlowMutation } from "../flow/useFlowMutation";
 
-// Le mot de passe et la nouvelle adresse : un mail (lien et code) part à celle-ci, qui remplace l'actuelle une fois
+// Le mot de passe et la nouvelle adresse : un email (lien et code) part à celle-ci, qui remplace l'actuelle une fois
 // confirmée
 export function useStartEmailChange() {
 	return useFlowMutation(

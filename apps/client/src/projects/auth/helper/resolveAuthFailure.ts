@@ -9,7 +9,7 @@ import { authFieldLabels } from "../api/authFieldLabels";
 import type { AuthFailure } from "./authFailure.type";
 
 const SECOND_MS = 1000;
-// Les réponses qui annoncent quand réessayer : délai entre deux essais, limite de mails, serveur occupé
+// Les réponses qui annoncent quand réessayer : délai entre deux essais, limite d'emails, serveur occupé
 const WAIT_STATUSES: readonly number[] = [
 	HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS,
 	HttpStatutCodeErrorEnum.SERVICE_UNAVAILABLE,

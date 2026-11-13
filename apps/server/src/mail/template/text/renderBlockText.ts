@@ -2,7 +2,7 @@ import type { MailBlock } from "../mailBlock.type.ts";
 import { meterPercent } from "../meterPercent.ts";
 import { describeHref } from "./describeHref.ts";
 
-// La même brique que le HTML, pour les clients mail qui refusent le HTML
+// La même brique que le HTML, pour les clients email qui refusent le HTML
 export function renderBlockText(block: MailBlock): string {
 	switch (block.kind) {
 		case "paragraph":

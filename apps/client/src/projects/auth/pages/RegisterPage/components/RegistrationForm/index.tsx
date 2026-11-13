@@ -37,8 +37,8 @@ type CheckedUsername = {
 
 /**
  * Le formulaire d'inscription. Les champs refusés passent en rouge à l'envoi ; la réponse est la même que l'adresse
- * soit nouvelle ou déjà inscrite (le mail dit la vérité, dans la seule boîte concernée). Fermé par l'interrupteur ou le
- * quota de mails, il reste visible, désactivé
+ * soit nouvelle ou déjà inscrite (l'email dit la vérité, dans la seule boîte concernée). Fermé par l'interrupteur ou le
+ * quota d'emails, il reste visible, désactivé
  */
 export function RegistrationForm() {
 	const fieldId = useId();

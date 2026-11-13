@@ -1,7 +1,7 @@
 import { fetchMailpit } from "./fetchMailpit.ts";
 import type { MailpitSummary } from "./mailpitSummary.type.ts";
 
-/** Les mails reçus par `address`, le plus récent d'abord */
+/** Les emails reçus par `address`, le plus récent d'abord */
 export async function listMailsTo(address: string): Promise<MailpitSummary[]> {
 	const query = encodeURIComponent(`to:${address}`);
 	const { messages } = await fetchMailpit<{ messages: MailpitSummary[] }>(

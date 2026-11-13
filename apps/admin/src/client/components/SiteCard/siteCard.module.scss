@@ -35,7 +35,7 @@
   white-space: nowrap;
 }
 
-// Des mails n'ont pas pu partir : rien à faire ici, seulement aller voir
+// Des emails n'ont pas pu partir : rien à faire ici, seulement aller voir
 .alert {
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@
   font-size: 1.2rem;
 }
 
-// Un visiteur attend une réponse : plus visible qu'un simple mail perdu
+// Un visiteur attend une réponse : plus visible qu'un simple email perdu
 .urgent {
   border-left-color: var(--danger);
   background: var(--danger-subtle);

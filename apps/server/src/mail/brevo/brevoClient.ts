@@ -33,8 +33,8 @@ async function readErrorCode(response: Response): Promise<string> {
 }
 
 /**
- * Seul point de passage vers l'API de Brevo, avec la clé du .env (restreinte aux mails transactionnels et à la
- * lecture du compte). Aucune adresse ni aucun contenu de mail n'apparaît dans un message d'erreur
+ * Seul point de passage vers l'API de Brevo, avec la clé du .env (restreinte aux emails transactionnels et à la
+ * lecture du compte). Aucune adresse ni aucun contenu d'email n'apparaît dans un message d'erreur
  */
 export class BrevoClient {
 	readonly #apiKey: string;
@@ -75,7 +75,7 @@ export class BrevoClient {
 			);
 	}
 
-	// Mails partis aujourd'hui, ceux des réponses depuis Gmail compris : Brevo donne ce qu'il en reste
+	// Emails partis aujourd'hui, ceux des réponses depuis Gmail compris : Brevo donne ce qu'il en reste
 	async getSentToday(): Promise<number> {
 		const response = await this.#request("/account", { method: "GET" });
 		if (!response.ok)

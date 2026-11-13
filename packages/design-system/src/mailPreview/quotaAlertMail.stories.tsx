@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { MailPreview } from "./MailPreview";
 
-// Le mail que reçoit `contact` au premier franchissement de chaque seuil du quota quotidien
+// L'email que reçoit `contact` au premier franchissement de chaque seuil du quota quotidien
 const meta = {
 	title: "Mails/Alerte de quota",
 	component: MailPreview,

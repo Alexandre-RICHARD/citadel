@@ -16,7 +16,7 @@ const NEW_PASSWORD = "Un-nouveau-mot-de-passe-2027!";
 const CHANGED_NOTICE = "Ton mot de passe a été modifié";
 
 test.describe("Profil : mot de passe", () => {
-	test("G2 : changer son mot de passe demande l'ancien, refuse le même, ferme les autres sessions et prévient par mail", async ({
+	test("G2 : changer son mot de passe demande l'ancien, refuse le même, ferme les autres sessions et prévient par email", async ({
 		page,
 		browser,
 	}) => {
@@ -104,7 +104,7 @@ test.describe("Profil : mot de passe", () => {
 			).toBeVisible();
 		});
 
-		await test.step("L'avis de changement est arrivé par mail", async () => {
+		await test.step("L'avis de changement est arrivé par email", async () => {
 			const notice = await waitForMailWithSubject(
 				identity.email,
 				CHANGED_NOTICE,

@@ -115,7 +115,7 @@ export const insertAuthRows = {
 		return insertedId;
 	},
 
-	// Renvoie l'id créé. Par défaut, un facteur mail
+	// Renvoie l'id créé. Par défaut, un facteur email
 	async factor(row: {
 		userId: number;
 		type?: string;

@@ -1,9 +1,9 @@
 import type { MailAddress } from "./mailAddress.type.ts";
 import type { MailKindEnum } from "./mailKind.enum.ts";
 
-// Un mail à envoyer, toujours de `noreply`, en HTML et en texte brut
+// Un email à envoyer, toujours de `noreply`, en HTML et en texte brut
 export type Mail = {
-	// Seule information du mail que le journal écrit dans le log
+	// Seule information de l'email que le journal écrit dans le log
 	kind: MailKindEnum;
 	to: MailAddress;
 	// Où va une réponse : `noreply` ne reçoit rien

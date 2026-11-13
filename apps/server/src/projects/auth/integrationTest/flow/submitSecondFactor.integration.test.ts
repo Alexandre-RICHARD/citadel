@@ -321,7 +321,7 @@ describe("submitSecondFactor", () => {
 		])(
 			"SHOULD never accept the email code WHEN the step follows $reason",
 			async ({ kind }) => {
-				// Arrange : le compte a aussi le facteur mail, et le parcours un code
+				// Arrange : le compte a aussi le facteur email, et le parcours un code
 				const account = await insertTestAccount({
 					confirmedFactorType: "email",
 				});

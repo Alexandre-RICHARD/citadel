@@ -8,7 +8,7 @@ import { readDismissedId } from "../readDismissedId";
 
 const DISMISSED_KEY = "citadel:banner:mail:dismissed";
 
-// Le quota quotidien de mails a fermé le formulaire de contact. Fermé, il ne revient pas de la journée
+// Le quota quotidien d'emails a fermé le formulaire de contact. Fermé, il ne revient pas de la journée
 export function MailQuotaBanner() {
 	const isContactOpen = useIsContactOpen();
 	const [dismissedId, setDismissedId] = useLocalStorage<string | null>(

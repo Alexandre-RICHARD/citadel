@@ -8,7 +8,7 @@ import { fillRegistrationForm } from "./fillRegistrationForm.ts";
 
 /**
  * S'inscrire : part du formulaire « Créer un compte » déjà affiché, le remplit avec une identité neuve,
- * puis confirme le compte avec le lien du mail (ouvert dans un onglet à part, refermé ensuite).
+ * puis confirme le compte avec le lien de l'email (ouvert dans un onglet à part, refermé ensuite).
  * Renvoie l'identité créée, pour la suite du scénario
  */
 export async function registerAccount(
@@ -20,13 +20,13 @@ export async function registerAccount(
 	await fillRegistrationForm(page, identity);
 
 	const mail =
-		await test.step("S'inscrire : recevoir le mail de confirmation", async () => {
+		await test.step("S'inscrire : recevoir l'email de confirmation", async () => {
 			const received = await waitForMail(identity.email);
-			expect(received.link, "le mail contient un lien").not.toBeNull();
+			expect(received.link, "l'email contient un lien").not.toBeNull();
 			return received;
 		});
 
-	await test.step("S'inscrire : confirmer avec le lien du mail", async () => {
+	await test.step("S'inscrire : confirmer avec le lien de l'email", async () => {
 		const verifyPage = await openMailLink(page, mail.link!);
 		await verifyPage.getByRole("button", { name: "Confirmer" }).click();
 		await expect(

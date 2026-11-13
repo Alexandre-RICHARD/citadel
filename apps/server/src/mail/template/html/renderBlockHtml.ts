@@ -101,7 +101,7 @@ function buttonHtml(
 	);
 }
 
-// Le seul élément du mail qu'on recopie : centré, en gros, sur un panneau. Le `padding-left` rend à l'espacement des
+// Le seul élément de l'email qu'on recopie : centré, en gros, sur un panneau. Le `padding-left` rend à l'espacement des
 // chiffres ce que `letter-spacing` ajoute après le dernier, pour que le code paraisse centré
 function codeHtml({ label, code }: BlockOf<"code">): string {
 	const codeStyle = `${fontStyle({ family: "code", size: 34, weight: 700, lineHeight: 1.2, color: light.text })}letter-spacing:0.22em;`;
@@ -206,7 +206,7 @@ function statusesHtml({ statuses }: BlockOf<"statuses">): string {
 	});
 }
 
-// Sous un filet : la signature clôt le mail
+// Sous un filet : la signature clôt l'email
 function signatureHtml(
 	{ name, href }: BlockOf<"signature">,
 	accent: MailAccentEnum,
@@ -221,7 +221,7 @@ function signatureHtml(
 	);
 }
 
-// `accent` : la couleur du mail, que prennent les liens, les boutons et les jauges
+// `accent` : la couleur de l'email, que prennent les liens, les boutons et les jauges
 export function renderBlockHtml(
 	block: MailBlock,
 	accent: MailAccentEnum,

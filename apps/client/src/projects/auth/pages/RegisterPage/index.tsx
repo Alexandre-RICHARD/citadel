@@ -14,7 +14,7 @@ import { RegistrationForm } from "./components/RegistrationForm";
 import { EMPTY_REGISTRATION_FIELDS } from "./emptyRegistrationFields";
 import { REGISTRATION_FIELDS_KEY } from "./registrationFieldsKey";
 
-// L'inscription : le formulaire, puis le lien ou le code du mail. Connecté (déjà, ou par l'inscription qui vient de se
+// L'inscription : le formulaire, puis le lien ou le code de l'email. Connecté (déjà, ou par l'inscription qui vient de se
 // terminer), la page renvoie vers celle demandée au départ
 export function RegisterPage() {
 	const me = useMe();

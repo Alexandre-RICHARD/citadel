@@ -25,7 +25,7 @@ type PasswordChange = {
 
 /**
  * Le mot de passe changé depuis le profil : l'actuel redemandé, un nouveau différent. Les autres sessions du compte
- * sont fermées (un voleur du mot de passe perd la sienne), celle-ci reste ouverte, et le compte est prévenu par mail
+ * sont fermées (un voleur du mot de passe perd la sienne), celle-ci reste ouverte, et le compte est prévenu par email
  */
 class PasswordChangeService {
 	async change(

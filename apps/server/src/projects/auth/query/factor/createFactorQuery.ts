@@ -14,7 +14,7 @@ type FactorRow = {
 
 /**
  * Renvoie l'id créé, sans secret (un TOTP chiffre le sien avec cet id, juste après). null : le compte a déjà son
- * facteur mail, le seul qu'il peut avoir (contrainte d'unicité de V017)
+ * facteur email, le seul qu'il peut avoir (contrainte d'unicité de V017)
  */
 export async function createFactorQuery(
 	row: FactorRow,

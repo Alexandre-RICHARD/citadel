@@ -22,7 +22,7 @@ import { findFlowPagePath } from "../../routing/findFlowPagePath";
 import styles from "./verifyPage.module.scss";
 
 /**
- * Où mène le lien des mails. Rien ne se valide à l'ouverture (les antivirus de messagerie ouvrent les liens pour les
+ * Où mène le lien des emails. Rien ne se valide à l'ouverture (les antivirus de messagerie ouvrent les liens pour les
  * analyser) : un clic confirme. Le jeton, dans le fragment de l'adresse, en est retiré dès la lecture. Validé, le
  * parcours se termine (la session s'ouvre) ou continue sur sa page
  */

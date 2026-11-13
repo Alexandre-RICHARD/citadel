@@ -97,7 +97,7 @@ test.describe("Profil : suppression du compte", () => {
 			).toBeVisible();
 		});
 
-		await test.step("Un mail confirme la suppression", async () => {
+		await test.step("Un email confirme la suppression", async () => {
 			await waitForMailWithSubject(identity.email, "Ton compte a été supprimé");
 		});
 

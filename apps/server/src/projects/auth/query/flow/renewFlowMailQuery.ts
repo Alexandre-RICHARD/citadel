@@ -11,7 +11,7 @@ type Renewal = {
 	sentAt: Date;
 };
 
-// Un nouveau mail : l'ancien code et l'ancien lien ne valent plus, les essais repartent de zéro
+// Un nouveau email : l'ancien code et l'ancien lien ne valent plus, les essais repartent de zéro
 export async function renewFlowMailQuery({
 	flowId,
 	codeHmac,

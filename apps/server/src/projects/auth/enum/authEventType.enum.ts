@@ -4,7 +4,7 @@ export enum AuthEventTypeEnum {
 	LOGIN_SUCCEEDED = "login_succeeded",
 	// Mot de passe refusé ; sans compte trouvé, user_id reste vide
 	LOGIN_FAILED = "login_failed",
-	// Second facteur refusé (connexion ou mot de passe oublié) : le mot de passe, ou la boîte mail, est donc connu
+	// Second facteur refusé (connexion ou mot de passe oublié) : le mot de passe, ou la boîte email, est donc connu
 	SECOND_FACTOR_FAILED = "second_factor_failed",
 	REGISTRATION_STARTED = "registration_started",
 	REGISTRATION_COMPLETED = "registration_completed",

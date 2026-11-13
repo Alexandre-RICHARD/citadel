@@ -12,7 +12,7 @@ import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { StartPasswordResetBodyDto } from "./startPasswordResetBodyDto.type.ts";
 
 // « Mot de passe oublié » : un lien et un code à l'adresse du compte, jamais affichée. Réponse neutre : la même pour un
-// identifiant inconnu, sans mail. Toujours ouvert, quelles que soient les méthodes de connexion du compte
+// identifiant inconnu, sans email. Toujours ouvert, quelles que soient les méthodes de connexion du compte
 export interface StartPasswordReset extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.AUTH}/password-resets`;
@@ -27,7 +27,7 @@ export interface StartPasswordReset extends EndpointModel {
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: ValidationErrorResponseDto;
-		// Plus aucun mail ne part aujourd'hui, pour tout le monde
+		// Plus aucun email ne part aujourd'hui, pour tout le monde
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.MAIL_CLOSED>;
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;
 	};

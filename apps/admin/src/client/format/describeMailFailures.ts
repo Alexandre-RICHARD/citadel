@@ -11,7 +11,7 @@ type MailFailuresDescription = {
 	detail: string | null;
 };
 
-// L'alerte de la carte Site, quand des mails n'ont pas pu partir ; null s'il n'y en a aucun
+// L'alerte de la carte Site, quand des emails n'ont pas pu partir ; null s'il n'y en a aucun
 export function describeMailFailures(
 	summary: MailFailureSummary | null,
 ): MailFailuresDescription | null {

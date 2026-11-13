@@ -28,7 +28,7 @@ import { userService } from "./userService.ts";
 class RegistrationService {
 	/**
 	 * Le pseudo est vérifié avant tout, dans la limite de questions par IP (sinon cette route listerait les pseudos sans
-	 * limite). Une inscription qui n'aboutit pas (serveur occupé, limite de mails) ne compte pas dans celles de l'IP
+	 * limite). Une inscription qui n'aboutit pas (serveur occupé, limite d'emails) ne compte pas dans celles de l'IP
 	 */
 	async start(
 		registration: RegistrationBean,
@@ -112,7 +112,7 @@ class RegistrationService {
 	/**
 	 * Le compte qui attend dans le parcours. Le mot de passe est hashé dès maintenant, adresse nouvelle ou non : même
 	 * durée de réponse dans les deux cas. Un robot qui a rempli le champ piège n'a pas de compte en attente : son parcours
-	 * est un leurre, avec cookie, état et limites d'une vraie inscription, mais ni code, ni lien, ni mail
+	 * est un leurre, avec cookie, état et limites d'une vraie inscription, mais ni code, ni lien, ni email
 	 */
 	async #buildPayload(
 		registration: RegistrationBean,

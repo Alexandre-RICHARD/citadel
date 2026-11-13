@@ -363,7 +363,7 @@ describe("createAuthLimiter.ts", () => {
 				ip: ALEX.ip,
 			});
 
-			// Assert : les premiers mails du jour sortent de la fenêtre 22 h plus tard
+			// Assert : les premiers emails du jour sortent de la fenêtre 22 h plus tard
 			expect(retryAfterMs).toBe(DAY_MS - 2 * HOUR_MS);
 		});
 

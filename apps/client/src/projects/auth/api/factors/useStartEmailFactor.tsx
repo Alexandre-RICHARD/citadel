@@ -5,7 +5,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 import { fetchHandler } from "../../../../common/api/fetch/fetchHandler";
 import { useFlowMutation } from "../flow/useFlowMutation";
 
-// Le code par email : un mail part à l'adresse du compte, son lien ou son code active le facteur
+// Le code par email : un email part à l'adresse du compte, son lien ou son code active le facteur
 export function useStartEmailFactor() {
 	return useFlowMutation(
 		async () =>

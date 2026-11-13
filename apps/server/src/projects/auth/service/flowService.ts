@@ -52,9 +52,9 @@ type SecondFactorStart = {
 
 /**
  * Les parcours en plusieurs étapes, chacun lié au navigateur qui l'a commencé par un cookie dont la base ne garde que
- * le SHA-256. Un seul par navigateur. Chaque mail porte un lien (qui ne marche que dans ce navigateur) et un code (qui se
+ * le SHA-256. Un seul par navigateur. Chaque email porte un lien (qui ne marche que dans ce navigateur) et un code (qui se
  * tape partout où la page est restée ouverte). Ce service ne connaît que les étapes : ce que fait chaque parcours une
- * fois le mail validé appartient au service de ce parcours
+ * fois l'email validé appartient au service de ce parcours
  */
 class FlowService {
 	// Ce que le navigateur peut savoir du parcours, avec, à l'étape « second facteur », ce que le compte peut y donner
@@ -107,8 +107,8 @@ class FlowService {
 	}
 
 	/**
-	 * Un parcours qui commence par un mail. Fermé quand le quota l'est, limité par adresse et par IP. Le parcours d'un
-	 * leurre (sans compte) a tout d'un vrai, sauf le code et le lien : aucun mail ne part, aucun code ne passera
+	 * Un parcours qui commence par un email. Fermé quand le quota l'est, limité par adresse et par IP. Le parcours d'un
+	 * leurre (sans compte) a tout d'un vrai, sauf le code et le lien : aucun email ne part, aucun code ne passera
 	 */
 	async start(start: StartFlowBean): Promise<FlowOutcomeBean> {
 		await flowMailService.assertOpen(start.kind);
@@ -158,7 +158,7 @@ class FlowService {
 		};
 	}
 
-	// La connexion par mot de passe d'un compte protégé : aucun mail ici, le second facteur se choisit ensuite
+	// La connexion par mot de passe d'un compte protégé : aucun email ici, le second facteur se choisit ensuite
 	async startSecondFactor({
 		userId,
 		email,
@@ -196,14 +196,14 @@ class FlowService {
 	}
 
 	/**
-	 * Un nouveau mail pour l'étape en cours : nouveau code et nouveau lien, essais remis à zéro. À l'étape « second
+	 * Un nouveau email pour l'étape en cours : nouveau code et nouveau lien, essais remis à zéro. À l'étape « second
 	 * facteur », le code par email, quand l'étape le propose. Pas avant le délai de renvoi, ni au-delà des limites de
-	 * mails ; un leurre suit les mêmes règles
+	 * emails ; un leurre suit les mêmes règles
 	 */
 	async resend(browser: BrowserContextBean): Promise<FlowOutcomeBean> {
 		const flowToken = this.#requireToken(browser);
 		const flow = await this.requireCurrent(flowToken);
-		// Lues une seule fois : elles disent si l'étape envoie un mail, puis décrivent le parcours
+		// Lues une seule fois : elles disent si l'étape envoie un email, puis décrivent le parcours
 		const secondFactorMethods = await this.listSecondFactorMethods(flow);
 		if (
 			flow.step !== FlowStepEnum.MAIL_CODE &&
@@ -276,7 +276,7 @@ class FlowService {
 	}
 
 	/**
-	 * Le code du dernier mail du parcours, à n'importe quelle étape qui en envoie. L'essai est compté avant la
+	 * Le code du dernier email du parcours, à n'importe quelle étape qui en envoie. L'essai est compté avant la
 	 * comparaison : deux essais simultanés ne passent jamais à deux sous la limite
 	 */
 	async isMailCodeValid(flow: Flow, code: string): Promise<boolean> {
@@ -299,7 +299,7 @@ class FlowService {
 	}
 
 	/**
-	 * Le lien du mail, ouvert puis confirmé par un clic. Il ne vaut que dans le navigateur du parcours : ailleurs, la
+	 * Le lien de l'email, ouvert puis confirmé par un clic. Il ne vaut que dans le navigateur du parcours : ailleurs, la
 	 * page dit d'y taper le code (un inconnu qui commence une connexion avec ton email ne doit pas être connecté par ton
 	 * clic). Renvoie le parcours, prêt pour son étape suivante
 	 */
@@ -322,7 +322,7 @@ class FlowService {
 		return { flow, flowToken, proofKind: "link" };
 	}
 
-	// Le compte d'un parcours dont le mail a été validé. Un leurre n'a ni code ni lien : il n'arrive jamais ici
+	// Le compte d'un parcours dont l'email a été validé. Un leurre n'a ni code ni lien : il n'arrive jamais ici
 	requireAccount(flow: Flow): number {
 		if (flow.userId === null)
 			throw flowExpiredError("This flow belongs to no account");
@@ -330,7 +330,7 @@ class FlowService {
 	}
 
 	/**
-	 * Passe l'étape du mail, une seule fois : le code et le lien sont effacés dans la transaction de la suite (`work`).
+	 * Passe l'étape de l'email, une seule fois : le code et le lien sont effacés dans la transaction de la suite (`work`).
 	 * Si la suite échoue (pseudo pris entre-temps), tout est annulé et ils restent valables. Un renvoi arrivé entre la
 	 * vérification et ici a remplacé le code : il est faux, mais le parcours continue
 	 */

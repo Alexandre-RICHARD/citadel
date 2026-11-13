@@ -4,7 +4,7 @@
 # Usage : bash scripts/docker/localStack.sh <prod|e2e> <up|down>
 #   prod up     construit nos images et lance tout (pnpm prod:local)
 #   e2e up      pareil, plus le faux Brevo et Mailpit des tests end-to-end (infra/compose.e2e.yml)
-#   * down      arrête tout et EFFACE les données (volumes compris : base, mails)
+#   * down      arrête tout et EFFACE les données (volumes compris : base, emails)
 # Les deux modes partagent le même projet Compose (citadel-local) : on n'en lance qu'un à la fois.
 
 set -euo pipefail
@@ -32,7 +32,7 @@ case "$action" in
 	up)
 		# Un conteneur arrêté garde l'identifiant du réseau où il était attaché. Si Compose a recréé ce réseau entre-temps
 		# (autre mode lancé, down, redémarrage de Docker), il ne redémarre plus : "network ... not found". On supprime donc
-		# les conteneurs arrêtés du projet ; le up les recrée, et les volumes (base, mails) ne sont pas touchés.
+		# les conteneurs arrêtés du projet ; le up les recrée, et les volumes (base, emails) ne sont pas touchés.
 		docker container prune --force --filter "label=com.docker.compose.project=citadel-local" > /dev/null
 		"${compose[@]}" up --build --detach --wait
 		;;

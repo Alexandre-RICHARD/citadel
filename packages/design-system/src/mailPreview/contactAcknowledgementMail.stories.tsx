@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { MailPreview } from "./MailPreview";
 
-// Le mail que reçoit le visiteur qui a donné son adresse : de son message, seul le sujet est repris
+// L'email que reçoit le visiteur qui a donné son adresse : de son message, seul le sujet est repris
 const meta = {
 	title: "Mails/Contact : accusé de réception",
 	component: MailPreview,

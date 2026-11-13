@@ -35,7 +35,7 @@ export default [
 				{
 					property: "goto",
 					message:
-						"Pas de goto dans un scénario : pars de openSite(page), puis navigue en cliquant (ou openMailLink pour un lien de mail)",
+						"Pas de goto dans un scénario : pars de openSite(page), puis navigue en cliquant (ou openMailLink pour un lien d'email)",
 				},
 			],
 		},

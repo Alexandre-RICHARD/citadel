@@ -16,7 +16,7 @@ type FlowRow = {
 	codeHmac: Buffer | null;
 	linkTokenHash: Buffer | null;
 	remember: boolean;
-	// null : l'étape n'envoie pas de mail
+	// null : l'étape n'envoie pas d'email
 	sentAt: Date | null;
 	expiresAt: Date;
 };
@@ -24,7 +24,7 @@ type FlowRow = {
 type Replaced = {
 	// Le parcours en cours dans ce navigateur : un seul à la fois
 	browserTokenHash: Buffer | null;
-	// Une inscription remplace celles qui attendent à la même adresse : la personne qui reçoit les mails gagne toujours
+	// Une inscription remplace celles qui attendent à la même adresse : la personne qui reçoit les emails gagne toujours
 	registrationEmail: string | null;
 };
 

@@ -12,7 +12,7 @@ import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { StartRegistrationBodyDto } from "./startRegistrationBodyDto.type.ts";
 
 // Commence une inscription : aucun compte avant la confirmation par le lien ou le code. La réponse est la même que
-// l'adresse soit nouvelle ou déjà inscrite : seul le mail, dans la boîte concernée, dit ce qu'il en est
+// l'adresse soit nouvelle ou déjà inscrite : seul l'email, dans la boîte concernée, dit ce qu'il en est
 export interface StartRegistration extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.AUTH}/registrations`;
@@ -27,10 +27,10 @@ export interface StartRegistration extends EndpointModel {
 	error: {
 		[HttpStatutCodeErrorEnum.SERVER_ERROR]: InternalErrorResponseDto;
 		[HttpStatutCodeErrorEnum.BAD_REQUEST]: ValidationErrorResponseDto;
-		// Interrupteur d'urgence, ou quota quotidien de mails : GET /mail/status le dit avant l'envoi
+		// Interrupteur d'urgence, ou quota quotidien d'emails : GET /mail/status le dit avant l'envoi
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.REGISTRATION_CLOSED>;
 		[HttpStatutCodeErrorEnum.CONFLICT_WITH_SERVER]: ErrorResponseDto<AuthErrorCodeEnum.USERNAME_TAKEN>;
-		// Trop d'inscriptions ou de mails depuis cette IP, ou vers cette adresse : Retry-After dit quand réessayer
+		// Trop d'inscriptions ou d'emails depuis cette IP, ou vers cette adresse : Retry-After dit quand réessayer
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]: TooManyRequestsResponseDto;
 		[HttpStatutCodeErrorEnum.SERVICE_UNAVAILABLE]: ErrorResponseDto<AuthErrorCodeEnum.AUTH_BUSY>;
 	};

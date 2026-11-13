@@ -8,7 +8,7 @@ import { fetchHandler } from "../fetch/fetchHandler";
 // Relu toutes les 5 minutes, page ouverte : le formulaire rouvre seul quand le quota du fournisseur retombe à zéro
 const REFETCH_INTERVAL_MS = 5 * 60_000;
 
-// Ce que le quota quotidien de mails laisse ouvert : formulaire de contact, puis inscription
+// Ce que le quota quotidien d'emails laisse ouvert : formulaire de contact, puis inscription
 export const mailStatusQueryOptions = queryOptions({
 	queryKey: ["mail", "status"] as const,
 	queryFn: async ({ signal }) =>

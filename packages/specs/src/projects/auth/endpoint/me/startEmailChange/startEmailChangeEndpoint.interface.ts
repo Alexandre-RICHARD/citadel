@@ -12,9 +12,9 @@ import type { AuthErrorCodeEnum } from "../../../error/authErrorCode.enum.ts";
 import type { StartEmailChangeBodyDto } from "./startEmailChangeBodyDto.type.ts";
 
 /**
- * Commence le changement d'adresse email, mot de passe redemandé : un parcours `email_change`, dont le mail (lien +
+ * Commence le changement d'adresse email, mot de passe redemandé : un parcours `email_change`, dont l'email (lien +
  * code) part à la nouvelle adresse. La réponse est la même que l'adresse soit libre ou déjà inscrite (dans ce cas, le
- * mail dit seulement qu'un autre compte l'a voulue) ; le lien ou le code validé (`POST /auth/flow/link` ou `/code`)
+ * email dit seulement qu'un autre compte l'a voulue) ; le lien ou le code validé (`POST /auth/flow/link` ou `/code`)
  * remplace l'adresse, et l'ancienne en est prévenue
  */
 export interface StartEmailChange extends EndpointModel {
@@ -35,9 +35,9 @@ export interface StartEmailChange extends EndpointModel {
 			| ErrorResponseDto<
 					AuthErrorCodeEnum.WRONG_PASSWORD | AuthErrorCodeEnum.EMAIL_UNCHANGED
 			  >;
-		// Plus aucun mail ne part aujourd'hui
+		// Plus aucun email ne part aujourd'hui
 		[HttpStatutCodeErrorEnum.FORBIDDEN]: ErrorResponseDto<AuthErrorCodeEnum.MAIL_CLOSED>;
-		// Mauvais mot de passe répété, ou trop de mails pour cette adresse ou cette IP : Retry-After dit quand réessayer
+		// Mauvais mot de passe répété, ou trop d'emails pour cette adresse ou cette IP : Retry-After dit quand réessayer
 		[HttpStatutCodeErrorEnum.TOO_MANY_REQUESTS]:
 			| ErrorResponseDto<AuthErrorCodeEnum.TOO_MANY_ATTEMPTS>
 			| TooManyRequestsResponseDto;

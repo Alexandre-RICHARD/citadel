@@ -14,7 +14,7 @@ const FLOW_CHANGED_CODES: readonly string[] = [
 	AuthErrorCodeEnum.INVALID_CODE,
 	AuthErrorCodeEnum.CODE_ATTEMPTS_EXHAUSTED,
 ];
-// Le quota a fermé les mails depuis le chargement : tout le site le sait (bandeau, boutons désactivés)
+// Le quota a fermé les emails depuis le chargement : tout le site le sait (bandeau, boutons désactivés)
 const MAIL_CLOSED_CODES: readonly string[] = [
 	AuthErrorCodeEnum.MAIL_CLOSED,
 	AuthErrorCodeEnum.REGISTRATION_CLOSED,
@@ -22,7 +22,7 @@ const MAIL_CLOSED_CODES: readonly string[] = [
 
 /**
  * Une étape de parcours : sa réponse devient l'état du parcours. Pas d'optimisme, chaque étape attend le serveur (code
- * juste ou faux, mail parti ou non). Le parcours qui active le premier facteur du compte donne ses codes de secours, mis
+ * juste ou faux, email parti ou non). Le parcours qui active le premier facteur du compte donne ses codes de secours, mis
  * de côté pour être montrés une seule fois
  */
 export function useFlowMutation<Variables>(

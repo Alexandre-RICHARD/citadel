@@ -9,7 +9,7 @@ type FlowFacts = {
 };
 
 /**
- * Un parcours leurre : il répond comme un vrai, mais n'a ni code, ni lien, ni mail. Une inscription sans compte en
+ * Un parcours leurre : il répond comme un vrai, mais n'a ni code, ni lien, ni email. Une inscription sans compte en
  * attente (le champ piège rempli), ou un autre parcours sans compte (identifiant inconnu, méthode fermée)
  */
 export function isDecoyFlow({ kind, userId, payload }: FlowFacts): boolean {

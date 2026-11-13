@@ -77,7 +77,7 @@ test.describe("Double authentification", () => {
 			);
 		});
 
-		await test.step("Les ajouts ont été notifiés par mail", async () => {
+		await test.step("Les ajouts ont été notifiés par email", async () => {
 			await waitForMailWithSubject(identity.email, ADDED_NOTICE, {
 				alreadyReceived: addedBefore,
 			});
@@ -88,7 +88,7 @@ test.describe("Double authentification", () => {
 		});
 		await removeFactor(page, "Code par email", identity.password);
 
-		await test.step("Les retraits ont été notifiés par mail", async () => {
+		await test.step("Les retraits ont été notifiés par email", async () => {
 			await waitForMailWithSubject(identity.email, REMOVED_NOTICE, {
 				alreadyReceived: removedBefore,
 			});

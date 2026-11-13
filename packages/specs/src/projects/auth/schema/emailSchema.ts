@@ -6,7 +6,7 @@ import { AUTH_FIELD_LENGTHS } from "../authFieldLengths.ts";
 import { isEmailAddress } from "../helper/isEmailAddress.ts";
 
 /**
- * L'adresse du compte, gardée telle que saisie (le mail part à cette adresse), sans les espaces autour. La base compare
+ * L'adresse du compte, gardée telle que saisie (l'email part à cette adresse), sans les espaces autour. La base compare
  * les adresses sans la casse, mais confondrait aussi ａ (pleine chasse) et a, ﬁ et fi, et ignorerait les caractères
  * invisibles : ces caractères sont donc refusés ici. Une adresse que la normalisation NFKC change en contient un
  */

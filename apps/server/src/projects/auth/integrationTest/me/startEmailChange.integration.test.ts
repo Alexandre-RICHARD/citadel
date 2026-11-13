@@ -54,7 +54,7 @@ async function openConnectedAccount() {
 	return { account, session };
 }
 
-// Le changement commencé, et ce qu'il faut pour le terminer : le code du mail et les cookies de la session et du parcours
+// Le changement commencé, et ce qu'il faut pour le terminer : le code de l'email et les cookies de la session et du parcours
 async function startChange() {
 	const { account, session } = await openConnectedAccount();
 	const newEmail = buildNewEmail();

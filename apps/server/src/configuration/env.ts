@@ -39,13 +39,13 @@ const envSchema = z.object({
 		.default("false")
 		.transform((logDb) => logDb === "true"),
 
-	// ----- Mails -----
+	// ----- Emails -----
 	// Qui envoie : brevo (la prod) ; journal (une ligne dans le log, sans contenu : dev, pré-prod) ; memory (tests)
 	MAIL_SENDER: z.enum(MailSenderKindEnum).default(MailSenderKindEnum.JOURNAL),
 	BREVO_API_KEY: z.string().default(""),
 	// Adresse de l'API de Brevo, sans « / » final : changée seulement pour les tests end-to-end (faux Brevo)
 	BREVO_API_URL: z.url().default("https://api.brevo.com/v3"),
-	// Seuils du quota quotidien de Brevo, en mails envoyés dans la journée : les inscriptions, puis le formulaire
+	// Seuils du quota quotidien de Brevo, en emails envoyés dans la journée : les inscriptions, puis le formulaire
 	// de contact, puis tout le reste s'arrêtent
 	MAIL_REGISTRATION_STOP: z.coerce.number().int().positive().default(250),
 	MAIL_CONTACT_STOP: z.coerce.number().int().positive().default(280),
@@ -78,10 +78,10 @@ const envSchema = z.object({
 	AUTH_MAIL_LOGIN_MINUTES: positiveInteger(15),
 	AUTH_EMAIL_CHANGE_MINUTES: positiveInteger(30),
 	AUTH_SECOND_FACTOR_MINUTES: positiveInteger(10),
-	// Codes reçus par mail : essais par code, délai avant un renvoi
+	// Codes reçus par email : essais par code, délai avant un renvoi
 	AUTH_CODE_MAX_ATTEMPTS: positiveInteger(5),
 	AUTH_MAIL_RESEND_SECONDS: positiveInteger(60),
-	// Mails de l'authentification, par adresse et par IP
+	// Emails de l'authentification, par adresse et par IP
 	AUTH_MAILS_PER_ADDRESS_PER_HOUR: positiveInteger(5),
 	AUTH_MAILS_PER_IP_PER_HOUR: positiveInteger(20),
 	AUTH_MAILS_PER_IP_PER_DAY: positiveInteger(40),
@@ -117,7 +117,7 @@ const envSchema = z.object({
 	AUTH_RESTORE_JOURNAL_DIR: z.string().min(1),
 	// Intervalle de la purge des parcours, des sessions et des facteurs non confirmés expirés
 	AUTH_PURGE_INTERVAL_MINUTES: positiveInteger(15),
-	// [secret] Clé des empreintes HMAC des codes reçus par mail
+	// [secret] Clé des empreintes HMAC des codes reçus par email
 	AUTH_CODE_HMAC_KEY: z.string().regex(HEX_KEY_32_BYTES, HEX_KEY_MESSAGE),
 	// [secret] Clé AES-256-GCM des secrets TOTP, et sa version (enregistrée avec chaque secret chiffré)
 	AUTH_TOTP_ENCRYPTION_KEY: z.string().regex(HEX_KEY_32_BYTES, HEX_KEY_MESSAGE),

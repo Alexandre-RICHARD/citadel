@@ -9,9 +9,9 @@ export type FlowDto = {
 	step: FlowStepEnum;
 	// Avant que le parcours expire : il faudra alors recommencer
 	expiresIn: number;
-	// Avant qu'un nouveau mail puisse être demandé ; null : il peut l'être tout de suite, ou l'étape n'envoie pas de mail
+	// Avant qu'un nouveau email puisse être demandé ; null : il peut l'être tout de suite, ou l'étape n'envoie pas d'email
 	resendRetryAfter: number | null;
-	// Codes reçus par mail qui peuvent encore être essayés ; à zéro, il faut en redemander un
+	// Codes reçus par email qui peuvent encore être essayés ; à zéro, il faut en redemander un
 	remainingAttempts: number;
 	// Étape « second facteur » : ce que le compte peut y donner. Vide à toute autre étape
 	secondFactorMethods: SecondFactorMethodEnum[];

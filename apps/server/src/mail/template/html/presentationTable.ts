@@ -4,7 +4,7 @@ type TableOptions = {
 	style?: string;
 };
 
-// La mise en page d'un mail se fait en tableaux : le seul agencement que tous les clients mail respectent, Outlook
+// La mise en page d'un email se fait en tableaux : le seul agencement que tous les clients email respectent, Outlook
 // compris. `role="presentation"` les fait ignorer des lecteurs d'écran
 export function presentationTable(
 	rows: string,

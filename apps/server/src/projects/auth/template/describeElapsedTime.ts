@@ -18,7 +18,7 @@ function countParisDays(from: Date, to: Date): number {
 
 /**
  * Une durée volontairement floue (« il y a 3 semaines »), pour dire à quelqu'un quand il s'est connecté sans que le
- * mail devienne un relevé d'activité : « aujourd'hui », puis des jours jusqu'à 7, des semaines jusqu'à 5, des mois
+ * email devienne un relevé d'activité : « aujourd'hui », puis des jours jusqu'à 7, des semaines jusqu'à 5, des mois
  * jusqu'à 12, puis des années
  */
 export function describeElapsedTime(from: Date, now: Date): string {

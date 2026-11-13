@@ -11,7 +11,7 @@ const FLOW_COOKIE_NAME = buildCookieName(
 	authSettings.isCookieSecure,
 );
 
-// Le cookie qui lie un parcours (inscription, connexion par mail…) au navigateur qui l'a commencé, le temps du parcours
+// Le cookie qui lie un parcours (inscription, connexion par email…) au navigateur qui l'a commencé, le temps du parcours
 export const flowCookie = {
 	name: FLOW_COOKIE_NAME,
 

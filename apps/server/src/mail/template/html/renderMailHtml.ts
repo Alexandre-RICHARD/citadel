@@ -17,7 +17,7 @@ import { toHtmlText } from "./toHtmlText.ts";
 const { light, hero } = MAIL_COLORS;
 const CARD_RADIUS = "20px";
 const CARD_WIDTH = 600;
-// Remplit l'aperçu de la boîte de réception après le texte voulu, pour qu'il n'y affiche pas la suite du mail
+// Remplit l'aperçu de la boîte de réception après le texte voulu, pour qu'il n'y affiche pas la suite de l'email
 const PREVIEW_FILLER = "&nbsp;&zwnj;".repeat(90);
 
 function headHtml(title: string): string {
@@ -46,7 +46,7 @@ function haloGradient(
 	return `radial-gradient(circle at ${at},${hexToRgba(color, alpha)} 0%,${hexToRgba(color, 0)} ${reach})`;
 }
 
-// Les halos de la homepage : violet en haut à gauche, la couleur du mail en haut à droite, cyan en bas
+// Les halos de la homepage : violet en haut à gauche, la couleur de l'email en haut à droite, cyan en bas
 function heroBackground(accent: MailAccentEnum): string {
 	return [
 		haloGradient(hero.glowTopLeft, 0.6, "0% 0%", "55%"),
@@ -121,7 +121,7 @@ function footerHtml(note: string | null, accent: MailAccentEnum): string {
 	].join("");
 }
 
-// Le mail entier : fond crème, carte à en-tête sombre, pied sous la carte. Les styles en ligne portent tout le
+// L'email entier : fond crème, carte à en-tête sombre, pied sous la carte. Les styles en ligne portent tout le
 // rendu ; la feuille de style n'ajoute que le mode sombre et le téléphone. Outlook (Windows) ignore `max-width` : le
 // tableau à largeur fixe des commentaires conditionnels la lui donne
 export function renderMailHtml(layout: MailLayout): string {

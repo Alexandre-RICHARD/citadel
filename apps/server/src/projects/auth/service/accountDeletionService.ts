@@ -52,7 +52,7 @@ function invalidCode(): RejectedRequestError {
 /**
  * La suppression du compte : immédiate et définitive, aucun délai de récupération. Le mot de passe est redemandé, et un
  * code de l'application d'authentification (ou un code de secours) quand le compte en a une : une session volée ne
- * suffit pas. Un compte qui n'a que le facteur mail n'en doit pas, comme à la connexion par email : ce facteur ne
+ * suffit pas. Un compte qui n'a que le facteur email n'en doit pas, comme à la connexion par email : ce facteur ne
  * protège que d'un mot de passe volé, et le mot de passe est ici redemandé. Les échecs comptent comme ceux de la
  * connexion
  */

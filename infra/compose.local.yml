@@ -67,7 +67,7 @@ services:
       <<: *build
       target: server
     environment:
-      # Aucun vrai mail depuis ton PC : le journal écrit dans le log du serveur qu'un mail
+      # Aucun vrai email depuis ton PC : le journal écrit dans le log du serveur qu'un email
       # serait parti (docker logs site-prod-server). La clé reçue est celle, factice, de
       # compose.local.env
       MAIL_SENDER: journal

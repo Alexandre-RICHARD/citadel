@@ -21,7 +21,7 @@ const limits: MailQuotaLimits = {
 };
 
 /**
- * Tout mail du site passe ici : l'expéditeur choisi par MAIL_SENDER l'envoie, et le quota du jour le compte. Un envoi
+ * Tout email du site passe ici : l'expéditeur choisi par MAIL_SENDER l'envoie, et le quota du jour le compte. Un envoi
  * qui échoue est enregistré en base (mailing_failure), puis son erreur repart vers l'appelant.
  * Avant d'envoyer, l'appelant vérifie que `getStatus` laisse sa fonction ouverte
  */
@@ -60,7 +60,7 @@ class MailService {
 		return summarizeMailFailuresQuery(env.MAIL_FAILURE_WINDOW_DAYS, new Date());
 	}
 
-	// Ni adresse ni contenu : le type du mail et le message de l'erreur, que le client de Brevo écrit sans eux. Un
+	// Ni adresse ni contenu : le type de l'email et le message de l'erreur, que le client de Brevo écrit sans eux. Un
 	// enregistrement raté est loggé, sans masquer l'erreur d'envoi
 	async #recordFailure(mail: Mail, error: unknown): Promise<void> {
 		const reason = error instanceof Error ? error.message : String(error);

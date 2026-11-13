@@ -7,7 +7,7 @@ import type { VerificationMailContent } from "./verificationMailContent.type.ts"
 import type { VerificationMailParameters } from "./verificationMailParameters.type.ts";
 
 /**
- * Les mails qui portent un lien et un code (inscription, connexion par mail, mot de passe oublié…), tous bâtis pareil :
+ * Les emails qui portent un lien et un code (inscription, connexion par email, mot de passe oublié…), tous bâtis pareil :
  * ce qu'il faut faire, le bouton, le code, la durée, puis pourquoi on le reçoit. Le lien ne marche que dans le
  * navigateur qui a commencé le parcours : le code sert à tout le reste, un autre appareil compris
  */
