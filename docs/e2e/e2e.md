@@ -37,7 +37,7 @@ Le navigateur est le dossier **EdgeCore** de Windows (détecté tout seul, [find
 | `pnpm test-e2e -g "A1"` | Les tests dont le titre contient « A1 » (sans `--` : après lui, `-g` serait pris pour un nom de fichier) |
 | `pnpm test-e2e-record` | **Enregistreur** (§4.1) |
 
-Tu peux aussi lire les mails reçus par le site sur <http://localhost:8025> (Mailpit), pendant ou après un test.
+Vous pouvez aussi lire les mails reçus par le site sur <http://localhost:8025> (Mailpit), pendant ou après un test.
 
 ## 2. Comment les mails sont captés
 
@@ -63,7 +63,7 @@ pnpm stack-up
 pnpm test-e2e-record
 ```
 
-Deux fenêtres s'ouvrent : le navigateur (fais ton parcours dedans) et **Playwright Inspector**, où le code s'écrit au fur et à mesure. Boutons de la barre du navigateur :
+Deux fenêtres s'ouvrent : le navigateur (faites votre parcours dedans) et **Playwright Inspector**, où le code s'écrit au fur et à mesure. Boutons de la barre du navigateur :
 - **Assert visibility** (l'œil) : clique ensuite sur un texte pour ajouter une vérification « ce texte est visible » ;
 - **Assert text**, **Assert value** : vérifier un texte exact, une valeur de champ ;
 - **Record / Pick locator** : voir comment Playwright désigne un élément.
@@ -72,9 +72,9 @@ Copie le code de l'Inspector dans un nouveau fichier `src/tests/…/mon-scenario
 
 ### 4.2 Le nettoyer
 
-L'enregistreur te donne un brouillon à retoucher à la main :
+L'enregistreur vous donne un brouillon à retoucher à la main :
 - **Les valeurs fixes → l'identité du test.** Il a noté `alex@test.fr` en dur : remplace par `createIdentity().email` (sinon le 2ᵉ lancement échoue, l'adresse existe déjà).
-- **Le mail → `waitForMail`.** Le navigateur de l'enregistreur ne sait pas lire tes mails : tu ajoutes l'étape à la main.
+- **Le mail → `waitForMail`.** Le navigateur de l'enregistreur ne sait pas lire vos mails : vous ajoutez l'étape à la main.
 - **Découper en `test.step`** : c'est ce qui rend l'échec lisible (§5).
 - **Des vérifications `expect`** à chaque étape importante, pas seulement à la fin.
 
@@ -96,7 +96,7 @@ test.describe("Mon thème", () => {
 
 		const identity = await registerAccount(page, "alice");
 
-		await test.step("Deuxième étape, nommée comme tu la raconterais", async () => {
+		await test.step("Deuxième étape, nommée comme vous la raconteriez", async () => {
 			await expect(page.getByText(identity.username)).toBeVisible();
 		});
 	});
@@ -142,14 +142,14 @@ Le terminal indique **l'étape** (`test.step`) qui a échoué et la ligne exacte
 
 ```
 1) [chromium] › auth/a1.registrationNominal.spec.ts › A1 …
-   Error: expect(locator).toBeVisible() — Locator: getByRole('heading', { name: 'Confirme ton adresse email' })
-   > Étape : L'écran « Confirme ton adresse email » s'affiche
+   Error: expect(locator).toBeVisible() — Locator: getByRole('heading', { name: 'Confirmez votre adresse email' })
+   > Étape : L'écran « Confirmez votre adresse email » s'affiche
 ```
 
 Puis `pnpm test-e2e-report` ouvre le rapport HTML. Pour un test échoué :
 - la **liste des étapes**, la fautive en rouge ;
 - une **capture** de l'écran au moment de l'échec et une **vidéo** du test entier ;
-- la **trace** : onglet « Trace », tu fais défiler les actions et vois la page, la console et le réseau à chaque instant.
+- la **trace** : onglet « Trace », vous faites défiler les actions et voyez la page, la console et le réseau à chaque instant.
 
 Pour déboguer à la main : `pnpm test-e2e --debug src/tests/…` exécute pas à pas dans l'Inspector.
 

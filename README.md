@@ -2,6 +2,8 @@
 
 Mon monorepo personnel : le site [alexandre-richard.fr](https://alexandre-richard.fr) et ses projets, et la console d'administration du NAS qui les héberge.
 
+Licence MIT : voir [LICENSE](LICENSE).
+
 ## Sommaire
 
 1. [Fonctionnement général](#1-fonctionnement-général)
@@ -23,7 +25,7 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | `infra/` | Docker Compose, Caddy, commande `citadel` du NAS |
 | `scripts/` | Release, bases Docker de dev, outils (`pnpm tools`) |
 | `e2e/` | Tests end-to-end Playwright |
-| `docs/` | La documentation, un dossier par sujet (§3) |
+| `docs/` | La documentation, un dossier par sujet (§3), et la mémoire de Claude (`docs/.claude/`) |
 
 ## 2. Lancer en local
 
@@ -44,11 +46,15 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 
 | Commande | Effet |
 | --- | --- |
-| `pnpm lint`, `pnpm check-types` | Lint et types de tout le monorepo |
+| `pnpm lint`, `pnpm lint-fix`, `pnpm check-types` | Lint (avec ou sans correction automatique) et types de tout le monorepo |
+| `pnpm build` | Construit les trois apps (`apps/*`) |
+| `pnpm audit:prod` | Failles connues des dépendances de production (niveau high et plus) |
+| `pnpm update-minor`, `pnpm update-major` | Mise à jour interactive des dépendances, sans ou avec changement de version majeure |
+| `pnpm --filter @citadel/design-system dev` | Le Storybook du design system, http://localhost:3002 |
 | `pnpm validate-all` | Lint, types, tests unitaires, d'intégration et end-to-end, builds, audit. La validation d'avant mise en prod, longue : elle se saute si rien n'a changé depuis son dernier succès (`--force` pour la relancer quand même) |
 | `pnpm db:migrate`, `pnpm db:reset`, `pnpm db:down` | Migrations seules ; repartir d'une base de dev vide ; arrêter la base |
-| `pnpm prod:local` | Les images de prod sur ton PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter) |
-| `pnpm release` | La mise en prod ([hébergement](docs/ci_cd/ci_cd.md#4-commandes)) |
+| `pnpm prod:local` | Les images de prod sur votre PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter) |
+| `pnpm tools release` | La mise en prod ([hébergement](docs/ci_cd/ci_cd.md#4-commandes)) |
 | `pnpm tools` | Menu des outils de `scripts/` |
 
 ## 3. Documentation
@@ -69,6 +75,8 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 - [Authentification](docs/auth/auth.md) : comptes, sessions, 2FA, RGPD
 - [Mails](docs/mails/mails.md) : envoi, réception, formulaire de contact, DNS
 - [Hébergement et mise en production](docs/ci_cd/ci_cd.md) : NAS, déploiement, sauvegardes, accès
+- [Console d'administration](docs/admin/admin.md) : l'interface de l'hébergement, ce qu'elle lit, ce qu'elle peut faire, sa sécurité
+- [Design system](docs/designSystem/designSystem.md) : composants, thèmes, polices, Storybook
 
 ### 3.3 Tests end-to-end
 
@@ -79,4 +87,8 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 ### 3.4 Suivi
 
 - [À faire](docs/todo/todo.md)
-- [Problèmes connus](docs/problems/problems.md)
+
+### 3.5 Claude Code
+
+- [CLAUDE.md](CLAUDE.md) : les instructions que Claude Code lit à chaque session
+- [Mémoire de Claude](docs/.claude/MEMORY.md) : ses méthodes de travail sur ce dépôt (commits, tests, rédaction des docs…), versionnées avec le code

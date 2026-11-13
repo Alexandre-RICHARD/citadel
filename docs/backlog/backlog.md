@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Backlog
 
-Suivi de mes jeux vidéo, sur la route `/backlog`, réservé aux comptes connectés. On cherche un jeu sur IGDB, on l'enregistre avec les versions et DLC voulus, puis on l'ajoute au backlog sur une plateforme : statut, temps, note, DLC faits… se suivent dans un tableau triable et filtrable. Il remplace un Google Sheet devenu difficile à tenir à jour. Ce qui reste à faire est dans le [todo](../todo/todo.md#6-backlog), les demandes en cours dans les [problèmes connus](../problems/problems.md).
+Suivi de mes jeux vidéo, sur la route `/backlog`, réservé aux comptes connectés. On cherche un jeu sur IGDB, on l'enregistre avec les versions et DLC voulus, puis on l'ajoute au backlog sur une plateforme : statut, temps, note, DLC faits… se suivent dans un tableau triable et filtrable. Il remplace un Google Sheet devenu difficile à tenir à jour. Ce qui reste à faire est dans le [todo](../todo/todo.md#6-backlog).
 
 ## Sommaire
 
@@ -162,6 +162,15 @@ Les données de référence viennent de l'API [IGDB](https://api-docs.igdb.com).
 - **Seul le serveur appelle IGDB** (`igdb/`), qui refuse les navigateurs. Il garde le Client-ID et le secret de l'application Twitch, en tire un token qu'il renouvelle quand il expire, espace ses appels pour rester sous 4 requêtes par seconde, et garde la fiche d'un jeu 10 minutes en mémoire, le temps de l'ajouter.
 - Les endpoints IGDB sont réservés aux connectés : le quota est partagé par tous les inscrits.
 - Les données d'un jeu en base ne sont pas resynchronisées avec IGDB ([todo](../todo/todo.md#62-données-igdb)).
+- **Pièges d'IGDB**, à connaître avant de toucher à la recherche ou à l'import :
+  - Un `search` dans un `multiquery` rend un tableau vide, sans erreur : la recherche appelle `/games` directement.
+  - La recherche rend chaque édition, portage et version enrichie comme une fiche à part, et les chaînes de portages sont profondes (*Final Fantasy VII* : portage → portage → … → version enrichie → original). Le serveur lit 50 fiches, les regroupe sous leur original (qui prend le rang de sa meilleure version), va chercher niveau par niveau les parents absents des résultats, et en affiche 20.
+  - Une édition (*Skyrim Premium Edition*) a le type *Main Game* : c'est `version_parent`, pas le type, qui en fait une version. Les versions s'imbriquent : la *Special Edition* de *Skyrim* a sa propre *Anniversary Edition* dans `expanded_games`, donc lister « toutes les versions » parcourt l'arbre.
+  - Un portage peut porter exactement le nom de l'original (*Final Fantasy VII* a huit fiches de ce nom, de 1998 à 2015) : seule l'année les distingue, d'où le titre « type + année » des versions sans `version_title`. Deux versions de même type et même année restent indiscernables par le titre (*SoulCalibur II* : trois « Version enrichie 2003 »), seules leurs plateformes les séparent.
+  - Le commentaire des noms alternatifs français n'est pas uniforme (*French title*, *French Title*, *French alternative title*, *French/Spanish/Italian title*…) : le premier qui contient « french » est pris. L'EU n'est pas le français : son titre est souvent anglais, parfois absent.
+  - `first_release_date` et `release_dates.date` valent minuit UTC de la date affichée par IGDB : aucun décalage de fuseau à corriger.
+  - IGDB réorganise ses fiches : l'original de *Final Fantasy VII* est devenu une entrée *Main Game* PS1 (#393025), l'ancienne fiche (#427) étant maintenant une version enrichie.
+  - Les bundles qui vendent une édition avec ses DLC portent parfois `version_parent` (*Skyrim Legendary Edition*), parfois non (*Final Fantasy VII Remake Intergrade*, *Episodes from Liberty City*) ; un remake rattaché par `version_parent` (*The Last of Us Part I Firefly Edition*) est groupé par la recherche mais ignoré, avec un avertissement, par la fiche.
 
 ## 7. Plateformes et icônes
 

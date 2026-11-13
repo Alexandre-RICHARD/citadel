@@ -121,7 +121,7 @@ Toutes s'appellent `auth_*` (un préfixe par sujet : `gdc_`, `backlog_`, `mailin
 - **Reprise** : une page `/auth/...` demande au serveur s'il y a un parcours en cours et se replace à la bonne étape. Les champs tapés (sauf les mots de passe) sont gardés dans le `sessionStorage` de l'onglet. Au retour sur l'onglet (`visibilitychange`), le front redemande l'état : si le lien a été ouvert dans un autre onglet du même navigateur, la page passe d'elle-même à la suite.
 - **Lien et code dans chaque mail** :
   - le **code** (6 chiffres, empreinte HMAC, usage unique, invalidé par un renvoi, qui remet les essais à zéro) se colle dans la page restée ouverte, y compris sur un autre appareil ;
-  - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code (`LINK_OTHER_BROWSER`) : sinon, un attaquant lance une connexion avec ton email, tu cliques, et c'est son navigateur qui est connecté. Le jeton voyage dans le fragment (`/auth/verify#…`), jamais envoyé à un serveur ni écrit dans un journal ;
+  - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code (`LINK_OTHER_BROWSER`) : sinon, un attaquant lance une connexion avec votre email, vous cliquez, et c'est son navigateur qui est connecté. Le jeton voyage dans le fragment (`/auth/verify#…`), jamais envoyé à un serveur ni écrit dans un journal ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
 - **Temps restant** : chaque réponse renvoie `expiresIn` et, pendant le délai de renvoi, `resendRetryAfter`, en secondes (jamais une date : l'horloge du navigateur peut différer), et les essais restants.
 - **Parcours leurre** : connexion par mail et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020), comme une inscription au champ piège rempli : même cookie, même état, mêmes limites, aucun mail.
@@ -138,7 +138,7 @@ Toutes s'appellent `auth_*` (un préfixe par sujet : `gdc_`, `backlog_`, `mailin
 2. **Serveur** : inscriptions fermées par l'interrupteur (`AUTH_REGISTRATION_ENABLED`) ou le quota de mails (`MAIL_REGISTRATION_STOP`) → `403` `REGISTRATION_CLOSED` (le front le sait par `GET /mail/status` : bouton désactivé, bandeau « …elles rouvrent demain. »). Pseudo pris → `409` `USERNAME_TAKEN`. Sinon, création d'un `auth_flow` `registration` ; réponse toujours « un email t'a été envoyé ».
 3. **Mail** : adresse nouvelle → « Confirme ton inscription » + lien + code ; adresse déjà inscrite → « Tu as déjà un compte, dernière connexion il y a… » + lien vers la connexion, sans code. Durée floue : aujourd'hui, puis 1 à 7 jours, 1 à 5 semaines, 1 à 12 mois, puis en années.
 4. **Code ou lien validé** : création de `auth_user` (pseudo revérifié), suppression du parcours, session ouverte. Pseudo pris entre-temps : `409`, le parcours reste ouvert et la page redemande un pseudo (`code` et `link` acceptent un `username` de remplacement).
-5. **Étape facultative** : « Protège ton compte » (2FA), puis retour à la page demandée au départ.
+5. **Étape facultative** : « Protégez votre compte » (2FA), puis retour à la page demandée au départ.
 
 Une nouvelle inscription avec la même adresse remplace le parcours en attente : la personne qui reçoit les mails gagne toujours. Il y a 30 minutes pour terminer.
 
@@ -238,7 +238,7 @@ Erreurs : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGI
 |---|---|
 | Brute force sur un compte | 2 s entre deux essais, bannissement temporaire après 15 échecs, second facteur compris |
 | Un mot de passe essayé sur beaucoup de comptes | Compteur par IP, puis bannissement temporaire |
-| Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas ton compte |
+| Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas votre compte |
 | Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
 | Spam de mails, quota épuisé | Délai de renvoi, limites par adresse ou identifiant tapé et par IP (20 par heure, 40 par jour), seuils du quota ([mails, §2](../mails/mails.md#2-envoi)). L'adresse tapée compte en minuscules, car les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux |

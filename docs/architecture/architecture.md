@@ -15,6 +15,7 @@ Comment le dépôt est rangé, et les règles communes à tous les projets. La p
 7. [Console d'administration](#7-console-dadministration)
 8. [Infra](#8-infra)
 9. [Checklists](#9-checklists)
+10. [Glossaire](#10-glossaire)
 
 ## 1. Le dépôt
 
@@ -48,6 +49,7 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 
 - Code en anglais : types, champs, variables, valeurs des enums.
 - Commentaires en français. Ils disent pourquoi, et portent les règles métier délicates : le code fait référence. La doc de chaque projet en donne la vue d'ensemble et les décisions.
+- **Vouvoiement partout, sauf dans les mails** : le site, la console d'administration et les textes d'interface cités dans les docs vouvoient (« Votre profil », « Protégez votre compte »). Seuls les gabarits de mails tutoient.
 - Textes d'interface en français, écrits en dur, sans système de traduction. Seules les raisons d'erreur et les libellés de champs sont centralisés, en `Record<Enum, string>` pour être exhaustifs. Dans le JSX, apostrophe typographique (’) dans le texte visible (`react/no-unescaped-entities`).
 
 ### 2.2 Fichiers
@@ -64,6 +66,12 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 - Unitaires à côté du fichier testé : `foo.unit.test.ts`. Intégration : `<endpoint>.integration.test.ts`. End-to-end : [tests end-to-end](../e2e/e2e.md).
 - Structure imposée (`citadel/test-structure`) : `describe` du fichier testé (ou de l'endpoint), `describe` du comportement, puis `it("SHOULD … WHEN …")`, en anglais.
 - `pnpm validate-all` lance tout : lint, types, tests unitaires, d'intégration et end-to-end, builds, audit ([scripts/validation/validateAll.sh](../../scripts/validation/validateAll.sh)). Il se saute si rien n'a changé hors de `docs/` et des `.md` depuis son dernier succès (`--force` pour le relancer).
+
+### 2.4 Git et versions
+
+- Un seul dépôt, une seule branche de mise en production : `main`. `pnpm tools release` exige d'être dessus, sans rien de non commité, et à jour avec GitHub.
+- Message de commit en français, sous la forme `sujet : ce qui change`, le sujet étant la partie touchée (`docs`, `e2e`, `console`, `tableau`, `auth`…). Un commit par changement cohérent : l'historique se relit.
+- Une version est un tag `vAAAA.MM.JJ.NN` (`v2026.11.07.01`, puis `.02` le même jour), créé par `pnpm tools release` et porté par toutes les images ([hébergement, §2](../ci_cd/ci_cd.md#2-contraintes)).
 
 ## 3. Specs
 
@@ -160,7 +168,7 @@ Les principes en une phrase chacun : seule la couche `api/` d'un projet parle au
 - Son `.module.scss` porte le nom du dossier en camelCase (`citadel/scss-module-name`). Une feuille partagée importée via `../` est libre.
 - Pas de props étalées (`react/jsx-props-no-spreading`) ; pas d'index comme clé.
 - Icônes lucide-react ; aucun emoji dans l'interface.
-- Chaque champ obligatoire d'un formulaire porte un petit astérisque rouge à droite de son libellé.
+- Chaque champ obligatoire d'un formulaire porte un petit astérisque rouge à droite de son libellé, dans tous les formulaires (auth, contact, modales…). C'est l'atome `RequiredMark` du design system ([RequiredMark](../../packages/design-system/src/atoms/RequiredMark), `aria-hidden`, couleur `--theme-colorDestructiveHue`) placé juste après le texte du libellé, jamais un `*` écrit à la main ; dans le Backlog, `FormField isRequired`. Le contrôle natif porte aussi `required`. Est obligatoire un champ qui ne peut pas rester vide à la validation : un select pré-rempli sans option « aucune » compte, un nombre vide qui vaut 0 ne compte pas. Les champs sans libellé visible (saisies en ligne de Game Death Counter) n'ont pas d'astérisque.
 
 ### 5.2 Thème
 
@@ -211,7 +219,7 @@ Toute mutation passe par `useOptimisticMutation` (`common/api/mutation`).
 
 - **Message unique** : « Impossible de {action} : {raison}. » (`buildFailureMessage`). Raison par priorité : serveur injoignable, champ invalide (« le nom doit contenir au plus 255 caractères »), code métier, code technique, famille du statut, erreur inattendue.
 - « Réessayer » seulement pour une erreur passagère (réseau, 5xx) : une 4xx ou une erreur métier redonnerait le même résultat.
-- Un échec de mutation part en toast (`AppToaster`, monté dans le Layout de chaque projet) ; un échec de lecture remplace sa zone. Une réponse d'API en erreur ne se logge jamais en console, puisqu'elle est déjà montrée ; une erreur qui ne vient pas de l'API est un bug, et se logge. Rien n'est envoyé au serveur.
+- Un échec de mutation part en toast (`AppToaster`, monté dans le Layout de chaque projet) ; un échec de lecture remplace sa zone. Une réponse d'API en erreur ne se logge jamais en console, puisqu'elle est déjà montrée ; une erreur qui ne vient pas de l'API est un bug, et se logge. Les logs normaux de React (clés manquantes, erreur de rendu, y compris celle qu'un `ErrorBoundary` attrape) ne sont jamais interceptés ni masqués : ni `onCaughtError` ni `onUncaughtError`. Rien n'est envoyé au serveur.
 - **Saisie** : `checkInput(schema, valeurs, fieldLabels)` applique le schéma de l'endpoint, les mêmes règles que le serveur : un bouton désactivé vaut mieux qu'un 400. On envoie sa sortie, déjà nettoyée. Le message s'affiche sous le champ, sauf champ vide (le bouton désactivé suffit). Un champ ajouté par la mutation (le `gameId` d'un boss) se valide avec `schema.pick({ … })`.
 - **Dates** : un `<input type="datetime-local">` se remplit avec `toDateTimeInputValue` et se relit avec `fromDateTimeInputValue` (`common`).
 
@@ -223,11 +231,11 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 
 - **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node), `node/` (serveur et console, jamais le front). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
 - **Où ranger une fonction** : générique (rien d'un projet ni du métier) dans `common` ; propre à un projet mais partagée par le front et le serveur dans `specs/…/helper/` ; propre à une app dans son `helper/` (ou `common/` de l'app). Une fonction pure ne reste pas dans un composant : elle en sort, testée.
-- **`design-system`** : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../mails/mails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
+- **`design-system`** (détaillé dans [design system](../designSystem/designSystem.md)) : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../mails/mails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 
 ## 7. Console d'administration
 
-`apps/admin` : un seul paquet et un seul `tsconfig`, avec `src/server/` (Express, un dossier par source : docker, torrent, vpn, access, deadlines…), `src/client/` (React, design system) et `src/shared/` (types échangés entre les deux). Elle n'a pas de base : ses historiques sont des fichiers JSON déposés par `infra-ops`, et ses actions passent par des demandes à `infra-ops` ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)).
+`apps/admin`, détaillée dans [console d'administration](../admin/admin.md) : un seul paquet et un seul `tsconfig`, avec `src/server/` (Express, un dossier par source : docker, torrent, vpn, access, deadlines…), `src/client/` (React, design system) et `src/shared/` (types échangés entre les deux). Elle n'a pas de base : ses historiques sont des fichiers JSON déposés par `infra-ops`, et ses actions passent par des demandes à `infra-ops` ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)).
 
 ## 8. Infra
 
@@ -235,7 +243,7 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 infra/
 ├── compose.yml          le projet Compose unique du NAS : tous les services, groupés par préfixe
 │                        (infra-, site-prod-, site-preprod-, media-)
-├── compose.local.*      la prod sur ton PC (pnpm prod:local)
+├── compose.local.*      la prod sur votre PC (pnpm prod:local)
 ├── compose.e2e.yml      la stack des tests end-to-end
 ├── Caddyfile            quel nom et quel chemin vont vers quel conteneur
 ├── citadel              la commande du NAS : deploy, rollback, start, stop, status, logs, up, jobs…
@@ -243,7 +251,7 @@ infra/
 └── ops/crontab          planning des tâches d'infra-ops
 apps/client/nginx.conf   conf du conteneur front : SPA, relais /irigo
 .github/workflows/images.yml   construit et publie les images à chaque tag v*
-scripts/release.sh             lancé par pnpm release
+scripts/release.sh             lancé par pnpm tools release
 ```
 
 Sur le NAS :
@@ -272,3 +280,32 @@ Les fichiers d'infra sont commentés abondamment, en français : pourquoi et com
 2. Serveur : `router.ts` branché dans `globalRouter.ts`, enum des codes dans `errorCode.type.ts`, tables préfixées dans une migration. S'il garde des données par compte : `user_id` sur ses tables, endpoints `protected`, un `userData/<projet>UserData.ts` et son entrée dans `projectUserData` (suppression et export des données du compte, [authentification, §9](../auth/auth.md#9-organisation-du-code)).
 3. Front : fiche et route dans `react/appNavigation`, `<projet>QueryKeys.ts`, `<projet>ErrorReasons.ts` exhaustif, `<projet>FieldLabels.ts` ; thème dans `projectThemes` du design system, présentation (`showcase`) dans la fiche ; Layout avec `ProjectThemeProvider`, `QueryErrorBoundary` global autour de l'`<Outlet />` et `AppToaster`, et un bouton qui bascule entre clair et sombre.
 4. Doc : `docs/<projet>/<projet>.md`, au même gabarit que les autres, et son lien dans le [README](../../README.md#3-documentation).
+
+## 10. Glossaire
+
+Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont dans sa doc (le [Backlog](../backlog/backlog.md#1-notions), par exemple).
+
+| Mot | Sens |
+| --- | --- |
+| Bean | La forme que manipulent les services et les requêtes du serveur. Seuls les contrôleurs voient des DTO, et traduisent de l'un à l'autre (§4) |
+| Brevo | Le fournisseur qui envoie les mails du site ([mails](../mails/mails.md)) |
+| Caddy | Le serveur web du NAS : certificats, routage vers les conteneurs, bandeau du site ([hébergement](../ci_cd/ci_cd.md)) |
+| Code de secours | Code à usage unique qui remplace le second facteur quand il n'est plus accessible ([authentification](../auth/auth.md)) |
+| Console | L'application `apps/admin` : l'administration du NAS, hors Internet ([architecture, §7](#7-console-dadministration)) |
+| DTO | Data Transfer Object : la forme d'une réponse ou d'un corps de requête, décrite dans les specs, partagée par le front et le serveur (§3) |
+| Facteur, second facteur | Ce qui s'ajoute au mot de passe à la connexion : application TOTP, code par mail, code de secours |
+| Flyway | L'outil qui applique les migrations SQL (`apps/server/src/sql/migrations`) |
+| FM | Front Model : la forme dont l'écran a besoin, produite par un mapper à partir du DTO que garde le cache (§5.3) |
+| FRM | Ficsit Remote Monitoring : le mod de *Satisfactory* dont la page des machines lit les données ([Satisfactory](../satisfactory/satisfactory.md)) |
+| GDC | Game Death Counter, l'un des projets du site ([Game Death Counter](../gameDeathCounter/gameDeathCounter.md)) |
+| IGDB | La base de données de jeux (celle de Twitch) d'où vient le Backlog ([Backlog, §6](../backlog/backlog.md#6-données-igdb)) |
+| `infra-ops` | Le conteneur du NAS qui lance les jobs et exécute, après vérification, les demandes de la console ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)) |
+| Parcours | Une suite d'étapes d'authentification qui s'étend sur plusieurs pages ou mails : inscription, connexion avec second facteur, mot de passe oublié… ([authentification, §4.1](../auth/auth.md#41-commun-à-tous-les-parcours)) |
+| Pré-prod | La copie de la prod, à la demande sur le NAS, où se répètent les déploiements et se teste la restauration ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)) |
+| `prod:local` | Les images de prod lancées sur votre PC ([hébergement, §4](../ci_cd/ci_cd.md#4-commandes)) |
+| Projet | Une partie du site avec sa route, ses specs, son serveur et son front : Game Death Counter, Backlog, Angers Irigo, Satisfactory, Homepage, authentification |
+| Specs | Le paquet `packages/specs` : le contrat entre le front et l'API (§3) |
+| TOS | Le système d'exploitation du NAS (TerraMaster OS) |
+| TOTP | Le code à 6 chiffres d'une application d'authentification, renouvelé toutes les 30 secondes |
+| `todo_folder` | Une réserve de code mis de côté, ignorée par le lint (§1) |
+| Zone | Un morceau d'écran qui charge sa donnée seul, avec son squelette et son erreur (§5.4) |

@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Hébergement et mise en production
 
-Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de ton PC : GitHub construit les images, le NAS les télécharge et les déploie après ta confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les mails sont dans [mails](../mails/mails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#4-hébergement-et-console).
+Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de votre PC : GitHub construit les images, le NAS les télécharge et les déploie après votre confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les mails sont dans [mails](../mails/mails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#4-hébergement-et-console).
 
 ## Sommaire
 
@@ -36,19 +36,19 @@ Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN)
 
 ## 3. Prérequis
 
-- Sur ton PC : Docker Desktop, Git Bash (le `bash` de PowerShell serait celui de WSL, sans tes clés SSH), et l'alias `nas` de `~/.ssh/config`.
+- Sur votre PC : Docker Desktop, Git Bash (le `bash` de PowerShell serait celui de WSL, sans vos clés SSH), et l'alias `nas` de `~/.ssh/config`.
 - Sur le NAS : Docker, la commande `citadel` et `.env.prod`, rempli depuis `.env.prod.example`. `prod:local` lit `infra/compose.local.env`.
 
 ## 4. Commandes
 
-Sur ton PC :
+Sur votre PC :
 
 | Commande | Effet |
 | --- | --- |
-| `pnpm prod:local` | les images de prod sur ton PC, stack média comprise : https://citadel.localhost:8443, la console sur http://localhost:8100 |
+| `pnpm prod:local` | les images de prod sur votre PC, stack média comprise : https://citadel.localhost:8443, la console sur http://localhost:8100 |
 | `pnpm prod:local:down` | arrête tout et efface les volumes jetables |
-| `pnpm release` | valide, tague, pousse, attend les images, puis lance le déploiement sur le NAS, qui montre son plan et attend ton « o » |
-| `pnpm release --dry-run` | s'arrête juste avant le tag : rien ne part |
+| `pnpm tools release` | demande « réelle » ou « simulation » ; la réelle valide, tague, pousse, attend les images, puis lance le déploiement sur le NAS, qui montre son plan et attend votre « o » |
+| `pnpm tools release --dry-run` | la simulation directe : s'arrête juste avant le tag, rien ne part |
 | `pnpm tools` | menu des outils de `scripts/` : `hashAdminPassword` (pour `ADMIN_PASSWORD_HASH`), `generateAuthSecrets`, `checkEnvFiles`, `clean`… ; `pnpm tools <nom>` lance l'un d'eux directement |
 
 Sur le NAS (`ssh nas`), en secours de la console :
@@ -67,13 +67,13 @@ Sur le NAS (`ssh nas`), en secours de la console :
 | `citadel admin-password` | hachage du mot de passe de la console, depuis l'image |
 | `citadel <job>` | lance un job tout de suite (§7) |
 
-Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm release` ; revenir en arrière : `citadel rollback`. Chaque nuit, `update-check` liste dans la console les mises à jour des images tierces, avec leurs notes de version.
+Mettre à jour une image tierce : changer sa version dans `compose.yml`, commiter, `pnpm tools release` ; revenir en arrière : `citadel rollback`. Chaque nuit, `update-check` liste dans la console les mises à jour des images tierces, avec leurs notes de version.
 
 Après une mise à jour de TOS, un conteneur qui ne démarre plus (`Operation not permitted`) se répare en le recréant (`--force-recreate`).
 
 ## 5. Accès
 
-Depuis tes appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME`) par Tailscale, même port des deux côtés. Internet n'atteint que ce que la box redirige : 80 et 443, vers Caddy.
+Depuis vos appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME`) par Tailscale, même port des deux côtés. Internet n'atteint que ce que la box redirige : 80 et 443, vers Caddy.
 
 | Service | Adresse | Internet | LAN, Tailscale | Connexion |
 |---|---|---|---|---|
@@ -84,23 +84,23 @@ Depuis tes appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME
 | Console | `http://…:8100` | ❌ | ✅ | son mot de passe |
 | Pré-prod | `http://…:8002`, servie par Caddy | ❌ | ✅ | comptes de la pré-prod |
 | Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
-| SSH | son port, dans ton `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
+| SSH | son port, dans votre `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
 | MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes plus bas |
 | API Docker | socket du NAS | ❌ | ❌ | `infra-ops` ; la console à travers `infra-socket-proxy` |
 
 - API : les projets privés (Game Death Counter, Backlog) exigent une session ([authentification](../auth/auth.md#411-protection-des-endpoints-et-des-projets)) ; le contact, l'état des mails et les parcours de l'authentification restent ouverts, limités par IP. `/api/internal` est bloqué par Caddy et réservé à la console, par le réseau Docker.
-- Console en HTTP, sans certificat à installer sur chaque appareil : par Tailscale, WireGuard chiffre tout ; en LAN, le mot de passe ne traverse que ton réseau domestique. Accepté.
+- Console en HTTP, sans certificat à installer sur chaque appareil : par Tailscale, WireGuard chiffre tout ; en LAN, le mot de passe ne traverse que votre réseau domestique. Accepté.
 
 ## 6. La base depuis DBeaver
 
 - MariaDB écoute sur `127.0.0.1:3306` du NAS (pré-prod : `3307`) : invisible depuis le réseau, joignable seulement depuis le NAS lui-même, donc par un tunnel SSH.
-- DBeaver, onglet SSH : hôte : son nom Tailscale, port : celui de SSH, ton utilisateur, ta clé. Onglet principal : hôte `127.0.0.1`, port `3306`, base `citadel`, compte `citadel_migrator`.
+- DBeaver, onglet SSH : hôte : son nom Tailscale, port : celui de SSH, votre utilisateur, votre clé. Onglet principal : hôte `127.0.0.1`, port `3306`, base `citadel`, compte `citadel_migrator`.
 - Le SSH de TOS autorise les tunnels : `AllowTcpForwarding` garde sa valeur par défaut.
 
 | Compte | Pour | Droits |
 |---|---|---|
 | `citadel_app` | le serveur | lire et écrire les données |
-| `citadel_migrator` | Flyway, et toi dans DBeaver | structure et données de `citadel`, rien d'autre |
+| `citadel_migrator` | Flyway, et vous dans DBeaver | structure et données de `citadel`, rien d'autre |
 | `citadel_backup` | les dumps | lecture seule |
 | `root` | dépannage | seulement depuis l'intérieur du conteneur |
 
@@ -142,9 +142,9 @@ Dans `infra/ops/crontab`. `citadel <job>` en lance un tout de suite, comme le bo
 
 ## 8. Accès au Drive (rclone)
 
-Les sauvegardes partent sur ton Google Drive, chiffrées par rclone. Deux « remotes » dans `rclone.conf` : `gdrive` (le dossier `citadel` de ton Drive) et `citadel-backups` (le même dossier, chiffré : contenus illisibles sans le mot de passe et le sel). **Le mot de passe et le sel vont dans Bitwarden avant le premier envoi** : sans eux, les sauvegardes sont illisibles, y compris pour toi si le NAS meurt. Changer de fournisseur ne change que le « remote ».
+Les sauvegardes partent sur votre Google Drive, chiffrées par rclone. Deux « remotes » dans `rclone.conf` : `gdrive` (le dossier `citadel` de votre Drive) et `citadel-backups` (le même dossier, chiffré : contenus illisibles sans le mot de passe et le sel). **Le mot de passe et le sel vont dans Bitwarden avant le premier envoi** : sans eux, les sauvegardes sont illisibles, y compris pour vous si le NAS meurt. Changer de fournisseur ne change que le « remote ».
 
-Pourquoi ça tient : un client OAuth à toi, publié **en production**. En mode « test », Google coupe le jeton au bout de 7 jours (la cause probable des pannes d'avant). La portée `drive.file` ne donne accès qu'aux fichiers créés par rclone : pas de vérification Google à demander, et rien d'autre de ton Drive n'est lisible. Le jeton ne meurt ensuite que si tu le révoques, ou après 6 mois sans servir.
+Pourquoi ça tient : votre propre client OAuth, publié **en production**. En mode « test », Google coupe le jeton au bout de 7 jours (la cause probable des pannes d'avant). La portée `drive.file` ne donne accès qu'aux fichiers créés par rclone : pas de vérification Google à demander, et rien d'autre de votre Drive n'est lisible. Le jeton ne meurt ensuite que si vous le révoquez, ou après 6 mois sans servir.
 
 Accès limité au seul dossier `citadel`, en deux couches : Google (`drive.file`) cache à rclone tout ce qu'il n'a pas créé ; rclone (`root_folder_id`) prend `citadel` pour racine, et aucune commande ne peut en sortir.
 
@@ -154,15 +154,15 @@ Sur <https://console.cloud.google.com>, connecté au compte Google du Drive. Tou
 
 1. Sélecteur de projet → Nouveau projet → `citadel-rclone` → Créer, puis le sélectionner.
 2. API et services → Bibliothèque → « Google Drive API » → Activer.
-3. Google Auth Platform → Commencer : nom `citadel-rclone`, ton email ; audience **Externe** ; ton email en contact ; accepter → Créer.
+3. Google Auth Platform → Commencer : nom `citadel-rclone`, votre email ; audience **Externe** ; votre email en contact ; accepter → Créer.
 4. Accès aux données → Ajouter ou supprimer des champs d'application → filtrer `drive.file` → cocher `.../auth/drive.file` → Mettre à jour → Enregistrer.
-5. Branding : ton email en assistance, l'adresse du site en page d'accueil **et** en règles de confidentialité (Google ne vérifie pas ces pages avec `drive.file`), pas de logo (il déclencherait une vérification) → Enregistrer.
+5. Branding : votre email en assistance, l'adresse du site en page d'accueil **et** en règles de confidentialité (Google ne vérifie pas ces pages avec `drive.file`), pas de logo (il déclencherait une vérification) → Enregistrer.
 6. Audience → **Publier l'application** → Confirmer. Le statut doit être « En production ».
 7. Clients → Créer un client → type **Application de bureau**, nom `rclone` → Créer. Copier l'ID client et le code secret dans Bitwarden (le secret n'est plus réaffiché).
 
 ### 8.2 Remotes
 
-Sur ton PC. Installer rclone (`winget install Rclone.Rclone`), ouvrir un nouveau terminal, puis `rclone config` :
+Sur votre PC. Installer rclone (`winget install Rclone.Rclone`), ouvrir un nouveau terminal, puis `rclone config` :
 
 1. `n` (nouveau remote), nom `gdrive`, type `drive`, `client_id` et `client_secret` collés, `scope` : `drive.file`, `service_account_file` vide, configuration avancée `n`, navigateur `y`. Choisir le compte ; si Google affiche « Google n'a pas validé cette application » : Paramètres avancés → Accéder à citadel-rclone → Continuer. « Success » s'affiche. Shared Drive `n`, garder `y`, puis `q`.
 2. Enfermer `gdrive` dans le dossier `citadel`, dans Git Bash :
@@ -184,22 +184,22 @@ Sur ton PC. Installer rclone (`winget install Rclone.Rclone`), ouvrir un nouveau
 Dans Git Bash : créer un fichier lisible, l'envoyer chiffré, le relire sans aide (juste les secrets) :
 
 ```sh
-# 1. Créer un fichier avec du texte que tu reconnaîtras
+# 1. Créer un fichier avec du texte que vous reconnaîtrez
 echo "test de la citadel" > verification.txt
 
 # 2. L'envoyer sur le Drive (via rclone, il sera chiffré)
 rclone copy verification.txt citadel-backups:verify/
 
-# 3. ⚠️  Va observer sur ton Drive (https://drive.google.com)
+# 3. ⚠️  Allez observer sur votre Drive (https://drive.google.com)
 #    Le fichier garde son nom, mais son contenu est illisible : c'est le chiffrement.
 
 # 4. Relire le fichier en clair via rclone (en utilisant la config citadel-backups)
 echo "--- Via citadel-backups (normal) ---"
 rclone cat citadel-backups:verify/verification.txt
 
-# 5. Relire le MÊME fichier JUSTE avec tes secrets Bitwarden
+# 5. Relire le MÊME fichier JUSTE avec vos secrets Bitwarden
 #    (pas de config rclone, pas de NAS : juste les deux codes de Bitwarden)
-#    Cela prouve que tu peux récupérer tes données en cas de catastrophe.
+#    Cela prouve que vous pouvez récupérer vos données en cas de catastrophe.
 echo "--- Avec JUSTE les secrets (mode urgence) ---"
 read -rsp "Mot de passe (depuis Bitwarden) : " PW; echo
 read -rsp "Sel (depuis Bitwarden) : " SALT; echo
@@ -214,10 +214,10 @@ echo "Vérification terminée ✓"
 
 ### 8.4 Sur le NAS
 
-Depuis Git Bash sur ton PC (pas PowerShell : `<` et `$APPDATA` n'y marchent pas). Cela copie le fichier de config depuis ton PC vers le NAS, avec des permissions très restrictives (seul le propriétaire peut le lire) :
+Depuis Git Bash sur votre PC (pas PowerShell : `<` et `$APPDATA` n'y marchent pas). Cela copie le fichier de config depuis votre PC vers le NAS, avec des permissions très restrictives (seul le propriétaire peut le lire) :
 
 ```sh
-# 1. Copier le fichier de ton PC vers le NAS, via SSH
+# 1. Copier le fichier de votre PC vers le NAS, via SSH
 ssh nas 'umask 077 && cat > /Volume1/citadel/rclone.conf' < "$APPDATA/rclone/rclone.conf"
 ```
 
@@ -225,7 +225,7 @@ ssh nas 'umask 077 && cat > /Volume1/citadel/rclone.conf' < "$APPDATA/rclone/rcl
 - `ssh nas` : se connecter au NAS en SSH
 - `umask 077` : les permissions par défaut vont être `rw-------` (seul le propriétaire lit/écrit)
 - `cat > /Volume1/citadel/rclone.conf` : écrire ce qui arrive sur l'entrée standard dans ce fichier
-- `< "$APPDATA/rclone/rclone.conf"` : lire depuis ton fichier rclone local (Windows)
+- `< "$APPDATA/rclone/rclone.conf"` : lire depuis votre fichier rclone local (Windows)
 
 ```sh
 # 2. Vérifier que le fichier est bien là, avec les bonnes permissions
@@ -234,9 +234,9 @@ ssh nas ls -l /Volume1/citadel/rclone.conf
 
 Attendu : `-rw-------` (seul le propriétaire lit/écrit, personne d'autre n'y voit rien, même les autres utilisateurs du NAS).
 
-`infra-ops` (le conteneur des jobs) relit ce fichier, et le réécrit quand le jeton OAuth de Google doit être renouvelé (normal, aucune action de ta part).
+`infra-ops` (le conteneur des jobs) relit ce fichier, et le réécrit quand le jeton OAuth de Google doit être renouvelé (normal, aucune action de votre part).
 
-**Si un jour le Drive refuse** (`invalid_grant`, jeton expiré ou révoqué) : sur ton PC, `rclone config reconnect gdrive:`, puis refaire l'étape 1. Le chiffrement ne change pas : rien n'est perdu.
+**Si un jour le Drive refuse** (`invalid_grant`, jeton expiré ou révoqué) : sur votre PC, `rclone config reconnect gdrive:`, puis refaire l'étape 1. Le chiffrement ne change pas : rien n'est perdu.
 
 ### 8.5 Déchiffrer un fichier téléchargé du Drive
 
@@ -259,10 +259,10 @@ Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget
 
 Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`) signalent leur début, leur réussite ou leur échec à healthchecks.io (offre gratuite), qui alerte par e-mail et sur Discord si un job échoue **ou ne passe pas à l'heure** : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Limite : si `infra-ops` s'arrête, l'alerte de `site-check` annonce un site injoignable alors que c'est la surveillance qui est tombée. Certificats, disques, conteneurs et mises à jour se surveillent dans la console ; TOS garde ses e-mails SMART et d'espace disque.
 
-Chaque contrôle (une ligne dans la liste de ton projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
+Chaque contrôle (une ligne dans la liste de votre projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
 
-1. healthchecks.io → ton projet → Settings → API Access → « Ping key » : la générer, la ranger dans Bitwarden, puis l'écrire dans `.env.prod` (`HEALTHCHECKS_PING_KEY`), avant le déploiement.
-2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console (`http://…:8100`), section « Jobs », le bouton ▶ de chaque ligne ; ou depuis ton PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
+1. healthchecks.io → votre projet → Settings → API Access → « Ping key » : la générer, la ranger dans Bitwarden, puis l'écrire dans `.env.prod` (`HEALTHCHECKS_PING_KEY`), avant le déploiement.
+2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console (`http://…:8100`), section « Jobs », le bouton ▶ de chaque ligne ; ou depuis votre PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
 3. healthchecks.io ne sait pas encore **quand** attendre chaque job : par défaut, une fois par jour. Pour `site-check`, une panne ne serait donc signalée qu'au bout d'un jour. Sur chaque contrôle : cliquer dessus → « Change Schedule » → onglet « Cron » → coller l'expression du tableau, fuseau `Europe/Paris`, le délai de grâce (le retard toléré avant l'alerte) → Save. Ces expressions sont celles de `infra/ops/crontab` : à reporter ici si elles y changent.
 
 | Contrôle | Cron | Délai de grâce |
@@ -297,7 +297,7 @@ docker exec tailscale tailscale ping <téléphone>  # téléphone en 4G ; attend
 ssh nas echo ok                                 # attendu : phrase de passe de la clé, puis ok
 ssh -o PubkeyAuthentication=no nas echo ok      # attendu : Permission denied (publickey), sans demande de mot de passe
 pnpm prod:local                                 # attendu : tous les conteneurs « Healthy » ; puis pnpm prod:local:down
-pnpm release --dry-run                          # attendu (tout commité) : validation, résumé, arrêt avant le tag
+pnpm tools release --dry-run                    # attendu (tout commité) : validation, résumé, arrêt avant le tag
 ```
 
 ## 11. Remonter le NAS de zéro

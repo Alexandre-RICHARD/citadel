@@ -91,7 +91,7 @@ La recette manuelle de l'[authentification](../auth/auth.md), en `pnpm prod:loca
 - [ ] Champ piège rempli (console du navigateur) : réponse normale, aucun compte ni mail, l'écran du code tient au rechargement ; une vraie inscription en attente à la même adresse reste valable.
 - [ ] 6e inscription à la même adresse dans l'heure (refusée par la limite de mails) : l'IP n'est pas bannie pour autant.
 - [ ] Inscriptions fermées (interrupteur, puis quota) : bouton désactivé, bandeau « …elles rouvrent demain. ».
-- [ ] Après l'inscription : étape « Protège ton compte » passable, puis retour à la page demandée au départ.
+- [ ] Après l'inscription : étape « Protégez votre compte » passable, puis retour à la page demandée au départ.
 
 ## 6. Connexion
 
@@ -153,7 +153,7 @@ La recette manuelle de l'[authentification](../auth/auth.md), en `pnpm prod:loca
 - [ ] Changement de mot de passe : l'ancien redemandé, le même refusé, les autres sessions fermées, celle-ci gardée.
 - [ ] Ajout d'une application : le QR code se scanne (Google Authenticator, Aegis, Bitwarden), la clé saisie à la main marche aussi, le premier code active ; les codes de secours s'affichent une seule fois, se téléchargent, et ne reviennent pas au rechargement.
 - [ ] Facteur mail activé par son lien (`/auth/verify`) plutôt que par son code : les codes de secours s'affichent sur le profil.
-- [ ] Étape « Protège ton compte » après l'inscription : « Passer cette étape » mène à la page demandée ; la fin de l'activation montre les codes de secours avant d'y mener.
+- [ ] Étape « Protégez votre compte » après l'inscription : « Passer cette étape » mène à la page demandée ; la fin de l'activation montre les codes de secours avant d'y mener.
 - [ ] Suppression du compte avec une application d'authentification : le code (ou un code de secours) est demandé en plus du mot de passe.
 - [ ] Export : le ZIP s'ouvre avec l'explorateur Windows et 7-Zip ; les CSV gardent accents et émojis dans Excel ; aucun hash, empreinte ni secret.
 - [ ] Suppression des données du Backlog seul : GDC intact ; suppression du compte : plus aucune ligne, mail de confirmation, reconnexion impossible.

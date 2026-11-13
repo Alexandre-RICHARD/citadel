@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › À faire
 
-Tout ce qui reste à faire dans le dépôt, par grand sujet puis par thème, et les idées écartées pour ne pas les reproposer. ⚠️ marque les points prioritaires. Les bugs et demandes en cours de traitement sont dans les [problèmes connus](../problems/problems.md).
+Tout ce qui reste à faire dans le dépôt, par grand sujet puis par thème, et les idées écartées pour ne pas les reproposer. ⚠️ marque les points prioritaires. Bugs, incohérences et simples idées y sont réunis : il n'y a pas d'autre liste.
 
 ## Sommaire
 
@@ -23,7 +23,7 @@ Tout ce qui reste à faire dans le dépôt, par grand sujet puis par thème, et 
 
 - Types : jamais de `undefined` explicite. `exactOptionalPropertyTypes` est déjà actif : une propriété facultative se marque `?`, une valeur absente vaut `null` (aussi pour les champs de formulaire).
 - `getSortStringValue` (`packages/common`) classe les majuscules avant les minuscules et les accents après « z » : lui donner la locale (un `TODO` est dans le fichier ; ses tests décrivent le comportement actuel).
-- Compléter les tests unitaires (piste : https://claude.ai/chat/9c73847f-79d7-4408-9eab-9601d0975968).
+- Compléter les tests unitaires.
 - Écrire un guide des tests commun à tout le dépôt (unitaires, intégration, end-to-end).
 - Revue de la base par un regard de DBA : le schéma et son usage, pour en déduire des optimisations.
 
@@ -46,10 +46,6 @@ Tout ce qui reste à faire dans le dépôt, par grand sujet puis par thème, et 
 - Application mobile, pour des widgets par exemple : à évaluer.
 - Accessibilité (textes au survol, etc.).
 - Responsive.
-
-### 1.4 Données
-
-- Stocker des images en base. Contredit l'écart « stocker les images elles-mêmes » du [Backlog](#65-écarté) : à trancher.
 
 ## 2. Authentification
 
@@ -223,15 +219,15 @@ Les scénarios sont dans [scénarios](../e2e/scenarios.md) ; les codes cités (A
 
 Rien n'a encore été corrigé dans le code du site.
 
-- **Lien d'un mail ouvert dans un nouvel onglet : la page demandée au départ est perdue** (A1). Après « Passer cette étape » de l'étape « Protège ton compte », l'onglet du lien atterrit sur le profil (`/auth/profile/identity`) au lieu de `/backlog`. La page demandée est gardée dans le `sessionStorage` de l'onglet d'origine (`useAuthRedirect`) : l'onglet ouvert par le lien n'en sait rien. Même comportement attendu pour tout lien de mail (connexion par lien, mot de passe oublié). Quand le code est tapé dans l'onglet d'origine (A2), on revient bien à `/backlog`. Le test A1 vérifie donc le profil. À trancher : transmettre la page demandée par le parcours (côté serveur), ou accepter le profil.
-- ⚠️ **« Confirmer » cliqué trop vite envoie au mauvais endroit** (vu 2 fois sur B1 et G5, test instable). Sur `/auth/verify`, `VerifyPage` lit le type du parcours en cours (`useFlow`) au moment du clic : si `GET /auth/flow` n'a pas encore répondu, il est inconnu, et une inscription confirmée mène au profil au lieu de « Protège ton compte ». Un humain ne clique pas avant la fin du chargement, mais un clic rapide suffit à le reproduire. À corriger : désactiver « Confirmer » tant que le parcours n'est pas chargé. Les tests attendent la fin des requêtes (`openMailLink`).
+- **Lien d'un mail ouvert dans un nouvel onglet : la page demandée au départ est perdue** (A1). Après « Passer cette étape » de l'étape « Protégez votre compte », l'onglet du lien atterrit sur le profil (`/auth/profile/identity`) au lieu de `/backlog`. La page demandée est gardée dans le `sessionStorage` de l'onglet d'origine (`useAuthRedirect`) : l'onglet ouvert par le lien n'en sait rien. Même comportement attendu pour tout lien de mail (connexion par lien, mot de passe oublié). Quand le code est tapé dans l'onglet d'origine (A2), on revient bien à `/backlog`. Le test A1 vérifie donc le profil. À trancher : transmettre la page demandée par le parcours (côté serveur), ou accepter le profil.
+- ⚠️ **« Confirmer » cliqué trop vite envoie au mauvais endroit** (vu 2 fois sur B1 et G5, test instable). Sur `/auth/verify`, `VerifyPage` lit le type du parcours en cours (`useFlow`) au moment du clic : si `GET /auth/flow` n'a pas encore répondu, il est inconnu, et une inscription confirmée mène au profil au lieu de « Protégez votre compte ». Un humain ne clique pas avant la fin du chargement, mais un clic rapide suffit à le reproduire. À corriger : désactiver « Confirmer » tant que le parcours n'est pas chargé. Les tests attendent la fin des requêtes (`openMailLink`).
 - ⚠️ **Après un échec, le premier nouvel essai reçoit un `429` sans message** (E2, E6, E7, G2, G10). Un mauvais mot de passe ou un mauvais code ne fait pas attendre le bouton : un nouvel essai dans les 2 secondes reçoit un `429`, et l'interface n'affiche que le compte à rebours « Patiente n s » sur le bouton, sans message. L'utilisateur ne sait pas si son essai a été jugé. À corriger : appliquer le délai côté interface dès la réponse en échec, comme après un `429`. Les tests contournent par `retryUntilAnswered`.
 - **Nom du fichier des codes de secours en date UTC** (E1, vérifié seulement au format). `buildRecoveryCodesFileName` utilise `toISOString()` : entre minuit et 1 h ou 2 h (heure de Paris), le fichier porte la date de la veille. Sans conséquence grave.
 - **Le mail « adresse déjà utilisée » contient un lien** (G3). Le scénario et la [doc de l'authentification](../auth/auth.md#46-profil) disent « sans lien ni code » ; le mail contient un lien vers `/auth/login` (ni lien de confirmation, ni jeton). Le test vérifie l'absence de `/auth/verify` et de code. À trancher : corriger le scénario et la doc, ou le mail.
 
 ### 8.2 Scénarios à écrire
 
-- Les scénarios sans ✅ dans [scénarios](../e2e/scenarios.md) : A3 à A8, B3 à B9, C4, C5, C7, C8, D1 à D3, E4, E5, E8, E9, F1 à F5, G1, G4, G7 à G9, H3 à H5, I3, I4, J1 à J5, K1 à K22, L1 à L3, L8, L9, M1 à M8, N1 à N3, Z1 à Z3.
+- Écrire les scénarios sans ✅ dans [scénarios](../e2e/scenarios.md).
 - Les scénarios qui exigent des durées raccourcies (B7…) : une configuration à part de la stack e2e, à ajouter en les écrivant.
 - M7 : décider d'abord le comportement des adresses inconnues hors de `/homepage` et `/auth` (page blanche, page d'erreur de React Router, ou carte d'Angers Irigo).
 - Automatiser ce qui peut l'être dans les [vérifications de fin de l'authentification](../e2e/auth_verifications.md).
@@ -253,7 +249,7 @@ Rien n'a encore été corrigé dans le code du site.
 
 Le projet est décrit dans [Satisfactory](../satisfactory/satisfactory.md). Les idées sont reprises de Notion au plus près ; les couleurs d'origine y deviennent des groupes.
 
-- Le jeton `X-FRM-Authorization` de FRM est écrit en dur dans `pages/Machines/MachineLine.tsx`, contre la règle « aucun secret dans le dépôt » : le sortir du code (réglage de la page, par exemple).
+- Le jeton `X-FRM-Authorization` de FRM est écrit en dur dans `pages/Machines/MachineLine.tsx`. Il est propre au mod de la partie lancée sur ce PC : sans risque. La future interface de Satisfactory devra permettre à chacun de saisir le jeton généré par son propre mod FRM, à la place de celui-ci.
 - Implémenter la grille Satisfactory, avec un système d'agrandissement de certaines cases (?).
 - Chaque coordonnée doit être un lien pour pinguer en jeu (aujourd'hui, un bouton de la page des machines).
 
