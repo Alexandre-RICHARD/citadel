@@ -125,8 +125,8 @@ Le fonctionnement est décrit dans [infra](../infra/infra.md).
 
 ### 4.5 Sécurité réseau
 
-- Limitation de débit sur l'API ; CrowdSec devant le site et Jellyfin.
-- Double authentification sur TOS, absente de TOS 7 : risque limité, son interface n'est jamais exposée sur Internet.
+- Filtrage et limitation automatiques du trafic devant les services exposés.
+- Authentification renforcée sur l'administration du NAS, quand le système le permettra.
 - IPv6 ; géolocalisation des IP dans la console (base GeoLite2) ; passkeys pour la console.
 
 ### 4.6 Console

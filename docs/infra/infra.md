@@ -24,7 +24,7 @@ Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN)
 - **Un seul projet Compose**, services groupés par préfixe : `infra-` (Caddy, `infra-ops` qui lance les jobs, la console…), `site-prod-` (front, serveur, base, migrations), `site-preprod-` (la même chose, à la demande), `media-`.
 - **Pré-prod** : sur le NAS, arrêtée la plupart du temps. Mêmes images que la prod, `.env.prod` avec la base `citadel_preprod`, restaurée chaque nuit depuis la prod (§7). Elle sert au test de restauration et à la répétition de chaque déploiement qui apporte des migrations.
 - **`citadel deploy <version>`** : plan, confirmation, dump de la base, répétition en pré-prod si la version a des migrations (dernier dump importé, migrations, serveur démarré : un échec arrête tout, la prod n'est pas touchée), migrations en prod, nouveaux conteneurs, vérifications, retour arrière automatique en cas d'échec.
-- **La console** (`apps/admin`, port 8100) dépose ses demandes (jobs, déploiements, restaurations) dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute : une faille dans la console (`http://…:8100`) ne donne ni les pleins droits sur Docker, ni l'accès au Drive.
+- **La console** (`apps/admin`) dépose ses demandes (jobs, déploiements, restaurations) dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute : une faille dans la console ne donne ni les pleins droits sur Docker, ni l'accès au Drive.
 - **Bandeau du site** : `infra-ops` écrit le message dans un fichier JSON (identifiant, texte, date de fin) que Caddy sert tel quel (`/banner.json`) : ni base ni API en jeu, il s'affiche même si l'API est en panne. Après une restauration, un message automatique reste 3 mois. Il ne disparaît que par sa croix, retenue avec l'identifiant du message : un nouveau message le réaffiche.
 
 ## 2. Contraintes
@@ -32,7 +32,7 @@ Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN)
 - Le NAS ne reçoit que des images, ni git ni Node. Une version est un tag git (`v2026.10.25.01`), porté par toutes les images.
 - Une migration passée en prod ne se modifie plus, et le code N-1 doit tourner sur le schéma N : un retour arrière ne touche jamais à la base.
 - Aucun secret dans le dépôt, dans une image ou dans une variable `VITE_*`. Bitwarden est la référence ; `.env.prod` vit sur le NAS, dans `/Volume1/citadel/`.
-- Seuls le site, `/api` et Jellyfin sont joignables depuis Internet. Le reste (console sur le port 8100, *arr, SSH sur un port à part, MariaDB par tunnel SSH) passe par le LAN ou Tailscale.
+- Seuls le site, `/api` et Jellyfin sont joignables depuis Internet. Tout le reste (console, *arr, SSH, base de données) passe par le réseau local ou Tailscale.
 
 ## 3. Prérequis
 
@@ -73,19 +73,19 @@ Après une mise à jour de TOS, un conteneur qui ne démarre plus (`Operation no
 
 ## 5. Accès
 
-Depuis vos appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME`) par Tailscale, même port des deux côtés. Internet n'atteint que ce que la box redirige : 80 et 443, vers Caddy.
+Depuis vos appareils : par l'IP du NAS en LAN, ou son nom (`NAS_HOSTNAME`) par Tailscale. Internet n'atteint que ce que la box redirige, vers Caddy.
 
 | Service | Adresse | Internet | LAN, Tailscale | Connexion |
 |---|---|---|---|---|
 | Site (`www` redirigé) | `https://alexandre-richard.fr`, par Cloudflare | ✅ | ✅ par le domaine | comptes du site pour les projets privés |
 | API | `https://alexandre-richard.fr/api` | ✅ sauf `/api/internal` | ✅ | session pour les endpoints `protected` |
 | Jellyfin | `https://jellyfin.alexandre-richard.fr` ; `:8096` en direct | ✅ par le domaine | ✅ les deux | comptes Jellyfin |
-| qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | `:8080`, `:9696`, `:7878`, `:8989`, `:6767`, `:2468` | ❌ | ✅ | la leur : leurs réglages suivent leurs dossiers |
-| Console | `http://…:8100` | ❌ | ✅ | son mot de passe |
-| Pré-prod | `http://…:8002`, servie par Caddy | ❌ | ✅ | comptes de la pré-prod |
+| qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | leurs ports habituels | ❌ | ✅ | la leur : leurs réglages suivent leurs dossiers |
+| Console | `http://…`, au port de `ADMIN_PORT` | ❌ | ✅ | son mot de passe |
+| Pré-prod | `http://…`, servie par Caddy (port dans `infra/compose.yml`) | ❌ | ✅ | comptes de la pré-prod |
 | Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
 | SSH | son port, dans votre `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
-| MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes plus bas |
+| MariaDB, prod et pré-prod | interface locale du NAS | ❌ | tunnel SSH | comptes plus bas |
 | API Docker | socket du NAS | ❌ | ❌ | `infra-ops` ; la console à travers `infra-socket-proxy` |
 
 - API : les projets privés (Game Death Counter, Backlog) exigent une session ([authentification](../auth/auth.md#411-protection-des-endpoints-et-des-projets)) ; le contact, l'état des emails et les parcours de l'authentification restent ouverts, limités par IP. `/api/internal` est bloqué par Caddy et réservé à la console, par le réseau Docker.
@@ -93,8 +93,8 @@ Depuis vos appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME
 
 ## 6. La base depuis DBeaver
 
-- MariaDB écoute sur `127.0.0.1:3306` du NAS (pré-prod : `3307`) : invisible depuis le réseau, joignable seulement depuis le NAS lui-même, donc par un tunnel SSH.
-- DBeaver, onglet SSH : hôte : son nom Tailscale, port : celui de SSH, votre utilisateur, votre clé. Onglet principal : hôte `127.0.0.1`, port `3306`, base `citadel`, compte `citadel_migrator`.
+- MariaDB n'écoute que sur l'interface locale du NAS (ports dans `infra/compose.yml`) : invisible depuis le réseau, joignable seulement depuis le NAS lui-même, donc par un tunnel SSH.
+- DBeaver, onglet SSH : hôte : son nom Tailscale, port : celui de SSH, votre utilisateur, votre clé. Onglet principal : hôte `127.0.0.1`, port de la base de prod (ou de pré-prod), base `citadel`, compte `citadel_migrator`.
 - Le SSH de TOS autorise les tunnels : `AllowTcpForwarding` garde sa valeur par défaut.
 
 | Compte | Pour | Droits |
@@ -207,11 +207,7 @@ Depuis Git Bash sur votre PC (pas PowerShell : `<` et `$APPDATA` n'y marchent pa
 ssh nas 'umask 077 && cat > /Volume1/citadel/rclone.conf' < "$APPDATA/rclone/rclone.conf"
 ```
 
-Ça se décompose ainsi :
-- `ssh nas` : se connecter au NAS en SSH
-- `umask 077` : les permissions par défaut vont être `rw-------` (seul le propriétaire lit/écrit)
-- `cat > /Volume1/citadel/rclone.conf` : écrire ce qui arrive sur l'entrée standard dans ce fichier
-- `< "$APPDATA/rclone/rclone.conf"` : lire depuis votre fichier rclone local (Windows)
+`umask 077` rend le fichier lisible par son seul propriétaire.
 
 ```sh
 # 2. Vérifier que le fichier est bien là, avec les bonnes permissions
@@ -266,16 +262,16 @@ Aucun fichier ne les contient : à refaire si le NAS, la box ou le PC change, et
 
 | Où | Réglage |
 | --- | --- |
-| Box | vers le NAS, seulement TCP 80 → 8001 et 443 → 4443 ; UPnP désactivé ; bail DHCP statique pour le NAS |
+| Box | vers le NAS, seulement les ports web, vers Caddy (`infra/compose.yml`) ; UPnP désactivé ; bail DHCP statique pour le NAS |
 | Tailscale | expiration de clé désactivée pour le NAS |
-| TOS, `/etc/ssh/sshd_config` | `PermitRootLogin prohibit-password`, `PasswordAuthentication no`, `KbdInteractiveAuthentication no` |
+| TOS, `/etc/ssh/sshd_config` | connexion par clé seulement : ni mot de passe, ni root par mot de passe |
 | TOS, dossier personnel | droits `755` (en `777`, SSH refuse la clé) |
 | PC | clé `~/.ssh/nas` avec phrase de passe ; alias `nas` : nom Tailscale du NAS, port de SSH, `IdentitiesOnly yes` |
 
 ```sh
 # ----- Sur le NAS, dans le terminal web de TOS : il marche même si SSH est cassé -----
 /usr/sbin/sshd -T | grep -iE '^(passwordauthentication|kbdinteractiveauthentication|permitrootlogin) '
-#   attendu : permitrootlogin without-password, passwordauthentication no, kbdinteractiveauthentication no
+#   attendu : aucune connexion par mot de passe
 ls -ld ~                                        # attendu : drwxr-xr-x ; sinon chmod go-w ~
 docker exec tailscale tailscale ping <téléphone>  # téléphone en 4G ; attendu : « via <IP>:<port> » (direct), pas « via DERP »
 
