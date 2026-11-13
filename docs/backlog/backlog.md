@@ -41,7 +41,7 @@ Une ligne du tableau est un **jeu du backlog**. Les données de jeu sont portée
 
 ## 2. Types de fin et statuts
 
-Le type de fin, facultatif, choisi à l'ajout du jeu au backlog, dit ce que « finir » veut dire. Il est personnel : un joueur peut avoir *BF6* en Multijoueur, un autre en Histoire. Le statut, renseigné sur chaque version jouée, dit jusqu'où je suis allé ; la ligne du jeu affiche le meilleur.
+Le type de fin, facultatif, choisi à l'ajout du jeu au backlog, dit ce que « finir » veut dire. Il est personnel : un joueur peut avoir *BF6* en Multijoueur, un autre en Histoire. Le statut, renseigné sur chaque version jouée, dit jusqu'où je suis allé ; la ligne du jeu affiche le plus avancé.
 
 | Type de fin | Ce que « fini » veut dire | Exemples |
 | --- | --- | --- |
@@ -49,27 +49,27 @@ Le type de fin, facultatif, choisi à l'ajout du jeu au backlog, dit ce que « f
 | Runs | Des parties recommencées ; fini = première victoire ou fin principale | *The Binding of Isaac*, *Hades*, *Dead Cells* |
 | Bac à sable | Pas de fin imposée ; fini quand on estime en avoir fait le tour | *Minecraft*, *Satisfactory*, *Les Sims* |
 | Multijoueur | En ligne ou compétitif, sans fin | *Rocket League*, *League of Legends* |
-| Aucun (par défaut) | Pas de type de fin : aucun statut de fin possible | |
+| Aucun (par défaut) | Pas de type de fin : indication seulement, les statuts de fin sont inaccessibles | |
 
-Les statuts sont gradés du rang 1 au rang 8 ; « Abandonné » est hors échelle. « Pas commencé » est la valeur par défaut, et les statuts proposés dépendent du type de fin (le statut actuel reste toujours listé). Les statuts de fin sont Vu sans jouer, Fini, Estimé fini, Complété, Platiné et Complété et Platiné : sans type de fin, ils restent dans la liste, grisés (« type de fin requis »).
+Les statuts sont les mêmes pour tous les types de fin, gradés du rang 1 au rang 9 : c'est aussi l'ordre de tri. Ils forment trois familles : au repos (Pas commencé en gris, Abandonné en marron), joué pas fini (deux bleu-violet) et fini (du jaune au rouge). « Pas commencé » est la valeur par défaut. Un jeu en pause n'a pas de statut dédié : il garde sa progression, et l'intention passe par les cases « En cours » et « À jouer bientôt ».
 
-| Rang | Statut | Signification | Histoire | Runs, Bac à sable, Multijoueur |
-| --- | --- | --- | --- | --- |
-| 1 | Pas commencé | Dans le backlog, jamais lancé | ✓ | ✓ |
-| 2 | Vu sans jouer | « Je l'ai fait avec des amis » | ✓ |  |
-| 3 | Démarré | Lancé, quelques heures de jeu | ✓ | ✓ |
-| 4 | Bien entamé | Bonne progression, pas encore fini | ✓ | ✓ |
-| 5 | Fini | Fin principale atteinte | ✓ |  |
-| 5 | Estimé fini | Pas de fin officielle, mais considéré comme fini |  | ✓ |
-| 6 | Complété (100 %) | Fini, et tout le contenu fait : quêtes annexes, collectibles, fins secondaires | ✓ | ✓ |
-| 7 | Platiné | Fini, et tous les succès ou trophées obtenus | ✓ | ✓ |
-| 8 | Complété et Platiné | Les deux | ✓ | ✓ |
-| – | Abandonné | Arrêté sans intention d'y revenir | ✓ | ✓ |
+| Rang | Statut | Signification |
+| --- | --- | --- |
+| 1 | Pas commencé | Dans le backlog, jamais lancé |
+| 2 | Abandonné | Arrêté sans intention d'y revenir |
+| 3 | À peine joué | Lancé, quelques heures de jeu |
+| 4 | Bien entamé | Bonne progression, pas encore fini |
+| 5 | Vu sans jouer | « Je l'ai fait avec des amis » |
+| 6 | Fini / Estimé fini | Fin principale atteinte ; « Estimé » : pas de fin officielle, mais considéré comme fini |
+| 7 | Complété (100 %) / Estimé complété (100 %) | Fini, et tout le contenu fait : quêtes annexes, collectibles, fins secondaires |
+| 8 | Platiné | Fini, et tous les succès ou trophées obtenus |
+| 9 | Complété et platiné | Les deux (*GTA V* : 100 % de l'histoire et platine, deux objectifs distincts) |
 
+- **Libellé selon le type de fin** : « Fini » et « Complété » sont un seul statut, stocké une seule fois ; seul son libellé change. Il se lit « Estimé fini » et « Estimé complété » pour Runs, Bac à sable et Multijoueur, « Fini » et « Complété » pour Histoire et Aucun. Sans jeu en face (filtre de la colonne, bulle d'aide de l'en-tête), les deux libellés sont réunis : « Fini / Estimé fini ».
+- **Statuts de fin** : Vu sans jouer, Fini, Complété, Platiné et Complété et platiné. Ils exigent un type de fin : sans, ils restent dans la liste, grisés (« type de fin requis »), et le type de fin d'un jeu se change mais ne se retire pas tant qu'une version jouée a un statut de fin. Changer de type de fin ne touche à aucun statut.
 - **Passer à un statut de fin** (Vu sans jouer compris) fait passer « fois fini (sûr) » de 0 à 1 (sauf si la même saisie fixe ce compteur) et, sans date de fin, propose de la renseigner (« Quand l'as-tu fini pour la première fois ? », pré-remplie à aujourd'hui ; « Plus tard » n'en met aucune). Pareil à l'ajout d'une version jouée. Quitter les statuts de fin n'efface ni la date ni le compteur.
-- **Changer de type de fin** (« Personnaliser », ou en mode édition directement dans la cellule du tableau) convertit les statuts devenus impossibles : Fini ↔ Estimé fini, Vu sans jouer → Pas commencé ; l'avertissement n'apparaît que si un statut est converti. Le type de fin se change mais ne se retire pas tant qu'une version jouée a un statut de fin.
 - **Jeux finis** (récap) : un jeu est fini dès qu'une de ses versions jouées a un statut de fin, Vu sans jouer compris.
-- **Statut de la ligne d'un jeu à plusieurs versions jouées** : les « Pas commencé » sont ignorés tant qu'une autre version a un statut. Puis : au moins un rang 5 ou plus → le plus haut ; toutes « Abandonné » → Abandonné ; « Abandonné » mêlé à un statut en cours → vide, impossible de choisir ; sinon le plus haut.
+- **Statut de la ligne d'un jeu à plusieurs versions jouées** : le plus avancé de ses versions dans l'ordre des statuts, sans cas particulier (Abandonné passe devant Pas commencé, Vu sans jouer devant Bien entamé). La cellule n'est jamais vide.
 
 ## 3. Le tableau
 
