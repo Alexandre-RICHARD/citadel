@@ -29,7 +29,13 @@ esac
 compose=(docker compose -p citadel-local "${composeFiles[@]}" --env-file .env --env-file infra/compose.local.env)
 
 case "$action" in
-	up) "${compose[@]}" up --build --detach --wait ;;
+	up)
+		# Un conteneur arrêté garde l'identifiant du réseau où il était attaché. Si Compose a recréé ce réseau entre-temps
+		# (autre mode lancé, down, redémarrage de Docker), il ne redémarre plus : "network ... not found". On supprime donc
+		# les conteneurs arrêtés du projet ; le up les recrée, et les volumes (base, mails) ne sont pas touchés.
+		docker container prune --force --filter "label=com.docker.compose.project=citadel-local" > /dev/null
+		"${compose[@]}" up --build --detach --wait
+		;;
 	down) "${compose[@]}" down --volumes ;;
 	*)
 		echo "Usage : $0 <prod|e2e> <up|down>" >&2
