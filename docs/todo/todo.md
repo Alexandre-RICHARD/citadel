@@ -103,6 +103,11 @@ Le fonctionnement est décrit dans [infra](../infra/infra.md).
 
 - Une barrette de RAM de plus, si c'est bien le goulot d'étranglement. À 16 Go : Jellyfin à 8 Go, qBittorrent à 6 Go, et son cache interne à 2 Go (options avancées).
 - Plus de RAM et de CPU pour Jellyfin et qBittorrent quand Prowlarr, Radarr, Sonarr, Bazarr et cross-seed sont éteints (2,5 Go libérés), rendus avant de les rallumer.
+- Arrêt automatique après environ 10 minutes sans activité, au lieu de 3 h après le démarrage, pour Prowlarr, Radarr, Sonarr, Bazarr, cross-seed et l'instance locale du [backlog des médias](../backlog/backlog_media.md#3-sécurité-et-exposition). Tous les autres services tournent sans interruption. Le but : économiser les ressources du NAS, pas la précision à la seconde.
+  - **Activité** : une visite de leur adresse, notée par Caddy, placé devant eux sur les mêmes ports ; ou un travail en cours (Radarr et Sonarr : un téléchargement qui attend d'être importé ; cross-seed : une recherche). `infra-ops` vérifie chaque minute, à la place de l'`auto-stop` actuel, pour les six services.
+  - **Réveil à la visite** : ouvrir l'adresse d'un service arrêté le démarre, par le même chemin que l'instance locale (Caddy passe la visite à la console, qui dépose une demande de démarrage).
+  - **Dépendances** : Radarr et Sonarr démarrent Prowlarr ; Bazarr démarre Radarr et Sonarr ; cross-seed démarre déjà Prowlarr, Radarr et Sonarr. Un service ne s'arrête pas tant qu'un service qui dépend de lui tourne.
+  - **cross-seed** : le job `media-sync` du mercredi le démarre et lui fait lancer une recherche complète, sauf s'il en a déjà une en cours ; la recherche finie, il s'arrête comme les autres.
 - Onduleur : sans lui, une coupure de courant peut abîmer la base ou les bases SQLite des *arr.
 
 ### 4.2 Secrets
@@ -167,13 +172,14 @@ Le fonctionnement est décrit dans [infra](../infra/infra.md).
 
 ## 6. Backlog
 
-Le projet est décrit dans [Backlog](../backlog/backlog.md).
+Le projet est décrit dans [Backlog](../backlog/backlog_game.md) ; les films et séries, à construire, dans [Backlog des médias](../backlog/backlog_media.md).
 
 ### 6.1 Interface
 
 - Fusionner les composants d'interface du Backlog (`apps/client/src/projects/backlog/components/` : Button, Modal, Select…) avec le design system, sans changer, ou à peine, l'apparence des endroits qui utilisent déjà le design system. La feuille partagée `backlog.module.scss` sera découpée à ce moment-là.
-- Déposer les SVG des plateformes et des launchers dans `icons/` : le dossier est vide, chaque plateforme garde son icône par défaut ([Backlog, §7](../backlog/backlog.md#7-plateformes-et-icônes)).
+- Déposer les SVG des plateformes et des launchers dans `icons/` : le dossier est vide, chaque plateforme garde son icône par défaut ([Backlog, §7](../backlog/backlog_game.md#7-plateformes-et-icônes)).
 - Le bouton « Rechercher d'autres DLC » est mal placé.
+- Renommer « série » en « saga » (interface, base, code, doc), pour rester cohérent avec le [backlog des médias](../backlog/backlog_media.md#4-notions-et-lignes).
 - Annuler / rétablir : `Ctrl+Z` et `Ctrl+Y` sur les 20 dernières actions, avec deux boutons dans la barre du haut. Une action est une modification de la base (champ enregistré, case cochée, statut changé avec son « fois fini » automatique, ajout, retrait, « Personnaliser », « Réorganiser la série », « Modifier le jeu » ou « Rechercher d'autres DLC » validé) ; ni le tri, ni les filtres, ni les colonnes. Dans un champ texte, `Ctrl+Z` reste celui du navigateur. Chaque annulation envoie l'opération inverse au serveur, et l'historique est propre à chaque compte. En attendant, un retrait se confirme.
 
 ### 6.2 Données IGDB
@@ -191,8 +197,9 @@ Le projet est décrit dans [Backlog](../backlog/backlog.md).
 
 ### 6.4 Pour plus tard
 
-- Tableau d'un très gros backlog (plusieurs centaines de jeux) : virtualiser les lignes, car chacune porte environ 65 éléments du DOM ([Backlog, §8](../backlog/backlog.md#8-base-endpoints-et-code)). Mettre aussi en mémoire côté serveur les lignes calculées de chaque compte, effacées à chaque écriture, si le calcul d'une page dépasse quelques centaines de millisecondes.
-- Étendre le backlog aux films et aux séries, et y réimporter ce qui a été sauvegardé de TV Time.
+- Tableau d'un très gros backlog (plusieurs centaines de jeux) : virtualiser les lignes, car chacune porte environ 65 éléments du DOM ([Backlog, §8](../backlog/backlog_game.md#8-base-endpoints-et-code)). Mettre aussi en mémoire côté serveur les lignes calculées de chaque compte, effacées à chaque écriture, si le calcul d'une page dépasse quelques centaines de millisecondes.
+- Étendre le backlog aux films et aux séries : cahier des charges en cours dans [Backlog des médias](../backlog/backlog_media.md), questions ouvertes au §11.
+- Réimporter l'historique de TV Time dans le backlog des médias, une fois celui-ci construit.
 
 ### 6.5 Écarté
 

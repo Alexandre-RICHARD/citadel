@@ -303,7 +303,7 @@ Les bases Docker de dev et de test (`pnpm db:*`, `pnpm prod:local`) passent par 
 
 ## 10. Glossaire
 
-Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont dans sa doc (le [Backlog](../backlog/backlog.md#1-notions), par exemple).
+Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont dans sa doc (le [Backlog](../backlog/backlog_game.md#1-notions), par exemple).
 
 | Mot | Sens |
 | --- | --- |
@@ -318,7 +318,7 @@ Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont 
 | FM | Front Model : la forme dont l'écran a besoin, produite par un mapper à partir du DTO que garde le cache (§5.3) |
 | FRM | Ficsit Remote Monitoring : le mod de *Satisfactory* dont la page des machines lit les données ([Satisfactory](../satisfactory/satisfactory.md)) |
 | GDC | Game Death Counter, l'un des projets du site ([Game Death Counter](../gameDeathCounter/gameDeathCounter.md)) |
-| IGDB | La base de données de jeux (celle de Twitch) d'où vient le Backlog ([Backlog, §6](../backlog/backlog.md#6-données-igdb)) |
+| IGDB | La base de données de jeux (celle de Twitch) d'où vient le Backlog ([Backlog, §6](../backlog/backlog_game.md#6-données-igdb)) |
 | `infra-ops` | Le conteneur du NAS qui lance les jobs et exécute, après vérification, les demandes de la console ([infra, §1](../infra/infra.md#1-fonctionnement)) |
 | Parcours | Une suite d'étapes d'authentification qui s'étend sur plusieurs pages ou emails : inscription, connexion avec second facteur, mot de passe oublié… ([authentification, §4.1](../auth/auth.md#41-commun-à-tous-les-parcours)) |
 | Pré-prod | La copie de la prod, à la demande sur le NAS, où se répètent les déploiements et se teste la restauration ([infra, §1](../infra/infra.md#1-fonctionnement)) |

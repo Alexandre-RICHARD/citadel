@@ -34,7 +34,7 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 - Node 24, et pnpm par corepack : `corepack enable`
 - Docker Desktop, lancé : les bases MariaDB de dev et de test tournent dedans
 - Git Bash pour les scripts. Le dépôt est développé et testé sous Windows : Linux et macOS ne sont pas testés (et Edge sert aux tests end-to-end)
-- `.env` et `.env.test` à la racine, copiés de `.env.example` et remplis (les commentaires du modèle disent quoi mettre dans chacun) ; le Backlog demande en plus une application Twitch ([Backlog, §9](docs/backlog/backlog.md#9-lancer))
+- `.env` et `.env.test` à la racine, copiés de `.env.example` et remplis (les commentaires du modèle disent quoi mettre dans chacun) ; le Backlog demande en plus une application Twitch ([Backlog, §9](docs/backlog/backlog_game.md#9-lancer))
 
 ### 2.2 Démarrage
 
@@ -69,7 +69,8 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | --- | --- | --- |
 | [Homepage](docs/homepage/homepage.md) | `/homepage` | La vitrine des projets, le contact et les pages légales |
 | [Game Death Counter](docs/gameDeathCounter/gameDeathCounter.md) | `/game-death-counter` | Compteur de morts dans les jeux de type Souls |
-| [Backlog](docs/backlog/backlog.md) | `/backlog` | Suivi de mes jeux vidéo, sur les données d'IGDB |
+| [Backlog](docs/backlog/backlog_game.md) | `/backlog` | Suivi de mes jeux vidéo, sur les données d'IGDB |
+| [Backlog des médias](docs/backlog/backlog_media.md) | `/backlog` | Suivi des films et séries, sur les données de TMDB (cahier des charges, à construire) |
 | [Angers Irigo](docs/angersIrigo/angersIrigo.md) | `/angers-irigo` | Bus et trams d'Angers en temps réel |
 | [Satisfactory](docs/satisfactory/satisfactory.md) | `/satisfactory` | Outils pour le jeu éponyme |
 
