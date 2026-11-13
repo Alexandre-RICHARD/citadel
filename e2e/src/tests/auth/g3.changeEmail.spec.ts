@@ -12,7 +12,7 @@ import { openRegistrationForm } from "../../steps/openRegistrationForm.ts";
 import { registerWithCode } from "../../steps/registerWithCode.ts";
 import { startEmailChange } from "../../steps/startEmailChange.ts";
 
-const CHANGE_MAIL = "Confirmez votre nouvelle adresse email";
+const CHANGE_MAIL = "Confirme ta nouvelle adresse email";
 const TAKEN_MAIL = "Cette adresse email est déjà utilisée";
 const CHANGED_NOTICE = "Ton adresse email a été modifiée";
 
