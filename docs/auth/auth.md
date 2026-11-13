@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Authentification
 
-Comptes utilisateurs partagés entre tous les projets. Chaque utilisateur crée, modifie et supprime **ses** données sans jamais voir celles des autres. Aucun rôle, aucun privilège. Les mails (fournisseur, DNS, `contact@`, quota, IP réelle) sont décrits dans [mails](../emails/emails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#2-authentification).
+Comptes utilisateurs partagés entre tous les projets, sans rôle ni privilège : chacun crée, modifie et supprime **ses** données sans jamais voir celles des autres. Les emails (fournisseur, DNS, `contact@`, quota, IP réelle) sont décrits dans [emails](../emails/emails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#2-authentification).
 
 ## Sommaire
 
@@ -11,7 +11,7 @@ Comptes utilisateurs partagés entre tous les projets. Chaque utilisateur crée,
 3. [Données](#3-données)
 4. [Parcours](#4-parcours)
 5. [Anti-abus et sécurité](#5-anti-abus-et-sécurité)
-6. [Mails de l'authentification](#6-mails-de-lauthentification)
+6. [Emails de l'authentification](#6-emails-de-lauthentification)
 7. [Réglages et secrets](#7-réglages-et-secrets)
 8. [RGPD, sauvegardes et restauration](#8-rgpd-sauvegardes-et-restauration)
 9. [Organisation du code](#9-organisation-du-code)
@@ -20,7 +20,7 @@ Comptes utilisateurs partagés entre tous les projets. Chaque utilisateur crée,
 
 ### 1.1 Principes
 
-- **Aucun parcours perdu** : chaque mail propose un lien **et** un code ; recharger la page ou changer d'appli (boîte mail, gestionnaire de mots de passe) ne fait jamais perdre l'étape en cours.
+- **Aucun parcours perdu** : chaque email propose un lien **et** un code ; recharger la page ou changer d'appli (boîte email, gestionnaire de mots de passe) ne fait jamais perdre l'étape en cours.
 - **Le serveur décide** : l'interface reflète les règles (délai, temps restant, mot de passe trop court), le serveur les impose.
 - **Données minimales**, et rien de temporaire ou de supprimé au-delà de 3 mois (§8).
 - **Zéro dépendance** quand c'est possible sans dette ni risque : tout est natif (`crypto`), sauf un petit générateur de QR code côté front. Sinon, une bibliothèque sobre pour un besoin précis, jamais un framework.
@@ -109,7 +109,7 @@ Toutes s'appellent `auth_*` (un préfixe par sujet : `gdc_`, `backlog_`, `mailin
 ### 3.3 Collations et types
 
 - Empreintes en `BINARY(32)` : comparaison octet par octet.
-- **Email** : `utf8mb4_uca1400_as_ci`, comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). Le mail part à l'adresse telle que saisie. La collation confond `ａ` (pleine chasse) et `a`, `ﬁ` et `fi`, et ignore les caractères invisibles : la règle de format de l'email les refuse.
+- **Email** : `utf8mb4_uca1400_as_ci`, comme les messageries : la casse ne compte pas (`Alex@…` et `alex@…` sont la même adresse), les accents oui (`josé@…` et `jose@…` sont deux adresses, RFC 6531). L'email part à l'adresse telle que saisie. La collation confond `ａ` (pleine chasse) et `a`, `ﬁ` et `fi`, et ignore les caractères invisibles : la règle de format de l'email les refuse.
 - **Pseudo** : `utf8mb4_bin`, toute différence de caractère compte : `Alex` et `alex` peuvent coexister.
 - Les autres tables gardent la collation de la base, qui ignore casse **et** accents (chercher « pokemon » trouve « Pokémon ») : seules les colonnes de l'auth sont réglées une par une, sans migration globale.
 
@@ -117,17 +117,17 @@ Toutes s'appellent `auth_*` (un préfixe par sujet : `gdc_`, `backlog_`, `mailin
 
 ### 4.1 Commun à tous les parcours
 
-- **`auth_flow` + cookie de parcours** : tout parcours en plusieurs étapes (inscription, connexion avec 2FA, connexion par mail, mot de passe oublié, changement d'email, activation du facteur mail) a une ligne `auth_flow` et un cookie `HttpOnly` dédié, `__Host-citadel_flow` (même règle de préfixe que la session, `SameSite=Lax`, `Path=/`, `Max-Age` = durée du parcours). Un parcours par navigateur : en commencer un autre supprime le précédent.
+- **`auth_flow` + cookie de parcours** : tout parcours en plusieurs étapes (inscription, connexion avec 2FA, connexion par email, mot de passe oublié, changement d'email, activation du facteur email) a une ligne `auth_flow` et un cookie `HttpOnly` dédié, `__Host-citadel_flow` (même règle de préfixe que la session, `SameSite=Lax`, `Path=/`, `Max-Age` = durée du parcours). Un parcours par navigateur : en commencer un autre supprime le précédent.
 - **Reprise** : une page `/auth/...` demande au serveur s'il y a un parcours en cours et se replace à la bonne étape. Les champs tapés (sauf les mots de passe) sont gardés dans le `sessionStorage` de l'onglet. Au retour sur l'onglet (`visibilitychange`), le front redemande l'état : si le lien a été ouvert dans un autre onglet du même navigateur, la page passe d'elle-même à la suite.
-- **Lien et code dans chaque mail** :
+- **Lien et code dans chaque email** :
   - le **code** (6 chiffres, empreinte HMAC, usage unique, invalidé par un renvoi, qui remet les essais à zéro) se colle dans la page restée ouverte, y compris sur un autre appareil ;
   - le **lien** (jeton de 32 octets, haché) ne marche que dans le navigateur qui a commencé le parcours. Ailleurs, la page dit d'utiliser le code (`LINK_OTHER_BROWSER`) : sinon, un attaquant lance une connexion avec votre email, vous cliquez, et c'est son navigateur qui est connecté. Le jeton voyage dans le fragment (`/auth/verify#…`), jamais envoyé à un serveur ni écrit dans un journal ;
   - la page d'arrivée du lien (`/auth/verify`) demande un clic de confirmation (`POST`) : les antivirus de messagerie ouvrent les liens pour les analyser.
 - **Temps restant** : chaque réponse renvoie `expiresIn` et, pendant le délai de renvoi, `resendRetryAfter`, en secondes (jamais une date : l'horloge du navigateur peut différer), et les essais restants.
-- **Parcours leurre** : connexion par mail et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020), comme une inscription au champ piège rempli : même cookie, même état, mêmes limites, aucun mail.
+- **Parcours leurre** : connexion par email et mot de passe oublié d'un identifiant inconnu (ou d'une méthode fermée) créent un parcours sans compte ni code (V020), comme une inscription au champ piège rempli : même cookie, même état, mêmes limites, aucun email.
 - **Expiration** : un parcours expiré est refusé à la lecture. Une minuterie du serveur (`purge/`) supprime toutes les 15 minutes les lignes expirées (`auth_flow`, `auth_session`) et les facteurs non confirmés depuis plus de 15 minutes, et une fois par jour les vieilles lignes de `auth_event` et `error_log`.
-- **Réponses neutres** : rien ne dit si un email existe, ni par le contenu, ni par la durée (mail envoyé après la réponse, §6).
-- Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur mail activé avec ses `recoveryCodes`).
+- **Réponses neutres** : rien ne dit si un email existe, ni par le contenu, ni par la durée (email envoyé après la réponse, §6).
+- Chaque étape répond `{ flow }` : l'état du parcours (à l'étape « second facteur », ses `secondFactorMethods`), ou `null` quand il est terminé (session ouverte, ou facteur email activé avec ses `recoveryCodes`).
 
 ### 4.2 Inscription
 
@@ -135,12 +135,12 @@ Toutes s'appellent `auth_*` (un préfixe par sujet : `gdc_`, `backlog_`, `mailin
    - Pseudo : 1 à 64 caractères parmi `A-Z`, `a-z`, `0-9`, `_` et `-`, définitif. Le pseudo affiché est libre : 1 à 64 caractères, accents, espaces et symboles compris, normalisé en NFC, espaces de bord retirés, espaces consécutifs réduits à un, ni caractère de contrôle ni caractère invisible. Bouton « Vérifier la disponibilité » à côté du champ.
    - Mot de passe : barre de force, conditions qui passent au vert en direct, icône œil pour afficher ou masquer les deux champs.
    - Messages : les 30 minutes pour terminer, et le conseil d'un mot de passe différent par site, avec un gestionnaire de mots de passe.
-2. **Serveur** : inscriptions fermées par l'interrupteur (`AUTH_REGISTRATION_ENABLED`) ou le quota de mails (`MAIL_REGISTRATION_STOP`) → `403` `REGISTRATION_CLOSED` (le front le sait par `GET /mail/status` : bouton désactivé, bandeau « …elles rouvrent demain. »). Pseudo pris → `409` `USERNAME_TAKEN`. Sinon, création d'un `auth_flow` `registration` ; réponse toujours « un email t'a été envoyé ».
-3. **Mail** : adresse nouvelle → « Confirme ton inscription » + lien + code ; adresse déjà inscrite → « Tu as déjà un compte, dernière connexion il y a… » + lien vers la connexion, sans code. Durée floue : aujourd'hui, puis 1 à 7 jours, 1 à 5 semaines, 1 à 12 mois, puis en années.
+2. **Serveur** : inscriptions fermées par l'interrupteur (`AUTH_REGISTRATION_ENABLED`) ou le quota d'emails (`MAIL_REGISTRATION_STOP`) → `403` `REGISTRATION_CLOSED` (le front le sait par `GET /mail/status` : bouton désactivé, bandeau « …elles rouvrent demain. »). Pseudo pris → `409` `USERNAME_TAKEN`. Sinon, création d'un `auth_flow` `registration` ; réponse toujours la même : l'écran « Confirmez votre adresse email ».
+3. **Email** : adresse nouvelle → « Confirme ton inscription » + lien + code ; adresse déjà inscrite → « Tu as déjà un compte, dernière connexion il y a… » + lien vers la connexion, sans code. Durée floue : aujourd'hui, puis 1 à 7 jours, 1 à 5 semaines, 1 à 12 mois, puis en années.
 4. **Code ou lien validé** : création de `auth_user` (pseudo revérifié), suppression du parcours, session ouverte. Pseudo pris entre-temps : `409`, le parcours reste ouvert et la page redemande un pseudo (`code` et `link` acceptent un `username` de remplacement).
 5. **Étape facultative** : « Protégez votre compte » (2FA), puis retour à la page demandée au départ.
 
-Une nouvelle inscription avec la même adresse remplace le parcours en attente : la personne qui reçoit les mails gagne toujours. Il y a 30 minutes pour terminer.
+Une nouvelle inscription avec la même adresse remplace le parcours en attente : la personne qui reçoit les emails gagne toujours. Il y a 30 minutes pour terminer.
 
 ### 4.3 Mots de passe
 
@@ -154,22 +154,22 @@ Une nouvelle inscription avec la même adresse remplace le parcours en attente :
 ### 4.4 Connexion
 
 - **Page** : identifiant (email ou pseudo ; un pseudo ne contient jamais `@`), mot de passe, « Se souvenir de moi », « Recevoir un lien de connexion par email », « Mot de passe oublié ».
-- **Par mot de passe** : sans 2FA, session immédiate. Avec 2FA, parcours `login` à l'étape `second_factor` : TOTP, code reçu par mail ou code de secours. Aucune session avant la fin.
-- **Par mail** : mail (lien + code), puis TOTP ou code de secours si un TOTP existe : le mail remplace le mot de passe, jamais le TOTP. Le code par mail n'y est jamais proposé en second facteur, la boîte vient d'être prouvée. Si le seul facteur est le mail, rien de plus : il ne protège que d'un mot de passe volé.
-- **Méthodes** : choisies dans le profil (par email / par pseudo et mot de passe / les deux, défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans mail pour le lien. Avec « par email » seulement, le mot de passe reste exigé pour les actions sensibles ; oublié, il se refait par « Mot de passe oublié », toujours ouvert.
+- **Par mot de passe** : sans 2FA, session immédiate. Avec 2FA, parcours `login` à l'étape `second_factor` : TOTP, code reçu par email ou code de secours. Aucune session avant la fin.
+- **Par email** : email (lien + code), puis TOTP ou code de secours si un TOTP existe : l'email remplace le mot de passe, jamais le TOTP. Le code par email n'y est jamais proposé en second facteur, la boîte vient d'être prouvée. Si le seul facteur est l'email, rien de plus : il ne protège que d'un mot de passe volé.
+- **Méthodes** : choisies dans le profil (par email / par pseudo et mot de passe / les deux, défaut : les deux). Une méthode fermée répond comme un échec ordinaire : `401` `INVALID_CREDENTIALS` pour le mot de passe, réponse neutre sans email pour le lien. Avec « par email » seulement, le mot de passe reste exigé pour les actions sensibles ; oublié, il se refait par « Mot de passe oublié », toujours ouvert.
 - **Échec** : même message pour un identifiant inconnu et un mauvais mot de passe (`401` `INVALID_CREDENTIALS`).
 - **Déjà connecté** : la page redirige vers le profil ou la page demandée ; une nouvelle connexion dans le même navigateur supprime l'ancienne session.
 
 ### 4.5 Mot de passe oublié
 
-Email ou pseudo → réponse neutre → mail (lien + code) à l'adresse du compte, jamais affichée → TOTP ou code de secours si un TOTP existe, jamais le code par mail (comme GitHub, et comme le recommande OWASP : sinon, une boîte mail compromise suffirait à contourner la 2FA) → nouveau mot de passe, deux fois, différent de l'actuel → toutes les sessions supprimées → connecté.
+Email ou pseudo → réponse neutre → email (lien + code) à l'adresse du compte, jamais affichée → TOTP ou code de secours si un TOTP existe, jamais le code par email (comme GitHub, et comme le recommande OWASP : sinon, une boîte email compromise suffirait à contourner la 2FA) → nouveau mot de passe, deux fois, différent de l'actuel → toutes les sessions supprimées → connecté.
 
 ### 4.6 Profil
 
 Page `/auth/profile`, en cinq catégories qu'un menu à gauche propose (`SideNavigation` du design system), une adresse chacune : `/auth/profile` mène à Identité, une adresse inconnue aussi. Le menu se replie en colonne d'icônes (choix retenu dans le navigateur, clé `citadel:auth:profileNavigation`) et passe derrière un bouton menu sous 768 px. Une catégorie est une carte, ses parties des sous-titres ; les formulaires de changement (email, mot de passe) sont repliés derrière un bouton.
 
 - **Identité** (`/auth/profile/identity`) : pseudo (définitif), pseudo affiché (modifiable, vide = pseudo), email.
-- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne. Même adresse (même en majuscules) : `400` `EMAIL_UNCHANGED`. Adresse déjà inscrite : même réponse, et le mail à cette adresse dit qu'un autre compte a voulu la prendre, sans lien ni code. Prise entre-temps : `409` `EMAIL_TAKEN`. Le parcours terminé ramène à Identité.
+- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne. Même adresse (même en majuscules) : `400` `EMAIL_UNCHANGED`. Adresse déjà inscrite : même réponse, et l'email à cette adresse dit qu'un autre compte a voulu la prendre, sans lien ni code. Prise entre-temps : `409` `EMAIL_TAKEN`. Le parcours terminé ramène à Identité.
 - **Connexion** (`/auth/profile/login`) : méthodes de connexion acceptées, sessions actives (§4.8).
 - **Sécurité** (`/auth/profile/security`) : mot de passe (ancien + nouveau deux fois ; toutes les autres sessions supprimées), facteurs 2FA et codes de secours (§4.7). L'activation du code par email ramène ici.
 - **Mes données** (`/auth/profile/data`) : export et suppressions (§4.9).
@@ -178,9 +178,9 @@ Page `/auth/profile`, en cinq catégories qu'un menu à gauche propose (`SideNav
 
 ### 4.7 Double authentification
 
-- **Par mail** : un code (+ lien) après le mot de passe, envoyé à la demande (`POST /auth/flow/resend` à l'étape « second facteur »). Activation confirmée par un premier code (parcours `email_factor`, 15 minutes), sans nouvelle session.
+- **Par email** : un code (+ lien) après le mot de passe, envoyé à la demande (`POST /auth/flow/resend` à l'étape « second facteur »). Activation confirmée par un premier code (parcours `email_factor`, 15 minutes), sans nouvelle session.
 - **TOTP** : secret généré par le serveur ; QR code (`otpauth://`, émetteur « Citadel », email en libellé) généré **dans le navigateur**, plus la clé à saisir à la main. Plusieurs facteurs nommés possibles ; activation après un premier code valide. SHA-1, 6 chiffres, 30 s, ±1 pas. Anti-rejeu : un code accepté ne resservira pas, même pendant ses 30 à 90 secondes de validité. Secret chiffré en AES-256-GCM, avec la version de la clé et l'identifiant du facteur en donnée associée. Rotation : nouvelle clé et nouvelle version, l'ancienne dans `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY` ; chaque secret est rechiffré à son prochain usage.
-- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte mail inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères en Base32 (deux groupes de 5), gardés en HMAC avec `AUTH_CODE_HMAC_KEY` : leurs 50 bits résisteraient mal à une recherche hors ligne sur un simple hash. Donnés par la réponse qui active le premier facteur, affichés une seule fois, avec téléchargement en texte. Régénérables avec le mot de passe (les anciens sont invalidés) ; le profil affiche le nombre restant.
+- **Codes de secours** : la roue de secours du second facteur (téléphone perdu, boîte email inaccessible). Générés à l'activation du premier facteur, quel que soit son type ; 10 codes à usage unique de 10 caractères en Base32 (deux groupes de 5), gardés en HMAC avec `AUTH_CODE_HMAC_KEY` : leurs 50 bits résisteraient mal à une recherche hors ligne sur un simple hash. Donnés par la réponse qui active le premier facteur, affichés une seule fois, avec téléchargement en texte. Régénérables avec le mot de passe (les anciens sont invalidés) ; le profil affiche le nombre restant.
 - **Gestion** : liste (nom, type, création, dernier usage), ajout, suppression confirmée par le mot de passe. Supprimer le dernier facteur désactive la 2FA et supprime les codes de secours.
 
 ### 4.8 Sessions actives et déconnexion
@@ -191,7 +191,7 @@ Page `/auth/profile`, en cinq catégories qu'un menu à gauche propose (`SideNav
 
 ### 4.9 Suppression et export
 
-- **Suppression du compte** : mot de passe, plus un code de l'application d'authentification (ou un code de secours) si le compte en a une (`400` `SECOND_FACTOR_REQUIRED` sinon). Jamais le code par email : il demanderait un mail de plus, et un compte qui n'a que ce facteur n'en doit pas, comme à la connexion par email. Immédiate et définitive, tout part par cascade ; mail de confirmation. Les sauvegardes l'oublient en 3 mois au plus.
+- **Suppression du compte** : mot de passe, plus un code de l'application d'authentification (ou un code de secours) si le compte en a une (`400` `SECOND_FACTOR_REQUIRED` sinon). Jamais le code par email : il demanderait un email de plus, et un compte qui n'a que ce facteur n'en doit pas, comme à la connexion par email. Immédiate et définitive, tout part par cascade ; email de confirmation. Les sauvegardes l'oublient en 3 mois au plus.
 - **Suppression des données d'un projet** : une case par projet, mot de passe ; le compte reste. `DELETE /auth/me/projects` vide en une fois les projets de sa liste (`game-death-counter`, `backlog`).
 - **Export** : « Télécharger mes données » (`GET`, le cookie suffit) → un ZIP avec un CSV par table, toutes les lignes de l'utilisateur, sans aucun secret (ni hash, ni empreinte, ni secret TOTP). ZIP sans compression, fait sans bibliothèque.
 
@@ -239,9 +239,9 @@ Erreurs : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGI
 | Brute force sur un compte | 2 s entre deux essais, bannissement temporaire après 15 échecs, second facteur compris |
 | Un mot de passe essayé sur beaucoup de comptes | Compteur par IP, puis bannissement temporaire |
 | Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas votre compte |
-| Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos sont publics par nature |
+| Énumération des comptes | Réponses et délais identiques (emails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
-| Spam de mails, quota épuisé | Délai de renvoi, limites par adresse ou identifiant tapé et par IP (20 par heure, 40 par jour), seuils du quota ([mails, §2](../emails/emails.md#2-envoi)). L'adresse tapée compte en minuscules, car les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux |
+| Spam d'emails, quota épuisé | Délai de renvoi, limites par adresse ou identifiant tapé et par IP (20 par heure, 40 par jour), seuils du quota ([emails, §2](../emails/emails.md#2-envoi)). L'adresse tapée compte en minuscules, car les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux |
 | Rejeu d'un code ou d'un lien | Usage unique, durée courte, essais limités, lien lié au navigateur |
 | Lien de connexion détourné | Lien lié au navigateur, clic de confirmation. Brevo voit passer les liens qu'il réécrit, sans effet pour la même raison |
 | Vol de session | Cookie `HttpOnly`/`Secure`, CSP, sessions révocables |
@@ -253,28 +253,28 @@ Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et p
 ### 5.2 Délai et bannissement
 
 - Succès : immédiat, compteur remis à zéro. Échec : `401`, puis aucun nouvel essai sur ce compte depuis cette IP avant 2 s. Après 15 échecs depuis la même IP sur le même compte : 15 minutes de `429` pour ce couple. Compteur remis à zéro après un succès ou 15 minutes de calme. Pendant un délai : `429` + `Retry-After` ; bouton désactivé avec compte à rebours.
-- Les échecs de l'étape « second facteur » (TOTP, code par mail, code de secours) comptent comme ceux du mot de passe, pour le compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus.
+- Les échecs de l'étape « second facteur » (TOTP, code par email, code de secours) comptent comme ceux du mot de passe, pour le compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus.
 - Bannissement d'IP : 20 échecs en 10 minutes ou plus de 3 inscriptions par heure → 15 minutes de `429`. En IPv6, il vise le `/64`.
-- L'IP est celle que Caddy a validée ([mails, §6](../emails/emails.md#6-côté-serveur)) : sans elle, tous les visiteurs auraient la même.
+- L'IP est celle que Caddy a validée ([emails, §6](../emails/emails.md#6-côté-serveur)) : sans elle, tous les visiteurs auraient la même.
 - Compteurs en mémoire (une seule instance), remis à zéro à chaque déploiement.
 
 ### 5.3 Détection et journaux
 
-- `auth_event` : échecs (`login_failed`, `second_factor_failed`…), inscriptions, parcours jamais confirmés, connexions, ajouts et suppressions de 2FA, changements de mot de passe ou d'email. Réponses proportionnées : bannissement temporaire, journal, notifications par mail. Pas de blocage définitif automatique.
+- `auth_event` : échecs (`login_failed`, `second_factor_failed`…), inscriptions, parcours jamais confirmés, connexions, ajouts et suppressions de 2FA, changements de mot de passe ou d'email. Réponses proportionnées : bannissement temporaire, journal, notifications par email. Pas de blocage définitif automatique.
 - Jamais de mot de passe, jeton, code, lien ni secret TOTP dans un log, un message d'erreur ou `error_log` ; aucune requête d'auth loguée avec son corps.
 
-## 6. Mails de l'authentification
+## 6. Emails de l'authentification
 
-- **Après la réponse** : les mails des réponses neutres (inscription, connexion par mail, mot de passe oublié, changement d'email) partent une fois la réponse envoyée, sans être attendus. Ni la durée ni un échec ne disent si le compte existe ; un échec va dans `mailing_failure` et les logs, jamais au visiteur.
-- **Quota épuisé** : connexion par mail, mot de passe oublié, changement d'email et activation du facteur mail répondent `403` `MAIL_CLOSED` (« Plus aucun email ne part aujourd'hui, réessaie demain. »), pour tout le monde. À l'étape « second facteur », le code par mail est grisé ; TOTP et codes de secours restent.
-- **Gabarits** : HTML et texte brut, en français, en tutoiement, mise en page de `buildMailBodies`, plusieurs phrases de vrai texte (délivrabilité), lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore cet email ». Chaque gabarit a son type (`MailKindEnum`) et sa story dans le Storybook ([mails, §6](../emails/emails.md#6-côté-serveur)). Les mails de sécurité renvoient vers `contact@` en cas de doute.
+- **Après la réponse** : les emails des réponses neutres (inscription, connexion par email, mot de passe oublié, changement d'email) partent une fois la réponse envoyée, sans être attendus. Ni la durée ni un échec ne disent si le compte existe ; un échec va dans `mailing_failure` et les logs, jamais au visiteur.
+- **Quota épuisé** : connexion par email, mot de passe oublié, changement d'email et activation du facteur email répondent `403` `MAIL_CLOSED` (« Plus aucun email ne part aujourd’hui : réessayez demain. »), pour tout le monde. À l'étape « second facteur », le code par email est grisé ; TOTP et codes de secours restent.
+- **Gabarits** : HTML et texte brut, en français, en tutoiement, mise en page de `buildMailBodies`, plusieurs phrases de vrai texte (délivrabilité), lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore cet email ». Chaque gabarit a son type (`MailKindEnum`) et sa story dans le Storybook ([emails, §6](../emails/emails.md#6-côté-serveur)). Les emails de sécurité renvoient vers `contact@` en cas de doute.
 
-| Mail | Contenu |
+| Email | Contenu |
 |---|---|
 | Inscription, adresse nouvelle | Lien + code |
 | Inscription, adresse déjà inscrite | « Tu as déjà un compte, dernière connexion il y a… », lien vers la connexion |
-| Mot de passe oublié, connexion par mail | Lien + code |
-| Second facteur par mail, activation du facteur mail | Code + lien |
+| Mot de passe oublié, connexion par email | Lien + code |
+| Second facteur par email, activation du facteur email | Code + lien |
 | Changement d'email | Lien + code à la nouvelle adresse ; notification à l'ancienne. Adresse déjà inscrite : « un autre compte a voulu prendre cette adresse email », sans lien ni code |
 | Notifications | Mot de passe changé, email changé, 2FA ajoutée ou retirée, compte supprimé |
 
@@ -319,7 +319,7 @@ Toutes les durées et tous les seuils sont des variables d'environnement, décla
 | `AUTH_RESTORE_JOURNAL_DIR` | `/var/lib/citadel/restore-journal` (image) ; `./.local/restore-journal` en dev |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |
 
-Les variables des mails (`MAIL_*`, `CONTACT_HOURLY_LIMIT_PER_IP`, `BREVO_*`) sont dans [mails, §6](../emails/emails.md#6-côté-serveur).
+Les variables des emails (`MAIL_*`, `CONTACT_HOURLY_LIMIT_PER_IP`, `BREVO_*`) sont dans [emails, §6](../emails/emails.md#6-côté-serveur).
 
 **Secrets** (`.env.prod` + Bitwarden, créés avant d'être écrits) : `AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version (`AUTH_TOTP_ENCRYPTION_KEY_VERSION`) ; `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY`, vide hors rotation. `pnpm tools generateAuthSecrets` les génère. Le serveur refuse de démarrer, en nommant la variable fautive, si une clé manque ou n'a pas 64 caractères hexadécimaux, ou si une clé précédente est donnée sans être différente de l'actuelle avec une version d'au moins 2. Chaque variable va dans `.env.example` (`[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`) ; `prod:local` reçoit des clés factices.
 
@@ -340,7 +340,7 @@ Aucune donnée personnelle temporaire ou supprimée ne survit plus de **3 mois**
 | Logs de Caddy et des conteneurs | 90 jours (job `log-retention`) |
 | Sauvegardes de la base | Moins de 10 semaines |
 | Journal de restauration (§8.3) | 10 semaines, l'âge de la plus vieille sauvegarde |
-| Mails chez Brevo (adresse, objet, ouvertures) | 1 mois (« Retention rules » réglée dans son compte) |
+| Emails chez Brevo (adresse, objet, ouvertures) | 1 mois (« Retention rules » réglée dans son compte) |
 
 Les fichiers dérivés (historiques déposés pour la console) suivent la même règle. Principes : minimisation (ni nom ni prénom) ; suppression réelle ; accès et portabilité par l'export ; aucun traceur au-delà du strictement nécessaire.
 
@@ -354,13 +354,13 @@ Les lignes directrices de la CNIL (délibération n° 2020-091) dispensent de co
 | Cookie de parcours | Étape en cours d'une inscription, d'une connexion, etc. |
 | `localStorage` : thème, favoris et réglages d'Angers Irigo, colonnes du Backlog, bandeau du site fermé | Choix d'interface |
 | `sessionStorage` : champs d'un parcours en cours ; intro déjà vue | Reprise après rechargement ; intro jouée une fois par session |
-| Pixel d'ouverture de Brevo dans les mails (« suivi anonyme ») | Statistiques d'envoi du fournisseur |
+| Pixel d'ouverture de Brevo dans les emails (« suivi anonyme ») | Statistiques d'envoi du fournisseur |
 
 Tous sont dispensés de bandeau, à condition d'être décrits dans « Données personnelles ». Décision : le pixel de Brevo ne se désactive pas sur l'offre gratuite, et Brevo reste le meilleur choix d'envoi ; le site l'indique tel quel. C'est un écart assumé avec la recommandation CNIL du 12 mars 2026, qui ne dispense que le pixel limité à la date de dernière ouverture.
 
 ### 8.3 Sauvegardes et restauration
 
-- **Rétention** (`infra/citadel`) : base, chaque jour : 14 jours + 4 dimanches + 2 premiers dimanches du mois ; dumps « avant déploiement » : les 2 derniers, 30 jours au plus. La plus vieille a moins de 10 semaines.
+- **Rétention** : le planning des sauvegardes est dans [infra, §7.1](../infra/infra.md#71-ce-qui-est-sauvegardé). La plus vieille sauvegarde de la base a moins de 10 semaines.
 - **Restauration** (`citadel restore-db` ou la zone de danger de la console) : juste après l'import, serveur encore arrêté (aucune requête ne passe avec une session ressuscitée), la commande « après restauration » du serveur (`build/afterRestore.cjs`, second point d'entrée de son image) tourne dans un conteneur jetable. Elle reçoit la date de la sauvegarde : son nom, sinon la ligne `-- Dump completed on` du dump, lue à l'heure de Paris, moins une heure, puisqu'elle marque la fin du dump (un dump envoyé depuis le PC n'a pas forcément de date dans son nom). En échec, le serveur reste arrêté. Elle :
   - **rejoue le journal** après cette date : suppressions refaites, changements d'email remis ; un compte qui a changé sa sécurité voit son mot de passe invalidé (à refaire par « Mot de passe oublié ») ;
   - **vide toutes les sessions et tous les parcours**, sinon une session révoquée après la sauvegarde redevient valide.
@@ -389,7 +389,7 @@ Un projet comme les autres, mais que tous les autres utilisent : leurs endpoints
 **Serveur** (`projects/auth/`) :
 
 - `service/` porte les règles : un service par parcours (inscription, connexion, mot de passe oublié, second facteur, changement d'email…) ; `flowService` gère le parcours en cours (`auth_flow`), lié au navigateur par son cookie ;
-- `crypto/`, `totp/` et `helper/` : empreintes, TOTP écrit à la main, jetons ; `limit/` : les limiteurs d'échecs et d'envois, en mémoire ; `template/` : les gabarits de mails ; `export/` : les tables de l'export (CSV et ZIP faits par `common/archive/`) ;
+- `crypto/`, `totp/` et `helper/` : empreintes, TOTP écrit à la main, jetons ; `limit/` : les limiteurs d'échecs et d'envois, en mémoire ; `template/` : les gabarits d'emails ; `export/` : les tables de l'export (CSV et ZIP faits par `common/archive/`) ;
 - `projectData/projectUserData.ts` liste, pour chaque projet, comment supprimer et exporter les données d'un compte (`userData/` de chaque projet). Un nouveau projet qui garde des données par compte s'y ajoute, sinon sa suppression et son export les oublient ;
 - tout nouvel événement de sécurité qu'une sauvegarde ferait oublier écrit dans le journal de restauration (`restoreJournalService.write`, §8.3).
 

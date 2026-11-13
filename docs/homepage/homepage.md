@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Homepage
 
-La vitrine des projets, sur la route `/homepage` (où mène `/`), publique. Elle doit plaire à son auteur aussi : on pourrait aller directement sur chaque projet, on passe par là par plaisir. Visiteurs : moi surtout, des amis à qui je montre un projet, et n'importe qui puisque le site est public, sur ordinateur comme sur téléphone. C'est aussi le modèle à suivre pour des effets visuels. Ce qui reste à faire est dans le [todo](../todo/todo.md#5-homepage).
+La vitrine des projets, sur la route `/homepage` (où mène `/`), publique : pour moi surtout, des amis à qui je montre un projet, et n'importe qui, sur ordinateur comme sur téléphone. Elle doit plaire à son auteur aussi : on pourrait aller directement sur chaque projet, on passe par là par plaisir. C'est aussi le modèle à suivre pour des effets visuels. Ce qui reste à faire est dans le [todo](../todo/todo.md#5-homepage).
 
 ## Sommaire
 

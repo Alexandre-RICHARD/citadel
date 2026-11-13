@@ -8,7 +8,7 @@ Tout ce qui reste à faire dans le dépôt, par grand sujet puis par thème, et 
 
 1. [Général](#1-général)
 2. [Authentification](#2-authentification)
-3. [Mails](#3-mails)
+3. [Emails](#3-emails)
 4. [Hébergement et console](#4-hébergement-et-console)
 5. [Homepage](#5-homepage)
 6. [Backlog](#6-backlog)
@@ -61,21 +61,31 @@ La fonctionnalité est décrite dans [authentification](../auth/auth.md). Sa rec
 
 - ⚠️ Un changement d'email confirmé doit-il fermer les autres sessions et annuler les « mot de passe oublié » en cours vers l'ancienne adresse ? Aujourd'hui non : il faut déjà le mot de passe pour le commencer, et l'ancienne adresse est prévenue après coup. À tester : lancer un « mot de passe oublié », changer l'email, puis finir le « mot de passe oublié » depuis l'ancienne adresse.
 - La notification du changement d'email pourrait partir à l'ancienne adresse dès la demande, et pas seulement après la confirmation, pour que son propriétaire puisse réagir avant.
-- Les emails tutoient, le site vouvoie (formulaire de contact, écran « Message envoyé », pages du pied de page, bandeau) : harmoniser ou non.
 
 ### 2.3 Pour plus tard
 
 - Console, en lecture seule : comptes (métadonnées, jamais un secret), IP bannies, événements de sécurité (`auth_event` : qui se connecte et quand, connexions anormales). Par un compte MariaDB limité ou l'API interne, jamais depuis Internet. Les compteurs de bannissement passeraient alors en base.
-- Blocage temporaire d'un compte depuis la console : boutons « bloquer » et « débloquer », colonne `blocked_at` dans `auth_user`, contrôle dans le service des sessions. Un compte bloqué refuse toute action (connexion, parcours, mails, endpoints `protected`), et ses sessions sont supprimées au blocage. C'est le recours d'un compte détourné : les mails de sécurité renvoient déjà vers `contact@`. Lève la règle « aucune action de la console sur les comptes ».
+- Blocage temporaire d'un compte depuis la console : boutons « bloquer » et « débloquer », colonne `blocked_at` dans `auth_user`, contrôle dans le service des sessions. Un compte bloqué refuse toute action (connexion, parcours, emails, endpoints `protected`), et ses sessions sont supprimées au blocage. C'est le recours d'un compte détourné : les emails de sécurité renvoient déjà vers `contact@`. Lève la règle « aucune action de la console sur les comptes ».
 - Notification « nouvelle connexion ».
-- Turnstile, limitation de débit de Cloudflare ou CrowdSec si des abus apparaissent ; Turnstile sur les formulaires qui envoient un mail dès qu'un robot épuise le quota.
+- Turnstile, limitation de débit de Cloudflare ou CrowdSec si des abus apparaissent ; Turnstile sur les formulaires qui envoient un email dès qu'un robot épuise le quota.
 - Complétion de profil : `missingFields` dans `GET /auth/me` quand un champ obligatoire s'ajoutera ; `terms_accepted_version` si des conditions d'utilisation arrivent.
 - Remontée des plantages du front, protégée par la session et limitée par IP, si le besoin apparaît.
 - Plus de SSO, à préciser : fournisseurs externes (Google, GitHub…), hors du périmètre actuel, ou connexion commune au site et à la console.
 
-## 3. Mails
+### 2.4 Comportements constatés par les tests
 
-La fonctionnalité est décrite dans [mails](../emails/emails.md).
+Constatés en écrivant les tests end-to-end ([scénarios](../e2e/scenarios.md), dont les codes A1, E2, G10… sont cités ici).
+Rien n'a encore été corrigé dans le code du site.
+
+- **Lien d'un email ouvert dans un nouvel onglet : la page demandée au départ est perdue** (A1). Après « Passer cette étape » de l'étape « Protégez votre compte », l'onglet du lien atterrit sur le profil (`/auth/profile/identity`) au lieu de `/backlog`. La page demandée est gardée dans le `sessionStorage` de l'onglet d'origine (`useAuthRedirect`) : l'onglet ouvert par le lien n'en sait rien. Même comportement attendu pour tout lien d'email (connexion par lien, mot de passe oublié). Quand le code est tapé dans l'onglet d'origine (A2), on revient bien à `/backlog`. Le test A1 vérifie donc le profil. À trancher : transmettre la page demandée par le parcours (côté serveur), ou accepter le profil.
+- ⚠️ **« Confirmer » cliqué trop vite envoie au mauvais endroit** (vu 2 fois sur B1 et G5, test instable). Sur `/auth/verify`, `VerifyPage` lit le type du parcours en cours (`useFlow`) au moment du clic : si `GET /auth/flow` n'a pas encore répondu, il est inconnu, et une inscription confirmée mène au profil au lieu de « Protégez votre compte ». Un humain ne clique pas avant la fin du chargement, mais un clic rapide suffit à le reproduire. À corriger : désactiver « Confirmer » tant que le parcours n'est pas chargé. Les tests attendent la fin des requêtes (`openMailLink`).
+- ⚠️ **Après un échec, le premier nouvel essai reçoit un `429` sans message** (E2, E6, E7, G2, G10). Un mauvais mot de passe ou un mauvais code ne fait pas attendre le bouton : un nouvel essai dans les 2 secondes reçoit un `429`, et l'interface n'affiche que le compte à rebours « Patientez n s » sur le bouton, sans message. L'utilisateur ne sait pas si son essai a été jugé. À corriger : appliquer le délai côté interface dès la réponse en échec, comme après un `429`. Les tests contournent par `retryUntilAnswered`.
+- **Nom du fichier des codes de secours en date UTC** (E1, vérifié seulement au format). `buildRecoveryCodesFileName` utilise `toISOString()` : entre minuit et 1 h ou 2 h (heure de Paris), le fichier porte la date de la veille. Sans conséquence grave.
+- **L'email « adresse déjà utilisée » contient un lien** (G3). Le scénario et la [doc de l'authentification](../auth/auth.md#46-profil) disent « sans lien ni code » ; l'email contient un lien vers `/auth/login` (ni lien de confirmation, ni jeton). Le test vérifie l'absence de `/auth/verify` et de code. À trancher : corriger le scénario et la doc, ou l'email.
+
+## 3. Emails
+
+La fonctionnalité est décrite dans [emails](../emails/emails.md).
 
 ### 3.1 Délivrabilité
 
@@ -83,7 +93,7 @@ La fonctionnalité est décrite dans [mails](../emails/emails.md).
 
 ### 3.2 Pour plus tard
 
-- File d'envoi des mails en base, si l'envoi pendant la requête pose problème.
+- File d'envoi des emails en base, si l'envoi pendant la requête pose problème.
 
 ## 4. Hébergement et console
 
@@ -140,7 +150,7 @@ Le fonctionnement est décrit dans [infra](../infra/infra.md).
   - qBittorrent : pause et reprise globales, limites de vitesse, torrents en erreur, ratio par tracker ;
   - VPN : changer de serveur ;
   - planning des jobs modifiable (activer, désactiver, déplacer) ;
-  - notifications Discord ou mail pour les événements de la console (redémarrages en boucle, disque presque plein) ;
+  - notifications Discord ou email pour les événements de la console (redémarrages en boucle, disque presque plein) ;
   - journal des actions de la console : consultation et filtre ;
   - redémarrage et arrêt propre du NAS ;
   - Wake-on-LAN des autres machines du réseau ;
@@ -215,24 +225,13 @@ Idées qui ne seront pas faites :
 
 Les scénarios sont dans [scénarios](../e2e/scenarios.md) ; les codes cités (A1, E2, G10…) sont les leurs.
 
-### 8.1 Comportements de l'application constatés par les tests
-
-Rien n'a encore été corrigé dans le code du site.
-
-- **Lien d'un mail ouvert dans un nouvel onglet : la page demandée au départ est perdue** (A1). Après « Passer cette étape » de l'étape « Protégez votre compte », l'onglet du lien atterrit sur le profil (`/auth/profile/identity`) au lieu de `/backlog`. La page demandée est gardée dans le `sessionStorage` de l'onglet d'origine (`useAuthRedirect`) : l'onglet ouvert par le lien n'en sait rien. Même comportement attendu pour tout lien de mail (connexion par lien, mot de passe oublié). Quand le code est tapé dans l'onglet d'origine (A2), on revient bien à `/backlog`. Le test A1 vérifie donc le profil. À trancher : transmettre la page demandée par le parcours (côté serveur), ou accepter le profil.
-- ⚠️ **« Confirmer » cliqué trop vite envoie au mauvais endroit** (vu 2 fois sur B1 et G5, test instable). Sur `/auth/verify`, `VerifyPage` lit le type du parcours en cours (`useFlow`) au moment du clic : si `GET /auth/flow` n'a pas encore répondu, il est inconnu, et une inscription confirmée mène au profil au lieu de « Protégez votre compte ». Un humain ne clique pas avant la fin du chargement, mais un clic rapide suffit à le reproduire. À corriger : désactiver « Confirmer » tant que le parcours n'est pas chargé. Les tests attendent la fin des requêtes (`openMailLink`).
-- ⚠️ **Après un échec, le premier nouvel essai reçoit un `429` sans message** (E2, E6, E7, G2, G10). Un mauvais mot de passe ou un mauvais code ne fait pas attendre le bouton : un nouvel essai dans les 2 secondes reçoit un `429`, et l'interface n'affiche que le compte à rebours « Patiente n s » sur le bouton, sans message. L'utilisateur ne sait pas si son essai a été jugé. À corriger : appliquer le délai côté interface dès la réponse en échec, comme après un `429`. Les tests contournent par `retryUntilAnswered`.
-- **Nom du fichier des codes de secours en date UTC** (E1, vérifié seulement au format). `buildRecoveryCodesFileName` utilise `toISOString()` : entre minuit et 1 h ou 2 h (heure de Paris), le fichier porte la date de la veille. Sans conséquence grave.
-- **Le mail « adresse déjà utilisée » contient un lien** (G3). Le scénario et la [doc de l'authentification](../auth/auth.md#46-profil) disent « sans lien ni code » ; le mail contient un lien vers `/auth/login` (ni lien de confirmation, ni jeton). Le test vérifie l'absence de `/auth/verify` et de code. À trancher : corriger le scénario et la doc, ou le mail.
-
-### 8.2 Scénarios à écrire
+### 8.1 Scénarios à écrire
 
 - Écrire les scénarios sans ✅ dans [scénarios](../e2e/scenarios.md).
 - Les scénarios qui exigent des durées raccourcies (B7…) : une configuration à part de la stack e2e, à ajouter en les écrivant.
 - M7 : décider d'abord le comportement des adresses inconnues hors de `/homepage` et `/auth` (page blanche, page d'erreur de React Router, ou carte d'Angers Irigo).
-- Automatiser ce qui peut l'être dans les [vérifications de fin de l'authentification](../e2e/auth_verifications.md).
 
-### 8.3 Limites des tests écrits
+### 8.2 Limites des tests écrits
 
 - **`citadel.localhost` ne se résout pas côté Node sous Windows** (`getaddrinfo ENOTFOUND`) : `page.request` et `request.newContext` de Playwright ne peuvent pas appeler l'API. Les appels directs passent par un `fetch` dans la page (`helpers/api/callApi.ts`), qui envoie aussi l'`Origin` du site : le test passe donc par la protection CSRF comme le front.
 - **Chromium headless ne prévient jamais un onglet qu'il revient au premier plan** : `returnToTab` envoie lui-même `visibilitychange` (B2).
@@ -299,12 +298,11 @@ Numéros d'origine gardés.
 
 ## 10. À vérifier hors du dépôt
 
-Ce que le dépôt ne permet pas de savoir : réglages et actions sur le NAS, chez Brevo ou Cloudflare, dans Bitwarden. Une fois vérifié, le point est supprimé, ou devient une tâche dans sa section.
+Ce que le dépôt ne permet pas de savoir : réglages et actions sur le NAS, chez Brevo ou Cloudflare, dans Bitwarden. Une fois vérifié, le point est supprimé, ou devient une tâche dans sa section. Points relevés le 5 novembre 2026.
 
-- ⚠️ **Mise en prod de l'authentification.** Les tags `v2026.11.07.01` à `v2026.11.07.05` la contiennent : sont-ils déployés sur le NAS ? Avant le déploiement, les secrets doivent être créés dans Bitwarden puis mis dans `.env.prod` : `AUTH_CODE_HMAC_KEY`, `AUTH_TOTP_ENCRYPTION_KEY` et sa version, et un nouveau `ADMIN_PASSWORD_HASH` en `argon2id` (`pnpm tools hashAdminPassword`). Sans eux, le serveur et la console refusent de démarrer. Les migrations V021 et V022 suppriment les données des projets : en cas de retour arrière, `citadel restore-db pre-deploy` avant `citadel rollback`.
-- ⚠️ **En prod, après le déploiement** : une inscription réelle, mails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
+- ⚠️ **En prod, après le déploiement** : une inscription réelle, emails reçus, 2FA, sessions, IP réelle vue à travers Cloudflare, connexion à la console.
 - **Brevo** : journaux transactionnels gardés 1 mois (« Retention rules » de son compte), comme l'annonce la page « Données personnelles ».
-- **DMARC** : deux semaines après la mise en prod, aucun mail de l'authentification en indésirables et des rapports propres, puis passer à `p=quarantine` (DNS chez Cloudflare).
+- **DMARC** (le réglage DNS qui dit aux messageries quoi faire d'un email dont l'expéditeur ne se vérifie pas, [emails, §5](../emails/emails.md#5-dns-chez-cloudflare)) : deux semaines après la mise en prod, aucun email de l'authentification en indésirables et des rapports propres, puis passer de `p=none` (observer) à `p=quarantine` (mettre à l'écart), dans le DNS chez Cloudflare.
 - **Cookie `lang=fr`** vu en prod, que ni le site ni Caddy ne posent (probablement ancien) : revérifier en navigation privée.
 - **Ménage de l'hébergement** : `docker/other` (anciens fichiers de déploiement, hors git) est encore sur le PC ; les packages GHCR `reunification-*` et l'enregistrement DNS `api.` chez Cloudflare ont-ils été supprimés ?
-- **Mise en prod des mails** : un message de contact avec email, un sans, un mail direct à `contact@` ; notifications et accusé reçus hors indésirables, une réponse à l'accusé arrive dans la boîte perso, et la réponse au visiteur part de `contact@`.
+- **Mise en prod des emails** : un message de contact avec email, un sans, un email direct à `contact@` ; notifications et accusé reçus hors indésirables, une réponse à l'accusé arrive dans la boîte perso, et la réponse au visiteur part de `contact@`.

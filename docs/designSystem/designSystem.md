@@ -23,7 +23,7 @@ Tout est dans `src/`, un dossier par composant (avec son `.module.scss` et sa st
 | `organisms/` | `Selector`, `SideNavigation` (le menu latéral du profil et de Satisfactory), `Toaster` |
 | `theme/` | Thèmes, fournisseur de thème, choix clair ou sombre (§2) |
 | `fonts/`, `styles/` | Polices hébergées, réinitialisation et styles globaux (§3) |
-| `mailPreview/` | L'aperçu des gabarits de mails dans Storybook ([mails, §6](../emails/emails.md#6-côté-serveur)) |
+| `mailPreview/` | L'aperçu des gabarits d'emails dans Storybook ([emails, §6](../emails/emails.md#6-côté-serveur)) |
 
 Deux composants portent des règles à retenir :
 
@@ -52,4 +52,4 @@ Le paquet n'a pas de point d'entrée unique : chaque composant s'importe par son
 
 ## 5. Storybook
 
-`pnpm --filter @citadel/design-system dev` ouvre Storybook sur http://localhost:3002. Chaque composant a au moins une story (`*.stories.tsx`), et `pnpm --filter @citadel/design-system build` construit un Storybook statique dans `build/`. Les gabarits de mails y ont leur section « Mails ».
+`pnpm --filter @citadel/design-system dev` ouvre Storybook sur http://localhost:3002. Chaque composant a au moins une story (`*.stories.tsx`), et `pnpm --filter @citadel/design-system build` construit un Storybook statique dans `build/`. Les gabarits d'emails y ont leur section « Emails ».

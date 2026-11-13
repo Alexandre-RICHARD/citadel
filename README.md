@@ -33,7 +33,7 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 
 - Node 24, et pnpm par corepack : `corepack enable`
 - Docker Desktop, lancé : les bases MariaDB de dev et de test tournent dedans
-- Git Bash pour les scripts
+- Git Bash pour les scripts. Le dépôt est développé et testé sous Windows : Linux et macOS ne sont pas testés (et Edge sert aux tests end-to-end)
 - `.env` et `.env.test` à la racine, copiés de `.env.example` et remplis (les commentaires du modèle disent quoi mettre dans chacun) ; le Backlog demande en plus une application Twitch ([Backlog, §9](docs/backlog/backlog.md#9-lancer))
 
 ### 2.2 Démarrage
@@ -47,6 +47,10 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | Commande | Effet |
 | --- | --- |
 | `pnpm lint`, `pnpm lint-fix`, `pnpm check-types` | Lint (avec ou sans correction automatique) et types de tout le monorepo |
+| `pnpm --filter @citadel/<paquet> test-unit` | Les tests unitaires d'un paquet : `client`, `server`, `admin`, `common` ou `specs` |
+| `pnpm --filter @citadel/server test-integration` | Les tests d'intégration du serveur : le lancement démarre lui-même la base de test (Docker Desktop lancé) |
+| `pnpm test-e2e` | Les tests end-to-end, depuis `e2e/`, après `pnpm stack-up` ([mode d'emploi](docs/e2e/e2e.md#1-lancer)) |
+| `pnpm test-report` | Les tests unitaires avec rapport HTML et couverture |
 | `pnpm build` | Construit les trois apps (`apps/*`) |
 | `pnpm audit:prod` | Failles connues des dépendances de production (niveau high et plus) |
 | `pnpm update-minor`, `pnpm update-major` | Mise à jour interactive des dépendances, sans ou avec changement de version majeure |
@@ -55,7 +59,7 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | `pnpm db:migrate`, `pnpm db:reset`, `pnpm db:down` | Migrations seules ; repartir d'une base de dev vide ; arrêter la base |
 | `pnpm prod:local` | Les images de prod sur votre PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter) |
 | `pnpm tools release` | La mise en prod ([infra](docs/infra/infra.md#4-commandes)) |
-| `pnpm tools` | Menu des outils de `scripts/` |
+| `pnpm tools` | Menu des outils de `scripts/` ([liste](docs/architecture/architecture.md#82-scripts)) |
 
 ## 3. Documentation
 
@@ -71,9 +75,9 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 
 ### 3.2 Transverse
 
-- [Architecture](docs/architecture/architecture.md) : organisation du dépôt et règles communes
+- [Architecture](docs/architecture/architecture.md) : organisation du dépôt, règles communes, scripts et [glossaire](docs/architecture/architecture.md#10-glossaire)
 - [Authentification](docs/auth/auth.md) : comptes, sessions, 2FA, RGPD
-- [Mails](docs/emails/emails.md) : envoi, réception, formulaire de contact, DNS
+- [Emails](docs/emails/emails.md) : envoi, réception, formulaire de contact, DNS
 - [Infra](docs/infra/infra.md) : NAS, déploiement, sauvegardes, accès
 - [Console d'administration](docs/admin/admin.md) : l'interface de l'hébergement, ce qu'elle lit, ce qu'elle peut faire, sa sécurité
 - [Design system](docs/designSystem/designSystem.md) : composants, thèmes, polices, Storybook

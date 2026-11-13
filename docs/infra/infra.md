@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Infra
 
-Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de votre PC : GitHub construit les images, le NAS les télécharge et les déploie après votre confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les mails sont dans [mails](../emails/emails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#4-hébergement-et-console).
+Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de votre PC : GitHub construit les images, le NAS les télécharge et les déploie après votre confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les emails sont dans [emails](../emails/emails.md), et ce qui reste à faire dans le [todo](../todo/todo.md#4-hébergement-et-console).
 
 ## Sommaire
 
@@ -24,7 +24,7 @@ Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN)
 - **Un seul projet Compose**, services groupés par préfixe : `infra-` (Caddy, `infra-ops` qui lance les jobs, la console…), `site-prod-` (front, serveur, base, migrations), `site-preprod-` (la même chose, à la demande), `media-`.
 - **Pré-prod** : sur le NAS, arrêtée la plupart du temps. Mêmes images que la prod, `.env.prod` avec la base `citadel_preprod`, restaurée chaque nuit depuis la prod (§7). Elle sert au test de restauration et à la répétition de chaque déploiement qui apporte des migrations.
 - **`citadel deploy <version>`** : plan, confirmation, dump de la base, répétition en pré-prod si la version a des migrations (dernier dump importé, migrations, serveur démarré : un échec arrête tout, la prod n'est pas touchée), migrations en prod, nouveaux conteneurs, vérifications, retour arrière automatique en cas d'échec.
-- **La console** (`apps/admin`, port 8100) dépose ses demandes (jobs, déploiements, restaurations) dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute : une faille dans la console ne donne ni les pleins droits sur Docker, ni l'accès au Drive.
+- **La console** (`apps/admin`, port 8100) dépose ses demandes (jobs, déploiements, restaurations) dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute : une faille dans la console (`http://…:8100`) ne donne ni les pleins droits sur Docker, ni l'accès au Drive.
 - **Bandeau du site** : `infra-ops` écrit le message dans un fichier JSON (identifiant, texte, date de fin) que Caddy sert tel quel (`/banner.json`) : ni base ni API en jeu, il s'affiche même si l'API est en panne. Après une restauration, un message automatique reste 3 mois. Il ne disparaît que par sa croix, retenue avec l'identifiant du message : un nouveau message le réaffiche.
 
 ## 2. Contraintes
@@ -88,7 +88,7 @@ Depuis vos appareils. « `:port` » : l'IP du NAS en LAN, son nom (`NAS_HOSTNAME
 | MariaDB, prod et pré-prod | `127.0.0.1:3306` et `3307` du NAS | ❌ | tunnel SSH | comptes plus bas |
 | API Docker | socket du NAS | ❌ | ❌ | `infra-ops` ; la console à travers `infra-socket-proxy` |
 
-- API : les projets privés (Game Death Counter, Backlog) exigent une session ([authentification](../auth/auth.md#411-protection-des-endpoints-et-des-projets)) ; le contact, l'état des mails et les parcours de l'authentification restent ouverts, limités par IP. `/api/internal` est bloqué par Caddy et réservé à la console, par le réseau Docker.
+- API : les projets privés (Game Death Counter, Backlog) exigent une session ([authentification](../auth/auth.md#411-protection-des-endpoints-et-des-projets)) ; le contact, l'état des emails et les parcours de l'authentification restent ouverts, limités par IP. `/api/internal` est bloqué par Caddy et réservé à la console, par le réseau Docker.
 - Console en HTTP, sans certificat à installer sur chaque appareil : par Tailscale, WireGuard chiffre tout ; en LAN, le mot de passe ne traverse que votre réseau domestique. Accepté.
 
 ## 6. La base depuis DBeaver
@@ -138,7 +138,7 @@ Dans `infra/ops/crontab`. `citadel <job>` en lance un tout de suite, comme le bo
 | Chaque nuit, 4 h 30 | `vpn-leak-test` | IP de sortie et DNS des téléchargements, par le VPN |
 | Chaque nuit, 5 h | `db-backup`, puis `db-restore-test` | §7.1 |
 | Lundi, 3 h | `config-backup`, puis `config-verify` | §7.1 |
-| Chaque soir, 23 h 50 | `contact-retry` | relance des messages de contact en attente ([mails, §6](../emails/emails.md#6-côté-serveur)) |
+| Chaque soir, 23 h 50 | `contact-retry` | relance des messages de contact en attente ([emails, §6](../emails/emails.md#6-côté-serveur)) |
 
 ## 8. Accès au Drive (rclone)
 
@@ -184,32 +184,18 @@ Sur votre PC. Installer rclone (`winget install Rclone.Rclone`), ouvrir un nouve
 Dans Git Bash : créer un fichier lisible, l'envoyer chiffré, le relire sans aide (juste les secrets) :
 
 ```sh
-# 1. Créer un fichier avec du texte que vous reconnaîtrez
 echo "test de la citadel" > verification.txt
+rclone copy verification.txt citadel-backups:verify/   # envoyé chiffré
+# Sur drive.google.com : le fichier garde son nom, son contenu est illisible.
+rclone cat citadel-backups:verify/verification.txt     # relu en clair par rclone
 
-# 2. L'envoyer sur le Drive (via rclone, il sera chiffré)
-rclone copy verification.txt citadel-backups:verify/
-
-# 3. ⚠️  Allez observer sur votre Drive (https://drive.google.com)
-#    Le fichier garde son nom, mais son contenu est illisible : c'est le chiffrement.
-
-# 4. Relire le fichier en clair via rclone (en utilisant la config citadel-backups)
-echo "--- Via citadel-backups (normal) ---"
-rclone cat citadel-backups:verify/verification.txt
-
-# 5. Relire le MÊME fichier JUSTE avec vos secrets Bitwarden
-#    (pas de config rclone, pas de NAS : juste les deux codes de Bitwarden)
-#    Cela prouve que vous pouvez récupérer vos données en cas de catastrophe.
-echo "--- Avec JUSTE les secrets (mode urgence) ---"
-read -rsp "Mot de passe (depuis Bitwarden) : " PW; echo
-read -rsp "Sel (depuis Bitwarden) : " SALT; echo
+# Relu avec les seuls secrets de Bitwarden (ni config rclone ni NAS) : la preuve qu'une catastrophe se rattrape
+read -rsp "Mot de passe (Bitwarden) : " PW; echo
+read -rsp "Sel (Bitwarden) : " SALT; echo
 rclone cat ":crypt,remote='gdrive:',password='$(rclone obscure "$PW")',password2='$(rclone obscure "$SALT")',filename_encryption=off,directory_name_encryption=false,suffix=none:verify/verification.txt"
 unset PW SALT
 
-# 6. Nettoyer
-rclone purge citadel-backups:verify/
-rm verification.txt
-echo "Vérification terminée ✓"
+rclone purge citadel-backups:verify/ && rm verification.txt
 ```
 
 ### 8.4 Sur le NAS
@@ -257,12 +243,12 @@ Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget
 
 ## 9. Alertes (healthchecks.io)
 
-Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`) signalent leur début, leur réussite ou leur échec à healthchecks.io (offre gratuite), qui alerte par e-mail et sur Discord si un job échoue **ou ne passe pas à l'heure** : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Limite : si `infra-ops` s'arrête, l'alerte de `site-check` annonce un site injoignable alors que c'est la surveillance qui est tombée. Certificats, disques, conteneurs et mises à jour se surveillent dans la console ; TOS garde ses e-mails SMART et d'espace disque.
+Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`) signalent leur début, leur réussite ou leur échec à healthchecks.io (offre gratuite), qui alerte par email et sur Discord si un job échoue **ou ne passe pas à l'heure** : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Limite : si `infra-ops` s'arrête, l'alerte de `site-check` annonce un site injoignable alors que c'est la surveillance qui est tombée. Certificats, disques, conteneurs et mises à jour se surveillent dans la console ; TOS garde ses emails SMART et d'espace disque.
 
 Chaque contrôle (une ligne dans la liste de votre projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
 
 1. healthchecks.io → votre projet → Settings → API Access → « Ping key » : la générer, la ranger dans Bitwarden, puis l'écrire dans `.env.prod` (`HEALTHCHECKS_PING_KEY`), avant le déploiement.
-2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console (`http://…:8100`), section « Jobs », le bouton ▶ de chaque ligne ; ou depuis votre PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
+2. Après le déploiement, faire passer chaque job une fois, pour que son contrôle apparaisse : dans la console, section « Jobs », le bouton ▶ de chaque ligne ; ou depuis votre PC, `ssh nas /Volume1/citadel/citadel db-backup` (puis les autres noms).
 3. healthchecks.io ne sait pas encore **quand** attendre chaque job : par défaut, une fois par jour. Pour `site-check`, une panne ne serait donc signalée qu'au bout d'un jour. Sur chaque contrôle : cliquer dessus → « Change Schedule » → onglet « Cron » → coller l'expression du tableau, fuseau `Europe/Paris`, le délai de grâce (le retard toléré avant l'alerte) → Save. Ces expressions sont celles de `infra/ops/crontab` : à reporter ici si elles y changent.
 
 | Contrôle | Cron | Délai de grâce |

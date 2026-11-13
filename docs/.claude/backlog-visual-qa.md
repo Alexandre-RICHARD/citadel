@@ -13,7 +13,7 @@ Recette :
 - Les `Select` du Backlog sont `role="combobox"` ; Escape vide les `type="search"` nativement.
 - Arrêter les tâches de fond laisse les enfants node vivants : tuer les PID qui écoutent sur 3000/3001 ensuite (`taskkill //PID … //F //T`).
 - La base de test est celle des tests d'intégration (des centaines d'utilisateurs, 188 jeux) : un compte de QA se supprime à la main dans l'ordre des clés étrangères (done_dlc → user_version → user_game → series → auth_user).
-- `.env.test` a `MAIL_SENDER=memory` et pas d'`AUTH_COOKIE_SECURE` (le cookie `__Host-citadel_session` marche sur localhost dans Chromium). Pour lire les mails de l'extérieur : un wrapper tsx dans le scratchpad (même `--env-file`) qui importe `apps/server/src/app.ts` et `mail/sender/memoryMailSender.ts` par URL `file:///` et sert `/__mails` sur le port 3000 avant de déléguer à `app` ; les limiteurs en mémoire se remettent à zéro en redémarrant. Une connexion avec TOTP demande un code calculé sur l'horloge réelle (±1 pas, rejeu refusé).
+- `.env.test` a `MAIL_SENDER=memory` et pas d'`AUTH_COOKIE_SECURE` (le cookie `__Host-citadel_session` marche sur localhost dans Chromium). Pour lire les emails de l'extérieur : un wrapper tsx dans le scratchpad (même `--env-file`) qui importe `apps/server/src/app.ts` et `mail/sender/memoryMailSender.ts` par URL `file:///` et sert `/__mails` sur le port 3000 avant de déléguer à `app` ; les limiteurs en mémoire se remettent à zéro en redémarrant. Une connexion avec TOTP demande un code calculé sur l'horloge réelle (±1 pas, rejeu refusé).
 
 **Why:** ce procédé a trouvé des bugs que nul test n'avait vus (boucle de rendu, formulaire initialisé depuis un cache périmé).
 

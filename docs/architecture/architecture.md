@@ -35,6 +35,7 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 ├── infra/                 ce qui tourne sur le NAS
 ├── e2e/                   tests end-to-end Playwright
 ├── scripts/               release.sh, scripts des bases Docker, et des outils lancés par pnpm tools
+├── .github/workflows/     construit et publie les images (§8)
 ├── docs/                  la documentation : un dossier par sujet
 ├── Dockerfile             toutes les images, une étape par image
 ├── compose.dev.yml        MariaDB de dev et de test
@@ -49,7 +50,7 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 
 - Code en anglais : types, champs, variables, valeurs des enums.
 - Commentaires en français. Ils disent pourquoi, et portent les règles métier délicates : le code fait référence. La doc de chaque projet en donne la vue d'ensemble et les décisions.
-- **Vouvoiement partout, sauf dans les mails** : le site, la console d'administration et les textes d'interface cités dans les docs vouvoient (« Votre profil », « Protégez votre compte »). Seuls les gabarits de mails tutoient.
+- **Vouvoiement partout, sauf dans les emails** : le site, la console d'administration et les textes d'interface cités dans les docs vouvoient (« Votre profil », « Protégez votre compte »). Seuls les gabarits d'emails tutoient.
 - Textes d'interface en français, écrits en dur, sans système de traduction. Seules les raisons d'erreur et les libellés de champs sont centralisés, en `Record<Enum, string>` pour être exhaustifs. Dans le JSX, apostrophe typographique (’) dans le texte visible (`react/no-unescaped-entities`).
 
 ### 2.2 Fichiers
@@ -231,13 +232,15 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 
 - **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node), `node/` (serveur et console, jamais le front). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
 - **Où ranger une fonction** : générique (rien d'un projet ni du métier) dans `common` ; propre à un projet mais partagée par le front et le serveur dans `specs/…/helper/` ; propre à une app dans son `helper/` (ou `common/` de l'app). Une fonction pure ne reste pas dans un composant : elle en sort, testée.
-- **`design-system`** (détaillé dans [design system](../designSystem/designSystem.md)) : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../emails/emails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
+- **`design-system`** (détaillé dans [design system](../designSystem/designSystem.md)) : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits d'emails, [emails, §6](../emails/emails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 
 ## 7. Console d'administration
 
 `apps/admin`, détaillée dans [console d'administration](../admin/admin.md) : un seul paquet et un seul `tsconfig`, avec `src/server/` (Express, un dossier par source : docker, torrent, vpn, access, deadlines…), `src/client/` (React, design system) et `src/shared/` (types échangés entre les deux). Elle n'a pas de base : ses historiques sont des fichiers JSON déposés par `infra-ops`, et ses actions passent par des demandes à `infra-ops` ([infra, §1](../infra/infra.md#1-fonctionnement)).
 
 ## 8. Infra
+
+### 8.1 Fichiers
 
 ```
 infra/
@@ -265,6 +268,23 @@ Sur le NAS :
 
 Les fichiers d'infra sont commentés abondamment, en français : pourquoi et comment, même si les commentaires dépassent le code. Le détail des choix est dans ces commentaires ; le mode d'emploi est dans [infra](../infra/infra.md).
 
+### 8.2 Scripts
+
+`pnpm tools` propose tout fichier `.sh` de `scripts/` ; `pnpm tools <nom>` en lance un directement. Chacun explique son usage en tête de fichier.
+
+| Script | Rôle |
+| --- | --- |
+| `release` | La mise en production ([infra, §4](../infra/infra.md#4-commandes)) |
+| `checkDocLinks` | Les liens et ancres de la documentation : à lancer après une grosse édition des docs |
+| `checkEnvFiles` | Les fichiers `.env*` ont les mêmes variables, dans le même ordre que `.env.example` |
+| `checkExternalLinks` | Les liens externes du site répondent encore (demande Internet) |
+| `checkScssModules` | Les `*.module.scss` qu'aucun fichier n'importe |
+| `generateAuthSecrets`, `hashAdminPassword` | Les secrets de l'authentification, le hash du mot de passe de la console |
+| `listExtensions` | L'inventaire des extensions de fichiers du dépôt |
+| `clean` | Supprime tout ce qui se regénère (dépendances, builds, rapports) |
+
+Les bases Docker de dev et de test (`pnpm db:*`, `pnpm prod:local`) passent par `scripts/docker/`.
+
 ## 9. Checklists
 
 ### 9.1 Brancher un nouvel endpoint
@@ -288,19 +308,19 @@ Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont 
 | Mot | Sens |
 | --- | --- |
 | Bean | La forme que manipulent les services et les requêtes du serveur. Seuls les contrôleurs voient des DTO, et traduisent de l'un à l'autre (§4) |
-| Brevo | Le fournisseur qui envoie les mails du site ([mails](../emails/emails.md)) |
+| Brevo | Le fournisseur qui envoie les emails du site ([emails](../emails/emails.md)) |
 | Caddy | Le serveur web du NAS : certificats, routage vers les conteneurs, bandeau du site ([infra](../infra/infra.md)) |
 | Code de secours | Code à usage unique qui remplace le second facteur quand il n'est plus accessible ([authentification](../auth/auth.md)) |
 | Console | L'application `apps/admin` : l'administration du NAS, hors Internet ([architecture, §7](#7-console-dadministration)) |
 | DTO | Data Transfer Object : la forme d'une réponse ou d'un corps de requête, décrite dans les specs, partagée par le front et le serveur (§3) |
-| Facteur, second facteur | Ce qui s'ajoute au mot de passe à la connexion : application TOTP, code par mail, code de secours |
+| Facteur, second facteur | Ce qui s'ajoute au mot de passe à la connexion : application TOTP, code par email, code de secours |
 | Flyway | L'outil qui applique les migrations SQL (`apps/server/src/sql/migrations`) |
 | FM | Front Model : la forme dont l'écran a besoin, produite par un mapper à partir du DTO que garde le cache (§5.3) |
 | FRM | Ficsit Remote Monitoring : le mod de *Satisfactory* dont la page des machines lit les données ([Satisfactory](../satisfactory/satisfactory.md)) |
 | GDC | Game Death Counter, l'un des projets du site ([Game Death Counter](../gameDeathCounter/gameDeathCounter.md)) |
 | IGDB | La base de données de jeux (celle de Twitch) d'où vient le Backlog ([Backlog, §6](../backlog/backlog.md#6-données-igdb)) |
 | `infra-ops` | Le conteneur du NAS qui lance les jobs et exécute, après vérification, les demandes de la console ([infra, §1](../infra/infra.md#1-fonctionnement)) |
-| Parcours | Une suite d'étapes d'authentification qui s'étend sur plusieurs pages ou mails : inscription, connexion avec second facteur, mot de passe oublié… ([authentification, §4.1](../auth/auth.md#41-commun-à-tous-les-parcours)) |
+| Parcours | Une suite d'étapes d'authentification qui s'étend sur plusieurs pages ou emails : inscription, connexion avec second facteur, mot de passe oublié… ([authentification, §4.1](../auth/auth.md#41-commun-à-tous-les-parcours)) |
 | Pré-prod | La copie de la prod, à la demande sur le NAS, où se répètent les déploiements et se teste la restauration ([infra, §1](../infra/infra.md#1-fonctionnement)) |
 | `prod:local` | Les images de prod lancées sur votre PC ([infra, §4](../infra/infra.md#4-commandes)) |
 | Projet | Une partie du site avec sa route, ses specs, son serveur et son front : Game Death Counter, Backlog, Angers Irigo, Satisfactory, Homepage, authentification |
