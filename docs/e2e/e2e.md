@@ -1,35 +1,47 @@
-# Tests end-to-end (Playwright)
+# Tests end-to-end
 
-Ils pilotent un vrai navigateur sur la stack complète de `prod:local` (Caddy, front, serveur, base). Scénarios à écrire : [docs/TODO.md §8](../docs/TODO.md).
+[Citadel](../../README.md) › Tests end-to-end
 
-## Lancer
+Les tests Playwright (`e2e/`) pilotent un vrai navigateur sur la stack complète de `prod:local` (Caddy, front, serveur, base). Ce qu'ils doivent vérifier est dans les [scénarios](scenarios.md) ; la recette manuelle de l'authentification dans ses [vérifications de fin](auth_verifications.md) ; les scénarios à écrire et les points constatés en écrivant les tests dans le [todo](../todo/todo.md#8-tests-end-to-end).
+
+## Sommaire
+
+1. [Lancer](#1-lancer)
+2. [Comment les mails sont captés](#2-comment-les-mails-sont-captés)
+3. [La base n'est pas vidée entre les tests](#3-la-base-nest-pas-vidée-entre-les-tests)
+4. [Écrire un test](#4-écrire-un-test)
+5. [Quand un test échoue](#5-quand-un-test-échoue)
+6. [Ce qui diffère de la prod](#6-ce-qui-diffère-de-la-prod)
+
+## 1. Lancer
 
 Toutes les commandes se lancent **depuis le dossier `e2e/`** (ou avec `pnpm --filter @citadel/e2e <commande>`).
 
 ```bash
-pnpm stack-up        # 1. la stack (premier lancement : plusieurs minutes, ensuite quelques secondes)
-pnpm test-e2e      # 2. tous les tests, sans fenêtre
+pnpm stack-up         # 1. la stack (premier lancement : plusieurs minutes, ensuite quelques secondes)
+pnpm test-e2e         # 2. tous les tests, sans fenêtre, dans un ordre aléatoire
 pnpm test-e2e-report  # 3. ouvre le rapport (aussi proposé automatiquement : e2e/report-e2e/html)
-pnpm stack-down      # repartir de zéro : efface la base ET les mails (puis stack-up)
+pnpm stack-down       # repartir de zéro : efface la base ET les mails (puis stack-up)
 ```
 
-Le navigateur est le dossier **EdgeCore** de Windows (détecté tout seul, [src/helpers/browser/findBrowserPath.ts](src/helpers/browser/findBrowserPath.ts)), ou celui de la variable `E2E_BROWSER_PATH`. Sans lui, Playwright prend son propre Chromium (`pnpm install-browser`), que Windows peut bloquer (stratégie de contrôle d'application).
+Le navigateur est le dossier **EdgeCore** de Windows (détecté tout seul, [findBrowserPath.ts](../../e2e/src/helpers/browser/findBrowserPath.ts)), ou celui de la variable `E2E_BROWSER_PATH`. Sans lui, Playwright prend son propre Chromium (`pnpm install-browser`), que Windows peut bloquer (stratégie de contrôle d'application).
 
-**Adresses et mots de passe** : jamais en dur dans un test, mais dans [src/dictionaries/](src/dictionaries/) (`urls.AUTH_REGISTER`, `credentials.VALID_PASSWORD`...).
+**Adresses et mots de passe** : jamais en dur dans un test, mais dans [src/dictionaries/](../../e2e/src/dictionaries/) (`urls.AUTH_REGISTER`, `credentials.VALID_PASSWORD`…).
 
 | Commande | À quoi ça sert |
 |---|---|
 | `pnpm test-e2e-ui` | **Le plus confortable** : liste des tests, un clic pour en lancer un, voir chaque étape avec la page « avant / après », rejouer |
-| `pnpm test-e2e-slow` | Fenêtre visible, une action toutes les 600 ms : pour **regarder** un test et valider qu'il est correct |
+| `pnpm test-e2e-headed` | Tous les tests, fenêtre visible |
+| `pnpm test-e2e-slow` | Fenêtre visible, une action toutes les 1,5 s, un test à la fois : pour **regarder** un test et valider qu'il est correct |
 | `pnpm test-e2e src/tests/auth/a1.registrationNominal.spec.ts` | Un seul fichier (un dossier marche aussi : `src/tests/isolation`) |
 | `pnpm test-e2e -g "A1"` | Les tests dont le titre contient « A1 » (sans `--` : après lui, `-g` serait pris pour un nom de fichier) |
-| `pnpm test-e2e-record` | **Enregistreur** (voir plus bas) |
+| `pnpm test-e2e-record` | **Enregistreur** (§4.1) |
 
 Tu peux aussi lire les mails reçus par le site sur <http://localhost:8025> (Mailpit), pendant ou après un test.
 
-## Comment les mails sont captés
+## 2. Comment les mails sont captés
 
-Le serveur envoie ses mails avec son vrai client Brevo, mais `BREVO_API_URL` (voir [infra/compose.e2e.yml](../infra/compose.e2e.yml)) pointe vers un faux Brevo ([src/fake-brevo/server.mjs](src/fake-brevo/server.mjs)) qui dépose le mail dans Mailpit. **Rien ne part vers Internet, aucun crédit Brevo n'est consommé.** Dans un test :
+Le serveur envoie ses mails avec son vrai client Brevo, mais `BREVO_API_URL` (voir [infra/compose.e2e.yml](../../infra/compose.e2e.yml)) pointe vers un faux Brevo ([src/fake-brevo/server.mjs](../../e2e/src/fake-brevo/server.mjs)) qui dépose le mail dans Mailpit. **Rien ne part vers Internet, aucun crédit Brevo n'est consommé.** Dans un test :
 
 ```ts
 const mail = await waitForMail(identity.email); // attend le mail (15 s au plus) et le lit
@@ -38,13 +50,13 @@ mail.code;  // le code à 6 chiffres
 mail.subject, mail.text, mail.html
 ```
 
-## La base n'est pas vidée entre les tests
+## 3. La base n'est pas vidée entre les tests
 
 Chaque test crée ses propres données avec `createIdentity()` : un email et un pseudo uniques (`alice-1a2b3c4d@e2e.test`). Deux tests ne se marchent donc pas dessus, même en parallèle, et la suite reste rapide. Pour repartir de zéro : `pnpm stack-down` puis `pnpm stack-up`.
 
-## Écrire un test : le tutoriel
+## 4. Écrire un test
 
-### 1. Enregistrer pour avoir un brouillon
+### 4.1 Enregistrer pour avoir un brouillon
 
 ```bash
 pnpm stack-up
@@ -58,15 +70,15 @@ Deux fenêtres s'ouvrent : le navigateur (fais ton parcours dedans) et **Playwri
 
 Copie le code de l'Inspector dans un nouveau fichier `src/tests/…/mon-scenario.spec.ts`.
 
-### 2. Le nettoyer
+### 4.2 Le nettoyer
 
 L'enregistreur te donne un brouillon à retoucher à la main :
 - **Les valeurs fixes → l'identité du test.** Il a noté `alex@test.fr` en dur : remplace par `createIdentity().email` (sinon le 2ᵉ lancement échoue, l'adresse existe déjà).
 - **Le mail → `waitForMail`.** Le navigateur de l'enregistreur ne sait pas lire tes mails : tu ajoutes l'étape à la main.
-- **Découper en `test.step`** : c'est ce qui rend l'échec lisible (voir plus bas).
+- **Découper en `test.step`** : c'est ce qui rend l'échec lisible (§5).
 - **Des vérifications `expect`** à chaque étape importante, pas seulement à la fin.
 
-### 3. Le squelette
+### 4.3 Le squelette
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -91,17 +103,17 @@ test.describe("Mon thème", () => {
 });
 ```
 
-Les modèles : [a1.registrationNominal.spec.ts](src/tests/auth/a1.registrationNominal.spec.ts) (un parcours détaillé, avec les steps d'ouverture et de saisie), [e7.manageFactors.spec.ts](src/tests/auth/e7.manageFactors.spec.ts) (un compte prêt à l'emploi, plusieurs steps enchaînés) et [i2.gdcIsolation.spec.ts](src/tests/isolation/i2.gdcIsolation.spec.ts) (deux utilisateurs, appels directs à l'API).
+Les modèles : [a1.registrationNominal.spec.ts](../../e2e/src/tests/auth/a1.registrationNominal.spec.ts) (un parcours détaillé, avec les steps d'ouverture et de saisie), [e7.manageFactors.spec.ts](../../e2e/src/tests/auth/e7.manageFactors.spec.ts) (un compte prêt à l'emploi, plusieurs steps enchaînés) et [i2.gdcIsolation.spec.ts](../../e2e/src/tests/isolation/i2.gdcIsolation.spec.ts) (deux utilisateurs, appels directs à l'API).
 
-**Les fichiers de tests** sont rangés par thème (`auth`, `access`, `isolation`, `homepage`) et nommés par le code du scénario de [scenarios.md](scenarios.md), en minuscules (la règle ESLint des noms de fichiers l'exige) : `a1.registrationNominal.spec.ts`, `h2.homepageHeader.spec.ts`. Les scénarios écrits y sont marqués ✅.
+**Les fichiers de tests** sont rangés par thème (`auth`, `access`, `isolation`, `homepage`) et nommés par le code du scénario des [scénarios](scenarios.md), en minuscules (la règle ESLint des noms de fichiers l'exige) : `a1.registrationNominal.spec.ts`, `h2.homepageHeader.spec.ts`. Les scénarios écrits y sont marqués ✅.
 
-**Helpers ou steps ?** Dans [src/helpers/](src/helpers/), les petits gestes (ouvrir le site, lire un mail, créer une identité). Dans [src/steps/](src/steps/), les parcours complets d'un utilisateur : `openRegistrationForm`, `registerAccount` (inscription + confirmation par le lien), `registerWithCode` (par le code), `createConnectedAccount` (un compte neuf, connecté, sur la homepage), `createAccountWithTotp`, `logIn`, `logOut`, `enableTotp`, `submitSecondFactor`, `sendContactMessage`… Un step part de la page où il est appelé (précisée dans son commentaire), se découpe en `test.step` et renvoie ce dont la suite a besoin (l'identité créée). Les animations du site restent actives : Playwright attend qu'un élément soit stable avant de cliquer.
+**Helpers ou steps ?** Dans [src/helpers/](../../e2e/src/helpers/), les petits gestes (ouvrir le site, lire un mail, créer une identité). Dans [src/steps/](../../e2e/src/steps/), les parcours complets d'un utilisateur : `openRegistrationForm`, `registerAccount` (inscription + confirmation par le lien), `registerWithCode` (par le code), `createConnectedAccount` (un compte neuf, connecté, sur la homepage), `createAccountWithTotp`, `logIn`, `logOut`, `enableTotp`, `submitSecondFactor`, `sendContactMessage`… Un step part de la page où il est appelé (précisée dans son commentaire), se découpe en `test.step` et renvoie ce dont la suite a besoin (l'identité créée). Les animations du site restent actives : Playwright attend qu'un élément soit stable avant de cliquer.
 
-### 4. Naviguer comme un utilisateur
+### 4.4 Naviguer comme un utilisateur
 
-Un scénario **ne tape jamais d'adresse** : il représente ce que l'utilisateur fait dans l'interface. Il commence par `openSite(page)` (le site à `/`, qui renvoie vers la homepage), puis il clique : `openProjectFromHomepage(page, "Backlog")`, un lien, un bouton. Le lien d'un mail s'ouvre avec `openMailLink(page, mail.link!)` (l'utilisateur le clique dans sa messagerie). Ces helpers sont dans [src/helpers/navigation/](src/helpers/navigation/) et ce sont les seuls à appeler `goto` : ESLint l'interdit dans `src/tests`.
+Un scénario **ne tape jamais d'adresse** : il représente ce que l'utilisateur fait dans l'interface. Il commence par `openSite(page)` (le site à `/`, qui renvoie vers la homepage), puis il clique : `openProjectFromHomepage(page, "Backlog")`, un lien, un bouton. Le lien d'un mail s'ouvre avec `openMailLink(page, mail.link!)` (l'utilisateur le clique dans sa messagerie). Ces helpers sont dans [src/helpers/navigation/](../../e2e/src/helpers/navigation/) et ce sont les seuls à appeler `goto` : ESLint l'interdit dans `src/tests`.
 
-### 5. Désigner un élément (par ordre de préférence)
+### 4.5 Désigner un élément (par ordre de préférence)
 
 1. `page.getByTestId("register-submit")` : le `data-testid`, stable même si le texte change ;
 2. `page.getByRole("button", { name: "Créer mon compte" })` : ce que voit un utilisateur ;
@@ -110,7 +122,7 @@ Un scénario **ne tape jamais d'adresse** : il représente ce que l'utilisateur 
 
 Pas de `waitForTimeout` (attente fixe) : `expect(...).toBeVisible()` attend tout seul jusqu'à 10 s.
 
-### 6. Plusieurs utilisateurs / un autre navigateur
+### 4.6 Plusieurs utilisateurs, un autre navigateur
 
 ```ts
 const alice = await browser.newContext(); // « un autre navigateur » : ni cookies ni stockage partagés
@@ -124,7 +136,7 @@ const pageAlice = await alice.newPage();
 
 **Codes TOTP** : `computeTotp(secret, décalage)` calcule le code de l'application (`-1`, `0`, `+1` : les pas acceptés). Après un échec, le serveur impose un court délai : `retryUntilAnswered` reprend l'envoi tant qu'il n'y a pas de vraie réponse.
 
-## Quand un test échoue
+## 5. Quand un test échoue
 
 Le terminal indique **l'étape** (`test.step`) qui a échoué et la ligne exacte :
 
@@ -141,6 +153,6 @@ Puis `pnpm test-e2e-report` ouvre le rapport HTML. Pour un test échoué :
 
 Pour déboguer à la main : `pnpm test-e2e --debug src/tests/…` exécute pas à pas dans l'Inspector.
 
-## Ce qui est volontairement différent de la prod
+## 6. Ce qui diffère de la prod
 
-Voir [infra/compose.e2e.yml](../infra/compose.e2e.yml) : mails vers le faux Brevo, limites par IP relevées (tous les tests viennent de la même IP). Les durées (parcours de 30 min, renvoi de 60 s…) sont celles de la prod : les scénarios qui exigent des durées raccourcies (B7…) demanderont une configuration à part, à ajouter quand on les écrira.
+Voir [infra/compose.e2e.yml](../../infra/compose.e2e.yml) : mails vers le faux Brevo, limites par IP relevées (tous les tests viennent de la même IP). Les durées (parcours de 30 min, renvoi de 60 s…) et le délai entre deux échecs d'un même compte sont ceux de la prod : les scénarios qui exigent des durées raccourcies (B7…) demanderont une configuration à part, à ajouter quand on les écrira.

@@ -5,7 +5,7 @@
 #   pnpm stack-up      (depuis e2e/) lance la stack de prod:local (compose.local.yml) avec ce fichier par-dessus
 #   pnpm stack-down    arrête tout et efface les données (base, mails) : repart de zéro
 #
-# Puis les tests : pnpm test-e2e, toujours depuis e2e/ (voir e2e/README.md).
+# Puis les tests : pnpm test-e2e, toujours depuis e2e/ (voir docs/e2e/e2e.md).
 #   http://localhost:8025   Mailpit : la boîte de réception de tous les mails du site
 #
 # Compose superpose ce fichier à compose.yml et compose.local.yml (troisième -f) : on
