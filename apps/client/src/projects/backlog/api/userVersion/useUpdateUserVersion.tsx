@@ -67,7 +67,7 @@ export function useUpdateUserVersion(
 				gameId,
 			)?.userVersions.find(({ id }) => id === userVersionId);
 			if (current === undefined) return null;
-			// La règle du serveur : un statut au rang 5 ou plus compte une première fin, sauf si le compteur est envoyé
+			// La règle du serveur : un statut de fin compte une première fin, sauf si le compteur est envoyé
 			const patch: Partial<UserVersionDto> = {
 				...Object.fromEntries(
 					Object.entries(body).filter(([, value]) => value !== undefined),

@@ -106,7 +106,7 @@ class UserGameService {
 
 	/**
 	 * Ajout au backlog : la personnalisation et la première version jouée, en une seule action.
-	 * Un statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il est à 0
+	 * Un statut de fin passe « fois fini (sûr) » à 1 s'il est à 0
 	 */
 	async createUserGame(
 		userId: number,

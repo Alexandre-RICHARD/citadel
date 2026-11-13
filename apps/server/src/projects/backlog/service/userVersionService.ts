@@ -87,8 +87,8 @@ class UserVersionService {
 	}
 
 	/**
-	 * Une cellule du tableau. Un nouveau statut de rang 5 ou plus passe « fois fini (sûr) » à 1 s'il
-	 * était à 0, sauf quand la même requête fixe ce compteur : la valeur envoyée l'emporte. Repasser sous le rang 5
+	 * Une cellule du tableau. Un nouveau statut de fin passe « fois fini (sûr) » à 1 s'il
+	 * était à 0, sauf quand la même requête fixe ce compteur : la valeur envoyée l'emporte. Quitter les statuts de fin
 	 * n'efface pas la date de fin
 	 */
 	async updateUserVersion(

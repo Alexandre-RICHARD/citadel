@@ -108,6 +108,28 @@ describe("updateUserVersion", () => {
 			});
 		});
 
+		it("SHOULD count a first sure finish WHEN the status is watched", async () => {
+			// Arrange
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+			});
+
+			// Act
+			await player.agent
+				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
+				.send({ status: StatusEnum.WATCHED });
+
+			// Assert
+			expect(
+				(
+					await selectBacklogRows.userVersions(
+						player.userId,
+						backlogGame.gameId,
+					)
+				)[0]?.sureFinishCount,
+			).toBe(1);
+		});
+
 		it("SHOULD keep the counter sent with the status", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({

@@ -9,13 +9,17 @@ describe("applyFirstFinishCount.ts", () => {
 			expect(applyFirstFinishCount(StatusEnum.FINISHED, 0)).toBe(1);
 		});
 
+		it("SHOULD count a first finish WHEN the status is watched", () => {
+			expect(applyFirstFinishCount(StatusEnum.WATCHED, 0)).toBe(1);
+		});
+
 		it("SHOULD keep the count WHEN the game was already finished", () => {
 			expect(applyFirstFinishCount(StatusEnum.PLATINUM, 3)).toBe(3);
 		});
 	});
 
 	describe("unfinished status", () => {
-		it.each([StatusEnum.STARTED, StatusEnum.ABANDONED, StatusEnum.WATCHED])(
+		it.each([StatusEnum.STARTED, StatusEnum.ABANDONED])(
 			"SHOULD keep the count WHEN the status is %s",
 			(status) => {
 				expect(applyFirstFinishCount(status, 0)).toBe(0);
