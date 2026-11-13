@@ -7,7 +7,7 @@ import {
 	Search,
 	SearchX,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import styles from "../../../../backlog.module.scss";
@@ -57,11 +57,19 @@ export function BacklogTable({
 		onFocusSearch,
 	} = settings;
 	const { filters } = view;
-	const visibleColumns = columns
-		.filter(({ isVisible }) => isVisible)
-		.map(({ key }) => key);
-	const headerClassNames = getColumnClassNames(visibleColumns, true);
-	const cellClassNames = getColumnClassNames(visibleColumns, false);
+	// Mêmes objets tant que les colonnes ne changent pas : les lignes mémorisées les comparent par identité
+	const visibleColumns = useMemo(
+		() => columns.filter(({ isVisible }) => isVisible).map(({ key }) => key),
+		[columns],
+	);
+	const headerClassNames = useMemo(
+		() => getColumnClassNames(visibleColumns, true),
+		[visibleColumns],
+	);
+	const cellClassNames = useMemo(
+		() => getColumnClassNames(visibleColumns, false),
+		[visibleColumns],
+	);
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 	// Les bornes des nombres et des dates sont des champs libres : effacer les filtres recrée la ligne pour les vider
 	const [filterRowKey, setFilterRowKey] = useState(0);

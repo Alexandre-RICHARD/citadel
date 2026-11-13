@@ -2,7 +2,12 @@ import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronRight, CornerDownRight, Layers, Pencil } from "lucide-react";
-import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
+import {
+	type KeyboardEvent,
+	memo,
+	type MouseEvent,
+	type ReactNode,
+} from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import type { UserVersionRowFm } from "../../../../api/model/userVersionRowFm.type";
@@ -10,7 +15,6 @@ import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
 import { focusSiblingRow } from "../../../../helper/dom/focusSiblingRow";
 import { getRowKeyAction } from "../../../../helper/table/getRowKeyAction";
-import type { TableControls } from "../../tableControls.type";
 import { ActionsCell } from "../ActionsCell";
 import { CompanyLabel } from "../CompanyLabel";
 import { EndingTypeCell } from "../EndingTypeCell";
@@ -18,6 +22,8 @@ import { PlatformLabel } from "../PlatformLabel";
 import { ReleaseDateLabel } from "../ReleaseDateLabel";
 import { Thumbnail } from "../Thumbnail";
 import { UserVersionDataCell } from "../UserVersionDataCell";
+import { areGameRowGroupPropsEqual } from "./areGameRowGroupPropsEqual";
+import type { GameRowGroupProps } from "./gameRowGroupProps.type";
 
 // Colonnes propres au jeu, toujours en lecture seule
 const gameInfoRenderers: Partial<
@@ -89,26 +95,17 @@ const userVersionInfoRenderers: Partial<
 	),
 };
 
-type Props = {
-	row: BacklogRowFm;
-	columns: BacklogColumnEnum[];
-	// Alignement et colonnes collantes
-	cellClassNames: Partial<Record<BacklogColumnEnum, string>>;
-	isExpanded: boolean;
-	table: TableControls;
-};
-
 /**
  * Ligne du jeu, puis ses sous-lignes de versions jouées si elle est dépliée. Une ligne ou une sous-ligne en attente du
- * serveur est grisée et inerte
+ * serveur est grisée et inerte. Mémorisée : une ligne ne se redessine que si ce qu'elle affiche change
  */
-export function GameRowGroup({
+export const GameRowGroup = memo(function GameRowGroup({
 	row,
 	columns,
 	cellClassNames,
 	isExpanded,
 	table,
-}: Props) {
+}: GameRowGroupProps) {
 	const { userVersionRows } = row;
 	const userVersionCount = userVersionRows.length;
 	const isExpandable = userVersionCount > 1;
@@ -354,4 +351,4 @@ export function GameRowGroup({
 				))}
 		</>
 	);
-}
+}, areGameRowGroupPropsEqual);

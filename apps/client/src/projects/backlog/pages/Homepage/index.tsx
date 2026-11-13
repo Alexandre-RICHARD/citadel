@@ -10,6 +10,7 @@ import {
 	useCallback,
 	useDeferredValue,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -97,10 +98,11 @@ export function Homepage() {
 	const isModalOpen = modal !== null;
 	const isPopoverOpen = popover !== null;
 
-	function openModal(nextModal: BacklogModal | null) {
+	// Les fonctions du tableau gardent leur identité : les lignes mémorisées les comparent, et ne se redessinent pas pour rien
+	const openModal = useCallback((nextModal: BacklogModal | null) => {
 		setPopover(null);
 		setModal(nextModal);
-	}
+	}, []);
 
 	// Fermer une modale de l'enchaînement, même par « Annuler », ouvre le DLC suivant de la file
 	function closeModal() {
@@ -113,15 +115,30 @@ export function Homepage() {
 		);
 	}
 
-	function changeFilter(
-		column: BacklogColumnEnum,
-		filter: ColumnFilter | null,
-	) {
-		setView((current) => ({
-			...current,
-			filters: setColumnFilter(current.filters, column, filter),
-		}));
-	}
+	const changeFilter = useCallback(
+		(column: BacklogColumnEnum, filter: ColumnFilter | null) => {
+			setView((current) => ({
+				...current,
+				filters: setColumnFilter(current.filters, column, filter),
+			}));
+		},
+		[],
+	);
+	const toggleExpanded = useCallback(
+		(gameId: number) =>
+			setExpandedGameIds((current) => toggleArrayItem(current, gameId)),
+		[],
+	);
+	const filterOnSeries = useCallback(
+		(seriesName: string) =>
+			changeFilter(BacklogColumnEnum.SERIES, {
+				column: BacklogColumnEnum.SERIES,
+				kind: ColumnFilterKindEnum.TEXT,
+				text: seriesName,
+				isExact: true,
+			}),
+		[changeFilter],
+	);
 
 	// Une colonne masquée sort du tri et des filtres
 	function changeColumnVisibility(key: BacklogColumnEnum) {
@@ -189,21 +206,18 @@ export function Homepage() {
 		return () => window.removeEventListener("keydown", focusSearch);
 	}, [isModalOpen]);
 
-	const table: TableControls = {
-		isEditMode: isEditMode && !isModalMinimized,
-		popover,
-		setPopover,
-		openModal,
-		toggleExpanded: (gameId) =>
-			setExpandedGameIds((current) => toggleArrayItem(current, gameId)),
-		filterOnSeries: (seriesName) =>
-			changeFilter(BacklogColumnEnum.SERIES, {
-				column: BacklogColumnEnum.SERIES,
-				kind: ColumnFilterKindEnum.TEXT,
-				text: seriesName,
-				isExact: true,
-			}),
-	};
+	const isTableEditable = isEditMode && !isModalMinimized;
+	const table: TableControls = useMemo(
+		() => ({
+			isEditMode: isTableEditable,
+			popover,
+			setPopover,
+			openModal,
+			toggleExpanded,
+			filterOnSeries,
+		}),
+		[isTableEditable, popover, openModal, toggleExpanded, filterOnSeries],
+	);
 	const settings: TableSettings = {
 		columns,
 		view,

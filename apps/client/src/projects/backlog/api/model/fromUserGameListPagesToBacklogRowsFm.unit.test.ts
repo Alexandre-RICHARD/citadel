@@ -13,6 +13,33 @@ describe("fromUserGameListPagesToBacklogRowsFm.ts", () => {
 		});
 	});
 
+	describe("unchanged games", () => {
+		it("SHOULD give the very same row object WHEN the game is the same object as in the previous call", () => {
+			const userGame = buildUserGameDto(1);
+
+			const [first] = fromUserGameListPagesToBacklogRowsFm(
+				buildUserGameListData([[userGame]], 1),
+			).rows;
+			const [second] = fromUserGameListPagesToBacklogRowsFm(
+				buildUserGameListData([[userGame, buildUserGameDto(2)]], 2),
+			).rows;
+
+			expect(second).toBe(first);
+		});
+
+		it("SHOULD build a new row WHEN the game is a new object", () => {
+			const [first] = fromUserGameListPagesToBacklogRowsFm(
+				buildUserGameListData([[buildUserGameDto(1)]], 1),
+			).rows;
+			const [second] = fromUserGameListPagesToBacklogRowsFm(
+				buildUserGameListData([[buildUserGameDto(1)]], 1),
+			).rows;
+
+			expect(second).not.toBe(first);
+			expect(second).toStrictEqual(first);
+		});
+	});
+
 	describe("pages", () => {
 		it("SHOULD chain the rows of every loaded page and keep the total of the view", () => {
 			const rows = fromUserGameListPagesToBacklogRowsFm(
