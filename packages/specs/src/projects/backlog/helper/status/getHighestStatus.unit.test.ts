@@ -4,7 +4,7 @@ import { StatusEnum } from "../../enum/status.enum.ts";
 import { getHighestStatus } from "./getHighestStatus.ts";
 
 describe("getHighestStatus.ts", () => {
-	describe("ranked statuses", () => {
+	describe("statuses", () => {
 		it("SHOULD return the status of highest rank", () => {
 			expect(
 				getHighestStatus([
@@ -15,25 +15,28 @@ describe("getHighestStatus.ts", () => {
 			).toBe(StatusEnum.PLATINUM);
 		});
 
-		it("SHOULD keep the first one WHEN two statuses share the rank", () => {
+		it("SHOULD rank Abandoned above Not started and below Started", () => {
 			expect(
-				getHighestStatus([StatusEnum.DEEMED_FINISHED, StatusEnum.FINISHED]),
-			).toBe(StatusEnum.DEEMED_FINISHED);
+				getHighestStatus([StatusEnum.NOT_STARTED, StatusEnum.ABANDONED]),
+			).toBe(StatusEnum.ABANDONED);
+			expect(getHighestStatus([StatusEnum.ABANDONED, StatusEnum.STARTED])).toBe(
+				StatusEnum.STARTED,
+			);
 		});
 
-		it("SHOULD ignore Abandoned, which has no rank", () => {
-			expect(getHighestStatus([StatusEnum.ABANDONED, StatusEnum.WATCHED])).toBe(
-				StatusEnum.WATCHED,
+		it("SHOULD rank Watched above Well underway and below Finished", () => {
+			expect(
+				getHighestStatus([StatusEnum.WELL_UNDERWAY, StatusEnum.WATCHED]),
+			).toBe(StatusEnum.WATCHED);
+			expect(getHighestStatus([StatusEnum.WATCHED, StatusEnum.FINISHED])).toBe(
+				StatusEnum.FINISHED,
 			);
 		});
 	});
 
-	describe("no ranked status", () => {
-		it.each([
-			{ reason: "every status is Abandoned", statuses: [StatusEnum.ABANDONED] },
-			{ reason: "there is no status", statuses: [] },
-		])("SHOULD return null WHEN $reason", ({ statuses }) => {
-			expect(getHighestStatus(statuses)).toBeNull();
+	describe("no status", () => {
+		it("SHOULD return null WHEN there is no status", () => {
+			expect(getHighestStatus([])).toBeNull();
 		});
 	});
 });

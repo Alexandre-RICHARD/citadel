@@ -11,21 +11,19 @@ describe("getGameStatus.ts", () => {
 			).toBe(StatusEnum.NOT_STARTED);
 		});
 
+		it("SHOULD show not started WHEN there is no played version", () => {
+			expect(getGameStatus([])).toBe(StatusEnum.NOT_STARTED);
+		});
+
 		it("SHOULD show abandoned WHEN every played version is abandoned", () => {
 			expect(getGameStatus([StatusEnum.ABANDONED, StatusEnum.ABANDONED])).toBe(
 				StatusEnum.ABANDONED,
 			);
 		});
-
-		it("SHOULD ignore the not started versions WHEN another one has a status", () => {
-			expect(getGameStatus([StatusEnum.NOT_STARTED, StatusEnum.STARTED])).toBe(
-				StatusEnum.STARTED,
-			);
-		});
 	});
 
-	describe("mixed situations", () => {
-		it("SHOULD show the highest finished status WHEN one version is finished, even with an abandoned one", () => {
+	describe("several versions", () => {
+		it("SHOULD show the most advanced status of the list", () => {
 			expect(
 				getGameStatus([
 					StatusEnum.ABANDONED,
@@ -36,16 +34,22 @@ describe("getGameStatus.ts", () => {
 			).toBe(StatusEnum.PLATINUM);
 		});
 
-		it("SHOULD show the highest status WHEN no version is abandoned", () => {
+		it("SHOULD show abandoned WHEN the other version is not started", () => {
 			expect(
-				getGameStatus([StatusEnum.WATCHED, StatusEnum.WELL_UNDERWAY]),
-			).toBe(StatusEnum.WELL_UNDERWAY);
+				getGameStatus([StatusEnum.NOT_STARTED, StatusEnum.ABANDONED]),
+			).toBe(StatusEnum.ABANDONED);
 		});
 
-		it("SHOULD show nothing WHEN abandoned is mixed with a status in progress", () => {
+		it("SHOULD show the status in progress WHEN the other version is abandoned", () => {
 			expect(getGameStatus([StatusEnum.ABANDONED, StatusEnum.STARTED])).toBe(
-				null,
+				StatusEnum.STARTED,
 			);
+		});
+
+		it("SHOULD show watched above a status in progress", () => {
+			expect(
+				getGameStatus([StatusEnum.WATCHED, StatusEnum.WELL_UNDERWAY]),
+			).toBe(StatusEnum.WATCHED);
 		});
 	});
 });

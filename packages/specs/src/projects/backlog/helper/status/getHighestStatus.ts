@@ -1,16 +1,11 @@
 import type { StatusEnum } from "../../enum/status.enum.ts";
 import { statusRanks } from "./statusRanks.ts";
 
-// Le statut de plus haut rang, le premier en cas d'égalité ; « Abandonné », hors échelle, n'est jamais retenu
+// Le statut de plus haut rang, le premier en cas d'égalité ; `null` pour une liste vide
 export function getHighestStatus(statuses: StatusEnum[]): StatusEnum | null {
 	let highest: StatusEnum | null = null;
-	let highestRank = 0;
-	for (const status of statuses) {
-		const rank = statusRanks[status];
-		if (rank !== null && rank > highestRank) {
+	for (const status of statuses)
+		if (highest === null || statusRanks[status] > statusRanks[highest])
 			highest = status;
-			highestRank = rank;
-		}
-	}
 	return highest;
 }

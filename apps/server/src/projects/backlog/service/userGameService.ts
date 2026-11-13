@@ -1,7 +1,6 @@
 import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { applyFirstFinishCount } from "@citadel/specs/src/projects/backlog/helper/status/applyFirstFinishCount.ts";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus.ts";
 import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus.ts";
 import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 import type { Transaction } from "sequelize";
@@ -31,7 +30,6 @@ import { userGameExistsQuery } from "../query/userGame/userGameExistsQuery.ts";
 import { createUserVersionQuery } from "../query/userVersion/createUserVersionQuery.ts";
 import { deleteUserVersionsQuery } from "../query/userVersion/deleteUserVersionsQuery.ts";
 import { getGameUserVersionsQuery } from "../query/userVersion/getGameUserVersionsQuery.ts";
-import { updateUserVersionQuery } from "../query/userVersion/updateUserVersionQuery.ts";
 import { buildUserGameView } from "../view/buildUserGameView.ts";
 import { filterUserGameViews } from "../view/filterUserGameViews.ts";
 import { restrictUserGameViewsToPlatforms } from "../view/restrictUserGameViewsToPlatforms.ts";
@@ -163,8 +161,8 @@ class UserGameService {
 	}
 
 	/**
-	 * « Personnaliser » : image, type de fin, série et numéro. Les statuts que le nouveau type de fin
-	 * rend incompatibles sont convertis ; une série qui n'a plus de raison d'être quitte la base
+	 * « Personnaliser » : image, type de fin, série et numéro. Les statuts ne dépendent pas du type de fin : aucun ne
+	 * change ; une série qui n'a plus de raison d'être quitte la base
 	 */
 	async customizeUserGame(
 		userId: number,
@@ -198,18 +196,6 @@ class UserGameService {
 					customization,
 					false,
 					transaction,
-				);
-				await Promise.all(
-					userVersions.map(async ({ id, status }) => {
-						const converted = convertStatus(status, customization.endingType);
-						if (converted === status) return;
-						await updateUserVersionQuery(
-							userId,
-							id,
-							{ status: converted },
-							transaction,
-						);
-					}),
 				);
 				await deleteUnusedSeriesQuery(userId, transaction);
 			},

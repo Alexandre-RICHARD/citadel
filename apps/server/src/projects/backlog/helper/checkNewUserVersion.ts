@@ -11,7 +11,7 @@ import { userVersionExistsQuery } from "../query/userVersion/userVersionExistsQu
 
 /**
  * Une nouvelle version jouée du jeu : une de ses versions en base, une plateforme proposée
- * pour cette version, des DLC du jeu, un statut que le type de fin propose, et pas déjà jouée sur cette plateforme par
+ * pour cette version, des DLC du jeu, un statut permis (un statut de fin exige un type de fin), et pas déjà jouée sur cette plateforme par
  * ce compte
  */
 export async function checkNewUserVersion(
@@ -45,7 +45,7 @@ export async function checkNewUserVersion(
 	if (!isStatusAllowed(userVersion.status, endingType))
 		throw new ConflictError(
 			BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-			`Status ${userVersion.status} is not offered for ending type : ${endingType ?? "none"}`,
+			`Status ${userVersion.status} needs an ending type, the game has none`,
 		);
 
 	if (

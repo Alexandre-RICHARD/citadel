@@ -2,93 +2,38 @@ import { describe, expect, it } from "vitest";
 
 import { EndingTypeEnum } from "../../enum/endingType.enum.ts";
 import { StatusEnum } from "../../enum/status.enum.ts";
+import { isFinishedStatus } from "./isFinishedStatus.ts";
 import { isStatusAllowed } from "./isStatusAllowed.ts";
 
 describe("isStatusAllowed.ts", () => {
-	describe("statuses tied to an ending", () => {
-		it.each([
-			{
-				status: StatusEnum.FINISHED,
-				endingType: EndingTypeEnum.STORY,
-				expected: true,
-			},
-			{
-				status: StatusEnum.FINISHED,
-				endingType: EndingTypeEnum.SANDBOX,
-				expected: false,
-			},
-			{
-				status: StatusEnum.DEEMED_FINISHED,
-				endingType: EndingTypeEnum.MULTIPLAYER,
-				expected: true,
-			},
-			{
-				status: StatusEnum.DEEMED_FINISHED,
-				endingType: EndingTypeEnum.RUNS,
-				expected: true,
-			},
-			{
-				status: StatusEnum.DEEMED_FINISHED,
-				endingType: EndingTypeEnum.STORY,
-				expected: false,
-			},
-			{
-				status: StatusEnum.FINISHED,
-				endingType: EndingTypeEnum.RUNS,
-				expected: false,
-			},
-			{
-				status: StatusEnum.WATCHED,
-				endingType: EndingTypeEnum.RUNS,
-				expected: false,
-			},
-			{
-				status: StatusEnum.WATCHED,
-				endingType: EndingTypeEnum.STORY,
-				expected: true,
-			},
-			{
-				status: StatusEnum.WATCHED,
-				endingType: EndingTypeEnum.SANDBOX,
-				expected: false,
-			},
-		])(
-			"SHOULD return $expected WHEN the status is $status and the ending $endingType",
-			({ status, endingType, expected }) => {
-				expect(isStatusAllowed(status, endingType)).toBe(expected);
+	describe("with an ending type", () => {
+		it.each(
+			Object.values(EndingTypeEnum).flatMap((endingType) =>
+				Object.values(StatusEnum).map((status) => ({ endingType, status })),
+			),
+		)(
+			"SHOULD allow $status WHEN the ending is $endingType",
+			({ status, endingType }) => {
+				expect(isStatusAllowed(status, endingType)).toBe(true);
 			},
 		);
 	});
 
 	describe("no ending type", () => {
-		it.each([
-			StatusEnum.WATCHED,
-			StatusEnum.FINISHED,
-			StatusEnum.DEEMED_FINISHED,
-			StatusEnum.COMPLETED,
-			StatusEnum.PLATINUM,
-			StatusEnum.COMPLETED_AND_PLATINUM,
-		])("SHOULD refuse the finished status %s", (status) => {
-			expect(isStatusAllowed(status, null)).toBe(false);
-		});
+		it.each(Object.values(StatusEnum).filter(isFinishedStatus))(
+			"SHOULD refuse the finished status %s",
+			(status) => {
+				expect(isStatusAllowed(status, null)).toBe(false);
+			},
+		);
 
 		it.each([
 			StatusEnum.NOT_STARTED,
+			StatusEnum.ABANDONED,
 			StatusEnum.STARTED,
 			StatusEnum.WELL_UNDERWAY,
-			StatusEnum.ABANDONED,
 		])("SHOULD allow the status %s", (status) => {
 			expect(isStatusAllowed(status, null)).toBe(true);
 		});
-	});
-
-	describe("statuses for every ending", () => {
-		it.each(Object.values(EndingTypeEnum))(
-			"SHOULD allow Started and Completed WHEN the ending is %s",
-			(endingType) => {
-				expect(isStatusAllowed(StatusEnum.STARTED, endingType)).toBe(true);
-				expect(isStatusAllowed(StatusEnum.COMPLETED, endingType)).toBe(true);
-			},
-		);
 	});
 });

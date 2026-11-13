@@ -2,7 +2,6 @@ import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGa
 import type { CustomizeUserGameBodyDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/customizeUserGame/customizeUserGameBodyDto.type";
 import type { CustomizeUserGame } from "@citadel/specs/src/projects/backlog/endpoint/userGames/customizeUserGame/customizeUserGameEndpoint.interface";
 import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum";
 import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
@@ -22,13 +21,10 @@ type Customization = Pick<
 	UserGameDto,
 	"imageId" | "endingType" | "series" | "seriesNumber" | "seriesNumberLabel"
 >;
-type Rollback = {
-	customization: Customization;
-	statuses: Map<number, UserGameDto["userVersions"][number]["status"]>;
-} | null;
+type Rollback = { customization: Customization } | null;
 
 /**
- * « Personnaliser » : la ligne change tout de suite, statuts convertis compris ; les numéros
+ * « Personnaliser » : la ligne change tout de suite ; les numéros
  * des autres jeux de la série, que le serveur décale, se resynchronisent après
  */
 export function useCustomizeUserGame(gameId: number) {
@@ -77,10 +73,6 @@ export function useCustomizeUserGame(gameId: number) {
 								seriesNumber,
 								getCachedSeriesEntries(queryClient, series.id),
 							),
-				userVersions: userGame.userVersions.map((userVersion) => ({
-					...userVersion,
-					status: convertStatus(userVersion.status, body.endingType),
-				})),
 			}));
 			return {
 				customization: {
@@ -90,9 +82,6 @@ export function useCustomizeUserGame(gameId: number) {
 					seriesNumber: current.seriesNumber,
 					seriesNumberLabel: current.seriesNumberLabel,
 				},
-				statuses: new Map(
-					current.userVersions.map(({ id, status }) => [id, status]),
-				),
 			};
 		},
 		revertOptimistic: (queryClient, _body, rollback) => {
@@ -100,10 +89,6 @@ export function useCustomizeUserGame(gameId: number) {
 			updateCachedUserGame(queryClient, gameId, (userGame) => ({
 				...userGame,
 				...rollback.customization,
-				userVersions: userGame.userVersions.map((userVersion) => ({
-					...userVersion,
-					status: rollback.statuses.get(userVersion.id) ?? userVersion.status,
-				})),
 			}));
 		},
 		applyServerResponse: (queryClient, userGame) =>

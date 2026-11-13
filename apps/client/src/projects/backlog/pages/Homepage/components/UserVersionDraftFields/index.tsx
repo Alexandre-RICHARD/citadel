@@ -9,8 +9,8 @@ import { DurationField } from "../../../../components/DurationField";
 import { NumberField } from "../../../../components/NumberField";
 import { Select } from "../../../../components/Select";
 import { TextField } from "../../../../components/TextField";
-import { statusLabels } from "../../../../helper/label/statusLabels";
 import { getStatusChoices } from "../../../../helper/status/getStatusChoices";
+import { getStatusLabel } from "../../../../helper/status/getStatusLabel";
 import type { UserVersionDraft } from "../../userVersionDraft.type";
 import { FormField } from "../FormField";
 import { StatusBadge } from "../StatusBadge";
@@ -40,12 +40,17 @@ export function UserVersionDraftFields({
 				>
 					<Select
 						value={draft.status}
-						// Liste filtrée par type de fin ; sans type de fin, les statuts de fin sont grisés
+						// Tous les statuts, libellés selon le type de fin ; sans type de fin, les statuts de fin sont grisés
 						options={getStatusChoices(endingType, null).map(
 							({ status, isDisabled }) => ({
 								value: status,
-								label: statusLabels[status].label,
-								content: <StatusBadge status={status} />,
+								label: getStatusLabel(status, endingType),
+								content: (
+									<StatusBadge
+										status={status}
+										endingType={endingType}
+									/>
+								),
 								disabled: isDisabled,
 								hint: isDisabled ? "type de fin requis" : undefined,
 							}),

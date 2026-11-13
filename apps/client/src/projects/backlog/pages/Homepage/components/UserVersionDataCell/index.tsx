@@ -27,8 +27,8 @@ import { TextField } from "../../../../components/TextField";
 import { Tooltip } from "../../../../components/Tooltip";
 import { formatDuration } from "../../../../helper/format/formatDuration";
 import { formatFinishCount } from "../../../../helper/format/formatFinishCount";
-import { statusLabels } from "../../../../helper/label/statusLabels";
 import { getStatusChoices } from "../../../../helper/status/getStatusChoices";
+import { getStatusLabel } from "../../../../helper/status/getStatusLabel";
 import type { TableControls } from "../../tableControls.type";
 import { DlcCell } from "../DlcCell";
 import { DlcProgress } from "../DlcProgress";
@@ -114,17 +114,25 @@ export function UserVersionDataCell({
 		case BacklogColumnEnum.STATUS: {
 			if (editableUserVersion === null)
 				return values.status === null ? null : (
-					<StatusBadge status={values.status} />
+					<StatusBadge
+						status={values.status}
+						endingType={endingType}
+					/>
 				);
 			return (
 				<Select
 					value={editableUserVersion.status}
-					// Liste filtrée par type de fin, le statut actuel compris ; sans type de fin, les statuts de fin sont grisés
+					// Tous les statuts, libellés selon le type de fin ; sans type de fin, les statuts de fin sont grisés
 					options={getStatusChoices(endingType, editableUserVersion.status).map(
 						({ status, isDisabled }) => ({
 							value: status,
-							label: statusLabels[status].label,
-							content: <StatusBadge status={status} />,
+							label: getStatusLabel(status, endingType),
+							content: (
+								<StatusBadge
+									status={status}
+									endingType={endingType}
+								/>
+							),
 							disabled: isDisabled,
 							hint: isDisabled ? "type de fin requis" : undefined,
 						}),

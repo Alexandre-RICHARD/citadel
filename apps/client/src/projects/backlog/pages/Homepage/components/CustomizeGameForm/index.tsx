@@ -17,7 +17,6 @@ import { Modal } from "../../../../components/Modal";
 import type { CustomizationDraft } from "../../../../helper/series/customizationDraft.type";
 import { getChosenSeriesId } from "../../../../helper/series/getChosenSeriesId";
 import { toSeriesChoice } from "../../../../helper/series/toSeriesChoice";
-import { countConvertedStatuses } from "../../../../helper/status/countConvertedStatuses";
 import { ModalActions } from "../ModalActions";
 import { UserGameFields } from "../UserGameFields";
 
@@ -76,8 +75,6 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 		draft !== null &&
 		draft.endingType === null &&
 		statuses.some((status) => isFinishedStatus(status));
-	const convertedStatusCount =
-		draft === null ? 0 : countConvertedStatuses(statuses, draft.endingType);
 
 	return (
 		<Modal
@@ -106,16 +103,6 @@ export function CustomizeGameForm({ storedGame, onClose }: Props) {
 						<Callout tone="danger">
 							Une version jouée a un statut de fin : le type de fin peut se
 							changer, pas se retirer.
-						</Callout>
-					)}
-					{convertedStatusCount > 0 && (
-						<Callout tone="warning">
-							Changer le type de fin convertit{" "}
-							{convertedStatusCount > 1
-								? `${convertedStatusCount} statuts`
-								: "un statut"}{" "}
-							devenus incompatibles : Fini ↔ Estimé fini, Vu sans jouer → Pas
-							commencé.
 						</Callout>
 					)}
 					<UserGameFields

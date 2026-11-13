@@ -12,7 +12,7 @@ import { Select } from "../../../../components/Select";
 import type { SelectOption } from "../../../../components/Select/selectOption.type";
 import { columnLabels } from "../../../../helper/label/columnLabels";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
-import { statusLabels } from "../../../../helper/label/statusLabels";
+import { getStatusLabel } from "../../../../helper/status/getStatusLabel";
 import { DateRangeFilter } from "../DateRangeFilter";
 import { EndingTypeLabel } from "../EndingTypeLabel";
 import { NumberRangeFilter } from "../NumberRangeFilter";
@@ -46,7 +46,7 @@ function getValueOptions(
 	if (column === BacklogColumnEnum.STATUS)
 		return Object.values(StatusEnum).map((status) => ({
 			value: status,
-			label: statusLabels[status].label,
+			label: getStatusLabel(status, undefined),
 			content: <StatusBadge status={status} />,
 		}));
 	return platformNames.map((name) => ({ value: name, label: name }));

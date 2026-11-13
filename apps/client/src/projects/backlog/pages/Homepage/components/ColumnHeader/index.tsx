@@ -23,7 +23,7 @@ import { Tooltip } from "../../../../components/Tooltip";
 import { columnLabels } from "../../../../helper/label/columnLabels";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
 import { noEndingTypeLabel } from "../../../../helper/label/noEndingTypeLabel";
-import { statusLabels } from "../../../../helper/label/statusLabels";
+import { statusDescriptions } from "../../../../helper/status/statusDescriptions";
 import { isSortableColumn } from "../../../../helper/view/isSortableColumn";
 import { EndingTypeLabel } from "../EndingTypeLabel";
 import { StatusBadge } from "../StatusBadge";
@@ -53,12 +53,10 @@ const columnHelp: Partial<Record<BacklogColumnEnum, ReactNode>> = {
 			{Object.values(StatusEnum).map((status) => (
 				<div key={status}>
 					<dt>
-						<span className={styles.helpRank}>
-							{statusRanks[status] ?? "–"}
-						</span>
+						<span className={styles.helpRank}>{statusRanks[status]}</span>
 						<StatusBadge status={status} />
 					</dt>
-					<dd>{statusLabels[status].meaning}</dd>
+					<dd>{statusDescriptions[status].meaning}</dd>
 				</div>
 			))}
 		</dl>

@@ -6,31 +6,17 @@ import { getStatusChoices } from "./getStatusChoices";
 
 describe("getStatusChoices.ts", () => {
 	describe("with an ending type", () => {
-		it("SHOULD leave out the statuses the ending type does not offer", () => {
-			const statuses = getStatusChoices(EndingTypeEnum.SANDBOX, null).map(
-				({ status }) => status,
-			);
+		it.each(Object.values(EndingTypeEnum))(
+			"SHOULD offer every status in the order of the scale, disabling none, WHEN the ending type is %s",
+			(endingType) => {
+				const choices = getStatusChoices(endingType, null);
 
-			expect(statuses).not.toContain(StatusEnum.FINISHED);
-			expect(statuses).not.toContain(StatusEnum.WATCHED);
-			expect(statuses).toContain(StatusEnum.DEEMED_FINISHED);
-		});
-
-		it("SHOULD keep the current status even when the ending type does not offer it", () => {
-			expect(
-				getStatusChoices(EndingTypeEnum.SANDBOX, StatusEnum.FINISHED).map(
-					({ status }) => status,
-				),
-			).toContain(StatusEnum.FINISHED);
-		});
-
-		it("SHOULD disable nothing", () => {
-			expect(
-				getStatusChoices(EndingTypeEnum.STORY, null).some(
-					({ isDisabled }) => isDisabled,
-				),
-			).toBe(false);
-		});
+				expect(choices.map(({ status }) => status)).toStrictEqual(
+					Object.values(StatusEnum),
+				);
+				expect(choices.some(({ isDisabled }) => isDisabled)).toBe(false);
+			},
+		);
 	});
 
 	describe("without an ending type", () => {
@@ -42,7 +28,6 @@ describe("getStatusChoices.ts", () => {
 			expect(disabled).toStrictEqual([
 				StatusEnum.WATCHED,
 				StatusEnum.FINISHED,
-				StatusEnum.DEEMED_FINISHED,
 				StatusEnum.COMPLETED,
 				StatusEnum.PLATINUM,
 				StatusEnum.COMPLETED_AND_PLATINUM,
@@ -56,10 +41,18 @@ describe("getStatusChoices.ts", () => {
 
 			expect(enabled).toStrictEqual([
 				StatusEnum.NOT_STARTED,
+				StatusEnum.ABANDONED,
 				StatusEnum.STARTED,
 				StatusEnum.WELL_UNDERWAY,
-				StatusEnum.ABANDONED,
 			]);
+		});
+
+		it("SHOULD keep the current status choosable", () => {
+			expect(
+				getStatusChoices(null, StatusEnum.FINISHED).find(
+					({ status }) => status === StatusEnum.FINISHED,
+				)?.isDisabled,
+			).toBe(false);
 		});
 	});
 });

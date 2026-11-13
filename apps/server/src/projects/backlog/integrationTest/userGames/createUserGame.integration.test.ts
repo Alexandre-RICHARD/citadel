@@ -345,30 +345,7 @@ describe("createUserGame", () => {
 				{
 					path: ["userVersion", "status"],
 					code: ValidationIssueCodeEnum.INCOMPATIBLE_VALUE,
-					message: "Status should be offered by the ending type",
-				},
-			]);
-		});
-
-		it("SHOULD refuse a status that the ending type does not offer", async () => {
-			// Act
-			const response = await player.agent.post(CREATE_URL).send({
-				gameId: 42,
-				customization: {
-					...DEFAULT_CUSTOMIZATION,
-					endingType: EndingTypeEnum.SANDBOX,
-				},
-				userVersion: newUserVersionBody(42, SEEDED_PLATFORMS.PS3, {
-					status: StatusEnum.FINISHED,
-				}),
-			});
-
-			// Assert
-			expectValidationError(response, [
-				{
-					path: ["userVersion", "status"],
-					code: ValidationIssueCodeEnum.INCOMPATIBLE_VALUE,
-					message: "Status should be offered by the ending type",
+					message: "A finished status needs an ending type",
 				},
 			]);
 		});

@@ -130,6 +130,25 @@ describe("updateUserVersion", () => {
 			).toBe(1);
 		});
 
+		it.each(Object.values(EndingTypeEnum))(
+			"SHOULD accept a finished status WHEN the game has the ending type %s",
+			async (endingType) => {
+				// Arrange
+				const backlogGame = await seedBacklogGame({
+					userId: player.userId,
+					endingType,
+				});
+
+				// Act
+				const response = await player.agent
+					.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
+					.send({ status: StatusEnum.WATCHED });
+
+				// Assert
+				expect(response.status).toBe(HttpStatutCodeSuccessEnum.SUCCESS);
+			},
+		);
+
 		it("SHOULD keep the counter sent with the status", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
@@ -241,27 +260,7 @@ describe("updateUserVersion", () => {
 			expectConflict(
 				response,
 				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-				`Status ${StatusEnum.COMPLETED} is not offered for ending type : none`,
-			);
-		});
-
-		it("SHOULD refuse a status that the ending type of the game does not offer", async () => {
-			// Arrange
-			const backlogGame = await seedBacklogGame({
-				userId: player.userId,
-				endingType: EndingTypeEnum.SANDBOX,
-			});
-
-			// Act
-			const response = await player.agent
-				.patch(updateUrl(backlogGame.userVersionIds[0] ?? 0))
-				.send({ status: StatusEnum.FINISHED });
-
-			// Assert
-			expectConflict(
-				response,
-				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-				`Status ${StatusEnum.FINISHED} is not offered for ending type : ${EndingTypeEnum.SANDBOX}`,
+				`Status ${StatusEnum.COMPLETED} needs an ending type, the game has none`,
 			);
 		});
 	});

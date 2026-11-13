@@ -151,7 +151,6 @@ describe("getBacklogOverview", () => {
 		it.each([
 			StatusEnum.WATCHED,
 			StatusEnum.FINISHED,
-			StatusEnum.DEEMED_FINISHED,
 			StatusEnum.COMPLETED,
 			StatusEnum.PLATINUM,
 			StatusEnum.COMPLETED_AND_PLATINUM,

@@ -11,7 +11,7 @@ import type { BacklogErrorCodeEnum } from "../../../error/backlogErrorCode.enum.
 import type { CustomizeUserGameBodyDto } from "./customizeUserGameBodyDto.type.ts";
 import type { CustomizeUserGamePathParamDto } from "./customizeUserGamePathParamDto.type.ts";
 
-// « Personnaliser » : image, type de fin, série et numéro ; les statuts devenus incompatibles sont convertis
+// « Personnaliser » : image, type de fin, série et numéro ; les statuts ne changent pas
 export interface CustomizeUserGame extends EndpointModel {
 	request: {
 		url: `${ApiPrefixEnum.BACKLOG}/user-games/:gameId`;

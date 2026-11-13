@@ -1,5 +1,4 @@
 import type { UserGameDto } from "@citadel/specs/src/projects/backlog/dto/userGame/userGameDto.type.ts";
-import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum.ts";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
@@ -164,11 +163,11 @@ describe("createUserVersion", () => {
 			);
 		});
 
-		it("SHOULD refuse a status that the ending type of the game does not offer", async () => {
+		it("SHOULD refuse a finished status WHEN the game has no ending type", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
 				userId: player.userId,
-				endingType: EndingTypeEnum.MULTIPLAYER,
+				endingType: null,
 				otherVersionTitles: ["Remastered"],
 			});
 
@@ -189,7 +188,7 @@ describe("createUserVersion", () => {
 			expectConflict(
 				response,
 				BacklogErrorCodeEnum.STATUS_NOT_ALLOWED,
-				`Status ${StatusEnum.WATCHED} is not offered for ending type : ${EndingTypeEnum.MULTIPLAYER}`,
+				`Status ${StatusEnum.WATCHED} needs an ending type, the game has none`,
 			);
 		});
 	});

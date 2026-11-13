@@ -8,7 +8,6 @@ import { AddFromDatabaseModal } from "../AddFromDatabaseModal";
 import { AddGameModal } from "../AddGameModal";
 import { AddUserVersionModal } from "../AddUserVersionModal";
 import { ColumnsModal } from "../ColumnsModal";
-import { ConfirmEndingTypeModal } from "../ConfirmEndingTypeModal";
 import { ConfirmRemovalModal } from "../ConfirmRemovalModal";
 import { CustomizeGameModal } from "../CustomizeGameModal";
 import { EditGameModal } from "../EditGameModal";
@@ -111,16 +110,6 @@ export function ModalHost({
 					gameName={modal.gameName}
 					platformName={modal.platformName}
 					userVersionCount={modal.userVersionCount}
-					onClose={onClose}
-				/>
-			);
-		case "confirmEndingType":
-			return (
-				<ConfirmEndingTypeModal
-					gameId={modal.gameId}
-					gameName={modal.gameName}
-					customization={modal.customization}
-					convertedStatusCount={modal.convertedStatusCount}
 					onClose={onClose}
 				/>
 			);

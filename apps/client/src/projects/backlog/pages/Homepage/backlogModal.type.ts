@@ -1,5 +1,3 @@
-import type { CustomizationDraft } from "../../helper/series/customizationDraft.type";
-
 /**
  * La modale ouverte, avec seulement ce qui l'identifie : chacune lit ses données et garde sa saisie.
  * `queuedIgdbIds` : DLC cochés « comme jeu », dont la modale d'ajout s'ouvrira l'un après l'autre.
@@ -45,13 +43,5 @@ export type BacklogModal =
 			gameName: string;
 			platformName: string | null;
 			userVersionCount: number;
-	  }
-	// Changer le type de fin depuis le tableau, quand des statuts en sont convertis
-	| {
-			kind: "confirmEndingType";
-			gameId: number;
-			gameName: string;
-			customization: CustomizationDraft;
-			convertedStatusCount: number;
 	  }
 	| { kind: "editColumns" };

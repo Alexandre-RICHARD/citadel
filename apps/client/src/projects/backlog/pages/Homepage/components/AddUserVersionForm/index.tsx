@@ -1,8 +1,9 @@
 import { createUserGameBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userGames/createUserGame/createUserGameBodySchema";
 import { createUserVersionBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodySchema";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
-import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
+import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
+import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/status/isStatusAllowed";
 import { CopyPlus, LibraryBig } from "lucide-react";
 import { useState } from "react";
 
@@ -171,13 +172,15 @@ export function AddUserVersionForm({
 						currentSeriesNumber={null}
 						onChange={(nextCustomization) => {
 							setCustomization(nextCustomization);
-							// Le statut choisi suit le type de fin
+							// Sans type de fin, un statut de fin choisi retombe à « Pas commencé »
 							setDraft({
 								...draft,
-								status: convertStatus(
+								status: isStatusAllowed(
 									draft.status,
 									nextCustomization.endingType,
-								),
+								)
+									? draft.status
+									: StatusEnum.NOT_STARTED,
 							});
 						}}
 					/>

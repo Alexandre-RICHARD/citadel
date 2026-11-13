@@ -5,16 +5,16 @@ import { isStatusAllowed } from "@citadel/specs/src/projects/backlog/helper/stat
 type StatusChoice = { status: StatusEnum; isDisabled: boolean };
 
 /**
- * Les statuts du sélecteur : ceux que le type de fin propose, plus le statut actuel. Sans type de fin, les statuts de
- * fin restent dans la liste, grisés : ils disent qu'il faut en choisir un
+ * Les statuts du sélecteur, tous, dans l'ordre de l'échelle. Sans type de fin, les statuts de fin sont grisés : ils
+ * disent qu'il faut en choisir un. Le statut actuel reste toujours choisissable
  */
 export function getStatusChoices(
 	endingType: EndingTypeEnum | null,
 	currentStatus: StatusEnum | null,
 ): StatusChoice[] {
-	return Object.values(StatusEnum).flatMap((status): StatusChoice[] => {
-		if (status === currentStatus || isStatusAllowed(status, endingType))
-			return [{ status, isDisabled: false }];
-		return endingType === null ? [{ status, isDisabled: true }] : [];
-	});
+	return Object.values(StatusEnum).map((status) => ({
+		status,
+		isDisabled:
+			status !== currentStatus && !isStatusAllowed(status, endingType),
+	}));
 }

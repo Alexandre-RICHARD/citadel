@@ -7,7 +7,6 @@ describe("isFinishedByPlayingStatus.ts", () => {
 	describe("finished by playing", () => {
 		it.each([
 			StatusEnum.FINISHED,
-			StatusEnum.DEEMED_FINISHED,
 			StatusEnum.COMPLETED,
 			StatusEnum.PLATINUM,
 			StatusEnum.COMPLETED_AND_PLATINUM,

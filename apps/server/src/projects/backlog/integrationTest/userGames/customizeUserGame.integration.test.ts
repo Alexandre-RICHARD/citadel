@@ -31,7 +31,7 @@ function customizeUrl(gameId: number): string {
 
 describe("customizeUserGame", () => {
 	describe("200 OK", () => {
-		it("SHOULD save the new choices and convert the statuses the ending type no longer offers", async () => {
+		it("SHOULD save the new choices and leave the statuses as they are", async () => {
 			// Arrange
 			const backlogGame = await seedBacklogGame({
 				userId: player.userId,
@@ -68,8 +68,8 @@ describe("customizeUserGame", () => {
 					)
 				).map(({ status }) => status),
 			).toStrictEqual([
-				StatusEnum.DEEMED_FINISHED,
-				StatusEnum.NOT_STARTED,
+				StatusEnum.FINISHED,
+				StatusEnum.WATCHED,
 				StatusEnum.PLATINUM,
 			]);
 		});

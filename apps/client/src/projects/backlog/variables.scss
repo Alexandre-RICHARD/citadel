@@ -183,12 +183,25 @@ $tooltip-border: var(--bl-tooltip-border);
   --bl-amber-bg: #fef6e4;
   --bl-red-fg: #b42318;
   --bl-red-bg: #fef3f2;
-  --bl-orange-fg: #c2410c;
-  --bl-orange-bg: #fff4ed;
-  --bl-yellow-fg: #8a7500;
-  --bl-yellow-bg: #fefce8;
-  --bl-gold-fg: #7a5200;
-  --bl-gold-bg: #fff0b8;
+  // Statuts : gris et marron au repos, deux bleu-violet pour les jeux joués pas finis, puis du jaune au rouge pour les
+  // statuts de fin (plus c'est loin, plus c'est rouge). Les deux familles se distinguent par la teinte, jamais par la
+  // seule intensité
+  --bl-brown-fg: #7c4a2d;
+  --bl-brown-bg: #f3e6dc;
+  --bl-iris-fg: #5b5fc7;
+  --bl-iris-bg: #eceefc;
+  --bl-indigo-fg: #3b30b8;
+  --bl-indigo-bg: #d9d6fa;
+  --bl-yellow-fg: #7a6400;
+  --bl-yellow-bg: #fff8bf;
+  --bl-gold-fg: #8a5200;
+  --bl-gold-bg: #ffe7a1;
+  --bl-orange-fg: #b03a00;
+  --bl-orange-bg: #ffd3ad;
+  --bl-vermilion-fg: #b02a12;
+  --bl-vermilion-bg: #ffc7b8;
+  --bl-crimson-fg: #a3122a;
+  --bl-crimson-bg: #ffb8c4;
 
   // Ombres et voile des modales
   --bl-shadow-xs: 0 1px 2px rgb(16 24 40 / 5%);
@@ -256,12 +269,22 @@ $tooltip-border: var(--bl-tooltip-border);
     --bl-amber-bg: rgb(247 144 9 / 15%);
     --bl-red-fg: #fda29b;
     --bl-red-bg: rgb(240 68 56 / 15%);
-    --bl-orange-fg: #fdba74;
-    --bl-orange-bg: rgb(249 115 22 / 16%);
-    --bl-yellow-fg: #f0e86a;
-    --bl-yellow-bg: rgb(224 214 40 / 13%);
-    --bl-gold-fg: #ffd24d;
-    --bl-gold-bg: rgb(255 196 40 / 22%);
+    --bl-brown-fg: #d9a984;
+    --bl-brown-bg: rgb(176 112 64 / 20%);
+    --bl-iris-fg: #aab4ff;
+    --bl-iris-bg: rgb(99 112 241 / 16%);
+    --bl-indigo-fg: #c9b6ff;
+    --bl-indigo-bg: rgb(110 70 240 / 30%);
+    --bl-yellow-fg: #f3e96b;
+    --bl-yellow-bg: rgb(240 224 50 / 16%);
+    --bl-gold-fg: #ffcf5c;
+    --bl-gold-bg: rgb(255 190 40 / 22%);
+    --bl-orange-fg: #ffb27a;
+    --bl-orange-bg: rgb(255 120 30 / 24%);
+    --bl-vermilion-fg: #ff9d85;
+    --bl-vermilion-bg: rgb(250 80 50 / 26%);
+    --bl-crimson-fg: #ff8fa3;
+    --bl-crimson-bg: rgb(235 40 80 / 28%);
     --bl-shadow-xs: 0 1px 2px rgb(0 0 0 / 40%);
     --bl-shadow-sm: 0 1px 3px rgb(0 0 0 / 50%), 0 1px 2px rgb(0 0 0 / 30%);
     --bl-shadow-md:
