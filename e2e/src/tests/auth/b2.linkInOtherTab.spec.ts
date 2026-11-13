@@ -22,21 +22,21 @@ test.describe("Lien, code et reprise", () => {
 				const tab = await openMailLink(page, mail.link!);
 				await tab.getByRole("button", { name: "Confirmer" }).click();
 				await expect(
-					tab.getByRole("heading", { name: "Protège ton compte" }),
+					tab.getByRole("heading", { name: "Protégez votre compte" }),
 				).toBeVisible();
 				return tab;
 			});
 
-		await test.step("Revenir sur l'onglet d'origine : il passe seul à « Protège ton compte »", async () => {
+		await test.step("Revenir sur l'onglet d'origine : il passe seul à « Protégez votre compte »", async () => {
 			await returnToTab(page);
 			await expect(
-				page.getByRole("heading", { name: "Protège ton compte" }),
+				page.getByRole("heading", { name: "Protégez votre compte" }),
 			).toBeVisible();
 		});
 
 		await test.step("Le second onglet reste utilisable", async () => {
 			await expect(
-				linkPage.getByRole("heading", { name: "Protège ton compte" }),
+				linkPage.getByRole("heading", { name: "Protégez votre compte" }),
 			).toBeVisible();
 		});
 	});

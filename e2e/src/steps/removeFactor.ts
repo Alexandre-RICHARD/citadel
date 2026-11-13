@@ -5,7 +5,7 @@ import { retryUntilAnswered } from "../helpers/forms/retryUntilAnswered.ts";
 import { factorRow } from "../helpers/profile/factorRow.ts";
 
 /**
- * Depuis la page « Ton profil » : retire le facteur de ce nom (« Téléphone », « Code par email »…) avec le mot de passe,
+ * Depuis la page « Votre profil » : retire le facteur de ce nom (« Téléphone », « Code par email »…) avec le mot de passe,
  * en passant d'abord par un mauvais mot de passe si `wrongFirst` (le facteur doit alors rester)
  */
 export async function removeFactor(
@@ -17,7 +17,7 @@ export async function removeFactor(
 	await test.step(`Retirer « ${name} » avec le mot de passe`, async () => {
 		await page.getByRole("button", { name: `Retirer ${name}` }).click();
 		const passwordField = page.getByRole("textbox", {
-			name: "Ton mot de passe",
+			name: "Votre mot de passe",
 		});
 		if (wrongFirst) {
 			await passwordField.fill("Un-mauvais-mot-de-passe-2026!");

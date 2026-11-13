@@ -62,10 +62,11 @@ export function ForgotPasswordForm() {
 		<AuthCard
 			icon={<KeyRound />}
 			title="Mot de passe oublié"
-			lead="Indique ton adresse email ou ton pseudo : tu recevras un lien et un code pour choisir un nouveau mot de passe."
+			lead="Indiquez votre adresse email ou votre pseudo : vous recevrez un lien et un code pour choisir un nouveau mot de passe."
 			footer={
 				<p>
-					Tu t’en souviens ? <Link to={AuthPathEnum.LOGIN}>Se connecter</Link>
+					Vous vous en souvenez ?{" "}
+					<Link to={AuthPathEnum.LOGIN}>Se connecter</Link>
 				</p>
 			}
 		>

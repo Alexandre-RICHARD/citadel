@@ -38,7 +38,7 @@ export function FinishDateModal({ subtitle, onCancel, onValidate }: Props) {
 		>
 			<div className={styles.formStack}>
 				<p className={styles.modalQuestion}>
-					Quand l’as-tu fini pour la première fois ?
+					Quand l’avez-vous fini pour la première fois ?
 				</p>
 				<FormField
 					label="Date de fin"

@@ -13,7 +13,7 @@ import { registerWithCode } from "../../steps/registerWithCode.ts";
 const RECOVERY_FILE_NAME = /^citadel-codes-de-secours-\d{4}-\d{2}-\d{2}\.txt$/;
 
 test.describe("Double authentification", () => {
-	test("E1 : activer une application d'authentification (étape « Protège ton compte » puis profil), codes de secours montrés une fois", async ({
+	test("E1 : activer une application d'authentification (étape « Protégez votre compte » puis profil), codes de secours montrés une fois", async ({
 		page,
 	}) => {
 		await openRegistrationForm(page);
@@ -50,7 +50,7 @@ test.describe("Double authentification", () => {
 				.fill(computeTotp(secret));
 			await page.getByRole("button", { name: "Activer" }).click();
 			await expect(
-				page.getByRole("heading", { name: "Tes codes de secours" }),
+				page.getByRole("heading", { name: "Vos codes de secours" }),
 			).toBeVisible();
 		});
 
@@ -78,14 +78,14 @@ test.describe("Double authentification", () => {
 		await test.step("« Terminé » quitte l'étape, connecté", async () => {
 			await page.getByRole("button", { name: "Terminé" }).click();
 			await expect(
-				page.getByRole("heading", { name: "Protège ton compte" }),
+				page.getByRole("heading", { name: "Protégez votre compte" }),
 			).toBeHidden();
 		});
 
 		await test.step("Depuis le profil : la liste montre l'application, les codes de secours ne reviennent pas", async () => {
 			await openProfile(page, "Sécurité");
 			await expect(
-				page.getByRole("heading", { name: "Tes codes de secours" }),
+				page.getByRole("heading", { name: "Vos codes de secours" }),
 			).toBeHidden();
 			await expect(
 				page.getByText("Mon application", { exact: true }),
@@ -95,7 +95,7 @@ test.describe("Double authentification", () => {
 			).toBeVisible();
 			await page.reload();
 			await expect(
-				page.getByRole("heading", { name: "Tes codes de secours" }),
+				page.getByRole("heading", { name: "Vos codes de secours" }),
 			).toBeHidden();
 		});
 

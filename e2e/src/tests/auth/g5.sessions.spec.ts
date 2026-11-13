@@ -116,7 +116,7 @@ test.describe("Profil : sessions", () => {
 			// La connexion demandée depuis le profil y ramène
 			await logIn(page, identity);
 			await expect(
-				page.getByRole("heading", { level: 1, name: "Ton profil" }),
+				page.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 			await page
 				.getByRole("button", { name: "Tout déconnecter", exact: true })

@@ -27,24 +27,24 @@ const OPTIONS: {
 	{
 		value: LoginMethodEnum.MAIL,
 		label: "Par email",
-		hint: "Un lien ou un code reçu par email. Ton mot de passe reste demandé pour les actions sensibles.",
+		hint: "Un lien ou un code reçu par email. Votre mot de passe reste demandé pour les actions sensibles.",
 		warning:
-			"Tu ne pourras plus te connecter avec ton mot de passe : il sera refusé comme des identifiants incorrects.",
+			"Vous ne pourrez plus vous connecter avec votre mot de passe : il sera refusé comme des identifiants incorrects.",
 	},
 	{
 		value: LoginMethodEnum.PASSWORD,
 		label: "Par mon pseudo (et mot de passe)",
-		hint: "Ton pseudo ou ton adresse email, et ton mot de passe.",
+		hint: "Votre pseudo ou votre adresse email, et votre mot de passe.",
 		warning:
-			"Tu ne pourras plus te connecter par email : aucun lien ni code ne te sera envoyé, sans message d’erreur.",
+			"Vous ne pourrez plus vous connecter par email : aucun lien ni code ne vous sera envoyé, sans message d’erreur.",
 	},
 ];
 
-// Comment tu préfères te connecter. « Mot de passe oublié » reste toujours ouvert, quelle que soit la méthode choisie
+// Comment vous préférez vous connecter. « Mot de passe oublié » reste toujours ouvert, quelle que soit la méthode choisie
 export function LoginMethodsSection({ me }: Props) {
 	const updateMe = useUpdateMe();
 	const { failure, report, clear } = useAuthFailure(
-		"changer ta méthode de connexion",
+		"changer votre méthode de connexion",
 	);
 
 	function choose(loginMethods: LoginMethodEnum): void {

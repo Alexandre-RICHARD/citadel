@@ -51,7 +51,7 @@ export function ProfilePage() {
 		return (
 			<MailCodeStep
 				flow={flow}
-				title="Confirme ta nouvelle adresse email"
+				title="Confirmez votre nouvelle adresse email"
 				lead="Un email vient de partir à la nouvelle adresse."
 				purpose="pour confirmer cette adresse"
 			/>
@@ -60,8 +60,8 @@ export function ProfilePage() {
 		return (
 			<MailCodeStep
 				flow={flow}
-				title="Active le code par email"
-				lead="Un email vient de partir à l’adresse de ton compte."
+				title="Activez le code par email"
+				lead="Un email vient de partir à l’adresse de votre compte."
 				purpose="pour activer le code par email"
 			/>
 		);
@@ -99,7 +99,7 @@ export function ProfilePage() {
 					onAcknowledge={acknowledge}
 				/>
 			)}
-			<h1 className={styles.title}>Ton profil</h1>
+			<h1 className={styles.title}>Votre profil</h1>
 			<SideNavigation
 				label="Catégories du profil"
 				entries={entries}

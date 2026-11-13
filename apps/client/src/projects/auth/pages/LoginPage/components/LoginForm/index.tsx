@@ -51,7 +51,7 @@ export function LoginForm() {
 	const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
 	const passwordLogin = useLoginWithPassword();
 	const mailLogin = useStartMailLogin();
-	const passwordFailure = useAuthFailure("te connecter");
+	const passwordFailure = useAuthFailure("vous connecter");
 	const mailFailure = useAuthFailure("envoyer le lien de connexion");
 	const { isMailLogin } = fields;
 	const { waitUntil, failure, report, clear } = isMailLogin
@@ -108,8 +108,8 @@ export function LoginForm() {
 			title="Se connecter"
 			lead={
 				isMailLogin
-					? "Reçois un lien et un code par email : pas besoin de mot de passe."
-					: "Avec ton adresse email ou ton pseudo."
+					? "Recevez un lien et un code par email : pas besoin de mot de passe."
+					: "Avec votre adresse email ou votre pseudo."
 			}
 			footer={
 				<p>

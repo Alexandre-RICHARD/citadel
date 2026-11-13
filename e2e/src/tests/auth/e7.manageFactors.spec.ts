@@ -105,7 +105,7 @@ test.describe("Double authentification", () => {
 		await test.step("Le dernier retrait désactive la double authentification et efface les codes de secours", async () => {
 			await expect(
 				page.getByText(
-					"Aucune double authentification : ton compte n’est protégé que par son mot de passe.",
+					"Aucune double authentification : votre compte n’est protégé que par son mot de passe.",
 				),
 			).toBeVisible();
 			await expect(page.getByText("Codes de secours")).toHaveCount(0);

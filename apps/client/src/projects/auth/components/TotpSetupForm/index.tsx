@@ -112,7 +112,8 @@ export function TotpSetupForm({
 							isInvalid={!nameCheck.isValid}
 						/>
 						<p className={styles.hint}>
-							Pour la reconnaître dans ta liste : « Téléphone », « Bitwarden »…
+							Pour la reconnaître dans votre liste : « Téléphone », « Bitwarden
+							»…
 						</p>
 					</FormField>
 					{createFailure.failure !== null && (
@@ -135,18 +136,18 @@ export function TotpSetupForm({
 			) : (
 				<>
 					<p className={styles.step}>
-						1. Scanne ce QR code avec ton application d’authentification (Google
-						Authenticator, Aegis, Bitwarden…).
+						1. Scannez ce QR code avec votre application d’authentification
+						(Google Authenticator, Aegis, Bitwarden…).
 					</p>
 					<div className={styles.qr}>
 						<TotpQrCode otpauthUri={setup.otpauthUri} />
 					</div>
 					<p className={styles.step}>
-						Ou saisis cette clé à la main :{" "}
+						Ou saisissez cette clé à la main :{" "}
 						<code className={styles.secret}>{setup.secret}</code>
 					</p>
 					<p className={styles.step}>
-						2. Saisis le code à 6 chiffres qu’elle affiche.
+						2. Saisissez le code à 6 chiffres qu’elle affiche.
 					</p>
 					<FormField
 						label="Code de l’application"

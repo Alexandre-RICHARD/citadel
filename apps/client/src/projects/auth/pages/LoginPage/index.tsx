@@ -35,15 +35,15 @@ export function LoginPage() {
 			return (
 				<SecondFactorStep
 					flow={flow}
-					purpose="pour te connecter"
+					purpose="pour vous connecter"
 				/>
 			);
 		return (
 			<MailCodeStep
 				flow={flow}
-				title="Vérifie tes emails"
+				title="Vérifiez vos emails"
 				lead="Si un compte correspond et accepte la connexion par email, un email vient de partir à son adresse."
-				purpose="pour te connecter"
+				purpose="pour vous connecter"
 			/>
 		);
 	}

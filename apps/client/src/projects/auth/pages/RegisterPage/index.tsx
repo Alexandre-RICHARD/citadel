@@ -47,7 +47,7 @@ export function RegisterPage() {
 		return (
 			<MailCodeStep
 				flow={flow}
-				title="Confirme ton adresse email"
+				title="Confirmez votre adresse email"
 				lead={
 					fields.email === "" ? (
 						"Un email est parti à l’adresse indiquée."
@@ -57,7 +57,7 @@ export function RegisterPage() {
 						</>
 					)
 				}
-				purpose="pour terminer ton inscription"
+				purpose="pour terminer votre inscription"
 				canReplaceUsername
 			/>
 		);

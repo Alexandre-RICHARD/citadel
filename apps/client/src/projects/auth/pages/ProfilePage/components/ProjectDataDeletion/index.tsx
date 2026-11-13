@@ -57,7 +57,7 @@ export function ProjectDataDeletion() {
 		<div className={styles.block}>
 			<h3 className={styles.title}>Supprimer les données d’un projet</h3>
 			<p className={styles.hint}>
-				Ton compte reste ouvert : seules les données des projets choisis
+				Votre compte reste ouvert : seules les données des projets choisis
 				disparaissent.
 			</p>
 			{deletedProjects !== null && (
@@ -89,7 +89,7 @@ export function ProjectDataDeletion() {
 					</fieldset>
 					<FormAlert tone="error">
 						La suppression est immédiate et définitive. Aucun délai de
-						récupération : tout ce que tu as enregistré dans ces projets
+						récupération : tout ce que vous avez enregistré dans ces projets
 						disparaît.
 					</FormAlert>
 					<PasswordConfirmForm

@@ -12,7 +12,7 @@ import { fillRegistrationForm } from "../../steps/fillRegistrationForm.ts";
 import { openRegistrationForm } from "../../steps/openRegistrationForm.ts";
 
 test.describe("Inscription", () => {
-	test("A1 : créer un compte, le confirmer avec le lien du mail, passer l'étape « Protège ton compte »", async ({
+	test("A1 : créer un compte, le confirmer avec le lien du mail, passer l'étape « Protégez votre compte »", async ({
 		page,
 		browser,
 	}) => {
@@ -28,10 +28,10 @@ test.describe("Inscription", () => {
 
 		await fillRegistrationForm(page, identity, { remember: true });
 
-		await test.step("L'écran « Confirme ton adresse email » montre l'adresse, le temps restant et le renvoi grisé", async () => {
+		await test.step("L'écran « Confirmez votre adresse email » montre l'adresse, le temps restant et le renvoi grisé", async () => {
 			await expect(page.getByText(identity.email)).toBeVisible();
 			const deadline = page.getByText(
-				/Il te reste .* pour terminer ton inscription/,
+				/Il vous reste .* pour terminer votre inscription/,
 			);
 			await expect(deadline).toContainText(/29 min \d{2} s/);
 			// Le décompte défile seconde par seconde
@@ -83,10 +83,10 @@ test.describe("Inscription", () => {
 			);
 		});
 
-		await test.step("« Confirmer » : le compte est créé et l'étape « Protège ton compte » est proposée", async () => {
+		await test.step("« Confirmer » : le compte est créé et l'étape « Protégez votre compte » est proposée", async () => {
 			await verifyPage.getByRole("button", { name: "Confirmer" }).click();
 			await expect(
-				verifyPage.getByRole("heading", { name: "Protège ton compte" }),
+				verifyPage.getByRole("heading", { name: "Protégez votre compte" }),
 			).toBeVisible();
 		});
 
@@ -110,7 +110,7 @@ test.describe("Inscription", () => {
 				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
 			);
 			await expect(
-				verifyPage.getByRole("heading", { level: 1, name: "Ton profil" }),
+				verifyPage.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 		});
 	});

@@ -6,7 +6,7 @@ import { setUpTotp } from "./setUpTotp.ts";
 type EnabledTotp = { secret: string; recoveryCodes: string[] };
 
 /**
- * Active une application d'authentification depuis la page « Ton profil » déjà ouverte, sauvegarde les codes de secours
+ * Active une application d'authentification depuis la page « Votre profil » déjà ouverte, sauvegarde les codes de secours
  * et laisse le profil affiché. Renvoie la clé (pour calculer les codes) et les codes de secours (aucun si `givesRecoveryCodes` est faux : le compte avait déjà une double authentification)
  */
 export async function enableTotp(

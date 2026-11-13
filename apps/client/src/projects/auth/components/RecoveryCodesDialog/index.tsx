@@ -28,7 +28,7 @@ export function RecoveryCodesDialog({ codes, email, onAcknowledge }: Props) {
 		<dialog
 			ref={dialogRef}
 			className={styles.dialog}
-			aria-label="Tes codes de secours"
+			aria-label="Vos codes de secours"
 			onCancel={(event) => event.preventDefault()}
 		>
 			<RecoveryCodesPanel

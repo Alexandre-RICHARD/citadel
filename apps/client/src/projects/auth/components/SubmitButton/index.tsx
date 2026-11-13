@@ -39,7 +39,7 @@ export function SubmitButton({
 				{isPending
 					? pendingLabel
 					: isWaiting
-						? `Patiente ${formatWaitDelay(waitMs)}`
+						? `Patientez ${formatWaitDelay(waitMs)}`
 						: label}
 			</span>
 			{icon}

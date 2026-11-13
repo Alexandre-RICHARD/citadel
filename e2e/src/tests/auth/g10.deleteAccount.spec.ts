@@ -50,12 +50,12 @@ test.describe("Profil : suppression du compte", () => {
 
 		await test.step("Avec une application d'authentification, le mot de passe ne suffit pas : le code est demandé aussi", async () => {
 			await page
-				.getByRole("textbox", { name: "Ton mot de passe" })
+				.getByRole("textbox", { name: "Votre mot de passe" })
 				.fill(identity.password);
 			await expect(deleteButton).toBeDisabled();
 			await page
 				.getByRole("textbox", {
-					name: /Code de ton application, ou code de secours/,
+					name: /Code de votre application, ou code de secours/,
 				})
 				.fill("000000");
 			await expect(deleteButton).toBeEnabled();
@@ -69,7 +69,7 @@ test.describe("Profil : suppression du compte", () => {
 					.filter({ hasText: "ce code n'est pas valable" }),
 			).toBeVisible();
 			await expect(
-				page.getByRole("heading", { level: 1, name: "Ton profil" }),
+				page.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 		});
 
@@ -77,7 +77,7 @@ test.describe("Profil : suppression du compte", () => {
 			await retryUntilAnswered(async () => {
 				await page
 					.getByRole("textbox", {
-						name: /Code de ton application, ou code de secours/,
+						name: /Code de votre application, ou code de secours/,
 					})
 					.fill(computeTotp(secret, 1));
 				await deleteButton.click();

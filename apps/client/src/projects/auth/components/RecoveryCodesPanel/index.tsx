@@ -40,11 +40,12 @@ export function RecoveryCodesPanel({ codes, email, onAcknowledge }: Props) {
 	return (
 		<ProfileSection
 			icon={<KeyRound />}
-			title="Tes codes de secours"
-			lead="Chacun ne sert qu’une fois, quand tu ne peux plus utiliser ta double authentification (téléphone perdu, boîte mail inaccessible)."
+			title="Vos codes de secours"
+			lead="Chacun ne sert qu’une fois, quand vous ne pouvez plus utiliser votre double authentification (téléphone perdu, boîte mail inaccessible)."
 		>
 			<FormAlert tone="info">
-				Sauvegarde-les en lieu sûr : tu ne pourras plus jamais les revoir ici.
+				Sauvegardez-les en lieu sûr : vous ne pourrez plus jamais les revoir
+				ici.
 			</FormAlert>
 			<ul className={styles.codes}>
 				{codes.map((code) => (

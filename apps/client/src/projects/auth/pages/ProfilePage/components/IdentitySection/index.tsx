@@ -27,7 +27,7 @@ export function IdentitySection({ me }: Props) {
 	const [isSaved, setIsSaved] = useState(false);
 	const updateMe = useUpdateMe();
 	const { waitUntil, failure, report, clear } = useAuthFailure(
-		"enregistrer ton pseudo affiché",
+		"enregistrer votre pseudo affiché",
 	);
 
 	const check = checkInput(
@@ -60,7 +60,7 @@ export function IdentitySection({ me }: Props) {
 		<>
 			<ProfileSubsection
 				title="Pseudo"
-				lead="Ton pseudo ne change pas ; le pseudo affiché, si."
+				lead="Votre pseudo ne change pas ; le pseudo affiché, si."
 			>
 				<p className={styles.value}>{me.username}</p>
 				<form
@@ -95,8 +95,8 @@ export function IdentitySection({ me }: Props) {
 						/>
 					</div>
 					<p className={styles.hint}>
-						Accents, espaces et symboles permis. Laisse vide pour afficher ton
-						pseudo.
+						Accents, espaces et symboles permis. Laissez vide pour afficher
+						votre pseudo.
 					</p>
 					{!check.isValid && (
 						<FormAlert tone="error">{check.message}</FormAlert>

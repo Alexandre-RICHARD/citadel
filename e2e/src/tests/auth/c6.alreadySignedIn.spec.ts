@@ -21,7 +21,7 @@ test.describe("Connexion", () => {
 				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
 			);
 			await expect(
-				tab.getByRole("heading", { level: 1, name: "Ton profil" }),
+				tab.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 			await tab.close();
 		});

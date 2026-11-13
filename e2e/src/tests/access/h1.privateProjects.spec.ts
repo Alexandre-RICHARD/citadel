@@ -46,7 +46,7 @@ test.describe("Accès aux projets", () => {
 				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
 			);
 			await expect(
-				tab.getByRole("heading", { level: 1, name: "Ton profil" }),
+				tab.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 			await openProfileCategory(tab, "Connexion");
 			// Sa session est celle du navigateur : on la ferme pour que la suite repasse en visiteur

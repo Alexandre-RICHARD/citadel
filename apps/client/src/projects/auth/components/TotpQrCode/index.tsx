@@ -21,7 +21,7 @@ export function TotpQrCode({ otpauthUri }: Props) {
 			className={styles.qrCode}
 			viewBox={`0 0 ${fullSize} ${fullSize}`}
 			role="img"
-			aria-label="QR code à scanner avec ton application d’authentification"
+			aria-label="QR code à scanner avec votre application d’authentification"
 			shapeRendering="crispEdges"
 		>
 			<rect

@@ -43,7 +43,7 @@ export function ForgotPasswordPage() {
 		return (
 			<MailCodeStep
 				flow={flow}
-				title="Vérifie tes emails"
+				title="Vérifiez vos emails"
 				lead="Si un compte correspond, un email vient de partir à son adresse."
 				purpose="pour choisir un nouveau mot de passe"
 			/>

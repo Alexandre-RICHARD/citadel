@@ -23,7 +23,7 @@ export function PreferencesSection() {
 					<span className={styles.hint}>
 						Plus de rideau entre les projets, ni de texte qui tombe ou de fondu
 						sur la page d’accueil : la navigation est plus rapide. Le décor
-						reste animé, sauf si le réglage « réduire les animations » de ton
+						reste animé, sauf si le réglage « réduire les animations » de votre
 						système est actif (il coupe tout).
 					</span>
 				</span>

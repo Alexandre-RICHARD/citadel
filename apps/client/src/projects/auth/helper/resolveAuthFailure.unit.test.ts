@@ -19,7 +19,7 @@ describe("resolveAuthFailure.ts", () => {
 				expect(
 					resolveAuthFailure(
 						new ApiError({ status, code, retryAfterSeconds: 2 }),
-						"te connecter",
+						"vous connecter",
 						NOW,
 					),
 				).toStrictEqual({ kind: "wait", retryAt: NOW + 2000, code });
@@ -35,13 +35,13 @@ describe("resolveAuthFailure.ts", () => {
 						status: 401,
 						code: AuthErrorCodeEnum.INVALID_CREDENTIALS,
 					}),
-					"te connecter",
+					"vous connecter",
 					NOW,
 				),
 			).toStrictEqual({
 				kind: "message",
 				message:
-					"Impossible de te connecter : identifiant ou mot de passe incorrect.",
+					"Impossible de vous connecter : identifiant ou mot de passe incorrect.",
 				code: AuthErrorCodeEnum.INVALID_CREDENTIALS,
 				isRetryable: false,
 			});
@@ -61,12 +61,12 @@ describe("resolveAuthFailure.ts", () => {
 							},
 						],
 					}),
-					"créer ton compte",
+					"créer votre compte",
 					NOW,
 				),
 			).toMatchObject({
 				message:
-					"Impossible de créer ton compte : le pseudo n'est pas au format attendu.",
+					"Impossible de créer votre compte : le pseudo n'est pas au format attendu.",
 			});
 		});
 

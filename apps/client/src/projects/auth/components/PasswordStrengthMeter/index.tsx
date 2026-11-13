@@ -65,7 +65,7 @@ export function PasswordStrengthMeter({ password }: Props) {
 						id={helpId}
 						className={styles.helpText}
 					>
-						Une estimation faite dans ton navigateur : longueur, variété des
+						Une estimation faite dans votre navigateur : longueur, variété des
 						caractères, répétitions (aaaa), suites (1234, abcd) et rangées du
 						clavier (azerty). Elle ne connaît aucun dictionnaire : un mot
 						courant maquillé, comme « P@ssw0rd! », paraît plus solide qu’il ne

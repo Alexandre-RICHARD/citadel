@@ -27,7 +27,7 @@ export function ChangeEmailForm() {
 	const isMailOpen = useIsMailSendingOpen();
 	const startEmailChange = useStartEmailChange();
 	const { waitUntil, failure, report, clear } = useAuthFailure(
-		"changer ton adresse email",
+		"changer votre adresse email",
 	);
 
 	const check = checkInput(
@@ -99,7 +99,7 @@ export function ChangeEmailForm() {
 				</p>
 			</FormField>
 			<FormField
-				label="Ton mot de passe"
+				label="Votre mot de passe"
 				htmlFor={`${fieldId}-password`}
 				isRequired
 			>

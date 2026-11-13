@@ -7,32 +7,32 @@ export const authErrorReasons: Record<AuthErrorCodeEnum, string> = {
 	[AuthErrorCodeEnum.REGISTRATION_CLOSED]:
 		"les inscriptions sont fermées pour aujourd'hui, elles rouvrent demain",
 	[AuthErrorCodeEnum.MAIL_CLOSED]:
-		"plus aucun email ne part aujourd'hui, réessaie demain",
+		"plus aucun email ne part aujourd'hui, réessayez demain",
 	[AuthErrorCodeEnum.PASSWORD_UNCHANGED]:
 		"le nouveau mot de passe doit être différent de l'actuel",
 	[AuthErrorCodeEnum.EMAIL_UNCHANGED]:
-		"cette adresse email est déjà celle de ton compte",
+		"cette adresse email est déjà celle de votre compte",
 	[AuthErrorCodeEnum.INVALID_CODE]: "ce code n'est pas valable",
 	[AuthErrorCodeEnum.CODE_ATTEMPTS_EXHAUSTED]:
-		"tous les essais de ce code sont faits, demande un nouvel email",
+		"tous les essais de ce code sont faits, demandez un nouvel email",
 	[AuthErrorCodeEnum.LINK_OTHER_BROWSER]:
-		"ce lien a été ouvert dans un autre navigateur que celui où tu as commencé, saisis plutôt le code de l'email sur la page restée ouverte",
+		"ce lien a été ouvert dans un autre navigateur que celui où vous avez commencé, saisissez plutôt le code de l'email sur la page restée ouverte",
 	[AuthErrorCodeEnum.FLOW_EXPIRED]: "le délai est dépassé, il faut recommencer",
 	[AuthErrorCodeEnum.USERNAME_TAKEN]: "ce pseudo est déjà pris",
 	[AuthErrorCodeEnum.EMAIL_TAKEN]: "cette adresse email est déjà utilisée",
 	[AuthErrorCodeEnum.TOO_MANY_ATTEMPTS]:
-		"trop d'essais, attends un peu avant de réessayer",
+		"trop d'essais, attendez un peu avant de réessayer",
 	[AuthErrorCodeEnum.AUTH_BUSY]:
-		"le serveur est très sollicité, réessaie dans un instant",
+		"le serveur est très sollicité, réessayez dans un instant",
 	[AuthErrorCodeEnum.WRONG_PASSWORD]: "le mot de passe est incorrect",
 	[AuthErrorCodeEnum.FACTOR_NOT_FOUND]:
-		"cette double authentification n'existe plus, recommence son ajout",
+		"cette double authentification n'existe plus, recommencez son ajout",
 	[AuthErrorCodeEnum.EMAIL_FACTOR_ALREADY_ACTIVE]:
-		"le code par email est déjà activé sur ton compte",
+		"le code par email est déjà activé sur votre compte",
 	[AuthErrorCodeEnum.NO_SECOND_FACTOR]:
-		"ton compte n'a aucune double authentification à secourir",
+		"votre compte n'a aucune double authentification à secourir",
 	[AuthErrorCodeEnum.SECOND_FACTOR_REQUIRED]:
-		"ton compte a une application d'authentification : un de ses codes est nécessaire",
+		"votre compte a une application d'authentification : un de ses codes est nécessaire",
 	[AuthErrorCodeEnum.SESSION_NOT_FOUND]:
 		"cette session n'existe plus, elle a peut-être déjà été fermée",
 };

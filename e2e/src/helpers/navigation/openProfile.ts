@@ -13,7 +13,7 @@ export async function openProfile(
 ): Promise<void> {
 	await page.getByRole("link", { name: /^Mon profil/ }).click();
 	await expect(
-		page.getByRole("heading", { level: 1, name: "Ton profil" }),
+		page.getByRole("heading", { level: 1, name: "Votre profil" }),
 	).toBeVisible();
 	if (category !== undefined) await openProfileCategory(page, category);
 }

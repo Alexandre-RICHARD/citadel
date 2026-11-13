@@ -80,7 +80,7 @@ export function NewPasswordFields({
 				</p>
 			</FormField>
 			<p className={styles.advice}>
-				Utilise un mot de passe différent pour chaque site, idéalement avec un
+				Utilisez un mot de passe différent pour chaque site, idéalement avec un
 				gestionnaire de mots de passe.
 			</p>
 		</>

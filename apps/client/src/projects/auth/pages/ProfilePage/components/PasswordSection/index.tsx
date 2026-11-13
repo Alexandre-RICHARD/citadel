@@ -27,7 +27,7 @@ export function PasswordSection() {
 	const [isChanged, setIsChanged] = useState(false);
 	const changePassword = useChangePassword();
 	const { waitUntil, failure, report, clear } = useAuthFailure(
-		"changer ton mot de passe",
+		"changer votre mot de passe",
 	);
 
 	const check = checkInput(
@@ -75,11 +75,11 @@ export function PasswordSection() {
 	return (
 		<ProfileSubsection
 			title="Mot de passe"
-			lead="Le changer ferme toutes tes autres sessions."
+			lead="Le changer ferme toutes vos autres sessions."
 		>
 			{isChanged && (
 				<FormAlert tone="info">
-					Mot de passe changé. Tes autres sessions ont été fermées.
+					Mot de passe changé. Vos autres sessions ont été fermées.
 				</FormAlert>
 			)}
 			{isOpen ? (

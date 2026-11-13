@@ -67,11 +67,11 @@ export function DataSection() {
 					<>
 						<FormAlert tone="error">
 							La suppression est immédiate et définitive. Aucun délai de
-							récupération : ton compte et toutes tes données disparaissent, et
-							un email te le confirme.
+							récupération : votre compte et toutes vos données disparaissent,
+							et un email vous le confirme.
 						</FormAlert>
 						<PasswordConfirmForm
-							actionLabel="supprimer ton compte"
+							actionLabel="supprimer votre compte"
 							confirmLabel="Supprimer définitivement mon compte"
 							pendingLabel="Suppression…"
 							icon={<Trash2 aria-hidden />}
@@ -104,7 +104,7 @@ export function DataSection() {
 						>
 							{hasTotp && (
 								<FormField
-									label="Code de ton application, ou code de secours"
+									label="Code de votre application, ou code de secours"
 									htmlFor={`${fieldId}-code`}
 									isRequired
 								>

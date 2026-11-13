@@ -49,7 +49,7 @@ test.describe("Double authentification", () => {
 
 		await test.step("Le temps restant pour se connecter est affiché (10 minutes au plus)", async () => {
 			await expect(
-				page.getByText(/Il te reste .* pour te connecter/),
+				page.getByText(/Il vous reste .* pour vous connecter/),
 			).toContainText(/9 min \d{2} s/);
 		});
 

@@ -87,7 +87,7 @@ test.describe("Profil : mot de passe", () => {
 				await submit.click();
 				await expect(
 					page.getByText(
-						"Mot de passe changé. Tes autres sessions ont été fermées.",
+						"Mot de passe changé. Vos autres sessions ont été fermées.",
 					),
 				).toBeVisible({ timeout: ANSWER_TIMEOUT_MS });
 			});
@@ -96,7 +96,7 @@ test.describe("Profil : mot de passe", () => {
 		await test.step("Cette session est gardée, l'autre navigateur est déconnecté", async () => {
 			await page.reload();
 			await expect(
-				page.getByRole("heading", { level: 1, name: "Ton profil" }),
+				page.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 			await other.page.reload();
 			await expect(

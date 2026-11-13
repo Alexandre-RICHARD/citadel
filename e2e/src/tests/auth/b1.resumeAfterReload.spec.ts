@@ -48,7 +48,7 @@ test.describe("Lien, code et reprise", () => {
 			await fillRegistrationForm(page, newcomer);
 			await page.reload();
 			await expect(
-				page.getByRole("heading", { name: "Confirme ton adresse email" }),
+				page.getByRole("heading", { name: "Confirmez votre adresse email" }),
 			).toBeVisible();
 			await expect(page.getByText(newcomer.email)).toBeVisible();
 			// Abandonner le parcours : le formulaire revient (B8)
@@ -115,11 +115,11 @@ test.describe("Lien, code et reprise", () => {
 		await test.step("Écran du code du mot de passe oublié : le rechargement revient au même écran", async () => {
 			await page.getByRole("button", { name: /Recevoir l.email/ }).click();
 			await expect(
-				page.getByRole("heading", { name: "Vérifie tes emails" }),
+				page.getByRole("heading", { name: "Vérifiez vos emails" }),
 			).toBeVisible();
 			await page.reload();
 			await expect(
-				page.getByRole("heading", { name: "Vérifie tes emails" }),
+				page.getByRole("heading", { name: "Vérifiez vos emails" }),
 			).toBeVisible();
 		});
 
@@ -145,14 +145,18 @@ test.describe("Lien, code et reprise", () => {
 			// Le code de l'activation a consommé le pas de l'époque : le pas suivant est accepté (±1 pas)
 			await submitSecondFactor(page, computeTotp(secret, 1), "accepted");
 			await expect(
-				page.getByRole("heading", { name: "Choisis un nouveau mot de passe" }),
+				page.getByRole("heading", {
+					name: "Choisissez un nouveau mot de passe",
+				}),
 			).toBeVisible();
 			await page
 				.getByRole("textbox", { name: "Nouveau mot de passe" })
 				.fill("Un-autre-mot-de-passe-2027!");
 			await page.reload();
 			await expect(
-				page.getByRole("heading", { name: "Choisis un nouveau mot de passe" }),
+				page.getByRole("heading", {
+					name: "Choisissez un nouveau mot de passe",
+				}),
 			).toBeVisible();
 			await expect(
 				page.getByRole("textbox", { name: "Nouveau mot de passe" }),

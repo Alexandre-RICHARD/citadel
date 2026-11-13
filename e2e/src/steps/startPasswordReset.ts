@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 /**
  * Part du formulaire « Se connecter » : « Mot de passe oublié ? », saisit l'identifiant et demande l'email. Termine sur
- * l'écran « Vérifie tes emails » (la réponse est la même que le compte existe ou non)
+ * l'écran « Vérifiez vos emails » (la réponse est la même que le compte existe ou non)
  */
 export async function startPasswordReset(
 	page: Page,
@@ -15,7 +15,7 @@ export async function startPasswordReset(
 			.fill(identifier);
 		await page.getByRole("button", { name: /Recevoir l.email/ }).click();
 		await expect(
-			page.getByRole("heading", { name: "Vérifie tes emails" }),
+			page.getByRole("heading", { name: "Vérifiez vos emails" }),
 		).toBeVisible();
 	});
 }

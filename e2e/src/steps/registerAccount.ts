@@ -30,7 +30,7 @@ export async function registerAccount(
 		const verifyPage = await openMailLink(page, mail.link!);
 		await verifyPage.getByRole("button", { name: "Confirmer" }).click();
 		await expect(
-			verifyPage.getByRole("heading", { name: "Protège ton compte" }),
+			verifyPage.getByRole("heading", { name: "Protégez votre compte" }),
 		).toBeVisible();
 		await verifyPage.close();
 		// L'onglet d'origine n'a pas vu la confirmation : l'utilisateur le recharge pour retrouver son compte

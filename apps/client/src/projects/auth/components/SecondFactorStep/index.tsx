@@ -29,7 +29,7 @@ import styles from "./secondFactorStep.module.scss";
 
 type Props = {
 	flow: FlowFm;
-	// Ce que la vérification permet, après « Il te reste … » : « pour te connecter »
+	// Ce que la vérification permet, après « Il vous reste … » : « pour vous connecter »
 	purpose: string;
 };
 
@@ -47,9 +47,9 @@ const FIELD_LABELS: Record<SecondFactorMethodEnum, string> = {
 
 const HINTS: Record<SecondFactorMethodEnum, string> = {
 	[SecondFactorMethodEnum.TOTP]:
-		"Ouvre ton application d’authentification (Google Authenticator, Aegis, Bitwarden…) et saisis les 6 chiffres affichés pour Citadel.",
+		"Ouvrez votre application d’authentification (Google Authenticator, Aegis, Bitwarden…) et saisissez les 6 chiffres affichés pour Citadel.",
 	[SecondFactorMethodEnum.EMAIL]:
-		"Le code part à l’adresse email de ton compte. Rien reçu ? Regarde dans les indésirables, l’email peut mettre une minute à arriver.",
+		"Le code part à l’adresse email de votre compte. Rien reçu ? Regardez dans les indésirables, l’email peut mettre une minute à arriver.",
 	[SecondFactorMethodEnum.RECOVERY_CODE]:
 		"Un des codes sauvegardés à l’activation de la double authentification. Chacun ne sert qu’une fois.",
 };
@@ -85,8 +85,8 @@ export function SecondFactorStep({ flow, purpose }: Props) {
 			>
 				<div className={styles.form}>
 					<FormAlert tone="error">
-						Ton compte n’a plus aucun moyen de terminer cette étape : recommence
-						depuis le début.
+						Votre compte n’a plus aucun moyen de terminer cette étape :
+						recommencez depuis le début.
 					</FormAlert>
 					<button
 						type="button"
@@ -146,7 +146,7 @@ export function SecondFactorStep({ flow, purpose }: Props) {
 		<AuthCard
 			icon={<ShieldCheck />}
 			title="Double authentification"
-			lead={`Ton compte est protégé : une dernière vérification ${purpose}.`}
+			lead={`Votre compte est protégé : une dernière vérification ${purpose}.`}
 		>
 			<form
 				className={styles.form}
@@ -163,8 +163,8 @@ export function SecondFactorStep({ flow, purpose }: Props) {
 				)}
 				{isEmail && !isMailOpen && (
 					<FormAlert tone="info">
-						Plus aucun email ne part aujourd’hui : utilise ton application ou un
-						code de secours.
+						Plus aucun email ne part aujourd’hui : utilisez votre application ou
+						un code de secours.
 					</FormAlert>
 				)}
 				{isEmail && (

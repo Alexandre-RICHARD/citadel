@@ -19,7 +19,7 @@ export function NewPasswordForm() {
 	const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
 	const newPassword = useSubmitNewPassword();
 	const { waitUntil, failure, report, clear } = useAuthFailure(
-		"changer ton mot de passe",
+		"changer votre mot de passe",
 	);
 
 	const check = checkInput(
@@ -48,8 +48,8 @@ export function NewPasswordForm() {
 	return (
 		<AuthCard
 			icon={<LockKeyhole />}
-			title="Choisis un nouveau mot de passe"
-			lead="Toutes les sessions ouvertes sur ton compte seront fermées, puis tu seras connecté ici."
+			title="Choisissez un nouveau mot de passe"
+			lead="Toutes les sessions ouvertes sur votre compte seront fermées, puis vous serez connecté ici."
 		>
 			<form
 				className={styles.form}

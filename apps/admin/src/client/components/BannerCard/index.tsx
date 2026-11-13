@@ -41,7 +41,7 @@ export function BannerCard({ status, quick }: Props) {
 						<p className={styles.hint}>
 							{banner.endsAt
 								? `jusqu'au ${formatDateTime(new Date(banner.endsAt))}`
-								: "jusqu'à ce que tu le retires"}
+								: "jusqu'à ce que vous le retiriez"}
 						</p>
 						<ActionButton
 							label="Retirer le bandeau"
@@ -67,7 +67,7 @@ export function BannerCard({ status, quick }: Props) {
 					required
 					rows={3}
 					maxLength={MESSAGE_LIMIT}
-					placeholder="Les inscriptions sont fermées : tu peux encore te connecter si tu as un compte"
+					placeholder="Les inscriptions sont fermées : vous pouvez encore vous connecter si vous avez un compte"
 					value={message}
 					onChange={(event) => setMessage(event.target.value)}
 				/>
@@ -119,7 +119,7 @@ export function BannerCard({ status, quick }: Props) {
 				description={
 					<p>
 						{
-							"Tout le site affiche sa page de maintenance (erreur 503), API comprise, jusqu'à ce que tu le désactives. Jellyfin n'est pas concerné."
+							"Tout le site affiche sa page de maintenance (erreur 503), API comprise, jusqu'à ce que vous le désactiviez. Jellyfin n'est pas concerné."
 						}
 					</p>
 				}

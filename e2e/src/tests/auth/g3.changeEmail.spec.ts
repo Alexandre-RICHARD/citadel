@@ -12,7 +12,7 @@ import { openRegistrationForm } from "../../steps/openRegistrationForm.ts";
 import { registerWithCode } from "../../steps/registerWithCode.ts";
 import { startEmailChange } from "../../steps/startEmailChange.ts";
 
-const CHANGE_MAIL = "Confirme ta nouvelle adresse email";
+const CHANGE_MAIL = "Confirmez votre nouvelle adresse email";
 const TAKEN_MAIL = "Cette adresse email est déjà utilisée";
 const CHANGED_NOTICE = "Ton adresse email a été modifiée";
 
@@ -49,13 +49,13 @@ test.describe("Profil : adresse email", () => {
 				.getByRole("textbox", { name: "Nouvelle adresse email" })
 				.fill(identity.email.toUpperCase());
 			await page
-				.getByRole("textbox", { name: "Ton mot de passe" })
+				.getByRole("textbox", { name: "Votre mot de passe" })
 				.fill(identity.password);
 			await page
 				.getByRole("button", { name: /Recevoir l.email de confirmation/ })
 				.click();
 			await expect(page.getByRole("alert")).toContainText(
-				"cette adresse email est déjà celle de ton compte",
+				"cette adresse email est déjà celle de votre compte",
 			);
 			expect(await countMails(identity.email), "aucun mail envoyé").toBe(
 				mailsBefore,
@@ -78,7 +78,7 @@ test.describe("Profil : adresse email", () => {
 			expect(notice.code, "aucun code").toBeNull();
 			await page.getByRole("button", { name: "Recommencer" }).click();
 			await expect(
-				page.getByRole("heading", { level: 1, name: "Ton profil" }),
+				page.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 		});
 
@@ -111,7 +111,7 @@ test.describe("Profil : adresse email", () => {
 				.fill(mail.code!);
 			await page.getByRole("button", { name: "Valider le code" }).click();
 			await expect(
-				page.getByRole("heading", { level: 1, name: "Ton profil" }),
+				page.getByRole("heading", { level: 1, name: "Votre profil" }),
 			).toBeVisible();
 			await expect(
 				page.getByText(newIdentity.email, { exact: true }),

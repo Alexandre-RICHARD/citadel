@@ -81,7 +81,7 @@ export function AddGameForm({
 				<Checkbox
 					checked={isAddingToBacklog}
 					label="Ajouter à mon backlog"
-					tooltip="Après « Valider », ouvre l’ajout au backlog : personnalisation, version jouée, plateforme et tes données"
+					tooltip="Après « Valider », ouvre l’ajout au backlog : personnalisation, version jouée, plateforme et vos données"
 					onChange={() => setIsAddingToBacklog(!isAddingToBacklog)}
 				/>
 			}

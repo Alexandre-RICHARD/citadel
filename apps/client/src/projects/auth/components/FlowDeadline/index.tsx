@@ -40,7 +40,7 @@ export function FlowDeadline({ expiresAt, purpose, onRestart }: Props) {
 		<p className={styles.deadline}>
 			<Hourglass aria-hidden />
 			<span>
-				Il te reste <strong>{formatWaitDelay(remainingMs)}</strong> {purpose}.
+				Il vous reste <strong>{formatWaitDelay(remainingMs)}</strong> {purpose}.
 			</span>
 		</p>
 	);

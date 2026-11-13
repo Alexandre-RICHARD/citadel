@@ -8,7 +8,7 @@ import { logOut } from "../../steps/logOut.ts";
 import { openLoginForm } from "../../steps/openLoginForm.ts";
 
 const REFUSAL_MESSAGE =
-	"Impossible de te connecter : identifiant ou mot de passe incorrect.";
+	"Impossible de vous connecter : identifiant ou mot de passe incorrect.";
 // Deux réponses de durées trop différentes laisseraient deviner si le compte existe
 const MAX_RESPONSE_TIME_GAP_MS = 1_000;
 

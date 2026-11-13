@@ -3,7 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import type { Identity } from "../helpers/identity/identity.type.ts";
 
 /**
- * Remplit le formulaire d'inscription déjà affiché avec l'identité donnée, l'envoie et attend l'écran « Confirme ton
+ * Remplit le formulaire d'inscription déjà affiché avec l'identité donnée, l'envoie et attend l'écran « Confirmez votre
  * adresse email ». `remember` coche « Se souvenir de moi »
  */
 export async function fillRegistrationForm(
@@ -25,7 +25,7 @@ export async function fillRegistrationForm(
 		if (remember) await page.getByLabel("Se souvenir de moi").check();
 		await page.getByRole("button", { name: "Créer mon compte" }).click();
 		await expect(
-			page.getByRole("heading", { name: "Confirme ton adresse email" }),
+			page.getByRole("heading", { name: "Confirmez votre adresse email" }),
 		).toBeVisible();
 	});
 }

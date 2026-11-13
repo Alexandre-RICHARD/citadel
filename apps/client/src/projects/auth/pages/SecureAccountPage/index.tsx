@@ -46,8 +46,8 @@ export function SecureAccountPage() {
 	return (
 		<AuthCard
 			icon={<ShieldCheck />}
-			title="Protège ton compte"
-			lead="Ajoute une application d’authentification : en plus du mot de passe, son code te sera demandé à chaque connexion. Tu peux aussi le faire plus tard, depuis ton profil."
+			title="Protégez votre compte"
+			lead="Ajoutez une application d’authentification : en plus du mot de passe, son code vous sera demandé à chaque connexion. Vous pouvez aussi le faire plus tard, depuis votre profil."
 		>
 			<TotpSetupForm
 				defaultName="Mon application"

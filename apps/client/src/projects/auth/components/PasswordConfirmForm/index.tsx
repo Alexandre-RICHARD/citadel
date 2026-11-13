@@ -74,7 +74,7 @@ export function PasswordConfirmForm({
 			noValidate
 		>
 			<FormField
-				label="Ton mot de passe"
+				label="Votre mot de passe"
 				htmlFor={`${fieldId}-password`}
 				isRequired
 			>

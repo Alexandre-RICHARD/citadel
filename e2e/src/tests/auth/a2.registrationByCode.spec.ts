@@ -36,7 +36,7 @@ test.describe("Inscription", () => {
 				.fill(mail.code!);
 			await page.getByRole("button", { name: "Valider le code" }).click();
 			await expect(
-				page.getByRole("heading", { name: "Protège ton compte" }),
+				page.getByRole("heading", { name: "Protégez votre compte" }),
 			).toBeVisible();
 		});
 

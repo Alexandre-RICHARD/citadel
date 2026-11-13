@@ -7,7 +7,7 @@ import { fillRegistrationForm } from "./fillRegistrationForm.ts";
 
 /**
  * S'inscrire en tapant le code du mail dans l'onglet resté ouvert (sans le lien) : part du formulaire « Créer un
- * compte » déjà affiché et termine, dans le même onglet, sur l'étape « Protège ton compte ». `identity` : l'identité à
+ * compte » déjà affiché et termine, dans le même onglet, sur l'étape « Protégez votre compte ». `identity` : l'identité à
  * inscrire (une neuve, `label` en préfixe, par défaut). Renvoie l'identité créée
  */
 export async function registerWithCode(
@@ -30,7 +30,7 @@ export async function registerWithCode(
 			.fill(mail.code!);
 		await page.getByRole("button", { name: "Valider le code" }).click();
 		await expect(
-			page.getByRole("heading", { name: "Protège ton compte" }),
+			page.getByRole("heading", { name: "Protégez votre compte" }),
 		).toBeVisible();
 	});
 

@@ -68,7 +68,7 @@ export function SecondFactorSection() {
 						void retry();
 					}}
 				>
-					Impossible de lire ta double authentification.
+					Impossible de lire votre double authentification.
 				</FormAlert>
 			</ProfileSubsection>
 		);
@@ -92,7 +92,7 @@ export function SecondFactorSection() {
 	return (
 		<ProfileSubsection
 			title="Double authentification"
-			lead="Un second code, en plus du mot de passe, protège ton compte si celui-ci fuite."
+			lead="Un second code, en plus du mot de passe, protège votre compte si celui-ci fuite."
 		>
 			{hasFactor ? (
 				<ul className={styles.factors}>
@@ -153,8 +153,8 @@ export function SecondFactorSection() {
 				</ul>
 			) : (
 				<p className={styles.empty}>
-					Aucune double authentification : ton compte n’est protégé que par son
-					mot de passe.
+					Aucune double authentification : votre compte n’est protégé que par
+					son mot de passe.
 				</p>
 			)}
 
@@ -214,7 +214,7 @@ export function SecondFactorSection() {
 					</div>
 					{action.kind === "regenerateCodes" ? (
 						<PasswordConfirmForm
-							actionLabel="refaire tes codes de secours"
+							actionLabel="refaire vos codes de secours"
 							confirmLabel="Refaire mes codes"
 							pendingLabel="Création…"
 							icon={<KeyRound aria-hidden />}

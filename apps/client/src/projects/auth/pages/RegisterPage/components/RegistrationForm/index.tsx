@@ -58,7 +58,7 @@ export function RegistrationForm() {
 	const registration = useStartRegistration();
 	const availability = useCheckUsernameAvailability();
 	const { waitUntil, failure, report, clear } = useAuthFailure(
-		"commencer ton inscription",
+		"commencer votre inscription",
 	);
 	const availabilityFailure = useAuthFailure("vérifier ce pseudo");
 
@@ -136,7 +136,7 @@ export function RegistrationForm() {
 					className={styles.fieldset}
 					disabled={!isRegistrationOpen}
 				>
-					<legend className={styles.legend}>Ton futur compte</legend>
+					<legend className={styles.legend}>Votre futur compte</legend>
 					<FormField
 						label="Adresse email"
 						htmlFor={`${fieldId}-email`}
@@ -259,8 +259,8 @@ export function RegistrationForm() {
 						waitUntil={waitUntil}
 					/>
 					<p className={styles.hint}>
-						Tu as 30 minutes pour terminer ton inscription, sinon il faudra
-						recommencer.
+						Vous avez 30 minutes pour terminer votre inscription, sinon il
+						faudra recommencer.
 					</p>
 				</fieldset>
 			</form>

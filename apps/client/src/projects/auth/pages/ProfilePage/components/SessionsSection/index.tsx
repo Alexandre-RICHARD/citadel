@@ -59,7 +59,7 @@ export function SessionsSection() {
 	return (
 		<ProfileSubsection
 			title="Sessions actives"
-			lead="Les appareils connectés à ton compte. Une session que tu ne reconnais pas : déconnecte-la, puis change ton mot de passe."
+			lead="Les appareils connectés à votre compte. Une session que vous ne reconnaissez pas : déconnectez-la, puis changez votre mot de passe."
 		>
 			{isError ? (
 				<FormAlert
@@ -68,7 +68,7 @@ export function SessionsSection() {
 						void retry();
 					}}
 				>
-					Impossible de lire tes sessions.
+					Impossible de lire vos sessions.
 				</FormAlert>
 			) : sessions === undefined ? (
 				<p

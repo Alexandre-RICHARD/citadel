@@ -28,7 +28,7 @@ type Props = {
 	// Où le mail est parti. Une réponse neutre (connexion par email, mot de passe oublié) ne dit jamais si un compte
 	// existe : « si un compte correspond, un email est parti à son adresse »
 	lead: ReactNode;
-	// Ce que le code permet, après « Il te reste … » : « pour confirmer ton inscription »
+	// Ce que le code permet, après « Il vous reste … » : « pour confirmer votre inscription »
 	purpose: string;
 	// Inscription seulement : le pseudo choisi a pu être pris entre-temps, la page en redemande un
 	canReplaceUsername?: boolean;
@@ -113,8 +113,8 @@ export function MailCodeStep({
 			title={title}
 			lead={
 				<>
-					{lead} Clique sur son lien, dans ce navigateur, ou saisis ici le code
-					qu’il contient.
+					{lead} Cliquez sur son lien, dans ce navigateur, ou saisissez ici le
+					code qu’il contient.
 				</>
 			}
 		>
@@ -138,8 +138,8 @@ export function MailCodeStep({
 							isInvalid={usernameCheck?.isValid === false}
 						/>
 						<p className={styles.hint}>
-							Le pseudo choisi a été pris entre-temps : choisis-en un autre, ton
-							code reste valable.
+							Le pseudo choisi a été pris entre-temps : choisissez-en un autre,
+							votre code reste valable.
 						</p>
 					</FormField>
 				)}
@@ -221,7 +221,7 @@ export function MailCodeStep({
 					</button>
 				</div>
 				<p className={styles.hint}>
-					Rien reçu ? Regarde dans les indésirables. L’email peut mettre une
+					Rien reçu ? Regardez dans les indésirables. L’email peut mettre une
 					minute à arriver.
 				</p>
 			</form>

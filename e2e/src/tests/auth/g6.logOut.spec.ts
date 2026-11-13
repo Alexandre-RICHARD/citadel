@@ -24,7 +24,7 @@ test.describe("Déconnexion", () => {
 		// Un second onglet du même navigateur, ouvert sur le profil avant la déconnexion
 		const secondTab = await openInNewTab(page, E2EUrlEnum.AUTH_PROFILE);
 		await expect(
-			secondTab.getByRole("heading", { level: 1, name: "Ton profil" }),
+			secondTab.getByRole("heading", { level: 1, name: "Votre profil" }),
 		).toBeVisible();
 
 		// Un jeu GDC avec un boss, créé par l'API : le scénario ne teste pas sa création

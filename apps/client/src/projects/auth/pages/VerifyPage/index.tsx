@@ -101,7 +101,7 @@ export function VerifyPage() {
 			<AuthCard
 				icon={<Link2 />}
 				title="Lien incomplet"
-				lead="Ce lien est abîmé : ta messagerie l’a peut-être coupé en deux."
+				lead="Ce lien est abîmé : votre messagerie l’a peut-être coupé en deux."
 			>
 				<FormAlert tone="info">
 					Saisis plutôt le code de l’email sur la page restée ouverte, ou
@@ -114,7 +114,7 @@ export function VerifyPage() {
 		<AuthCard
 			icon={<MousePointerClick />}
 			title="Un clic pour confirmer"
-			lead="Confirme que c’est bien toi qui as ouvert ce lien."
+			lead="Confirmez que c’est bien vous qui avez ouvert ce lien."
 			footer={
 				isRefused ? (
 					<>
@@ -144,20 +144,20 @@ export function VerifyPage() {
 							isInvalid={usernameCheck?.isValid === false}
 						/>
 						<p className={styles.hint}>
-							Le pseudo choisi a été pris entre-temps : choisis-en un autre, ton
-							lien reste valable.
+							Le pseudo choisi a été pris entre-temps : choisissez-en un autre,
+							votre lien reste valable.
 						</p>
 					</FormField>
 				)}
 				{failure?.code === AuthErrorCodeEnum.LINK_OTHER_BROWSER && (
 					<FormAlert tone="error">
 						<p>
-							Ce lien a été ouvert dans un autre navigateur que celui où tu as
-							commencé.
+							Ce lien a été ouvert dans un autre navigateur que celui où vous
+							avez commencé.
 						</p>
 						<p>
-							Ouvre-le dans ce navigateur-là, ou saisis le code de l’email sur
-							la page restée ouverte : il marche sur tous les appareils.
+							Ouvrez-le dans ce navigateur-là, ou saisissez le code de l’email
+							sur la page restée ouverte : il marche sur tous les appareils.
 						</p>
 					</FormAlert>
 				)}

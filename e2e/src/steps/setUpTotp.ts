@@ -3,9 +3,9 @@ import { expect, type Page, test } from "@playwright/test";
 import { computeTotp } from "../helpers/totp/computeTotp.ts";
 
 /**
- * Part du formulaire d'ajout d'une application d'authentification (étape « Protège ton compte », ou profil après
+ * Part du formulaire d'ajout d'une application d'authentification (étape « Protégez votre compte », ou profil après
  * « Ajouter une application ») : nomme l'application, lit la clé affichée, saisit le code qu'elle afficherait (celui du pas
- * actuel, ou décalé de `stepOffset` pas) et active. Se termine sur le panneau « Tes codes de secours » (`givesRecoveryCodes`, vrai pour la première double authentification du compte seulement, sinon la liste des facteurs). Renvoie la clé (base32), pour calculer les codes suivants
+ * actuel, ou décalé de `stepOffset` pas) et active. Se termine sur le panneau « Vos codes de secours » (`givesRecoveryCodes`, vrai pour la première double authentification du compte seulement, sinon la liste des facteurs). Renvoie la clé (base32), pour calculer les codes suivants
  */
 export async function setUpTotp(
 	page: Page,
@@ -34,7 +34,7 @@ export async function setUpTotp(
 		await page.getByRole("button", { name: "Activer" }).click();
 		if (givesRecoveryCodes)
 			await expect(
-				page.getByRole("heading", { name: "Tes codes de secours" }),
+				page.getByRole("heading", { name: "Vos codes de secours" }),
 			).toBeVisible();
 		else await expect(page.getByText("Ajouté le").first()).toBeVisible();
 	});
