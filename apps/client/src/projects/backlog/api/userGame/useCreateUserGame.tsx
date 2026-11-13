@@ -48,6 +48,18 @@ export function useCreateUserGame(gameId: number) {
 				backlogQueryKeys.seriesEntriesOfAll(),
 				backlogQueryKeys.igdbSearches(),
 			],
+			// Une série renumérote ses autres jeux : le tableau est relu. Sans série, la ligne arrive en tête et le reste ne bouge pas
+			getResyncQueryKeys: ({ customization }) => [
+				...(customization.series === null
+					? []
+					: [backlogQueryKeys.userGames()]),
+				backlogQueryKeys.overview(),
+				backlogQueryKeys.storedGames(),
+				backlogQueryKeys.storedGame(gameId),
+				backlogQueryKeys.allSeries(),
+				backlogQueryKeys.seriesEntriesOfAll(),
+				backlogQueryKeys.igdbSearches(),
+			],
 			applyOptimistic: (queryClient, body) => {
 				shiftOverviewCounts(queryClient, {
 					gameCount: 1,

@@ -337,6 +337,68 @@ describe("buildOptimisticMutationCallbacks.ts", () => {
 			]);
 		});
 
+		it("SHOULD invalidate only the queries to resync WHEN the mutation succeeded", () => {
+			// Arrange
+			const listKey: QueryKey = ["games"];
+			const { queryClient, callbacks } = setup({
+				getAffectedQueryKeys: () => [GAME_KEY, listKey],
+				getResyncQueryKeys: () => [GAME_KEY],
+			});
+			vi.spyOn(queryClient, "isMutating").mockReturnValue(1);
+			const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+
+			// Act
+			callbacks.onSettled(undefined, null, VARIABLES);
+
+			// Assert
+			expect(invalidateQueries).toHaveBeenCalledExactlyOnceWith({
+				queryKey: GAME_KEY,
+			});
+		});
+
+		it("SHOULD invalidate every affected query WHEN another mutation was running at the same time", () => {
+			// Arrange
+			const listKey: QueryKey = ["games"];
+			const { queryClient, callbacks } = setup({
+				getAffectedQueryKeys: () => [GAME_KEY, listKey],
+				getResyncQueryKeys: () => [GAME_KEY],
+			});
+			const isMutating = vi.spyOn(queryClient, "isMutating");
+			const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+
+			// Act
+			isMutating.mockReturnValue(2);
+			callbacks.onSettled(undefined, null, VARIABLES);
+			isMutating.mockReturnValue(1);
+			callbacks.onSettled(undefined, null, VARIABLES);
+
+			// Assert
+			expect(invalidateQueries.mock.calls).toStrictEqual([
+				[{ queryKey: GAME_KEY }],
+				[{ queryKey: listKey }],
+			]);
+		});
+
+		it("SHOULD invalidate every affected query WHEN the mutation failed", () => {
+			// Arrange
+			const listKey: QueryKey = ["games"];
+			const { queryClient, callbacks } = setup({
+				getAffectedQueryKeys: () => [GAME_KEY, listKey],
+				getResyncQueryKeys: () => [GAME_KEY],
+			});
+			vi.spyOn(queryClient, "isMutating").mockReturnValue(1);
+			const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+
+			// Act
+			callbacks.onSettled(undefined, new Error("réseau"), VARIABLES);
+
+			// Assert
+			expect(invalidateQueries.mock.calls).toStrictEqual([
+				[{ queryKey: GAME_KEY }],
+				[{ queryKey: listKey }],
+			]);
+		});
+
 		it("SHOULD invalidate nothing WHEN the session expired", () => {
 			// Arrange
 			const { queryClient, callbacks } = setup();

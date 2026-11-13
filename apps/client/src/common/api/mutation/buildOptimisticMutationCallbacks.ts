@@ -114,9 +114,17 @@ export function buildOptimisticMutationCallbacks<
 				return;
 			}
 
+			// La réponse du serveur ne suffit pas après un échec, ni quand une autre mutation était en cours en même temps : ses
+			// réponses ont pu arriver dans le désordre. Toutes les lectures touchées sont alors relues
+			const isAlone =
+				queryClient.isMutating() <= 1 && !queryKeysToResync.has(queryClient);
 			const queryKeys = getUniqueQueryKeys([
 				...(queryKeysToResync.get(queryClient) ?? []),
-				...options.getAffectedQueryKeys(variables),
+				...(error === null &&
+				isAlone &&
+				options.getResyncQueryKeys !== undefined
+					? options.getResyncQueryKeys(variables)
+					: options.getAffectedQueryKeys(variables)),
 			]);
 
 			// La mutation qui se termine compte encore parmi celles en cours. S'il en reste une autre,

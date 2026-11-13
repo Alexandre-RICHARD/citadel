@@ -90,7 +90,7 @@ Les statuts sont les mêmes pour tous les types de fin, gradés du rang 1 au ran
 
 ### 3.3 Tri, filtres, pages
 
-- **Tri** multi-colonnes : un clic croissant, puis décroissant, puis plus de tri ; numéro de priorité et flèche sur chaque en-tête. Textes sans accents ni majuscules, nombres dans l'ordre (« FF2 » avant « FF10 »), statuts dans l'ordre de l'échelle, cases vides en dernier. Sans tri, le jeu dont une donnée personnelle (jeu au backlog ou version jouée) a été créée ou modifiée en dernier passe en premier.
+- **Tri** multi-colonnes : un clic croissant, puis décroissant, puis plus de tri ; numéro de priorité et flèche sur chaque en-tête. Textes sans accents ni majuscules, nombres dans l'ordre (« FF2 » avant « FF10 »), statuts dans l'ordre de l'échelle, cases vides en dernier. Sans tri, le jeu dont une donnée personnelle (jeu au backlog ou version jouée) a été créée ou modifiée en dernier passe en premier. **L'ordre ne change pas sous les doigts** : une ligne modifiée garde sa place (même si elle ne correspond plus à un filtre ou remonterait dans le tri), un jeu ajouté arrive en tête ; l'ordre se recalcule au rechargement de la page, au changement de tri ou de filtre, et au retour sur l'onglet après une courte absence.
 - **Filtres**, un par colonne, cumulés (ET) ou, au choix, une ligne n'en passe qu'un (OU : le choix ET / OU apparaît dès deux filtres et vit dans l'URL, `?filterMode=or`) : « contient » pour les textes, valeur exacte après un clic sur une série, liste pour type de fin, statut et plateforme, oui / non pour les cases, plage pour les nombres, temps et dates. Un jeu reste affiché si sa ligne, ou une de ses versions jouées, correspond.
 - Tri et filtres vivent dans l'URL (`?sort=name:asc,status:desc&name=final`) : rechargement, retour arrière, lien copié. Une valeur illisible est ignorée.
 - **Colonnes** : affichage et ordre réglables (« Colonnes »), gardés dans le `localStorage` ; « Actions » toujours visible ; une colonne masquée sort du tri et des filtres.
@@ -195,8 +195,13 @@ Endpoints, sous `/api/backlog`, tous `protected` :
 
 **Code** :
 
-- **Specs** (`packages/specs/src/projects/backlog/`) : en plus des endpoints, `helper/` porte les règles appliquées à l'identique par le front et le serveur : statuts et leur conversion (`status/`), agrégats d'une ligne (`aggregate/`), numéros dans une série (`seriesNumber/`), tri et filtres écrits dans l'URL (`view/`).
+- **Specs** (`packages/specs/src/projects/backlog/`) : en plus des endpoints, `helper/` porte les règles appliquées à l'identique par le front et le serveur : statuts (`status/`), agrégats d'une ligne (`aggregate/`), numéros dans une série (`seriesNumber/`), tri et filtres écrits dans l'URL (`view/`).
 - **Serveur** (`apps/server/src/projects/backlog/`) : `igdb/` est le seul accès à IGDB (`igdbClient`) ; `view/` calcule chaque ligne du tableau, puis la filtre, la trie et la découpe en pages ; `userData/` supprime et exporte les données d'un compte, enfants d'abord.
+- **Performances**, mesurées avec 130 jeux et 163 versions (Edge, version de développement) :
+  - le serveur calcule le tableau à chaque page en 15 à 20 ms, et la base entière pèse environ 1 Mo : le cache de MariaDB (64 Mo en prod) sert déjà 99,8 % des lectures, un plus gros n'apporterait rien ;
+  - une modification n'envoie que son `PATCH` et relit l'aperçu : la réponse du serveur met la ligne à jour, le tableau n'est pas relu (voir « L'ordre ne change pas sous les doigts », §3.3). Les ajouts avec série, les retraits et « Personnaliser » relisent encore le tableau ;
+  - chaque ligne est mémorisée et ne se redessine que si ses données, ses colonnes, son dépliage, le mode édition ou son propre panneau ouvert changent : une modification ne bloque plus le navigateur (320 ms avant, aucune tâche longue après) ;
+  - 130 jeux font environ 8 700 éléments du DOM (14 500 en mode édition), et l'onglet pèse environ 180 Mo de plus qu'une page vide, sans fuite après des modifications répétées. Les 750 Mo vus une fois n'ont pas été reproduits : Edge vide pèse déjà environ 400 Mo, tous processus compris. Les temps de réponse de l'API se lisent dans la console, carte « Requêtes, 24 h ».
 - **Front** (`apps/client/src/projects/backlog/`) : une page (`pages/Homepage`). `components/` (Button, Modal, Select, Tooltip…) et `variables.scss` portent l'identité visuelle du projet, en attendant leur fusion avec le design system ; `backlog.module.scss` est la feuille partagée de la page.
 
 ## 9. Lancer

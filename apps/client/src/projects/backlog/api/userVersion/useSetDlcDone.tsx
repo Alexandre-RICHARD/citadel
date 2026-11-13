@@ -53,6 +53,8 @@ export function useSetDlcDone(
 			body,
 		}),
 		getAffectedQueryKeys: () => [backlogQueryKeys.userGames()],
+		// La réponse du serveur porte la ligne à jour : rien d'autre à relire
+		getResyncQueryKeys: () => [],
 		applyOptimistic: (queryClient, { isDone }) => {
 			setDone(queryClient, ids, isDone);
 			return { wasDone: !isDone };

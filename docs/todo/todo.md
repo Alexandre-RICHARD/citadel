@@ -137,7 +137,7 @@ Le fonctionnement est décrit dans [hébergement](../ci_cd/ci_cd.md).
   - requêtes SQL en lecture seule sur la pré-prod ;
   - logs : recherche, filtre par niveau, suivi en direct, plusieurs conteneurs à la fois ;
   - erreurs du serveur (`error_log`) : liste, regroupement, marquées comme vues ;
-  - trafic du site : pages vues, codes de réponse, temps de réponse, pays, robots, sans traceur côté visiteur ;
+  - trafic du site : pages vues, codes de réponse, pays, robots, sans traceur côté visiteur ;
   - IP suspectes : liste, bannissement manuel dans Caddy ;
   - Jellyfin : bibliothèques, derniers ajouts, transcodages en cours, utilisateurs ;
   - *arr : files d'attente, téléchargements en cours, prochains épisodes, erreurs d'indexeurs ;
@@ -168,7 +168,6 @@ Le projet est décrit dans [Backlog](../backlog/backlog.md).
 - Fusionner les composants d'interface du Backlog (`apps/client/src/projects/backlog/components/` : Button, Modal, Select…) avec le design system, sans changer, ou à peine, l'apparence des endroits qui utilisent déjà le design system. La feuille partagée `backlog.module.scss` sera découpée à ce moment-là.
 - Déposer les SVG des plateformes et des launchers dans `icons/` : le dossier est vide, chaque plateforme garde son icône par défaut ([Backlog, §7](../backlog/backlog.md#7-plateformes-et-icônes)).
 - Le bouton « Rechercher d'autres DLC » est mal placé.
-- Affichage du tableau : toutes les lignes chargées se redessinent à chaque rendu (frappe dans la recherche, popover, modale). Si besoin : ne redessiner que les lignes concernées (lignes mémorisées, actions stables, popover transmis à sa seule ligne).
 - Annuler / rétablir : `Ctrl+Z` et `Ctrl+Y` sur les 20 dernières actions, avec deux boutons dans la barre du haut. Une action est une modification de la base (champ enregistré, case cochée, statut changé avec son « fois fini » automatique, ajout, retrait, « Personnaliser », « Réorganiser la série », « Modifier le jeu » ou « Rechercher d'autres DLC » validé) ; ni le tri, ni les filtres, ni les colonnes. Dans un champ texte, `Ctrl+Z` reste celui du navigateur. Chaque annulation envoie l'opération inverse au serveur, et l'historique est propre à chaque compte. En attendant, un retrait se confirme.
 
 ### 6.2 Données IGDB
@@ -186,6 +185,7 @@ Le projet est décrit dans [Backlog](../backlog/backlog.md).
 
 ### 6.4 Pour plus tard
 
+- Tableau d'un très gros backlog (plusieurs centaines de jeux) : virtualiser les lignes, car chacune porte environ 65 éléments du DOM ([Backlog, §8](../backlog/backlog.md#8-base-endpoints-et-code)). Mettre aussi en mémoire côté serveur les lignes calculées de chaque compte, effacées à chaque écriture, si le calcul d'une page dépasse quelques centaines de millisecondes.
 - Étendre le backlog aux films et aux séries, et y réimporter ce qui a été sauvegardé de TV Time.
 
 ### 6.5 Écarté

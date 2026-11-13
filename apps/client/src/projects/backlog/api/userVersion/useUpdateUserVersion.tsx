@@ -61,6 +61,8 @@ export function useUpdateUserVersion(
 			backlogQueryKeys.userGames(),
 			backlogQueryKeys.overview(),
 		],
+		// La réponse du serveur porte la ligne à jour : les autres lignes ne bougent pas, le tableau garde son ordre
+		getResyncQueryKeys: () => [backlogQueryKeys.overview()],
 		applyOptimistic: (queryClient, body) => {
 			const current = findCachedUserGame(
 				queryClient,
