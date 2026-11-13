@@ -45,3 +45,44 @@
 .scans {
   color: var(--warn);
 }
+
+.timings {
+  width: 100%;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  border-collapse: collapse;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 0.3rem 0.5rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  thead th {
+    color: var(--text-subtle);
+    font-weight: 500;
+  }
+
+  thead th:first-child,
+  .endpoint {
+    text-align: left;
+  }
+}
+
+.endpoint {
+  max-width: 18rem;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-weight: 400;
+  text-overflow: ellipsis;
+}
+
+.slow {
+  color: var(--warn);
+}
+.scroll {
+  overflow-x: auto;
+}

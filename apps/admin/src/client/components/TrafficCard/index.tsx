@@ -5,12 +5,15 @@ import { Card } from "../Card";
 import { Stat } from "../Stat";
 import styles from "./trafficCard.module.scss";
 
+// Au-delà, un appel se sent : le chiffre passe en alerte
+const SLOW_MS = 500;
+
 type Props = {
 	traffic: SiteTraffic | null;
 	error: string | null;
 };
 
-// Volumes du site et de Jellyfin sur 24 h, et les IP qui en font le plus
+// Volumes du site et de Jellyfin sur 24 h, les IP qui en font le plus, et les endpoints de l'API les plus lents
 export function TrafficCard({ traffic, error }: Props) {
 	if (!traffic?.available)
 		return (
@@ -60,6 +63,47 @@ export function TrafficCard({ traffic, error }: Props) {
 						</li>
 					))}
 				</ol>
+			) : null}
+			{traffic.slowestEndpoints.length > 0 ? (
+				<div className={styles.scroll}>
+					<table
+						className={styles.timings}
+						aria-label="Temps de réponse de l'API"
+					>
+						<thead>
+							<tr>
+								<th scope="col">Endpoint (ms)</th>
+								<th scope="col">Appels</th>
+								<th scope="col">Médiane</th>
+								<th scope="col">95 %</th>
+								<th scope="col">Max</th>
+							</tr>
+						</thead>
+						<tbody>
+							{traffic.slowestEndpoints.map((timing) => (
+								<tr key={timing.endpoint}>
+									<th
+										scope="row"
+										className={styles.endpoint}
+										title={timing.endpoint}
+									>
+										{timing.endpoint}
+									</th>
+									<td>{timing.requestCount}</td>
+									<td>{Math.round(timing.medianMs)}</td>
+									<td
+										className={
+											timing.p95Ms >= SLOW_MS ? styles.slow : undefined
+										}
+									>
+										{Math.round(timing.p95Ms)}
+									</td>
+									<td>{Math.round(timing.maxMs)}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
 			) : null}
 		</Card>
 	);

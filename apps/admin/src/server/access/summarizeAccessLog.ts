@@ -2,9 +2,11 @@ import type { AccessEntry } from "../../shared/accessEntry.type.ts";
 import type { IpActivity } from "../../shared/ipActivity.type.ts";
 import type { SiteTraffic } from "../../shared/siteTraffic.type.ts";
 import { isSuspiciousPath } from "./isSuspiciousPath.ts";
+import { summarizeEndpointTimings } from "./summarizeEndpointTimings.ts";
 
 const TOP_IP_LIMIT = 5;
 const RECENT_LIMIT = 15;
+const SLOW_ENDPOINT_LIMIT = 8;
 
 // Ce qu'une page charge en plus d'elle-même : sans intérêt dans « dernières requêtes »
 const STATIC_EXTENSIONS = new Set([
@@ -31,6 +33,8 @@ type CaddyAccessLine = {
 	logger?: string;
 	ts?: number;
 	status?: number;
+	// Secondes, à virgule : du premier octet reçu au dernier envoyé
+	duration?: number;
 	// Ajouté par log_append : l'en-tête Cf-Ipcountry de Cloudflare
 	country?: string;
 	request?: {
@@ -66,6 +70,10 @@ function parseLine(line: string): AccessEntry | null {
 		host: request.host ?? "",
 		path: request.uri ?? "",
 		status: parsed.status ?? 0,
+		durationMs:
+			parsed.duration === undefined
+				? null
+				: Math.round(parsed.duration * 10_000) / 10,
 	};
 }
 
@@ -134,6 +142,7 @@ export function summarizeAccessLog(
 		topIps: [...byIp.values()]
 			.sort((first, second) => second.requestCount - first.requestCount)
 			.slice(0, TOP_IP_LIMIT),
+		slowestEndpoints: summarizeEndpointTimings(entries, SLOW_ENDPOINT_LIMIT),
 		recentRequests,
 		recentScans,
 	};

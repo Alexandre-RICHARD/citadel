@@ -5,7 +5,12 @@ import { summarizeAccessLog } from "./summarizeAccessLog.ts";
 function accessLine(
 	ip: string,
 	uri: string,
-	options: { host?: string; country?: string; ts?: number } = {},
+	options: {
+		host?: string;
+		country?: string;
+		ts?: number;
+		duration?: number;
+	} = {},
 ): string {
 	return JSON.stringify({
 		level: "info",
@@ -21,6 +26,7 @@ function accessLine(
 		},
 		status: 200,
 		country: options.country ?? "FR",
+		...(options.duration !== undefined && { duration: options.duration }),
 	});
 }
 
@@ -68,6 +74,39 @@ describe("summarizeAccessLog.ts", () => {
 		});
 	});
 
+	describe("endpoint timings", () => {
+		it("SHOULD give the response time of the API calls in milliseconds, slowest endpoint first", () => {
+			const log = [
+				accessLine("1.1.1.1", "/api/backlog/overview", { duration: 0.0123 }),
+				accessLine("1.1.1.1", "/api/backlog/user-games?page=1", {
+					duration: 0.2504,
+				}),
+				accessLine("1.1.1.1", "/api/backlog/user-games?page=2", {
+					duration: 0.1,
+				}),
+			].join("\n");
+
+			const summary = summarizeAccessLog(log, 24, 5000);
+
+			expect(summary.available && summary.slowestEndpoints).toStrictEqual([
+				{
+					endpoint: "GET /api/backlog/user-games",
+					requestCount: 2,
+					medianMs: 100,
+					p95Ms: 250.4,
+					maxMs: 250.4,
+				},
+				{
+					endpoint: "GET /api/backlog/overview",
+					requestCount: 1,
+					medianMs: 12.3,
+					p95Ms: 12.3,
+					maxMs: 12.3,
+				},
+			]);
+		});
+	});
+
 	describe("recent lists", () => {
 		it("SHOULD list site pages and API calls, newest first, WHEN static files and Jellyfin are mixed in", () => {
 			const summary = summarizeAccessLog(LOG, 24, 5000);
@@ -89,6 +128,7 @@ describe("summarizeAccessLog.ts", () => {
 					host: "alexandre-richard.fr",
 					path: "/wp-login.php",
 					status: 200,
+					durationMs: null,
 				},
 			]);
 		});

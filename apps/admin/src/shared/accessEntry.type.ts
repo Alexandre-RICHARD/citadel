@@ -10,4 +10,6 @@ export type AccessEntry = {
 	host: string;
 	path: string;
 	status: number;
+	// Durée vue par Caddy, en ms ; null si la ligne n'en porte pas
+	durationMs: number | null;
 };
