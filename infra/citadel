@@ -14,7 +14,7 @@
 #   citadel docker-cleanup             supprime les images inutiles (pas celles des retours arrière)
 #   citadel limits <conteneur> <mémoire en octets> <cpus>   change ses limites, à chaud
 #   citadel limits-reset <conteneur>   le recrée, avec les limites de compose.yml
-#   citadel version                    la version en service, seule (lue par pnpm release)
+#   citadel version                    la version en service, seule (lue par pnpm tools release)
 #   citadel maintenance on|off         le site affiche sa page de maintenance, ou plus
 #   citadel banner <message>|off       le bandeau du site, ou plus de bandeau
 #   citadel admin-password             fabrique ADMIN_PASSWORD_HASH (mot de passe de la console)

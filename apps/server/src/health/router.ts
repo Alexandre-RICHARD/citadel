@@ -25,7 +25,7 @@ async function sendHealth(response: Response): Promise<void> {
 
 const healthRouter = Router();
 
-// Hors des endpoints typés de specs : lu par des scripts (citadel deploy, pnpm release, healthcheck Docker),
+// Hors des endpoints typés de specs : lu par des scripts (citadel deploy, pnpm tools release, healthcheck Docker),
 // et sa réponse 503 garde le même format que la 200
 healthRouter.get("/health", (_request, response) => {
 	void sendHealth(response);

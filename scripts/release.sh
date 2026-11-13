@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # =====================================================================================
-# release.sh : lancé par `pnpm release`, sur ton PC, dans Git Bash
+# release.sh : lancé par `pnpm tools release`, sur ton PC, dans Git Bash
 # =====================================================================================
 #
-#   pnpm release             valide, tague, pousse, attend les images, déploie
-#   pnpm release --dry-run   s'arrête juste avant de créer le tag : rien ne part
-#   Sans argument, depuis un terminal (aussi via `pnpm tools release`), il demande lequel des deux.
+#   pnpm tools release             demande « réelle » ou « simulation » ; la réelle valide, tague, pousse, attend les images, déploie
+#   pnpm tools release --dry-run   la simulation directe : s'arrête juste avant de créer le tag, rien ne part
 #
 # Les étapes :
 #   1. Vérifications : branche main, rien de non commité, pas de retard sur GitHub.
@@ -199,7 +198,7 @@ for ((poll = 0; poll < POLL_MAX; poll++)); do
 			shown_url=$url
 		fi
 		[[ $status != completed || $conclusion == success ]] ||
-			die "images.yml a échoué ($conclusion) : $url. Le NAS n'a pas bougé ; corrige, commite, relance pnpm release"
+			die "images.yml a échoué ($conclusion) : $url. Le NAS n'a pas bougé ; corrige, commite, relance pnpm tools release"
 	fi
 	line="workflow $status, images publiées : $published/$total"
 	if [[ $line != "$last_line" ]]; then

@@ -8,7 +8,7 @@
 #                                alors s'il faut relancer quand même)
 #   pnpm validate-all --force    valide tout, même si rien n'a changé
 #
-# C'est la validation d'avant mise en prod (pnpm release la lance), pas celle du dev
+# C'est la validation d'avant mise en prod (pnpm tools release la lance), pas celle du dev
 # courant : elle est longue. Pendant le dev, lint, check-types et les tests concernés
 # suffisent.
 #

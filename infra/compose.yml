@@ -712,7 +712,7 @@ services:
   # façon de les lancer ; les mises à jour viendront ensuite, une par une. Exception,
   # Gluetun : le NAS avait une version de développement (« latest » d'avril), remplacée
   # par la version publiée suivante (il ne garde aucune donnée). Mettre à jour = changer le tag
-  # ici, commiter, pnpm release ; revenir en arrière = citadel rollback. Attention : les
+  # ici, commiter, pnpm tools release ; revenir en arrière = citadel rollback. Attention : les
   # *arr et Jellyfin migrent leur base en démarrant sur une version plus récente, et ne
   # savent pas revenir à l'ancienne. Avant une grosse mise à jour d'un des leurs, une
   # copie de son dossier /Volume1/appdata/<service> s'impose.

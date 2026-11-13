@@ -2,9 +2,9 @@
 # images.yml : construit les images de Citadel et les publie sur ghcr.io
 # =====================================================================================
 #
-# Déclenché seulement par un tag v* (créé par `pnpm release`) : un commit seul ne lance
+# Déclenché seulement par un tag v* (créé par `pnpm tools release`) : un commit seul ne lance
 # rien, puisque tu travailles sur main. Pas de validate-all ici : tu le lances avant
-# chaque push, et `pnpm release` le relance avant de créer le tag.
+# chaque push, et `pnpm tools release` le relance avant de créer le tag.
 #
 # Une image par étape (« target ») du Dockerfile de la racine, construites en parallèle,
 # publiées sous ghcr.io/alexandre-richard/citadel-<image>:<tag>. Le NAS les télécharge
