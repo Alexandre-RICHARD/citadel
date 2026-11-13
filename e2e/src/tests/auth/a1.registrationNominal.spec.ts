@@ -100,7 +100,7 @@ test.describe("Inscription", () => {
 			).toBeVisible();
 		});
 
-		// PROBLÈME (voir e2e/problemes.md, P1) : scenarios.md attend /backlog, mais l'onglet du lien n'a pas la page
+		// PROBLÈME (voir docs/todo/todo.md, §8) : scenarios.md attend /backlog, mais l'onglet du lien n'a pas la page
 		// demandée au départ (gardée dans le sessionStorage de l'onglet d'origine) : il atterrit sur le profil
 		await test.step("« Passer cette étape » mène hors de l'étape, connecté (profil : l'onglet du lien ignore la page demandée)", async () => {
 			await verifyPage
