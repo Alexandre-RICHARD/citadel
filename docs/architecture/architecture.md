@@ -71,7 +71,7 @@ Monorepo pnpm. Chaque projet du site (Game Death Counter, Backlog…) a le même
 
 - Un seul dépôt, une seule branche de mise en production : `main`. `pnpm tools release` exige d'être dessus, sans rien de non commité, et à jour avec GitHub.
 - Message de commit en français, sous la forme `sujet : ce qui change`, le sujet étant la partie touchée (`docs`, `e2e`, `console`, `tableau`, `auth`…). Un commit par changement cohérent : l'historique se relit.
-- Une version est un tag `vAAAA.MM.JJ.NN` (`v2026.11.07.01`, puis `.02` le même jour), créé par `pnpm tools release` et porté par toutes les images ([hébergement, §2](../ci_cd/ci_cd.md#2-contraintes)).
+- Une version est un tag `vAAAA.MM.JJ.NN` (`v2026.11.07.01`, puis `.02` le même jour), créé par `pnpm tools release` et porté par toutes les images ([infra, §2](../infra/infra.md#2-contraintes)).
 
 ## 3. Specs
 
@@ -231,11 +231,11 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 
 - **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node), `node/` (serveur et console, jamais le front). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
 - **Où ranger une fonction** : générique (rien d'un projet ni du métier) dans `common` ; propre à un projet mais partagée par le front et le serveur dans `specs/…/helper/` ; propre à une app dans son `helper/` (ou `common/` de l'app). Une fonction pure ne reste pas dans un composant : elle en sort, testée.
-- **`design-system`** (détaillé dans [design system](../designSystem/designSystem.md)) : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../mails/mails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
+- **`design-system`** (détaillé dans [design system](../designSystem/designSystem.md)) : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../emails/emails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 
 ## 7. Console d'administration
 
-`apps/admin`, détaillée dans [console d'administration](../admin/admin.md) : un seul paquet et un seul `tsconfig`, avec `src/server/` (Express, un dossier par source : docker, torrent, vpn, access, deadlines…), `src/client/` (React, design system) et `src/shared/` (types échangés entre les deux). Elle n'a pas de base : ses historiques sont des fichiers JSON déposés par `infra-ops`, et ses actions passent par des demandes à `infra-ops` ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)).
+`apps/admin`, détaillée dans [console d'administration](../admin/admin.md) : un seul paquet et un seul `tsconfig`, avec `src/server/` (Express, un dossier par source : docker, torrent, vpn, access, deadlines…), `src/client/` (React, design system) et `src/shared/` (types échangés entre les deux). Elle n'a pas de base : ses historiques sont des fichiers JSON déposés par `infra-ops`, et ses actions passent par des demandes à `infra-ops` ([infra, §1](../infra/infra.md#1-fonctionnement)).
 
 ## 8. Infra
 
@@ -263,7 +263,7 @@ Sur le NAS :
 /Volume2/backups/        dumps de la base, archives des configs
 ```
 
-Les fichiers d'infra sont commentés abondamment, en français : pourquoi et comment, même si les commentaires dépassent le code. Le détail des choix est dans ces commentaires ; le mode d'emploi est dans [hébergement](../ci_cd/ci_cd.md).
+Les fichiers d'infra sont commentés abondamment, en français : pourquoi et comment, même si les commentaires dépassent le code. Le détail des choix est dans ces commentaires ; le mode d'emploi est dans [infra](../infra/infra.md).
 
 ## 9. Checklists
 
@@ -288,8 +288,8 @@ Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont 
 | Mot | Sens |
 | --- | --- |
 | Bean | La forme que manipulent les services et les requêtes du serveur. Seuls les contrôleurs voient des DTO, et traduisent de l'un à l'autre (§4) |
-| Brevo | Le fournisseur qui envoie les mails du site ([mails](../mails/mails.md)) |
-| Caddy | Le serveur web du NAS : certificats, routage vers les conteneurs, bandeau du site ([hébergement](../ci_cd/ci_cd.md)) |
+| Brevo | Le fournisseur qui envoie les mails du site ([mails](../emails/emails.md)) |
+| Caddy | Le serveur web du NAS : certificats, routage vers les conteneurs, bandeau du site ([infra](../infra/infra.md)) |
 | Code de secours | Code à usage unique qui remplace le second facteur quand il n'est plus accessible ([authentification](../auth/auth.md)) |
 | Console | L'application `apps/admin` : l'administration du NAS, hors Internet ([architecture, §7](#7-console-dadministration)) |
 | DTO | Data Transfer Object : la forme d'une réponse ou d'un corps de requête, décrite dans les specs, partagée par le front et le serveur (§3) |
@@ -299,10 +299,10 @@ Les mots du dépôt, dans l'ordre alphabétique. Ceux propres à un projet sont 
 | FRM | Ficsit Remote Monitoring : le mod de *Satisfactory* dont la page des machines lit les données ([Satisfactory](../satisfactory/satisfactory.md)) |
 | GDC | Game Death Counter, l'un des projets du site ([Game Death Counter](../gameDeathCounter/gameDeathCounter.md)) |
 | IGDB | La base de données de jeux (celle de Twitch) d'où vient le Backlog ([Backlog, §6](../backlog/backlog.md#6-données-igdb)) |
-| `infra-ops` | Le conteneur du NAS qui lance les jobs et exécute, après vérification, les demandes de la console ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)) |
+| `infra-ops` | Le conteneur du NAS qui lance les jobs et exécute, après vérification, les demandes de la console ([infra, §1](../infra/infra.md#1-fonctionnement)) |
 | Parcours | Une suite d'étapes d'authentification qui s'étend sur plusieurs pages ou mails : inscription, connexion avec second facteur, mot de passe oublié… ([authentification, §4.1](../auth/auth.md#41-commun-à-tous-les-parcours)) |
-| Pré-prod | La copie de la prod, à la demande sur le NAS, où se répètent les déploiements et se teste la restauration ([hébergement, §1](../ci_cd/ci_cd.md#1-fonctionnement)) |
-| `prod:local` | Les images de prod lancées sur votre PC ([hébergement, §4](../ci_cd/ci_cd.md#4-commandes)) |
+| Pré-prod | La copie de la prod, à la demande sur le NAS, où se répètent les déploiements et se teste la restauration ([infra, §1](../infra/infra.md#1-fonctionnement)) |
+| `prod:local` | Les images de prod lancées sur votre PC ([infra, §4](../infra/infra.md#4-commandes)) |
 | Projet | Une partie du site avec sa route, ses specs, son serveur et son front : Game Death Counter, Backlog, Angers Irigo, Satisfactory, Homepage, authentification |
 | Specs | Le paquet `packages/specs` : le contrat entre le front et l'API (§3) |
 | TOS | Le système d'exploitation du NAS (TerraMaster OS) |

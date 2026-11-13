@@ -54,7 +54,7 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | `pnpm validate-all` | Lint, types, tests unitaires, d'intégration et end-to-end, builds, audit. La validation d'avant mise en prod, longue : elle se saute si rien n'a changé depuis son dernier succès (`--force` pour la relancer quand même) |
 | `pnpm db:migrate`, `pnpm db:reset`, `pnpm db:down` | Migrations seules ; repartir d'une base de dev vide ; arrêter la base |
 | `pnpm prod:local` | Les images de prod sur votre PC, https://citadel.localhost:8443 (`pnpm prod:local:down` pour arrêter) |
-| `pnpm tools release` | La mise en prod ([hébergement](docs/ci_cd/ci_cd.md#4-commandes)) |
+| `pnpm tools release` | La mise en prod ([infra](docs/infra/infra.md#4-commandes)) |
 | `pnpm tools` | Menu des outils de `scripts/` |
 
 ## 3. Documentation
@@ -73,8 +73,8 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 
 - [Architecture](docs/architecture/architecture.md) : organisation du dépôt et règles communes
 - [Authentification](docs/auth/auth.md) : comptes, sessions, 2FA, RGPD
-- [Mails](docs/mails/mails.md) : envoi, réception, formulaire de contact, DNS
-- [Hébergement et mise en production](docs/ci_cd/ci_cd.md) : NAS, déploiement, sauvegardes, accès
+- [Mails](docs/emails/emails.md) : envoi, réception, formulaire de contact, DNS
+- [Infra](docs/infra/infra.md) : NAS, déploiement, sauvegardes, accès
 - [Console d'administration](docs/admin/admin.md) : l'interface de l'hébergement, ce qu'elle lit, ce qu'elle peut faire, sa sécurité
 - [Design system](docs/designSystem/designSystem.md) : composants, thèmes, polices, Storybook
 

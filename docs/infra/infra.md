@@ -1,8 +1,8 @@
-# Hébergement et mise en production
+# Infra
 
-[Citadel](../../README.md) › Hébergement et mise en production
+[Citadel](../../README.md) › Infra
 
-Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de votre PC : GitHub construit les images, le NAS les télécharge et les déploie après votre confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les mails sont dans [mails](../mails/mails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#4-hébergement-et-console).
+Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN) et la console d'administration tournent sur le NAS, dans un seul projet Docker Compose (`infra/compose.yml`). Caddy reçoit le trafic web et gère les certificats. Une mise en prod part de votre PC : GitHub construit les images, le NAS les télécharge et les déploie après votre confirmation. Le détail des choix est commenté dans les fichiers d'`infra/` ; les mails sont dans [mails](../emails/emails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#4-hébergement-et-console).
 
 ## Sommaire
 
@@ -138,7 +138,7 @@ Dans `infra/ops/crontab`. `citadel <job>` en lance un tout de suite, comme le bo
 | Chaque nuit, 4 h 30 | `vpn-leak-test` | IP de sortie et DNS des téléchargements, par le VPN |
 | Chaque nuit, 5 h | `db-backup`, puis `db-restore-test` | §7.1 |
 | Lundi, 3 h | `config-backup`, puis `config-verify` | §7.1 |
-| Chaque soir, 23 h 50 | `contact-retry` | relance des messages de contact en attente ([mails, §6](../mails/mails.md#6-côté-serveur)) |
+| Chaque soir, 23 h 50 | `contact-retry` | relance des messages de contact en attente ([mails, §6](../emails/emails.md#6-côté-serveur)) |
 
 ## 8. Accès au Drive (rclone)
 

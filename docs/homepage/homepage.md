@@ -35,7 +35,7 @@ La page tient dans l'écran, sans défilement global :
 - **Adresses** : la sélection est dans l'adresse (`/homepage/backlog`) : le retour du navigateur ramène à la présentation précédente, et un lien vers un projet se partage. Les pages du footer aussi (`/homepage/mentions-legales`), affichées dans le conteneur principal ; Échap (hors saisie) les ferme et revient à la présentation d'où l'on venait. Une adresse inconnue sous `/homepage` mène à l'accueil.
 - **Header** : logo hexagonal et « La Citadel d'Alex », qui donne aussi le titre de l'onglet ; choix clair / sombre ; compte ([authentification, §4.10](../auth/auth.md#410-dans-linterface)).
 - **Intro** : le logo et son animation, jouée une fois par onglet ; une touche ou un clic la passe.
-- **Footer** : copyright, lien GitHub vers le dépôt, et les pages « À propos », « Contact » (le [formulaire de contact](../mails/mails.md#4-formulaire-de-contact)), « Mentions légales », « Données personnelles » ([authentification, §8.4](../auth/auth.md#84-la-page-données-personnelles)). Ses liens sont en verre dépoli : presque invisibles sur le fond uni, ils restent lisibles quand un blob passe derrière.
+- **Footer** : copyright, lien GitHub vers le dépôt, et les pages « À propos », « Contact » (le [formulaire de contact](../emails/emails.md#4-formulaire-de-contact)), « Mentions légales », « Données personnelles » ([authentification, §8.4](../auth/auth.md#84-la-page-données-personnelles)). Ses liens sont en verre dépoli : presque invisibles sur le fond uni, ils restent lisibles quand un blob passe derrière.
 
 ## 2. Ambiances
 

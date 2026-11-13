@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Mails
 
-Les mails du site : adresses, envoi par Brevo et son quota, réception de `contact@`, formulaire de contact, DNS, et ce que fait le serveur. Les mails propres à l'authentification sont dans [authentification, §6](../auth/auth.md#6-mails-de-lauthentification) ; l'hébergement, dans [hébergement](../ci_cd/ci_cd.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#3-mails).
+Les mails du site : adresses, envoi par Brevo et son quota, réception de `contact@`, formulaire de contact, DNS, et ce que fait le serveur. Les mails propres à l'authentification sont dans [authentification, §6](../auth/auth.md#6-mails-de-lauthentification) ; l'hébergement, dans [infra](../infra/infra.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#3-mails).
 
 ## Sommaire
 

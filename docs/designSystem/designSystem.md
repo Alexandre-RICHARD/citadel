@@ -23,7 +23,7 @@ Tout est dans `src/`, un dossier par composant (avec son `.module.scss` et sa st
 | `organisms/` | `Selector`, `SideNavigation` (le menu latéral du profil et de Satisfactory), `Toaster` |
 | `theme/` | Thèmes, fournisseur de thème, choix clair ou sombre (§2) |
 | `fonts/`, `styles/` | Polices hébergées, réinitialisation et styles globaux (§3) |
-| `mailPreview/` | L'aperçu des gabarits de mails dans Storybook ([mails, §6](../mails/mails.md#6-côté-serveur)) |
+| `mailPreview/` | L'aperçu des gabarits de mails dans Storybook ([mails, §6](../emails/emails.md#6-côté-serveur)) |
 
 Deux composants portent des règles à retenir :
 

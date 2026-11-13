@@ -75,7 +75,7 @@ La fonctionnalité est décrite dans [authentification](../auth/auth.md). Sa rec
 
 ## 3. Mails
 
-La fonctionnalité est décrite dans [mails](../mails/mails.md).
+La fonctionnalité est décrite dans [mails](../emails/emails.md).
 
 ### 3.1 Délivrabilité
 
@@ -87,7 +87,7 @@ La fonctionnalité est décrite dans [mails](../mails/mails.md).
 
 ## 4. Hébergement et console
 
-Le fonctionnement est décrit dans [hébergement](../ci_cd/ci_cd.md).
+Le fonctionnement est décrit dans [infra](../infra/infra.md).
 
 ### 4.1 NAS et matériel
 
@@ -102,7 +102,7 @@ Le fonctionnement est décrit dans [hébergement](../ci_cd/ci_cd.md).
 
 ### 4.3 Sauvegardes et restauration
 
-- Récupérer réellement un fichier du Drive en le déchiffrant, pour s'assurer que la procédure marche ([hébergement, §8](../ci_cd/ci_cd.md#8-accès-au-drive-rclone)).
+- Récupérer réellement un fichier du Drive en le déchiffrant, pour s'assurer que la procédure marche ([infra, §8](../infra/infra.md#8-accès-au-drive-rclone)).
 - Procédures de restauration écrites et testées : la config d'un service, toute la stack média, la base de prod.
 - Instantanés Btrfs (les deux volumes sont en Btrfs) : retour en arrière après une suppression accidentelle, et coupure plus courte de `config-backup`.
 

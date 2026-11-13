@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Authentification
 
-Comptes utilisateurs partagés entre tous les projets. Chaque utilisateur crée, modifie et supprime **ses** données sans jamais voir celles des autres. Aucun rôle, aucun privilège. Les mails (fournisseur, DNS, `contact@`, quota, IP réelle) sont décrits dans [mails](../mails/mails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#2-authentification).
+Comptes utilisateurs partagés entre tous les projets. Chaque utilisateur crée, modifie et supprime **ses** données sans jamais voir celles des autres. Aucun rôle, aucun privilège. Les mails (fournisseur, DNS, `contact@`, quota, IP réelle) sont décrits dans [mails](../emails/emails.md). Ce qui reste à faire est dans le [todo](../todo/todo.md#2-authentification).
 
 ## Sommaire
 
@@ -241,7 +241,7 @@ Erreurs : `401` (`AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIALS`), `403` (`REGI
 | Verrouillage malveillant d'un compte | Délai et bannissement visent le couple compte + IP : un inconnu ne bloque pas votre compte |
 | Énumération des comptes | Réponses et délais identiques (mails envoyés après la réponse), hash factice, inscription et mot de passe oublié neutres. Les pseudos sont publics par nature |
 | Spam d'inscriptions | Limite par IP, parcours purgés, champ piège caché (honeypot) |
-| Spam de mails, quota épuisé | Délai de renvoi, limites par adresse ou identifiant tapé et par IP (20 par heure, 40 par jour), seuils du quota ([mails, §2](../mails/mails.md#2-envoi)). L'adresse tapée compte en minuscules, car les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux |
+| Spam de mails, quota épuisé | Délai de renvoi, limites par adresse ou identifiant tapé et par IP (20 par heure, 40 par jour), seuils du quota ([mails, §2](../emails/emails.md#2-envoi)). L'adresse tapée compte en minuscules, car les messageries ignorent la casse ; jamais l'email trouvé depuis un pseudo, qui lierait les deux |
 | Rejeu d'un code ou d'un lien | Usage unique, durée courte, essais limités, lien lié au navigateur |
 | Lien de connexion détourné | Lien lié au navigateur, clic de confirmation. Brevo voit passer les liens qu'il réécrit, sans effet pour la même raison |
 | Vol de session | Cookie `HttpOnly`/`Secure`, CSP, sessions révocables |
@@ -255,7 +255,7 @@ Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et p
 - Succès : immédiat, compteur remis à zéro. Échec : `401`, puis aucun nouvel essai sur ce compte depuis cette IP avant 2 s. Après 15 échecs depuis la même IP sur le même compte : 15 minutes de `429` pour ce couple. Compteur remis à zéro après un succès ou 15 minutes de calme. Pendant un délai : `429` + `Retry-After` ; bouton désactivé avec compte à rebours.
 - Les échecs de l'étape « second facteur » (TOTP, code par mail, code de secours) comptent comme ceux du mot de passe, pour le compte et pour l'IP : relancer des connexions ne donne pas d'essais en plus.
 - Bannissement d'IP : 20 échecs en 10 minutes ou plus de 3 inscriptions par heure → 15 minutes de `429`. En IPv6, il vise le `/64`.
-- L'IP est celle que Caddy a validée ([mails, §6](../mails/mails.md#6-côté-serveur)) : sans elle, tous les visiteurs auraient la même.
+- L'IP est celle que Caddy a validée ([mails, §6](../emails/emails.md#6-côté-serveur)) : sans elle, tous les visiteurs auraient la même.
 - Compteurs en mémoire (une seule instance), remis à zéro à chaque déploiement.
 
 ### 5.3 Détection et journaux
@@ -267,7 +267,7 @@ Les limiteurs visent le compte trouvé, pas le texte tapé : alterner email et p
 
 - **Après la réponse** : les mails des réponses neutres (inscription, connexion par mail, mot de passe oublié, changement d'email) partent une fois la réponse envoyée, sans être attendus. Ni la durée ni un échec ne disent si le compte existe ; un échec va dans `mailing_failure` et les logs, jamais au visiteur.
 - **Quota épuisé** : connexion par mail, mot de passe oublié, changement d'email et activation du facteur mail répondent `403` `MAIL_CLOSED` (« Plus aucun email ne part aujourd'hui, réessaie demain. »), pour tout le monde. À l'étape « second facteur », le code par mail est grisé ; TOTP et codes de secours restent.
-- **Gabarits** : HTML et texte brut, en français, en tutoiement, mise en page de `buildMailBodies`, plusieurs phrases de vrai texte (délivrabilité), lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore cet email ». Chaque gabarit a son type (`MailKindEnum`) et sa story dans le Storybook ([mails, §6](../mails/mails.md#6-côté-serveur)). Les mails de sécurité renvoient vers `contact@` en cas de doute.
+- **Gabarits** : HTML et texte brut, en français, en tutoiement, mise en page de `buildMailBodies`, plusieurs phrases de vrai texte (délivrabilité), lien, durée de validité, « si tu n'es pas à l'origine de cette demande, ignore cet email ». Chaque gabarit a son type (`MailKindEnum`) et sa story dans le Storybook ([mails, §6](../emails/emails.md#6-côté-serveur)). Les mails de sécurité renvoient vers `contact@` en cas de doute.
 
 | Mail | Contenu |
 |---|---|
@@ -319,7 +319,7 @@ Toutes les durées et tous les seuils sont des variables d'environnement, décla
 | `AUTH_RESTORE_JOURNAL_DIR` | `/var/lib/citadel/restore-journal` (image) ; `./.local/restore-journal` en dev |
 | `AUTH_PURGE_INTERVAL_MINUTES` | 15 |
 
-Les variables des mails (`MAIL_*`, `CONTACT_HOURLY_LIMIT_PER_IP`, `BREVO_*`) sont dans [mails, §6](../mails/mails.md#6-côté-serveur).
+Les variables des mails (`MAIL_*`, `CONTACT_HOURLY_LIMIT_PER_IP`, `BREVO_*`) sont dans [mails, §6](../emails/emails.md#6-côté-serveur).
 
 **Secrets** (`.env.prod` + Bitwarden, créés avant d'être écrits) : `AUTH_CODE_HMAC_KEY` ; `AUTH_TOTP_ENCRYPTION_KEY` et sa version (`AUTH_TOTP_ENCRYPTION_KEY_VERSION`) ; `AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY`, vide hors rotation. `pnpm tools generateAuthSecrets` les génère. Le serveur refuse de démarrer, en nommant la variable fautive, si une clé manque ou n'a pas 64 caractères hexadécimaux, ou si une clé précédente est donnée sans être différente de l'actuelle avec une version d'au moins 2. Chaque variable va dans `.env.example` (`[secret]` devant chaque secret) et dans `infra/compose.yml` (`site-prod-server`) ; `prod:local` reçoit des clés factices.
 
