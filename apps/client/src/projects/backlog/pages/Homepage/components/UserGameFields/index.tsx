@@ -233,12 +233,12 @@ export function UserGameFields({
 				<SegmentedControl<EndingTypeEnum | typeof NO_ENDING_TYPE>
 					value={draft.endingType ?? NO_ENDING_TYPE}
 					options={[
+						{ value: NO_ENDING_TYPE, label: noEndingTypeLabel.label },
 						...Object.values(EndingTypeEnum).map((endingType) => ({
 							value: endingType,
 							label: endingTypeLabels[endingType].label,
 							icon: endingTypeIcons[endingType],
 						})),
-						{ value: NO_ENDING_TYPE, label: noEndingTypeLabel.label },
 					]}
 					ariaLabel="Type de fin"
 					onChange={(choice) =>

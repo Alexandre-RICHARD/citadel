@@ -39,11 +39,6 @@ export function EndingTypeCell({ row, table }: Props) {
 		<Select<EndingTypeEnum | typeof NO_ENDING_TYPE>
 			value={row.endingType ?? NO_ENDING_TYPE}
 			options={[
-				...Object.values(EndingTypeEnum).map((endingType) => ({
-					value: endingType,
-					label: endingTypeLabels[endingType].label,
-					content: <EndingTypeLabel endingType={endingType} />,
-				})),
 				{
 					value: NO_ENDING_TYPE,
 					label: noEndingTypeLabel.label,
@@ -51,6 +46,11 @@ export function EndingTypeCell({ row, table }: Props) {
 					disabled: hasFinishedStatus,
 					hint: hasFinishedStatus ? "un statut de fin l'exige" : undefined,
 				},
+				...Object.values(EndingTypeEnum).map((endingType) => ({
+					value: endingType,
+					label: endingTypeLabels[endingType].label,
+					content: <EndingTypeLabel endingType={endingType} />,
+				})),
 			]}
 			ariaLabel="Type de fin"
 			variant="inline"

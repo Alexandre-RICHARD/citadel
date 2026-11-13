@@ -1,6 +1,5 @@
 import { createUserGameBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userGames/createUserGame/createUserGameBodySchema";
 import { createUserVersionBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodySchema";
-import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
 import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
 import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
@@ -55,7 +54,8 @@ export function AddUserVersionForm({
 	const [customization, setCustomization] = useState<CustomizationDraft>(
 		() => ({
 			imageId: imageIds?.at(0) ?? originalVersion?.coverImageId ?? null,
-			endingType: EndingTypeEnum.STORY,
+			// Facultatif : sans type de fin tant que le joueur n'en choisit pas
+			endingType: null,
 			series: { kind: SeriesChoiceKindEnum.PROPOSED },
 			seriesNumber: null,
 		}),
