@@ -3,7 +3,7 @@ import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNa
 import { pluralize } from "@citadel/common/src/universal/string/pluralize";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import type { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
-import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
 import {
 	Bookmark,
 	type LucideIcon,
@@ -134,9 +134,9 @@ export function UserVersionDataCell({
 					size="sm"
 					onChange={(status) => {
 						updateUserVersion.mutate({ status });
-						// Au rang 5 ou plus sans date de fin, une petite fenêtre la propose
+						// Avec un statut de fin sans date de fin, une petite fenêtre la propose
 						if (
-							isFinishedByPlayingStatus(status) &&
+							isFinishedStatus(status) &&
 							editableUserVersion.finishDate === null
 						)
 							table.openModal({

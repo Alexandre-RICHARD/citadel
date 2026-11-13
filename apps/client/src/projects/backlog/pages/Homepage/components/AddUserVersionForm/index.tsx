@@ -2,7 +2,7 @@ import { createUserGameBodySchema } from "@citadel/specs/src/projects/backlog/en
 import { createUserVersionBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userVersions/createUserVersion/createUserVersionBodySchema";
 import { SeriesChoiceKindEnum } from "@citadel/specs/src/projects/backlog/enum/seriesChoiceKind.enum";
 import { convertStatus } from "@citadel/specs/src/projects/backlog/helper/status/convertStatus";
-import { isFinishedByPlayingStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedByPlayingStatus";
+import { isFinishedStatus } from "@citadel/specs/src/projects/backlog/helper/status/isFinishedStatus";
 import { CopyPlus, LibraryBig } from "lucide-react";
 import { useState } from "react";
 
@@ -37,7 +37,7 @@ type Props = {
 
 /**
  * Ajout au backlog : la personnalisation si le jeu n'y est pas encore, puis version, plateforme
- * et données du joueur. Pour un jeu déjà dans le backlog, « Ajouter une version jouée ». Au rang 5 ou plus sans date de
+ * et données du joueur. Pour un jeu déjà dans le backlog, « Ajouter une version jouée ». Avec un statut de fin sans date de
  * fin, la date est demandée avant l'envoi
  */
 export function AddUserVersionForm({
@@ -117,9 +117,9 @@ export function AddUserVersionForm({
 		else onClose();
 	}
 
-	// Au rang 5 ou plus sans date de fin, la date est demandée avant l'envoi
+	// Avec un statut de fin sans date de fin, la date est demandée avant l'envoi
 	function validate(next: "close" | "addAnother") {
-		if (isFinishedByPlayingStatus(draft.status) && draft.finishDate === null)
+		if (isFinishedStatus(draft.status) && draft.finishDate === null)
 			setAskingFinishDateFor(next);
 		else submit(draft.finishDate, next);
 	}

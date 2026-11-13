@@ -9,7 +9,7 @@ type Props = {
 	onClose: () => void;
 };
 
-// Date de fin d'une version jouée du tableau, après son passage au rang 5 ou plus
+// Date de fin d'une version jouée du tableau, après son passage à un statut de fin
 export function SetFinishDateModal({
 	gameId,
 	userVersionId,
