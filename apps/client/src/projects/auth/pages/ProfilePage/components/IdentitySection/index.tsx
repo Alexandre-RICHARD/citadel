@@ -1,6 +1,6 @@
 import { AUTH_FIELD_LENGTHS } from "@citadel/specs/src/projects/auth/authFieldLengths";
 import { updateMeBodySchema } from "@citadel/specs/src/projects/auth/endpoint/me/updateMe/updateMeBodySchema";
-import { Check, Save, UserRound } from "lucide-react";
+import { Check, Save } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 
 import { checkInput } from "../../../../../../common/validation/checkInput";
@@ -9,18 +9,18 @@ import { useUpdateMe } from "../../../../api/me/useUpdateMe";
 import type { MeFm } from "../../../../api/model/meFm.type";
 import { FormAlert } from "../../../../components/FormAlert";
 import { FormField } from "../../../../components/FormField";
-import { ProfileSection } from "../../../../components/ProfileSection";
 import { SubmitButton } from "../../../../components/SubmitButton";
 import { TextField } from "../../../../components/TextField";
 import { useAuthFailure } from "../../../../hooks/useAuthFailure";
 import { ChangeEmailForm } from "../ChangeEmailForm";
+import { ProfileSubsection } from "../ProfileSubsection";
 import styles from "./identitySection.module.scss";
 
 type Props = {
 	me: MeFm;
 };
 
-// Le pseudo (définitif), le pseudo affiché (modifiable, vide : le pseudo en tient lieu) et l'adresse email
+// La catégorie Identité : le pseudo (définitif), le pseudo affiché (modifiable, vide : le pseudo en tient lieu) et l'adresse email
 export function IdentitySection({ me }: Props) {
 	const fieldId = useId();
 	const [displayName, setDisplayName] = useState(me.customDisplayName ?? "");
@@ -57,74 +57,73 @@ export function IdentitySection({ me }: Props) {
 	}
 
 	return (
-		<ProfileSection
-			icon={<UserRound />}
-			title="Identité"
-			lead="Ton pseudo ne change pas ; le pseudo affiché, si."
-		>
-			<dl className={styles.facts}>
-				<div>
-					<dt>Pseudo</dt>
-					<dd>{me.username}</dd>
-				</div>
-				<div>
-					<dt>Adresse email</dt>
-					<dd>{me.email}</dd>
-				</div>
-			</dl>
-			<form
-				className={styles.form}
-				onSubmit={handleSubmit}
-				noValidate
+		<>
+			<ProfileSubsection
+				title="Pseudo"
+				lead="Ton pseudo ne change pas ; le pseudo affiché, si."
 			>
-				<FormField
-					label="Pseudo affiché"
-					htmlFor={`${fieldId}-display-name`}
+				<p className={styles.value}>{me.username}</p>
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					noValidate
 				>
-					<TextField
-						id={`${fieldId}-display-name`}
-						value={displayName}
-						onChange={(value) => {
-							setDisplayName(value);
-							setIsSaved(false);
-						}}
-						autoComplete="nickname"
-						maxLength={AUTH_FIELD_LENGTHS.displayNameMax * 2}
-						isInvalid={!check.isValid}
-					/>
+					<div className={styles.row}>
+						<FormField
+							label="Pseudo affiché"
+							htmlFor={`${fieldId}-display-name`}
+						>
+							<TextField
+								id={`${fieldId}-display-name`}
+								value={displayName}
+								onChange={(value) => {
+									setDisplayName(value);
+									setIsSaved(false);
+								}}
+								autoComplete="nickname"
+								maxLength={AUTH_FIELD_LENGTHS.displayNameMax * 2}
+								isInvalid={!check.isValid}
+							/>
+						</FormField>
+						<SubmitButton
+							label="Enregistrer"
+							pendingLabel="Enregistrement…"
+							icon={<Save aria-hidden />}
+							isPending={updateMe.isPending}
+							waitUntil={waitUntil}
+							isDisabled={!check.isValid || isUnchanged}
+						/>
+					</div>
 					<p className={styles.hint}>
 						Accents, espaces et symboles permis. Laisse vide pour afficher ton
 						pseudo.
 					</p>
-				</FormField>
-				{!check.isValid && <FormAlert tone="error">{check.message}</FormAlert>}
-				{failure !== null && (
-					<FormAlert
-						tone="error"
-						onRetry={failure.retry}
-					>
-						{failure.message}
-					</FormAlert>
-				)}
-				{isSaved && (
-					<FormAlert tone="info">
-						<Check
-							aria-hidden
-							className={styles.check}
-						/>{" "}
-						Pseudo affiché enregistré.
-					</FormAlert>
-				)}
-				<SubmitButton
-					label="Enregistrer"
-					pendingLabel="Enregistrement…"
-					icon={<Save aria-hidden />}
-					isPending={updateMe.isPending}
-					waitUntil={waitUntil}
-					isDisabled={!check.isValid || isUnchanged}
-				/>
-			</form>
-			<ChangeEmailForm />
-		</ProfileSection>
+					{!check.isValid && (
+						<FormAlert tone="error">{check.message}</FormAlert>
+					)}
+					{failure !== null && (
+						<FormAlert
+							tone="error"
+							onRetry={failure.retry}
+						>
+							{failure.message}
+						</FormAlert>
+					)}
+					{isSaved && (
+						<FormAlert tone="info">
+							<Check
+								aria-hidden
+								className={styles.check}
+							/>{" "}
+							Pseudo affiché enregistré.
+						</FormAlert>
+					)}
+				</form>
+			</ProfileSubsection>
+			<ProfileSubsection title="Adresse email">
+				<p className={styles.value}>{me.email}</p>
+				<ChangeEmailForm />
+			</ProfileSubsection>
+		</>
 	);
 }

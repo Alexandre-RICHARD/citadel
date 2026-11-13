@@ -1,0 +1,44 @@
+// L'initiale occupe la même boîte de 40px que les icônes du menu : elle reste en place quand le menu se replie
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.4rem 0 1rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid vars.$border-soft;
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, vars.$decoration-1, vars.$decoration-2);
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.names {
+  display: grid;
+  min-width: 0;
+  padding: 0 1rem 0 0.8rem;
+  white-space: nowrap;
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  strong {
+    font-size: 1.45rem;
+  }
+
+  span {
+    color: vars.$muted;
+    font-size: 1.25rem;
+  }
+}

@@ -103,7 +103,8 @@
     justify-self: stretch;
   }
 
-  > button {
+  // Plus précis que la règle du dessus : le bouton garde sa largeur
+  > button:not(:first-child) {
     justify-self: start;
   }
 }

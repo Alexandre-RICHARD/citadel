@@ -1,6 +1,6 @@
 import { FactorTypeEnum } from "@citadel/specs/src/projects/auth/enum/factorType.enum";
 import { AuthErrorCodeEnum } from "@citadel/specs/src/projects/auth/error/authErrorCode.enum";
-import { Database, Download, Trash2 } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -12,7 +12,6 @@ import { useDeleteAccount } from "../../../../api/me/useDeleteAccount";
 import { FormAlert } from "../../../../components/FormAlert";
 import { FormField } from "../../../../components/FormField";
 import { PasswordConfirmForm } from "../../../../components/PasswordConfirmForm";
-import { ProfileSection } from "../../../../components/ProfileSection";
 import { TextField } from "../../../../components/TextField";
 import { readSecondFactorAnswer } from "../../../../helper/secondFactor/readSecondFactorAnswer";
 import { ProjectDataDeletion } from "../ProjectDataDeletion";
@@ -21,7 +20,7 @@ import styles from "./dataSection.module.scss";
 // Un simple lien : le navigateur le télécharge avec le cookie de session, sans passer par une requête de la page
 const EXPORT_URL = "/api/auth/me/export";
 
-// Mes données : le téléchargement de tout ce que le site garde sur le compte, la suppression des données d'un projet, et
+// La catégorie Mes données : le téléchargement de tout ce que le site garde sur le compte, la suppression des données d'un projet, et
 // la suppression du compte, immédiate et définitive. Avec une application d'authentification, un de ses codes (ou un code de secours) est demandé en plus du mot
 // de passe
 export function DataSection() {
@@ -45,11 +44,7 @@ export function DataSection() {
 	}
 
 	return (
-		<ProfileSection
-			icon={<Database />}
-			title="Mes données"
-			lead="Tout ce que le site garde sur ton compte t’appartient."
-		>
+		<>
 			<div className={styles.export}>
 				<a
 					className={styles.download}
@@ -136,6 +131,6 @@ export function DataSection() {
 					</button>
 				)}
 			</div>
-		</ProfileSection>
+		</>
 	);
 }

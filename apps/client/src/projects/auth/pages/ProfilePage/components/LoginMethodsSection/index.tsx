@@ -1,11 +1,11 @@
 import { LoginMethodEnum } from "@citadel/specs/src/projects/auth/enum/loginMethod.enum";
-import { LogIn, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 
 import { useUpdateMe } from "../../../../api/me/useUpdateMe";
 import type { MeFm } from "../../../../api/model/meFm.type";
 import { FormAlert } from "../../../../components/FormAlert";
-import { ProfileSection } from "../../../../components/ProfileSection";
 import { useAuthFailure } from "../../../../hooks/useAuthFailure";
+import { ProfileSubsection } from "../ProfileSubsection";
 import styles from "./loginMethodsSection.module.scss";
 
 type Props = {
@@ -61,8 +61,7 @@ export function LoginMethodsSection({ me }: Props) {
 	}
 
 	return (
-		<ProfileSection
-			icon={<LogIn />}
+		<ProfileSubsection
 			title="Méthodes de connexion"
 			lead="Je préfère pouvoir me connecter :"
 		>
@@ -106,6 +105,6 @@ export function LoginMethodsSection({ me }: Props) {
 					{failure.message}
 				</FormAlert>
 			)}
-		</ProfileSection>
+		</ProfileSubsection>
 	);
 }

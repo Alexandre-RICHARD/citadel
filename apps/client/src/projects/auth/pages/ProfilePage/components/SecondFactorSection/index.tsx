@@ -1,12 +1,5 @@
 import { FactorTypeEnum } from "@citadel/specs/src/projects/auth/enum/factorType.enum";
-import {
-	KeyRound,
-	Mail,
-	RefreshCw,
-	ShieldCheck,
-	Smartphone,
-	Trash2,
-} from "lucide-react";
+import { KeyRound, Mail, RefreshCw, Smartphone, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { useIsMailSendingOpen } from "../../../../../../common/api/mail/useIsMailSendingOpen";
@@ -17,9 +10,9 @@ import { useStartEmailFactor } from "../../../../api/factors/useStartEmailFactor
 import type { FactorFm } from "../../../../api/model/factorFm.type";
 import { FormAlert } from "../../../../components/FormAlert";
 import { PasswordConfirmForm } from "../../../../components/PasswordConfirmForm";
-import { ProfileSection } from "../../../../components/ProfileSection";
 import { TotpSetupForm } from "../../../../components/TotpSetupForm";
 import { useAuthFailure } from "../../../../hooks/useAuthFailure";
+import { ProfileSubsection } from "../ProfileSubsection";
 import styles from "./secondFactorSection.module.scss";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
@@ -68,10 +61,7 @@ export function SecondFactorSection() {
 
 	if (isError)
 		return (
-			<ProfileSection
-				icon={<ShieldCheck />}
-				title="Double authentification"
-			>
+			<ProfileSubsection title="Double authentification">
 				<FormAlert
 					tone="error"
 					onRetry={() => {
@@ -80,21 +70,18 @@ export function SecondFactorSection() {
 				>
 					Impossible de lire ta double authentification.
 				</FormAlert>
-			</ProfileSection>
+			</ProfileSubsection>
 		);
 	if (factors === undefined)
 		return (
-			<ProfileSection
-				icon={<ShieldCheck />}
-				title="Double authentification"
-			>
+			<ProfileSubsection title="Double authentification">
 				<p
 					className={styles.empty}
 					role="status"
 				>
 					Chargement…
 				</p>
-			</ProfileSection>
+			</ProfileSubsection>
 		);
 
 	const hasEmailFactor = factors.factors.some(
@@ -103,8 +90,7 @@ export function SecondFactorSection() {
 	const hasFactor = factors.factors.length > 0;
 
 	return (
-		<ProfileSection
-			icon={<ShieldCheck />}
+		<ProfileSubsection
 			title="Double authentification"
 			lead="Un second code, en plus du mot de passe, protège ton compte si celui-ci fuite."
 		>
@@ -255,6 +241,6 @@ export function SecondFactorSection() {
 					)}
 				</div>
 			)}
-		</ProfileSection>
+		</ProfileSubsection>
 	);
 }

@@ -1,14 +1,34 @@
+// Le menu (240px déplié) et la carte de la catégorie, côte à côte
 .page {
   display: grid;
-  gap: 2.4rem;
+  gap: 1.6rem;
   width: 100%;
-  max-width: 64rem;
+  max-width: 100rem;
   padding-bottom: 4rem;
 }
 
 .title {
   @include vars.display-font;
 
-  font-size: 3rem;
+  font-size: 2.8rem;
   line-height: 1.2;
+
+  @include vars.phone {
+    font-size: 2.4rem;
+  }
+}
+
+// Sur petit écran, à côté du bouton menu : la catégorie ouverte
+.compactTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+
+  svg {
+    flex: none;
+    color: vars.$accent;
+  }
 }

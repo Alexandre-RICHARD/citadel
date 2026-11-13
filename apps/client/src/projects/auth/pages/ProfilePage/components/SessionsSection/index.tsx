@@ -1,13 +1,13 @@
-import { LogOut, MonitorSmartphone } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { useDeleteAllSessions } from "../../../../api/sessions/useDeleteAllSessions";
 import { useDeleteOtherSessions } from "../../../../api/sessions/useDeleteOtherSessions";
 import { useDeleteSession } from "../../../../api/sessions/useDeleteSession";
 import { useSessions } from "../../../../api/sessions/useSessions";
 import { FormAlert } from "../../../../components/FormAlert";
-import { ProfileSection } from "../../../../components/ProfileSection";
 import { describeSessionDevice } from "../../../../helper/session/describeSessionDevice";
 import { useAuthFailure } from "../../../../hooks/useAuthFailure";
+import { ProfileSubsection } from "../ProfileSubsection";
 import styles from "./sessionsSection.module.scss";
 
 const DATE_TIME_FORMAT = new Intl.DateTimeFormat("fr-FR", {
@@ -57,8 +57,7 @@ export function SessionsSection() {
 		deleteSession.isPending || deleteOthers.isPending || deleteAll.isPending;
 
 	return (
-		<ProfileSection
-			icon={<MonitorSmartphone />}
+		<ProfileSubsection
 			title="Sessions actives"
 			lead="Les appareils connectés à ton compte. Une session que tu ne reconnais pas : déconnecte-la, puis change ton mot de passe."
 		>
@@ -94,13 +93,13 @@ export function SessionsSection() {
 								</strong>
 								<span>
 									Dernière activité le{" "}
-									{DATE_TIME_FORMAT.format(session.lastSeenAt)}
+									{DATE_TIME_FORMAT.format(session.lastSeenAt)} · Réseau{" "}
+									{session.ip}
 								</span>
 								<span>
 									Ouverte le {DATE_TIME_FORMAT.format(session.createdAt)} · fin
 									prévue le {DATE_TIME_FORMAT.format(session.expiresAt)}
 								</span>
-								<span>Réseau {session.ip}</span>
 							</div>
 							<button
 								type="button"
@@ -141,6 +140,6 @@ export function SessionsSection() {
 					Tout déconnecter
 				</button>
 			</div>
-		</ProfileSection>
+		</ProfileSubsection>
 	);
 }

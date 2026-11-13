@@ -1,27 +1,28 @@
-.facts {
-  display: grid;
-  gap: 1.2rem;
-
-  dt {
-    color: vars.$muted;
-    font-size: 1.3rem;
-  }
-
-  dd {
-    margin-top: 0.2rem;
-    font-size: 1.6rem;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
+// Le pseudo et l'adresse, en valeur affichée : lisibles d'un coup d'œil, coupés n'importe où s'ils sont trop longs
+.value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .form {
   display: grid;
-  gap: 1.6rem;
+  gap: 1rem;
+}
+
+// Le champ et son bouton sur une ligne ; l'un sous l'autre sur téléphone
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+
+  @include vars.phone {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .hint {
-  margin-top: 0.6rem;
   color: vars.$muted;
   font-size: 1.3rem;
 }

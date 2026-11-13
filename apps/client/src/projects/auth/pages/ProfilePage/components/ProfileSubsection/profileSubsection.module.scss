@@ -1,0 +1,21 @@
+.subsection {
+  display: grid;
+  gap: 1.4rem;
+
+  & + & {
+    padding-top: 2rem;
+    border-top: 1px solid vars.$border-soft;
+  }
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.lead {
+  margin-top: 0.2rem;
+  color: vars.$muted;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}

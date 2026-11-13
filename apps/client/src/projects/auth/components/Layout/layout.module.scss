@@ -5,7 +5,8 @@
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  overflow: hidden;
+  // clip et non hidden : les halos ne débordent pas, et le menu du profil peut rester collé en haut au défilement
+  overflow: clip;
   background: vars.$background;
   color: vars.$text;
   font-family: vars.$font-body;

@@ -1,8 +1,6 @@
-import { SlidersHorizontal } from "lucide-react";
-
 import { pageTransitionsStore } from "../../../../../../react/appNavigation/projectTransition/pageTransitionsStore";
 import { usePageTransitionsDisabled } from "../../../../../../react/appNavigation/projectTransition/usePageTransitionsDisabled";
-import { ProfileSection } from "../../../../components/ProfileSection";
+import { ProfileSubsection } from "../ProfileSubsection";
 import styles from "./preferencesSection.module.scss";
 
 // Les préférences d'affichage, gardées dans ce navigateur (pas dans le compte). Le réglage « réduire les animations »
@@ -11,11 +9,7 @@ export function PreferencesSection() {
 	const isDisabled = usePageTransitionsDisabled();
 
 	return (
-		<ProfileSection
-			icon={<SlidersHorizontal />}
-			title="Affichage"
-			lead="Ces choix restent dans ce navigateur."
-		>
+		<ProfileSubsection title="Affichage">
 			<label className={styles.option}>
 				<input
 					type="checkbox"
@@ -34,6 +28,6 @@ export function PreferencesSection() {
 					</span>
 				</span>
 			</label>
-		</ProfileSection>
+		</ProfileSubsection>
 	);
 }
