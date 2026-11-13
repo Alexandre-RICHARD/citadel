@@ -36,6 +36,7 @@ import { buildUserGameView } from "../view/buildUserGameView.ts";
 import { filterUserGameViews } from "../view/filterUserGameViews.ts";
 import { restrictUserGameViewsToPlatforms } from "../view/restrictUserGameViewsToPlatforms.ts";
 import { sortUserGameViews } from "../view/sortUserGameViews.ts";
+import { sortUserVersionsByActivity } from "../view/sortUserVersionsByActivity.ts";
 
 function userGameNotFound(gameId: number): NotFoundError {
 	return new NotFoundError(
@@ -90,12 +91,15 @@ class UserGameService {
 			filterMode,
 		);
 		// Avec « ou », un jeu peut passer par un autre filtre que la plateforme : toutes ses versions restent
-		const views = sortUserGameViews(
+		const sortedViews = sortUserGameViews(
 			filterMode === FilterModeEnum.AND
 				? restrictUserGameViewsToPlatforms(filteredViews, filters)
 				: filteredViews,
 			sort,
 		);
+		// Sans tri choisi, les versions jouées d'un jeu suivent la même règle que les jeux
+		const views =
+			sort.length === 0 ? sortUserVersionsByActivity(sortedViews) : sortedViews;
 		return {
 			userGames: views
 				.slice((page - 1) * pageSize, page * pageSize)

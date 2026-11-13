@@ -102,6 +102,34 @@ describe("getUserGames", () => {
 			]);
 		});
 
+		it("SHOULD put the version just changed first among the played versions of a game, WHEN there is no sort", async () => {
+			// Arrange
+			const word = buildUniqueWord();
+			const backlogGame = await seedBacklogGame({
+				userId: player.userId,
+				name: `${word} game`,
+				userVersionStatuses: [StatusEnum.STARTED, StatusEnum.STARTED],
+				createdAt: new Date("2026-01-01T00:00:00Z"),
+			});
+			const [firstUserVersionId = 0, secondUserVersionId = 0] =
+				backlogGame.userVersionIds;
+
+			// Act
+			await player.agent
+				.patch(`${ApiPrefixEnum.BACKLOG}/user-versions/${secondUserVersionId}`)
+				.send({ rating: 14 });
+			const response = await player.agent
+				.get(USER_GAMES_URL)
+				.query({ name: word });
+
+			// Assert
+			expect(
+				(response.body as UserGameListDto).userGames[0]?.userVersions.map(
+					({ id }) => id,
+				),
+			).toStrictEqual([secondUserVersionId, firstUserVersionId]);
+		});
+
 		it("SHOULD keep the games with a version in progress WHEN the in progress filter is on", async () => {
 			// Arrange
 			const word = buildUniqueWord();
@@ -364,6 +392,7 @@ describe("getUserGames", () => {
 				name: word,
 				platformIds: [SEEDED_PLATFORMS.PS2],
 				firstReleaseDate: "2004-03-01",
+				createdAt: new Date("2026-01-01T00:00:00Z"),
 			});
 			await insertBacklogRows.userVersion({
 				userId: player.userId,
@@ -382,8 +411,8 @@ describe("getUserGames", () => {
 					({ platform, releaseDate }) => [platform.shortName, releaseDate],
 				),
 			).toStrictEqual([
-				["PS2", "2004-03-01"],
 				["PCSX2", "2004-03-01"],
+				["PS2", "2004-03-01"],
 			]);
 		});
 	});

@@ -12,4 +12,6 @@ export type UserVersionBean = UserVersionDataBean & {
 	platform: PlatformBean;
 	releaseDate: string | null;
 	doneDlcIds: number[];
+	// Dernière création ou modification de cette version jouée : sans tri choisi, la plus récente passe en premier
+	updatedAt: Date;
 };

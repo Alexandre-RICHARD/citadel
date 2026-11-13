@@ -65,6 +65,7 @@ function fromUserVersionEntityToUserVersionBean(
 		estimatedPlayTimeMinutes: userVersion.estimatedPlayTimeMinutes,
 		rating: userVersion.rating,
 		comment: userVersion.comment,
+		updatedAt: userVersion.updatedAt,
 		doneDlcIds: userVersion.doneDlcs
 			.map(({ dlcId }) => dlcId)
 			.toSorted((first, second) => first - second),

@@ -20,6 +20,7 @@ export function buildUserVersionBean(
 		},
 		releaseDate: null,
 		doneDlcIds: [],
+		updatedAt: new Date(0),
 		status: StatusEnum.NOT_STARTED,
 		isOwned: false,
 		isInProgress: false,
