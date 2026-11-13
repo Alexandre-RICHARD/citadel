@@ -25,10 +25,12 @@ export function PreferencesSection() {
 					}
 				/>
 				<span>
-					Désactiver les transitions entre les pages
+					Désactiver les animations de navigation
 					<span className={styles.hint}>
-						Les autres animations restent. Le réglage « réduire les animations »
-						de ton système les coupe déjà.
+						Plus de rideau entre les projets, ni de texte qui tombe ou de fondu
+						sur la page d’accueil : la navigation est plus rapide. Le décor
+						reste animé, sauf si le réglage « réduire les animations » de ton
+						système est actif (il coupe tout).
 					</span>
 				</span>
 			</label>

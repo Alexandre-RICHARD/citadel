@@ -12,6 +12,7 @@ import { Navigate, useNavigate, useParams } from "react-router";
 import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
 import { projects } from "../../../../react/appNavigation/projectsDictionary";
 import { projectTransitionStore } from "../../../../react/appNavigation/projectTransition/projectTransitionStore";
+import { usePageTransitionsDisabled } from "../../../../react/appNavigation/projectTransition/usePageTransitionsDisabled";
 import { AppToaster } from "../../../../react/AppToaster";
 import { ProjectThemeProvider } from "../../../../react/projectTheme/ProjectThemeProvider";
 import { useProjectColorScheme } from "../../../../react/projectTheme/useProjectColorScheme";
@@ -54,6 +55,9 @@ export function Layout() {
 		ProjectsEnum.Homepage,
 	);
 	const reducedMotion = usePrefersReducedMotion();
+	// Le choix du profil coupe les animations de navigation (texte qui tombe, fondus, glissements), pas le décor ni l'intro
+	const isDisabledByProfile = usePageTransitionsDisabled();
+	const isNavigationReduced = reducedMotion || isDisabledByProfile;
 	const isNarrow = useIsNarrow(rootRef);
 
 	// Une adresse inconnue repart vers l'accueil
@@ -71,11 +75,11 @@ export function Layout() {
 		() => pickAmbianceFonts(ambianceTheme),
 		[ambianceTheme],
 	);
-	const displayedFonts = useReskin(rootRef, ambianceFonts, reducedMotion);
+	const displayedFonts = useReskin(rootRef, ambianceFonts, isNavigationReduced);
 	const ambianceDuration = useAmbianceDuration(
 		ambianceProject.id,
 		colorScheme,
-		reducedMotion,
+		isNavigationReduced,
 	);
 
 	// La présentation d'où l'on vient, pour y revenir depuis une page du footer : le projet sélectionné reste celui de la
@@ -112,7 +116,7 @@ export function Layout() {
 		pageRef: pageViewRef,
 		scrollerRef: mainRef,
 		isPage,
-		reducedMotion,
+		reducedMotion: isNavigationReduced,
 	});
 
 	// Le nom du site, précédé du projet ou de la page affichée
@@ -187,7 +191,7 @@ export function Layout() {
 									selectedProject={showcaseProject}
 									isNarrow={isNarrow}
 									isRevealed={isRevealed}
-									reducedMotion={reducedMotion}
+									reducedMotion={isNavigationReduced}
 								/>
 							</div>
 							<div
