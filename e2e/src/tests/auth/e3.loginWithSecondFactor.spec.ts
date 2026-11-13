@@ -21,7 +21,7 @@ test.describe("Double authentification", () => {
 		const { identity, secret } = await createAccountWithTotp(page, "grace");
 
 		await test.step("Ajouter le code par email : trois méthodes seront proposées", async () => {
-			await openProfile(page);
+			await openProfile(page, "Sécurité");
 			await enableEmailFactor(page, identity.email);
 			await backToCitadelFromAuth(page);
 		});

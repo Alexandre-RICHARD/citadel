@@ -34,7 +34,7 @@ test.describe("Double authentification", () => {
 			REMOVED_NOTICE,
 		);
 
-		await openProfile(page);
+		await openProfile(page, "Sécurité");
 
 		await test.step("Ajouter une seconde application, « Téléphone », puis le code par email", async () => {
 			await enableTotp(page, { name: "Téléphone", givesRecoveryCodes: false });
@@ -68,7 +68,7 @@ test.describe("Double authentification", () => {
 				password: identity.password,
 			});
 			await submitSecondFactor(page, computeTotp(secret, 1), "accepted");
-			await openProfile(page);
+			await openProfile(page, "Sécurité");
 			await expect(factorRow(page, "Mon application")).toContainText(
 				/utilisé le \d{1,2} \S+ \d{4}/,
 			);

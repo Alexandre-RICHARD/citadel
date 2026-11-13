@@ -83,7 +83,7 @@ test.describe("Double authentification", () => {
 		});
 
 		await test.step("Depuis le profil : la liste montre l'application, les codes de secours ne reviennent pas", async () => {
-			await openProfile(page);
+			await openProfile(page, "Sécurité");
 			await expect(
 				page.getByRole("heading", { name: "Tes codes de secours" }),
 			).toBeHidden();

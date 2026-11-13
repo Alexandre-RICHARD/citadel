@@ -6,6 +6,7 @@ import { retryUntilAnswered } from "../../helpers/forms/retryUntilAnswered.ts";
 import { waitForMailWithSubject } from "../../helpers/mail/waitForMailWithSubject.ts";
 import { backToCitadel } from "../../helpers/navigation/backToCitadel.ts";
 import { openProfile } from "../../helpers/navigation/openProfile.ts";
+import { openProfileCategory } from "../../helpers/navigation/openProfileCategory.ts";
 import { openProjectFromHomepage } from "../../helpers/navigation/openProjectFromHomepage.ts";
 import { computeTotp } from "../../helpers/totp/computeTotp.ts";
 import { waitForSafeTotpWindow } from "../../helpers/totp/waitForSafeTotpWindow.ts";
@@ -31,8 +32,9 @@ test.describe("Profil : suppression du compte", () => {
 			bossName: "Un boss à effacer",
 		});
 
-		await openProfile(page);
+		await openProfile(page, "Sécurité");
 		const { secret } = await enableTotp(page);
+		await openProfileCategory(page, "Mes données");
 		const deleteButton = page.getByRole("button", {
 			name: "Supprimer définitivement mon compte",
 		});
@@ -116,7 +118,7 @@ test.describe("Profil : suppression du compte", () => {
 		});
 
 		await test.step("Le nouveau compte ne retrouve rien de l'ancien", async () => {
-			await page.getByRole("button", { name: "Annuler" }).click();
+			await page.getByRole("button", { name: "Passer cette étape" }).click();
 			await backToCitadel(page);
 			await openProjectFromHomepage(page, "Game Death Counter");
 			await expect(page.getByText("Aucun jeu enregistré")).toBeVisible();

@@ -27,7 +27,10 @@ test.describe("Profil : mot de passe", () => {
 			CHANGED_NOTICE,
 		);
 
-		await openProfile(page);
+		await openProfile(page, "Sécurité");
+		await page
+			.getByRole("button", { name: "Changer mon mot de passe" })
+			.click();
 		const currentPassword = page.getByRole("textbox", {
 			name: "Mot de passe actuel",
 		});
@@ -38,7 +41,7 @@ test.describe("Profil : mot de passe", () => {
 			name: "Confirmation du mot de passe",
 		});
 		const submit = page.getByRole("button", {
-			name: "Changer mon mot de passe",
+			name: "Enregistrer le nouveau mot de passe",
 		});
 
 		await test.step("Le bouton reste inactif tant que les trois champs ne sont pas cohérents", async () => {

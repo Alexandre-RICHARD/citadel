@@ -17,7 +17,9 @@ test.describe("Connexion", () => {
 
 		await test.step("Un nouvel onglet sur /auth/login est renvoyé vers le profil", async () => {
 			const tab = await openInNewTab(page, E2EUrlEnum.AUTH_LOGIN);
-			await expect(tab).toHaveURL(new RegExp(`${E2EUrlEnum.AUTH_PROFILE}$`));
+			await expect(tab).toHaveURL(
+				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
+			);
 			await expect(
 				tab.getByRole("heading", { level: 1, name: "Ton profil" }),
 			).toBeVisible();

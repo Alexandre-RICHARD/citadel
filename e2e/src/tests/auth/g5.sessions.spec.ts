@@ -33,7 +33,7 @@ test.describe("Profil : sessions", () => {
 		browser,
 	}) => {
 		const identity = await createConnectedAccount(page, "nina");
-		await openProfile(page);
+		await openProfile(page, "Connexion");
 
 		await test.step("Une seule session : « Cette session », ses dates et son réseau, et rien à déconnecter ailleurs", async () => {
 			await expect(sessionRows(page)).toHaveCount(1);

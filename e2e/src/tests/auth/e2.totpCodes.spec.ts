@@ -18,7 +18,7 @@ test.describe("Double authentification", () => {
 	}) => {
 		await waitForSafeTotpWindow();
 		const identity = await createConnectedAccount(page, "frank");
-		await openProfile(page);
+		await openProfile(page, "Sécurité");
 
 		const { secret } =
 			await test.step("Activer avec le code du pas précédent : accepté", async () => {

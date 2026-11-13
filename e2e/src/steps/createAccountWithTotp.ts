@@ -23,7 +23,7 @@ export async function createAccountWithTotp(
 	const identity = await createConnectedAccount(page, label);
 
 	return test.step("Protéger le compte par une application d'authentification", async () => {
-		await openProfile(page);
+		await openProfile(page, "Sécurité");
 		const { secret, recoveryCodes } = await enableTotp(page);
 		await backToCitadelFromAuth(page);
 		return { identity, secret, recoveryCodes };

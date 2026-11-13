@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import { E2EUrlEnum } from "../../dictionaries/e2eUrl.enum.ts";
 import { backToCitadel } from "../../helpers/navigation/backToCitadel.ts";
 import { openInNewTab } from "../../helpers/navigation/openInNewTab.ts";
+import { openProfileCategory } from "../../helpers/navigation/openProfileCategory.ts";
 import { openProjectFromHomepage } from "../../helpers/navigation/openProjectFromHomepage.ts";
 import { createConnectedAccount } from "../../steps/createConnectedAccount.ts";
 import { logIn } from "../../steps/logIn.ts";
@@ -41,10 +42,13 @@ test.describe("Accès aux projets", () => {
 			const tab = await openInNewTab(page, E2EUrlEnum.AUTH_PROFILE);
 			await expect(tab).toHaveURL(loginUrlFor(E2EUrlEnum.AUTH_PROFILE));
 			await logIn(tab, identity);
-			await expect(tab).toHaveURL(new RegExp(`${E2EUrlEnum.AUTH_PROFILE}$`));
+			await expect(tab).toHaveURL(
+				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
+			);
 			await expect(
 				tab.getByRole("heading", { level: 1, name: "Ton profil" }),
 			).toBeVisible();
+			await openProfileCategory(tab, "Connexion");
 			// Sa session est celle du navigateur : on la ferme pour que la suite repasse en visiteur
 			await tab.getByRole("button", { name: "Me déconnecter" }).click();
 			await tab.close();

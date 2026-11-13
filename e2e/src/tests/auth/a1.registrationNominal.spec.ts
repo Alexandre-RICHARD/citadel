@@ -107,7 +107,7 @@ test.describe("Inscription", () => {
 				.getByRole("button", { name: "Passer cette étape" })
 				.click();
 			await expect(verifyPage).toHaveURL(
-				new RegExp(`${E2EUrlEnum.AUTH_PROFILE}$`),
+				new RegExp(`${E2EUrlEnum.AUTH_PROFILE_IDENTITY}$`),
 			);
 			await expect(
 				verifyPage.getByRole("heading", { level: 1, name: "Ton profil" }),

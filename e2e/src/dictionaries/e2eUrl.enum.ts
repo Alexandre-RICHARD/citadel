@@ -19,6 +19,8 @@ export enum E2EUrlEnum {
 	// Où mène le lien des mails
 	AUTH_VERIFY = "/auth/verify",
 	AUTH_PROFILE = "/auth/profile",
+	// La catégorie où le profil s'ouvre
+	AUTH_PROFILE_IDENTITY = "/auth/profile/identity",
 	AUTH_SECURE_ACCOUNT = "/auth/secure-account",
 	// La boîte de réception de tous les mails du site, à ouvrir dans un navigateur
 	MAILPIT_UI = "http://localhost:8025",

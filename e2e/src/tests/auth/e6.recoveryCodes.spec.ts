@@ -35,7 +35,7 @@ async function reachRecoveryCodeStep(
 }
 
 async function expectRemainingCodes(page: Page, text: string): Promise<void> {
-	await openProfile(page);
+	await openProfile(page, "Sécurité");
 	await expect(page.getByText(text)).toBeVisible();
 	await backToCitadelFromAuth(page);
 }
@@ -73,7 +73,7 @@ test.describe("Double authentification", () => {
 
 		const newCodes =
 			await test.step("Refaire les codes : dix nouveaux", async () => {
-				await openProfile(page);
+				await openProfile(page, "Sécurité");
 				const codes = await regenerateRecoveryCodes(page, identity.password);
 				await expect(
 					page.getByText("10 codes de secours utilisables"),
