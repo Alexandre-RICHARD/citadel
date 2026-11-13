@@ -8,9 +8,10 @@ import styles from "./layout.module.scss";
 export function Layout() {
 	return (
 		<ProjectThemeProvider project={ProjectsEnum.Satisfactory}>
-			<Navigation />
-			<div className={styles.satisfctoryLayoutContent}>
-				<Outlet />
+			<div className={styles.satisfctoryLayout}>
+				<Navigation>
+					<Outlet />
+				</Navigation>
 			</div>
 		</ProjectThemeProvider>
 	);

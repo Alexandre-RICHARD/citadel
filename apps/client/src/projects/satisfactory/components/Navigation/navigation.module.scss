@@ -1,138 +1,18 @@
-@use "../../../../styles/zIndex.scss";
+// Le logo du jeu, dans la boîte de 40px des icônes du menu
+.logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  border-radius: var(--theme-radiusM);
 
-$navSideBarWitdthSmall: 50px;
-$navSideBarWitdthLarge: 180px;
-
-// Couleurs : le thème du projet, en clair ou en sombre
-.navigationMenuContainer {
-  --primary: var(--theme-colorPrimaryHue);
-  --background-secondary: var(--theme-colorSurface);
-  --background-secondary-dark: var(--theme-colorSurfaceSunken);
-  --background-secondary-light: var(--theme-colorSurfaceRaised);
-  --text: var(--theme-colorText);
-  --text-muted: var(--theme-colorTextMuted);
-  --navbar-buttons: 2.4rem;
-
-  top: 0;
-  padding: 0;
-  width: $navSideBarWitdthSmall;
-  height: 100vh;
-  position: fixed;
-  background-color: var(--background-secondary);
-  transition: width 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-right: 1px solid var(--theme-colorBorder);
-  z-index: zIndex.$navigationBarZIndex;
-
-  &:hover {
-    width: $navSideBarWitdthLarge;
+  svg {
+    height: 2.6rem;
+    fill: var(--theme-colorText);
   }
 
-  &::-webkit-scrollbar-track {
-    background-color: var(--background-secondary);
+  &:focus-visible {
+    outline: 2px solid var(--theme-colorPrimaryHue);
+    outline-offset: -2px;
   }
-  &::-webkit-scrollbar {
-    width: 8px;
-    background-color: var(--background-secondary);
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--primary);
-  }
-}
-
-@media only screen and (max-width: 756px) {
-  .navigationMenuContainer {
-    --navbar-buttons: 2.2rem;
-  }
-}
-
-.navbarItems {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-}
-
-.navbarLogo {
-  margin: 0 0 2em 0;
-  width: 100%;
-  height: 5em;
-  background: var(--background-secondary-dark);
-
-  > .navbarItemInner {
-    width: calc(#{$navSideBarWitdthSmall} - 8px);
-  }
-  > .navbarItemInner:hover {
-    background-color: transparent;
-  }
-  > .navbarItemInner > svg {
-    height: 2em;
-    fill: var(--text);
-  }
-}
-
-.navbarItem {
-  padding: 0 0.5em;
-  width: 100%;
-  cursor: pointer;
-}
-
-.navbarItemInner {
-  padding: 1em 0;
-  width: 100%;
-  position: relative;
-  color: var(--text-muted);
-  border-radius: 0.25em;
-  text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.175, 0.685, 0.32, 1);
-
-  &:hover {
-    color: var(--text);
-    background: var(--background-secondary-light);
-    box-shadow: 0 17px 30px -10px rgb(0 0 0 / 25%);
-  }
-}
-
-.navbarItemInnerIconWrapper {
-  width: calc(#{$navSideBarWitdthSmall} - 1em - 8px);
-  position: relative;
-
-  ion-icon {
-    position: absolute;
-    font-size: calc(var(--navbar-buttons) - 1rem);
-  }
-}
-
-.linkText {
-  margin: 0;
-  width: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: all 0.35s cubic-bezier(0.175, 0.685, 0.32, 1);
-  overflow: hidden;
-  opacity: 0;
-}
-
-.navigationMenuContainer:hover .linkText {
-  width: calc(100% - (#{$navSideBarWitdthSmall} - 8px));
-  opacity: 1;
-}
-
-.flexbox {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.flexboxLeft {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.flexboxCol {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
 }
