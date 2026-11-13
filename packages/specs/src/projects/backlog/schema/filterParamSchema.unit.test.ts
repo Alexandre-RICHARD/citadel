@@ -8,7 +8,7 @@ describe("filterParamSchema.ts", () => {
 		it.each([
 			{ column: BacklogColumnEnum.NAME, value: "zelda" },
 			{ column: BacklogColumnEnum.RATING, value: "10..18" },
-			{ column: BacklogColumnEnum.OWNED, value: "oui" },
+			{ column: BacklogColumnEnum.OWNED, value: "yes" },
 		])(
 			"SHOULD keep the filter as text WHEN $column is $value",
 			({ column, value }) => {

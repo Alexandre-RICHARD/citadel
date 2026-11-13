@@ -53,7 +53,7 @@ describe("formatFilterParam.ts", () => {
 					kind: ColumnFilterKindEnum.BOOLEAN,
 					value: true,
 				},
-				expected: "oui",
+				expected: "yes",
 			},
 			{
 				reason: "an unchecked box",
@@ -62,7 +62,7 @@ describe("formatFilterParam.ts", () => {
 					kind: ColumnFilterKindEnum.BOOLEAN,
 					value: false,
 				},
-				expected: "non",
+				expected: "no",
 			},
 			{
 				reason: "a number range",

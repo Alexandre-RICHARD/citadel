@@ -1,5 +1,5 @@
 // Écriture du tri et des filtres, la même dans l'URL de la page et dans la query de getUserGames :
-// `?sort=releaseDate:desc,name:asc&series==The+Witcher&rating=10..18&owned=oui`
+// `?sort=releaseDate:desc,name:asc&series==The+Witcher&rating=10..18&owned=yes`
 export enum ViewParamSyntaxEnum {
 	SORT_PARAM = "sort",
 	SORT_SEPARATOR = ",",
@@ -12,6 +12,6 @@ export enum ViewParamSyntaxEnum {
 	RANGE_SEPARATOR = "..",
 	// Valeurs cumulables d'un filtre à liste : `status=finished|platinum`
 	VALUE_SEPARATOR = "|",
-	YES = "oui",
-	NO = "non",
+	YES = "yes",
+	NO = "no",
 }

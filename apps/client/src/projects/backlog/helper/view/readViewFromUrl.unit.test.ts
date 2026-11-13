@@ -10,7 +10,7 @@ describe("readViewFromUrl.ts", () => {
 	describe("readable params", () => {
 		it("SHOULD read the sort and each filter of the URL", () => {
 			expect(
-				readViewFromUrl("?sort=name:desc&owned=oui&series==Zelda"),
+				readViewFromUrl("?sort=name:desc&owned=yes&series==Zelda"),
 			).toStrictEqual({
 				sort: [
 					{ column: BacklogColumnEnum.NAME, direction: SortDirectionEnum.DESC },
@@ -33,7 +33,7 @@ describe("readViewFromUrl.ts", () => {
 		});
 
 		it("SHOULD read the or combination of the filters", () => {
-			expect(readViewFromUrl("?filterMode=or&owned=oui").filterMode).toBe(
+			expect(readViewFromUrl("?filterMode=or&owned=yes").filterMode).toBe(
 				FilterModeEnum.OR,
 			);
 		});

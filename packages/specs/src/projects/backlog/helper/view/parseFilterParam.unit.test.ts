@@ -53,7 +53,7 @@ describe("parseFilterParam.ts", () => {
 			{
 				reason: "a no",
 				column: BacklogColumnEnum.OWNED,
-				text: "non",
+				text: "no",
 				expected: {
 					column: BacklogColumnEnum.OWNED,
 					kind: ColumnFilterKindEnum.BOOLEAN,
@@ -113,9 +113,9 @@ describe("parseFilterParam.ts", () => {
 		it.each([
 			{ reason: "an empty text", column: BacklogColumnEnum.NAME, text: "" },
 			{
-				reason: "a yes in English",
+				reason: "a yes in French",
 				column: BacklogColumnEnum.UP_NEXT,
-				text: "yes",
+				text: "oui",
 			},
 			{
 				reason: "a range without bounds",

@@ -39,7 +39,7 @@ function parseRange<Bound>(
 }
 
 /**
- * Valeur d'un filtre lue dans l'URL ou la query : `zelda`, `=The Witcher`, `finished`, `oui`, `10..18`, `2020-01-01..`.
+ * Valeur d'un filtre lue dans l'URL ou la query : `zelda`, `=The Witcher`, `finished`, `yes`, `10..18`, `2020-01-01..`.
  * `null` si elle est vide, illisible, ou si la colonne n'a pas de filtre
  */
 export function parseFilterParam(

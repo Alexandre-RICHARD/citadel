@@ -31,7 +31,7 @@ describe("buildViewParams.ts", () => {
 
 			expect(Object.entries(params)).toStrictEqual([
 				["sort", "name:desc"],
-				["owned", "oui"],
+				["owned", "yes"],
 				["rating", "10.."],
 			]);
 		});
@@ -65,7 +65,7 @@ describe("buildViewParams.ts", () => {
 
 			expect(Object.entries(params)).toStrictEqual([
 				["filterMode", "or"],
-				["owned", "oui"],
+				["owned", "yes"],
 			]);
 		});
 	});

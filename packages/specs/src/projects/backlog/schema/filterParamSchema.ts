@@ -8,7 +8,7 @@ export function filterParamSchema(column: BacklogColumnEnum) {
 	return z
 		.string({ message: `${column} filter should be a string` })
 		.refine((text) => parseFilterParam(column, text) !== null, {
-			message: `${column} filter is not readable (e.g. "zelda", "=The Witcher", "finished", "oui", "10..18", "2020-01-01..")`,
+			message: `${column} filter is not readable (e.g. "zelda", "=The Witcher", "finished", "yes", "10..18", "2020-01-01..")`,
 		})
 		.optional();
 }

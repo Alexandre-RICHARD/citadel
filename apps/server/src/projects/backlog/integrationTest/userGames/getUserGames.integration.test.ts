@@ -124,7 +124,7 @@ describe("getUserGames", () => {
 			// Act
 			const response = await player.agent
 				.get(USER_GAMES_URL)
-				.query({ name: word, inProgress: "oui" });
+				.query({ name: word, inProgress: "yes" });
 
 			// Assert
 			expect(gameNames(response.body)).toStrictEqual([`${word} in progress`]);
@@ -458,7 +458,7 @@ describe("getUserGames", () => {
 					path: ["rating"],
 					code: ValidationIssueCodeEnum.INVALID_VALUE,
 					message:
-						'rating filter is not readable (e.g. "zelda", "=The Witcher", "finished", "oui", "10..18", "2020-01-01..")',
+						'rating filter is not readable (e.g. "zelda", "=The Witcher", "finished", "yes", "10..18", "2020-01-01..")',
 				},
 			]);
 		});
