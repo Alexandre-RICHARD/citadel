@@ -13,7 +13,7 @@ import { restoreJournalService } from "./restoreJournalService.ts";
 
 /**
  * Les données du compte dans les projets : supprimées une à une par chaque projet, dans l'ordre que demandent ses clés
- * étrangères, jamais laissées aux cascades de auth_user (cahier de l'authentification, §5.1)
+ * étrangères, jamais laissées aux cascades de auth_user (docs/auth/auth.md, §3.1)
  */
 class ProjectDataDeletionService {
 	// Dans la transaction de la suppression du compte, avant le compte lui-même

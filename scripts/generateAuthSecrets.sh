@@ -3,7 +3,7 @@
 # Usage : pnpm tools generateAuthSecrets
 # Ne les écrit nulle part : copie-les dans Bitwarden, puis dans .env.prod. À refaire = tout casser :
 # changer AUTH_TOTP_ENCRYPTION_KEY rend illisibles les secrets de double authentification déjà enregistrés
-# (une rotation passe par AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY et une nouvelle version, voir le cahier de l'auth).
+# (une rotation passe par AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY et une nouvelle version, voir docs/auth/auth.md).
 
 set -euo pipefail
 

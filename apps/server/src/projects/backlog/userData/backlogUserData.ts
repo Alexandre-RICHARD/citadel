@@ -7,7 +7,7 @@ import { UserGame } from "../models/UserGame.ts";
 import { UserVersion } from "../models/UserVersion.ts";
 
 /**
- * Le backlog du compte, enfants d'abord (cahier de l'authentification, §5.1) : ses jeux, ses versions jouées (et par
+ * Le backlog du compte, enfants d'abord (docs/auth/auth.md, §3.1) : ses jeux, ses versions jouées (et par
  * cascade leurs DLC faits), puis ses séries. Un jeu du backlog tient sa série en RESTRICT : laisser les cascades du
  * compte choisir l'ordre ferait échouer la suppression. Les données IGDB, communes, restent
  */

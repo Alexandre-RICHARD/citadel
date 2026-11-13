@@ -19,7 +19,7 @@ type ReadJournal = {
 };
 
 /**
- * Le journal de restauration (cahier de l'authentification, §10.5) : une ligne JSON par suppression, changement d'email
+ * Le journal de restauration (docs/auth/auth.md, §8.3) : une ligne JSON par suppression, changement d'email
  * ou de sécurité, hors de la base pour qu'une sauvegarde restaurée ne l'efface pas, puis rejouée après elle
  */
 class RestoreJournalService {

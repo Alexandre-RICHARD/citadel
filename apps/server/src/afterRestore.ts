@@ -16,7 +16,7 @@ const backupDateSchema = z.iso
 	.transform((date) => new Date(date));
 
 /**
- * La commande « après restauration » (cahier de l'authentification, §10.5), lancée par citadel restore-db, serveur
+ * La commande « après restauration » (docs/auth/auth.md, §8.3), lancée par citadel restore-db, serveur
  * arrêté, base tout juste restaurée : `node build/afterRestore.cjs <date de la sauvegarde>`. Les sessions et les
  * parcours d'abord (une session révoquée depuis la sauvegarde y est encore), puis le journal rejoué
  */

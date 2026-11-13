@@ -26,7 +26,7 @@ type JournalAccount = Pick<RestoreJournalLineBean, "userId" | "username">;
 type SecurityChange = JournalAccount & { lineCount: number };
 
 /**
- * Après une restauration de la base (cahier de l'authentification, §10.5) : ce que la sauvegarde a fait oublier est
+ * Après une restauration de la base (docs/auth/auth.md, §8.3) : ce que la sauvegarde a fait oublier est
  * refait depuis le journal. Une ligne par transaction, dans l'ordre où elles ont eu lieu, sur le compte qu'elle désigne
  * (même identifiant ET même pseudo), jamais sur un autre qui aurait repris son identifiant
  */

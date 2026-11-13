@@ -14,7 +14,7 @@ import { passwordService } from "./passwordService.ts";
 import { restoreReplayService } from "./restoreReplayService.ts";
 
 // Les lignes sont données au rejeu : il ne touche qu'aux comptes de chaque test, jamais à ceux des tests voisins.
-// closeEverySessionAndFlow vide les tables pour tous : il se vérifie en prod:local (cahier, §17)
+// closeEverySessionAndFlow vide les tables pour tous : il se vérifie en prod:local (docs/e2e/auth_verifications.md)
 const AT = new Date("2026-11-05T10:00:00.000Z");
 // Un identifiant qu'aucun compte des tests n'atteint
 const MISSING_USER_ID = 2_000_000_000;
