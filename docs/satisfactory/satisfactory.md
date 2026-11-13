@@ -13,7 +13,7 @@ Outils pour le jeu *Satisfactory*, sur la route `/satisfactory`, publique. Seule
 ## 1. Fonctionnement
 
 - **Source** : le serveur web du mod Ficsit Remote Monitoring (FRM), qui tourne avec la partie, sur `http://localhost:8080`. La page l'appelle directement depuis le navigateur, sans passer par l'API de Citadel : elle ne marche que sur le PC où le jeu tourne.
-- **Navigation** : homepage, recipes, calculator, machines, settings, et le choix clair / sombre. Les pages autres que les machines sont provisoires.
+- **Navigation** : le menu latéral du design system (`SideNavigation`), collé au bord gauche : le logo, les outils (homepage, recipes, calculator, machines) en haut ; settings, le choix clair / sombre et le retour à la Citadel en bas. Déplié par défaut, il se replie en colonne d'icônes qui s'ouvre au survol (choix retenu dans le navigateur, clé `citadel:satisfactory:navigation`) et passe derrière un bouton menu sous 768 px. Les pages autres que les machines sont provisoires.
 - **Machines** (`/satisfactory/frm/all-machines`) : extracteurs, usines et générateurs relus toutes les 5 s, puits AWESOME (ressources et exploration) toutes les 30 s. Tableau trié par efficacité croissante (nom, surcadençage, efficacité, consommation, production, coordonnées), filtre « Uniquement les non efficient », brûleurs de biomasse du HUB ignorables (retirés aussi de la moyenne), moyenne d'efficacité, points restants avant le prochain coupon. Un clic sur des coordonnées pose un ping dans le jeu (`createPing`).
 - Serveur de jeu injoignable : la page reste affichée, tableau vide, sans message.
 

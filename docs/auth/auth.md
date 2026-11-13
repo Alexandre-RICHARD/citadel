@@ -166,13 +166,14 @@ Email ou pseudo → réponse neutre → mail (lien + code) à l'adresse du compt
 
 ### 4.6 Profil
 
-Page `/auth/profile` :
+Page `/auth/profile`, en cinq catégories qu'un menu à gauche propose (`SideNavigation` du design system), une adresse chacune : `/auth/profile` mène à Identité, une adresse inconnue aussi. Le menu se replie en colonne d'icônes (choix retenu dans le navigateur, clé `citadel:auth:profileNavigation`) et passe derrière un bouton menu sous 768 px. Une catégorie est une carte, ses parties des sous-titres ; les formulaires de changement (email, mot de passe) sont repliés derrière un bouton.
 
-- **Identité** : pseudo (définitif), pseudo affiché (modifiable, vide = pseudo), email.
-- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne. Même adresse (même en majuscules) : `400` `EMAIL_UNCHANGED`. Adresse déjà inscrite : même réponse, et le mail à cette adresse dit qu'un autre compte a voulu la prendre, sans lien ni code. Prise entre-temps : `409` `EMAIL_TAKEN`.
-- **Mot de passe** : ancien + nouveau deux fois ; toutes les autres sessions supprimées.
-- **Sécurité** : facteurs 2FA, codes de secours, méthodes de connexion.
-- **Sessions actives** (§4.8) et **Mes données** (§4.9).
+- **Identité** (`/auth/profile/identity`) : pseudo (définitif), pseudo affiché (modifiable, vide = pseudo), email.
+- **Email** : mot de passe, puis lien + code à la **nouvelle** adresse ; remplacement après validation ; notification à l'ancienne. Même adresse (même en majuscules) : `400` `EMAIL_UNCHANGED`. Adresse déjà inscrite : même réponse, et le mail à cette adresse dit qu'un autre compte a voulu la prendre, sans lien ni code. Prise entre-temps : `409` `EMAIL_TAKEN`. Le parcours terminé ramène à Identité.
+- **Connexion** (`/auth/profile/login`) : méthodes de connexion acceptées, sessions actives (§4.8).
+- **Sécurité** (`/auth/profile/security`) : mot de passe (ancien + nouveau deux fois ; toutes les autres sessions supprimées), facteurs 2FA et codes de secours (§4.7). L'activation du code par email ramène ici.
+- **Mes données** (`/auth/profile/data`) : export et suppressions (§4.9).
+- **Préférences** (`/auth/profile/preferences`) : l'affichage, gardé dans ce navigateur (couper les animations de navigation).
 - **Actions sensibles** (mot de passe, email, suppression d'un facteur, régénération des codes de secours, suppression de données ou du compte) : mot de passe redemandé, et second facteur en plus pour supprimer le compte. Faux, il répond `400` `WRONG_PASSWORD`, pas `401`, qui voudrait dire « plus de session » ; ses échecs comptent comme ceux de la connexion.
 
 ### 4.7 Double authentification

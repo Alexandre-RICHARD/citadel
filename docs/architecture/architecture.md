@@ -223,7 +223,7 @@ Uniquement des tests unitaires de fonctions pures : mappers DTO → FM, fonction
 
 - **`common`** : `universal/` (ni DOM ni Node), `browser/` et `react/` (pas de Node), `node/` (serveur et console, jamais le front). ESLint interdit à chaque dossier ce que son environnement ne fournit pas.
 - **Où ranger une fonction** : générique (rien d'un projet ni du métier) dans `common` ; propre à un projet mais partagée par le front et le serveur dans `specs/…/helper/` ; propre à une app dans son `helper/` (ou `common/` de l'app). Une fonction pure ne reste pas dans un composant : elle en sort, testée.
-- **`design-system`** : `atoms/`, `molecules/`, `organisms/`, thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../mails/mails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
+- **`design-system`** : `atoms/`, `molecules/`, `organisms/` (dont `SideNavigation`, le menu latéral du profil et de Satisfactory : liens, actions, groupes, espaceur, éléments libres ; déplié, replié avec ouverture au survol, ou tiroir derrière un bouton sur petit écran), thème (dont celui de chaque projet), polices et styles, et `mailPreview/` (les gabarits de mails, [mails, §6](../mails/mails.md#6-côté-serveur)). Chaque composant a sa story (Storybook : `pnpm --filter @citadel/design-system dev`, port 3002).
 
 ## 7. Console d'administration
 
