@@ -1,0 +1,324 @@
+// Réduit, le menu ne montre que ses icônes : une boîte de 40px centrée dans une colonne de 56px. Déplié (ou ouvert par
+// survol), les libellés apparaissent à droite des icônes, qui ne bougent pas
+$rail-width: 56px;
+$panel-padding: 8px;
+$icon-box: $rail-width - 2 * $panel-padding;
+$item-height: 42px;
+$ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+$duration: 0.3s;
+
+// ---------- Grand écran : la colonne du menu et la page ----------
+
+// Seule la largeur du menu déplié, ou celle des icônes, pousse la page ; l'ouverture au survol passe par-dessus
+.shell {
+  --side-navigation-width: #{$rail-width};
+
+  display: grid;
+  grid-template-columns: var(--side-navigation-width) minmax(0, 1fr);
+  width: 100%;
+  transition: grid-template-columns $duration $ease;
+
+  &[data-expanded="true"] {
+    --side-navigation-width: var(--side-navigation-expanded-width);
+  }
+
+  &[data-placement="inline"] {
+    column-gap: var(--theme-spaceXXL);
+  }
+}
+
+// La colonne prend toute la hauteur de la page : le menu y reste collé en haut pendant le défilement
+.slot {
+  position: relative;
+}
+
+.content {
+  align-self: start;
+  min-width: 0;
+}
+
+.panel {
+  position: sticky;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--theme-spaceS);
+  width: var(--side-navigation-width);
+  padding: $panel-padding;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--theme-colorSurface);
+  color: var(--theme-colorText);
+  transition:
+    width $duration $ease,
+    box-shadow $duration ease;
+
+  &[data-wide="true"] {
+    width: var(--side-navigation-expanded-width);
+  }
+}
+
+// Ouvert par-dessus la page : une ombre le détache de ce qu'il recouvre
+.shell[data-expanded="false"] .panel[data-wide="true"] {
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / 45%);
+}
+
+.shell[data-placement="inline"] .panel {
+  top: var(--theme-spaceL);
+  max-height: calc(100dvh - 2 * var(--theme-spaceL));
+  border: 1px solid var(--theme-colorBorderSoft);
+  border-radius: var(--theme-radiusL);
+}
+
+.shell[data-placement="viewportEdge"] .panel {
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  border-right: 1px solid var(--theme-colorBorder);
+}
+
+// ---------- Contenu du menu ----------
+
+.entries {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  & + & {
+    margin-top: var(--theme-spaceS);
+  }
+}
+
+// Déplié : le titre du groupe. Réduit : un court trait à sa place
+.groupLabel {
+  position: relative;
+  height: 22px;
+  padding: 0 10px;
+  overflow: hidden;
+  color: var(--theme-colorTextSubtle);
+  font-size: var(--theme-fontSizeXS);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 22px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity $duration ease;
+
+  &::after {
+    position: absolute;
+    top: 50%;
+    left: calc(#{$icon-box} / 2 - 10px);
+    width: 20px;
+    height: 1px;
+    background: var(--theme-colorBorder);
+    content: "";
+    opacity: 0;
+    transition: opacity $duration ease;
+  }
+}
+
+.panel[data-wide="false"] .groupLabel {
+  color: transparent;
+
+  &::after {
+    opacity: 1;
+  }
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  width: 100%;
+  height: $item-height;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: var(--theme-radiusM);
+  background: transparent;
+  color: var(--theme-colorTextMuted);
+  font: inherit;
+  font-size: var(--theme-fontSizeS);
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: var(--theme-colorSurfaceRaised);
+    color: var(--theme-colorText);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--theme-colorPrimaryHue);
+    outline-offset: -2px;
+  }
+
+  // La page en cours : fond de la couleur principale et un trait à gauche
+  &[aria-current="page"] {
+    background: var(--theme-colorPrimarySubtle);
+    color: var(--theme-colorPrimaryStrong);
+    font-weight: 600;
+
+    &::before {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 3px;
+      height: 20px;
+      border-radius: 0 3px 3px 0;
+      background: var(--theme-colorPrimaryHue);
+      content: "";
+      transform: translateY(-50%);
+    }
+  }
+}
+
+.itemIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: $icon-box;
+  height: 100%;
+}
+
+.itemLabel {
+  min-width: 0;
+  padding-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.panel[data-wide="true"] .itemLabel {
+  opacity: 1;
+}
+
+.custom {
+  flex: none;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.expandToggle {
+  border-top: 1px solid var(--theme-colorBorderSoft);
+  border-radius: 0 0 var(--theme-radiusM) var(--theme-radiusM);
+}
+
+// ---------- Petit écran : un bouton menu et un tiroir ----------
+
+.shell[data-compact="true"] {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--theme-spaceL);
+  column-gap: 0;
+
+  .slot {
+    display: contents;
+  }
+
+  .panel {
+    position: fixed;
+    top: var(--side-navigation-drawer-top);
+    bottom: 0;
+    left: 0;
+    z-index: 41;
+    width: min(calc(var(--side-navigation-expanded-width) + 40px), 85vw);
+    max-height: none;
+    height: auto;
+    border: 1px solid var(--theme-colorBorderSoft);
+    border-left: none;
+    border-radius: 0 var(--theme-radiusL) var(--theme-radiusL) 0;
+    box-shadow: 0 18px 40px -16px rgb(0 0 0 / 45%);
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform $duration $ease,
+      visibility 0s linear $duration;
+
+    &[data-open="true"] {
+      visibility: visible;
+      transform: none;
+      transition:
+        transform $duration $ease,
+        visibility 0s;
+    }
+  }
+}
+
+// Collée en haut pendant le défilement ; au-dessus du voile quand le tiroir est ouvert, pour que le bouton le referme
+.compactBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--theme-spaceS);
+  min-width: 0;
+  padding: 6px;
+  background: color-mix(in srgb, var(--theme-colorSurface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--theme-colorText);
+
+  &[data-open="true"] {
+    z-index: 42;
+  }
+}
+
+.shell[data-placement="inline"] .compactBar {
+  border: 1px solid var(--theme-colorBorderSoft);
+  border-radius: var(--theme-radiusL);
+}
+
+.shell[data-placement="viewportEdge"] .compactBar {
+  border-bottom: 1px solid var(--theme-colorBorder);
+}
+
+.backdrop {
+  position: fixed;
+  inset: var(--side-navigation-drawer-top) 0 0;
+  z-index: 40;
+  background: var(--theme-colorOverlay);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity $duration ease,
+    visibility 0s linear $duration;
+
+  &[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity $duration ease,
+      visibility 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .panel,
+  .shell[data-compact="true"] .panel,
+  .shell[data-compact="true"] .panel[data-open="true"],
+  .backdrop,
+  .backdrop[data-open="true"],
+  .itemLabel,
+  .groupLabel {
+    transition: none;
+  }
+}
