@@ -11,7 +11,7 @@ let nextId: number | null = null;
 
 /**
  * Un id IGDB jamais utilisé : les tests ne vident pas la base entre eux, et les tables globales prennent l'id d'IGDB
- * comme clé. Le premier appel d'un fichier part du plus grand id déjà en base (les fichiers s'exécutent un par un)
+ * comme clé (les séries, elles, l'ont dans une colonne unique : id de collection ou de franchise). Le premier appel d'un fichier part du plus grand id déjà en base (les fichiers s'exécutent un par un)
  */
 export async function nextIgdbId(): Promise<number> {
 	if (nextId === null) {
@@ -22,6 +22,8 @@ export async function nextIgdbId(): Promise<number> {
 				(SELECT COALESCE(MAX(id), 0) FROM backlog_dlc),
 				(SELECT COALESCE(MAX(id), 0) FROM backlog_platform),
 				(SELECT COALESCE(MAX(id), 0) FROM backlog_company),
+				(SELECT COALESCE(MAX(igdb_collection_id), 0) FROM backlog_series),
+				(SELECT COALESCE(MAX(igdb_franchise_id), 0) FROM backlog_series),
 				1000
 			) AS maxId`,
 			{ type: QueryTypes.SELECT, plain: true },
