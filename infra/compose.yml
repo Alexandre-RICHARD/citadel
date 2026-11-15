@@ -474,7 +474,7 @@ services:
 
   infra-tailscale:
     <<: *defaults
-    image: tailscale/tailscale:v1.104.4
+    image: tailscale/tailscale:v1.104.7
     container_name: infra-tailscale
     # Le réseau du NAS lui-même, pas un réseau Docker : Tailscale y ajoute son interface,
     # et tes appareils joignent le NAS (SSH, TOS, ports des services) par son nom
@@ -896,7 +896,7 @@ services:
 
   media-prowlarr:
     <<: [*defaults, *behind-vpn]
-    image: lscr.io/linuxserver/prowlarr:2.7.0.5723-ls166
+    image: lscr.io/linuxserver/prowlarr:2.7.0.5723-ls168
     container_name: media-prowlarr
     environment:
       <<: *linuxserver-env
@@ -934,7 +934,7 @@ services:
 
   media-radarr:
     <<: [*defaults, *behind-vpn]
-    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls324
+    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls326
     container_name: media-radarr
     environment:
       <<: *linuxserver-env
@@ -1008,7 +1008,7 @@ services:
 
   media-bazarr:
     <<: [*defaults, *behind-vpn]
-    image: lscr.io/linuxserver/bazarr:v1.6.2-ls370
+    image: lscr.io/linuxserver/bazarr:v1.6.2-ls372
     container_name: media-bazarr
     environment:
       <<: *linuxserver-env
