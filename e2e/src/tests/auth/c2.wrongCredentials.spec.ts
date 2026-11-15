@@ -24,9 +24,11 @@ async function failToLogIn(
 	);
 	await fillLoginForm(page, { identifier, password });
 	const response = await responsePromise;
-	const { startTime, responseEnd } = response.request().timing();
+	// responseEnd est déjà une durée depuis le début de la requête (startTime est, lui, absolu) ; -1 si non mesurée
+	const { responseEnd } = response.request().timing();
+	expect(responseEnd, "durée de la réponse non mesurée").toBeGreaterThan(0);
 	const message = (await page.getByRole("alert").innerText()).trim();
-	return { message, responseTimeMs: responseEnd - startTime };
+	return { message, responseTimeMs: responseEnd };
 }
 
 test.describe("Connexion", () => {
