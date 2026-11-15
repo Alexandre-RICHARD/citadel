@@ -1,0 +1,18 @@
+# Liste courte de la vérification 1 : une ligne par média, « film <id TMDB> » ou « série <id TMDB> ».
+# L'identifiant est le nombre de l'adresse de la fiche : themoviedb.org/movie/603-the-matrix -> film 603.
+# Copier ce fichier hors du dépôt, puis le remplacer par vos choix ; il couvre déjà les cas du cahier des charges.
+
+# Films d'une saga, dont la collection TMDB donne l'ordre de sortie
+film 11      # La Guerre des étoiles (collection Star Wars)
+film 1891    # L'Empire contre-attaque
+film 603     # Matrix (collection Matrix)
+# Film français : titre et titre original identiques
+film 194     # Le Fabuleux Destin d'Amélie Poulain
+# Film sans collection
+film 680     # Pulp Fiction
+
+# Série finie, avec des épisodes spéciaux
+série 1396   # Breaking Bad
+# Série en cours (épisodes à venir) : en ajouter une ou deux que vous suivez en ce moment
+# Série d'une saga mêlant films et séries
+série 82856  # The Mandalorian
