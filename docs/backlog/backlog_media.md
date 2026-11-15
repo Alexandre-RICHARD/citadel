@@ -4,6 +4,8 @@
 
 Cahier des charges du suivi des films et des séries, à construire : rien n'existe encore dans le code. Il ne décrit que ce qui est nouveau ; tout ce qui reprend le [backlog des jeux](backlog_game.md) est seulement cité (§10). Les questions encore ouvertes sont au §11, et les tâches dans le [todo](../todo/todo.md#6-backlog).
 
+**Maquettes** : des captures de la maquette Figma, gardées hors du dépôt car elles montrent des données réelles (`docs/backlog/maquettes/`, ignoré par git), montrent le tableau en mode connecté, les médias oubliés et le rapport de la console. Ce n'est qu'une aide visuelle, figée au 15 novembre 2026 : les décisions prises depuis ne s'y reportent plus, et ce document fait foi. Tout ce que le backlog des médias partage avec celui des jeux (barre du haut, tableau, cases, menus, filtres) reprend le style et le comportement de ce dernier, pas ceux de la maquette.
+
 ## Sommaire
 
 1. [Principes](#1-principes)
@@ -13,7 +15,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 5. [Colonnes](#5-colonnes)
 6. [Où vivent les données](#6-où-vivent-les-données)
 7. [Ajout et import](#7-ajout-et-import)
-8. [Le job hebdomadaire](#8-le-job-hebdomadaire)
+8. [Le job quotidien](#8-le-job-quotidien)
 9. [Script d'essai](#9-script-dessai)
 10. [Repris du backlog des jeux](#10-repris-du-backlog-des-jeux)
 11. [Questions ouvertes](#11-questions-ouvertes)
@@ -21,7 +23,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 ## 1. Principes
 
 - **Personnel, comme les jeux** : chaque compte a son backlog de films et de séries, sur la même route que les jeux.
-- **Tout s'ajoute à la main**, par une recherche TMDB (§7). Rien n'entre automatiquement depuis Radarr, Sonarr, Jellyfin ou qBittorrent ; le job hebdomadaire signale seulement ce qui y est présent sans être dans le backlog (§8). Seule exception, un import de liste, qui est une fonction de l'interface (§7.2).
+- **Tout s'ajoute à la main**, par une recherche TMDB (§7). Rien n'entre automatiquement depuis Radarr, Sonarr, Jellyfin ou qBittorrent ; le job quotidien signale seulement ce qui y est présent sans être dans le backlog (§8). Seule exception, un import de liste, qui est une fonction de l'interface (§7.2).
 - **Deux familles de colonnes**, sans mélange :
   - **renseignées par vous** (visionnage, à regarder bientôt, en cours, commentaire, saga…) ou **tirées de TMDB** (titres, langue, dates, durée, images) : stockées dans la base du site, visibles partout ;
   - **relevées sur le NAS** (stockage, collection Jellyfin, partage) ou **cochées par vous mais gardées sur le NAS** (vérifié) : jamais stockées dans la base du site, visibles seulement en mode connecté (§2).
@@ -34,6 +36,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 - **Mode classique** : tout compte, depuis n'importe où. Les colonnes du NAS n'existent pas : ni affichées, ni dans les filtres, ni dans le choix des colonnes.
 - **Mode connecté** : le même site, ouvert par son adresse locale, en LAN et par Tailscale seulement : `http://<IP du NAS>:8003` chez vous, `http://<nom Tailscale du NAS>:8003` par Tailscale, comme la pré-prod (8002) et la console. Jamais par le domaine public, et aucun lien du site public n'y mène : un marque-page sur chaque appareil. Le mode s'y déverrouille par le mot de passe des médias (§3). Son serveur lit la base du site et `media-state`, fusionne les deux par identifiant TMDB, puis trie, filtre, compte et découpe en pages comme pour les jeux, colonnes du NAS comprises. Le site public, lui, ne sait rien du NAS.
 - **Fraîcheur** : l'état du NAS est celui du dernier passage du job (§8), dont la date s'affiche en haut du tableau. Seul « Partage en cours » est lu en direct. La console relance le job à la demande (§8).
+- **Barre du haut** : celle du backlog des jeux, avec un bouton pour passer des jeux aux films et séries ; en mode connecté, la date du relevé et un lien vers le rapport du job dans la console (§8). Ce lien reprend le nom d'hôte par lequel vous êtes venu (IP du NAS en LAN, nom Tailscale sinon), au port de la console : il marche dans les deux cas.
 - **Comportement par colonne** :
 
 | Colonne | Mode classique | Mode connecté |
@@ -41,7 +44,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 | Titres, langue, sortie, durée, miniature | TMDB, en lecture | Pareil |
 | Saga et numéro | Choisis par vous | Pareil, avec la collection Jellyfin à côté |
 | Visionnage, à regarder bientôt, en cours, commentaire | Saisis par vous | Pareil |
-| Stockage, collection Jellyfin, partage, qualité, poids par heure, doublon | Absents | Relevés sur le NAS, en lecture |
+| Stockage, collection Jellyfin, partage, qualité, langues, taille, poids par heure, écarts | Absents | Relevés sur le NAS, en lecture |
 | Vérifié | Absent | Case à cocher, enregistrée sur le NAS |
 
 ## 3. Sécurité et exposition
@@ -57,7 +60,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
     - **Pourquoi ce détour** : Caddy, exposé à Internet, n'a jamais accès à Docker. La console ne gagne qu'une action, sans mot de passe mais fixe (démarrer ce seul conteneur) et limitée en fréquence, joignable seulement par le port 8003. Un invité sur votre wifi peut au pire la démarrer, et tombe sur la page de connexion.
     - **Arrêt** : après **environ 10 minutes sans aucune requête**, par l'arrêt automatique commun aux services à la demande ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)) : Caddy note la dernière visite, `infra-ops` vérifie chaque minute.
     - **Le front ne relit rien tout seul** (pas de rafraîchissement périodique) : sinon, un onglet oublié la tiendrait éveillée. « Partage en cours » se lit au chargement et à chaque action.
-    - **Le job hebdomadaire n'en a pas besoin** : il parle directement à qBittorrent, Radarr, Sonarr, Jellyfin et au disque, et n'écrit que dans `media-state`.
+    - **Le job quotidien n'en a pas besoin** : il parle directement à qBittorrent, Radarr, Sonarr, Jellyfin et au disque, et n'écrit que dans `media-state`.
 - **Organisation du code** : une seule image, un seul code.
   - Le module des médias du NAS est dans le serveur (`apps/server/src/projects/backlog/`), comme le reste du backlog. Ses routes ne sont **montées** que si `MEDIA_STATE_DIR` est posée au démarrage. Le serveur public n'a pas cette variable, et ces routes n'existent donc pas chez lui : 404, comme une adresse inconnue.
   - **Deux barrières de plus côté prod** : le conteneur public ne monte pas `media-state` (même activées par erreur, ces routes n'auraient rien à lire), et Caddy répond 404 à ces chemins sur le domaine public, comme il le fait déjà pour `/api/internal`.
@@ -67,7 +70,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
   - **Le code est public, l'accès non** : le dépôt montre qu'un mode connecté existe et comment il lit `media-state`, comme l'infra montre déjà qBittorrent et cross-seed. Il ne montre ni données, ni trackers, ni chemins réels, ni adresse : rien de tout cela n'est atteignable depuis Internet.
 - **Connexion** : votre compte du site (une session propre à l'adresse locale, sans le préfixe `__Host-`, réservé au HTTPS), puis le **mot de passe des médias**, comme celui de la console : hash argon2id dans `MEDIA_PASSWORD_HASH`, cinq essais par adresse sur un quart d'heure, déverrouillage valable 12 heures. Il est gardé dans un cookie signé, qui survit aux mises en veille (sinon, il faudrait retaper le mot de passe à chaque réveil), et changer le mot de passe l'annule. **Seul votre compte** peut déverrouiller (`MEDIA_OWNER_USER_ID`) : qui apprendrait le mot de passe des médias devrait aussi avoir votre compte, avec sa double authentification. Un invité sur votre wifi qui trouve l'adresse ne voit qu'une page de connexion.
 - **Jamais le mot de passe de la console** : un seul mot de passe pour les deux ouvrirait les déploiements et les restaurations à qui connaît celui des médias.
-- **Aucune action destructrice** par l'instance locale : supprimer un torrent ou des fichiers ne se fait que dans la console.
+- **Le backlog ne fait que lire le NAS** : depuis le tableau, aucune action ne touche à Radarr, Sonarr, Jellyfin, qBittorrent ni aux fichiers (rien n'y est ajouté, modifié ni supprimé). Sa seule écriture côté NAS est la case « vérifié », dans `media-state`. Rien, pour l'instant, ne supprime un torrent ni un fichier : ni le backlog, ni la console, ni le job. Les liens « Ouvrir dans Jellyfin » et vers le rapport ne font qu'ouvrir une page.
 
 ## 4. Notions et lignes
 
@@ -75,10 +78,12 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 - **Série** : une ligne, qui se déplie en une sous-ligne par saison, chacune se dépliant en une sous-ligne par épisode. Les colonnes du NAS s'agrègent vers le haut, comme celles des versions jouées : « Présent 18 / 26 » sur une saison, et le meilleur état de partage.
 - **Dépliage** : une seule série et une seule saison dépliées à la fois ; en déplier une autre replie la précédente. Déplier une série d'une seule saison déplie aussi cette saison.
 - **Saga** : le nouveau nom de la « série » des jeux, renommée aussi de leur côté. Elle peut mêler films et séries (*Star Wars*).
-  - **Toutes les sagas sont à vous**, avec le nom de votre choix, celui de votre collection Jellyfin. Les collections de TMDB n'en sont que la proposition : vos groupes ne leur correspondent pas un à un (*Alien* ou *DCU* en réunissent plusieurs, 39 films sont groupés sans collection TMDB, 44 sont dans une collection TMDB sans groupe).
+  - **Toutes les sagas sont à vous**, avec le nom de votre choix, celui de votre collection Jellyfin. Les collections de TMDB n'en sont que la proposition : vos groupes ne leur correspondent pas un à un (un groupe en réunit parfois plusieurs, des films sont groupés sans collection TMDB, d'autres sont dans une collection TMDB sans groupe).
   - **Une saga se relie à une ou plusieurs collections TMDB**, ce qui sert de nom technique : ajouter un film d'une collection reliée propose cette saga ; un film d'une collection reliée à aucune propose une nouvelle saga au nom de la collection.
   - **Numéro** : ni TMDB ni IMDB (qui n'a pas d'API publique) ne donnent d'ordre. Il est pré-rempli dans l'ordre des dates de sortie, puis se règle comme pour les jeux. Saga et numéro restent toujours modifiables.
-- **Identifiants** : celui de TMDB (film ou série) relie tout : le site, le NAS (Radarr, Sonarr et Jellyfin le connaissent) et l'import. Celui d'IMDB est gardé pour référence.
+- **Identifiants** : celui de TMDB (film ou série) relie tout : le site, le NAS et l'import. Celui d'IMDB est gardé pour référence.
+  - **Sur le NAS, le fichier fait foi** : le job relie un média à son fichier par Radarr et Sonarr, puis ce fichier à Jellyfin et aux torrents par son chemin et son inode. Un fichier qu'aucun des deux ne suit (dans `movies_archives`, ou ajouté à la main) se relie par le nom de son dossier « Titre (année) ».
+  - **Les identifiants que donnent les outils ne servent qu'à signaler un écart** : à l'essai, Jellyfin en donnait un faux, ou aucun, pour quelques dizaines de films, et Radarr un faux pour une dizaine de films de `movies_archives` (§5, écarts).
 
 ## 5. Colonnes
 
@@ -86,20 +91,30 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 | --- | --- | --- |
 | Miniature | TMDB | Affiche du film, de la série ou de la saison ; image de l'épisode, si TMDB en a une. Choisie parmi les images TMDB, comme pour les jeux |
 | Titre, titre original | TMDB | Comme les jeux : le titre français dessus, un peu plus clair et plus épais, le titre original dessous quand il diffère |
+| Type | TMDB | Film ou série, en icône ; son filtre permet de ne travailler que sur les films, ou que sur les séries |
 | Langue originale | TMDB | |
-| Saga et numéro | Vous, saga proposée par TMDB | En mode connecté, la collection Jellyfin s'affiche à côté et se signale quand son nom diffère de celui de la saga (§4) |
+| Saga | Vous, proposée par TMDB | En mode connecté, la collection Jellyfin s'affiche dessous et se signale quand son nom diffère de celui de la saga (§4) |
+| Numéro | Vous | Dans sa propre colonne, comme pour les jeux, pour trier et filtrer dessus |
 | Sortie | TMDB | Film : date de sortie ; série : première diffusion ; épisode : date de diffusion |
-| Durée | TMDB | Film et épisode ; somme pour une saison et une série |
-| Visionnage | Vous | Film et épisode : vu ou pas vu, rien d'autre (ni abandonné, ni date). Saison et série : vues quand tous leurs épisodes le sont, sinon « 12 / 26 ». Règles ci-dessous |
-| À regarder bientôt, en cours, commentaire | Vous | |
-| Stockage | NAS | Non présent (rien ne correspond) ; En téléchargement (dans qBittorrent, pas fini) ; Présent (fini, pas dans Jellyfin) ; Dans Jellyfin, avec un lien vers l'élément |
-| Vérifié | Vous, enregistré sur le NAS | Vous avez lancé le fichier : bon contenu, bon format, bonne langue. **Retiré par le job quand le fichier est remplacé** (autre inode ou autre taille), par exemple quand Radarr en télécharge une meilleure version ; un simple renommage ne le retire pas |
+| Durée | TMDB, et le fichier en mode connecté | Film et épisode ; somme pour une saison et une série. En mode connecté, quand un fichier existe, sa durée réelle est dessus, en évidence, et celle de TMDB dessous, plus discrète ; la durée du fichier passe en alerte quand elle s'écarte de plus de 7 min 30 (version longue, autre montage). L'alerte s'efface quand le fichier est vérifié, les deux durées restent |
+| En cours, commentaire | Vous | |
+| Vu, À voir bientôt | Vous | Les deux dernières colonnes de la partie commune aux deux modes, des cases à en-tête en icône (libellé en infobulle). « À voir bientôt » reprend la colonne « À jouer bientôt » des jeux, case et mise en valeur bleue de la ligne comprises. Vu : film et épisode, vu ou pas vu, rien d'autre (ni abandonné, ni date) ; saison et série vues quand tous leurs épisodes le sont, sinon « 12 / 26 ». Règles ci-dessous |
+| Vérifié | Vous, enregistré sur le NAS | La première colonne du NAS, juste après « Vu » et « À voir bientôt » : une case à en-tête en icône, comme elles. Vous avez lancé le fichier : bon contenu, bon format, bonne langue. **Retiré par le job quand le fichier est remplacé** (autre inode ou autre taille), par exemple quand Radarr en télécharge une meilleure version ; un simple renommage ne le retire pas. Il dit « ce fichier est bien celui que je voulais ici » : il efface les alertes qui viennent du fichier (durée), jamais les écarts des outils ni le partage, qui restent tant qu'ils sont vrais. Série : une case par épisode, cochée en cascade par saison ou par série, avec les dialogues du visionnage. Décochée et grisée tant que le média a plusieurs fichiers (écart « Doublon ») |
+| Stockage | NAS | Non suivi (ni fichier, ni dans Radarr ou Sonarr) ; Attendu (dans Radarr ou Sonarr, sans fichier) ; En téléchargement (dans qBittorrent, pas fini) ; Présent (fini, pas dans Jellyfin) ; Dans Jellyfin, avec un lien vers l'élément. Il dit où est le fichier, pas qui le suit : un fichier dans Jellyfin que ni Radarr ni Sonarr ne suit est « Dans Jellyfin », avec l'écart « Hors Radarr ou Sonarr » |
 | Collection Jellyfin | NAS | En lecture ; celle que vous avez créée dans Jellyfin |
 | Partage | NAS | Partage en cours (envoie en ce moment, lu en direct) ; En seed (tracker OK) ; Tracker injoignable (inactif, revu au passage suivant) ; En erreur (torrent mort) ; Non présent (aucun torrent sur ce fichier) |
 | Torrents | NAS | Nom du ou des torrents liés au fichier, cross-seed compris, avec leur tracker |
-| Qualité | NAS | Quatre valeurs, d'après la hauteur de l'image : 4K (2160p), FHD (1080p), HD (720p), SD (en dessous) |
-| Taille, poids par heure | NAS | Taille du fichier, et taille divisée par sa durée réelle, en Go/h : deux films d'1 h 30, l'un de 2 Go et l'autre de 6 Go, s'y distinguent |
-| Doublon | NAS | Plusieurs fichiers distincts (inodes différents) pour ce film ou cet épisode. Plusieurs torrents sur un même fichier (cross-seed) n'en sont pas |
+| Qualité | NAS | Quatre valeurs, d'après la meilleure des deux mesures de l'image, largeur ou hauteur : 4K (3840 ou 2160), FHD (1920 ou 1080), HD (1280 ou 720), SD (en dessous). Une seule mesure se trompe : un film en 1920×800 (bandes noires coupées) est FHD, un épisode en 1440×1080 (4:3) aussi |
+| Langues | NAS | Quatre étiquettes au plus : VF (une piste audio en français), VO (une piste audio dans la langue originale du média, celle de TMDB), STFR (des sous-titres français), STVO (des sous-titres dans la langue originale). Quand la langue originale est le français, VO et STVO ne s'affichent pas : VF et STFR disent déjà tout. Quand aucune piste audio n'a de langue connue (pistes non étiquetées, « und »), la cellule affiche « Inconnue », aussi valeur du filtre, pour ne pas la confondre avec un fichier sans VF (quelques films à l'essai). Pistes audio et sous-titres intégrés lus par Radarr et Sonarr, sous-titres à côté du fichier (Bazarr) lus par Jellyfin. Saison et série : chaque étiquette avec le nombre d'épisodes qui l'ont (« VF 18 / 26 »), sans nombre quand tous l'ont. **Filtre** : une valeur par étiquette, plusieurs à la fois en ET ou en OU, comme les autres filtres ; on filtre ainsi sur l'audio, sur les sous-titres ou sur les deux (« VO ET STFR ») |
+| Taille | NAS | Taille du fichier ; somme pour une saison et une série |
+| Go/h | NAS | Taille divisée par la durée réelle du fichier : deux films d'1 h 30, l'un de 2 Go et l'autre de 6 Go, s'y distinguent. Colonne étroite, juste après « Taille », triable et filtrable à part, comme les temps relevé, estimé et total des jeux |
+| Écarts | NAS | Ce que le job a trouvé de faux au dernier passage, un filtre par écart, plusieurs par ligne s'il le faut (la ligne s'allonge d'autant) : doublon (plusieurs fichiers distincts, d'inodes différents, pour ce film ou cet épisode ; plusieurs torrents sur un même fichier, par cross-seed, n'en sont pas) ; fiche Radarr ou Sonarr différente (l'outil relie le fichier à un autre identifiant TMDB que le vôtre) ; fiche Jellyfin différente ou absente ; hors Radarr ou Sonarr (le fichier existe, aucun outil ne le suit) ; identifiant TMDB disparu. Un identifiant cité dans un écart est un lien vers sa fiche TMDB. Chacun reste affiché tant qu'il est vrai, fichier vérifié ou non |
+| Identifiant TMDB | TMDB | Celui que vous avez enregistré, en lien vers la fiche TMDB. Masqué par défaut, il s'affiche par « Colonnes » |
+| Actions | | Comme pour les jeux : trois points en fin de ligne, ou clic droit sur la ligne. Ouvrir sur TMDB, Ouvrir dans Jellyfin (mode connecté, quand le média y est), Personnaliser, Retirer du backlog |
+
+**Ordre** : les colonnes communes aux deux modes finissent par « Vu » et « À voir bientôt » ; les colonnes du NAS commencent par « Vérifié ». En mode classique, le tableau s'arrête donc à « À voir bientôt » (« Actions » restant en fin de ligne).
+
+**Ouvrir dans Jellyfin** : la page de l'élément dans l'interface web de Jellyfin, d'où « Lire » démarre la lecture. Jellyfin n'a pas d'adresse qui lance directement la lecture. L'adresse reprend le nom d'hôte par lequel vous êtes venu (IP du NAS en LAN, nom Tailscale sinon), au port de Jellyfin.
 
 **Filtres** : un par colonne, avec les outils des jeux (ET / OU, réinitialisation, récapitulatif en haut du tableau). Ceux des colonnes du NAS n'existent qu'en mode connecté.
 
@@ -112,9 +127,13 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 Un nouvel épisode ajouté par TMDB (§7.3) n'est pas vu : une série vue en entier repasse à « 26 / 27 ».
 
 - **Épisodes pas encore diffusés** (date future ou inconnue) : affichés, mais hors de la progression : ils ne comptent pas dans « 12 / 26 », et cocher une série ou une saison ne les coche pas.
-- **Épisodes spéciaux** (bonus, téléfilms, épisodes de Noël) : tous ceux que TMDB connaît, rangés dans une saison « Épisodes spéciaux » à part, hors des saisons principales, des cascades et de la progression de la série.
+- **Épisodes spéciaux** (bonus, téléfilms, épisodes de Noël) : tous ceux que TMDB connaît, rangés dans une saison « Épisodes spéciaux » à part, hors des saisons principales, des cascades et de la progression de la série. Leurs colonnes du NAS restent vides, seule la partie commune aux deux modes est remplie : Sonarr les numérote comme TVDB, autrement que TMDB (à l'essai, presque tous les épisodes non retrouvés étaient des spéciaux).
 
 **Médias oubliés** : en mode connecté, une liste au-dessus du tableau donne ce qui est sur le disque, dans Radarr, Sonarr, Jellyfin ou qBittorrent sans être dans votre backlog, avec un bouton qui ouvre sa fiche TMDB pour l'ajouter. Ceux qu'aucun outil ne relie à TMDB sont listés par leur chemin.
+
+- **Une ligne par média**, avec les endroits où il est : « Une série : Sonarr · disque 24 fichiers, 30 Go · Jellyfin · 4 torrents ». À l'essai, plusieurs centaines de lignes par outil se réduisaient ainsi à une vingtaine de médias.
+- **Un fichier relié à une ligne du backlog n'est jamais oublié**, même quand un outil lui donne un autre identifiant : c'est un écart de ce média (§5), pas un oubli.
+- Les torrents dont les fichiers ne sont que dans `torrents/` n'en sont pas : ils vont au rapport de la console (§8).
 
 ## 6. Où vivent les données
 
@@ -125,9 +144,9 @@ Un nouvel épisode ajouté par TMDB (§7.3) n'est pas vu : une série vue en ent
 
 **NAS** (`/Volume1/appdata/media-state`, écrit par `infra-ops` et, pour « vérifié », par l'instance locale) : sauvegardé chaque lundi avec le reste d'`appdata`, sur le HDD et chiffré sur le Drive ([infra, §7.1](../infra/infra.md#71-ce-qui-est-sauvegardé)). Il contient :
 
-- le dernier relevé du job, par identifiant TMDB et par épisode : stockage, chemin, empreinte du fichier (inode et taille), qualité et durée, élément et collection Jellyfin, torrents liés et leur état ;
+- le dernier relevé du job, par identifiant TMDB et par épisode : stockage, chemin, empreinte du fichier (inode et taille), qualité, durée et langues, élément et collection Jellyfin, torrents liés et leur état, écarts ;
 - les cases « vérifié », chacune avec l'empreinte du fichier au moment de la vérification ;
-- le relevé de la semaine précédente, pour la comparaison, et rien de plus ancien.
+- le relevé du passage précédent, pour la comparaison, et rien de plus ancien.
 
 **Médias sur le HDD** (`/Volume2/data`) :
 
@@ -144,7 +163,7 @@ Le fichier de `medias/` et celui de `torrents/` sont deux noms d'un même fichie
 **Variables d'environnement du NAS** (`.env.prod`), en plus de celles qui existent (`QBITTORRENT_USER`, `QBITTORRENT_PASSWORD`, `JELLYFIN_API_KEY`) :
 
 - `RADARR_API_KEY`, `SONARR_API_KEY` ;
-- `MEDIA_TRACKERS` : chaque tracker, son nom affiché dans le rapport, son adresse principale et ses adresses de secours (§8) ;
+- `MEDIA_TRACKERS` : chaque tracker, son nom affiché dans le rapport et ses adresses, pour regrouper les adresses d'un même tracker (§8) ;
 - `MEDIA_PASSWORD_HASH`, `MEDIA_OWNER_USER_ID` et `MEDIA_STATE_DIR`, sur l'instance locale seulement (§3).
 
 **TMDB** : la clé d'API (`TMDB_API_KEY`) reste sur le serveur du site. Les images se chargent depuis `image.tmdb.org`, directement par le navigateur, comme celles d'IGDB.
@@ -159,51 +178,63 @@ Comme pour les jeux : recherche TMDB (films et séries ensemble) dans la barre d
 
 - **Une fonction de l'interface**, pour tout compte : un fichier CSV dont une colonne donne l'identifiant TMDB (et le type, film ou série). Les autres colonnes sont facultatives : saga, numéro, vu (pour une série, le dernier épisode vu, qui coche aussi tous les précédents), à regarder bientôt, commentaire.
 - **Aperçu avant tout enregistrement** : une ligne par média reconnu, et la liste de ceux qui ne le sont pas, avec la raison. Rien n'est écrit avant « Valider ».
-- **Premier usage, votre liste** `NAS Multimédia.xlsx` :
-  - 1 808 films, tous avec leurs identifiants TMDB et IMDB, le groupe (la future saga) et l'identifiant de collection TMDB ;
-  - 44 séries (feuille « Séries TEMP ») sans identifiant : un rapprochement TMDB par titre et année, à valider ligne par ligne dans l'aperçu ;
+- **Rythme des appels TMDB** : un import de plusieurs milliers de films demande autant de fiches. Le serveur les lit à un rythme limité, nettement sous la limite de TMDB (de l'ordre de 50 requêtes par seconde), attend quand TMDB répond 429, et ne relit pas une fiche déjà en base. Les films partagés entre comptes (§6) ne sont donc lus qu'une fois.
+- **Premier usage, votre liste** (un tableur) :
+  - les films, tous avec leurs identifiants TMDB et IMDB, le groupe (la future saga) et l'identifiant de collection TMDB ;
+  - les séries, sans identifiant et jamais tenues à jour : l'identifiant de Sonarr quand la série y est, sinon un rapprochement TMDB par titre et année. Chaque ligne douteuse se valide dans l'aperçu parmi ses candidats, et toute ligne accepte un identifiant saisi à la main (à l'essai : une majorité de sûres, une minorité de douteuses, de rares introuvables). TMDB fait foi : deux lignes qui tombent sur la même série n'en font qu'une, et l'aperçu le dit (deux saisons que la liste range en deux séries, par exemple) ;
   - sa colonne « État » ne passe pas par l'import : « vérifié » vit sur le NAS. Une reprise unique, par un script que vous lancez après le premier passage du job, coche « vérifié » pour « Fini » ; tout le reste est non vérifié.
 
 ### 7.3 Nouveaux épisodes
 
-- **Chaque semaine**, le serveur du site relit sur TMDB les séries qu'il marque « en cours », sans lien avec le NAS, et ajoute leurs nouveaux épisodes et saisons. Le serveur ne lance rien à heure fixe : c'est un job d'`infra-ops`, `media-tmdb`, qui l'y invite par une route `/api/internal/…`, comme la console pour les emails. Il tourne le mercredi à 3 h, en même temps que `media-sync` (§8), dont il est indépendant (`media-sync` ne touche jamais au site), et il est suivi par healthchecks.io.
+- **Chaque nuit**, le serveur du site relit sur TMDB les séries qu'il marque « en cours », sans lien avec le NAS, et ajoute leurs nouveaux épisodes et saisons. Le serveur ne lance rien à heure fixe : c'est un job d'`infra-ops`, `media-tmdb`, qui l'y invite par une route `/api/internal/…`, comme la console pour les emails. Il tourne chaque nuit à 3 h, en même temps que `media-sync` (§8), dont il est indépendant (`media-sync` ne touche jamais au site), et il est suivi par healthchecks.io.
 - **À la demande**, un bouton en haut du backlog, « Récupérer les nouveautés des séries », relit vos séries en cours et affiche un récapitulatif des séries qui ont du nouveau (saisons et épisodes ajoutés), enregistré sur « Valider ».
 
-## 8. Le job hebdomadaire
+## 8. Le job quotidien
 
-`media-sync`, un job d'`infra-ops`, chaque **mercredi à 3 h** (`0 3 * * 3`), suivi par healthchecks.io comme les autres ([infra, §9](../infra/infra.md#9-alertes-healthchecksio)). La console le relance à la demande ; il dure quelques minutes (la lecture des trackers de 2 937 torrents prend environ une minute, le reste des appels quelques secondes).
+`media-sync`, un job d'`infra-ops`, chaque **nuit à 3 h** (`0 3 * * *`) : il ne fait presque aucun appel à TMDB, rien n'empêche de le lancer tous les jours, suivi par healthchecks.io comme les autres ([infra, §9](../infra/infra.md#9-alertes-healthchecksio)). La console le relance à la demande. Le relevé lui-même dure moins d'une minute (à l'essai, pour une collection de plusieurs milliers de films et de torrents) ; c'est l'attente de cross-seed (étape 1) qui fait la durée du job, et le délai de healthchecks.io doit la couvrir.
 
-1. **Démarrer Radarr et Sonarr** s'ils sont arrêtés (ce qui démarre aussi Prowlarr, dont ils dépendent), et **cross-seed**, puis lui faire lancer une recherche complète, sauf s'il en a déjà une en cours. Le job ne les arrête pas lui-même : cross-seed reste allumé tant que sa recherche dure, puis l'arrêt automatique éteint tout le monde, cross-seed d'abord, ceux dont il dépend ensuite ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)).
+1. **Démarrer Radarr, Sonarr et Bazarr** s'ils sont arrêtés (ce qui démarre aussi Prowlarr, dont ils dépendent), et **cross-seed**, puis lui faire lancer une recherche complète, sauf s'il en a déjà une en cours. Cette recherche reste hebdomadaire (la nuit du mardi au mercredi) : chaque nuit, elle solliciterait trop les trackers ; les autres nuits, le job passe directement à l'étape 2. **Le job attend la fin de cette recherche** avant l'étape 2, pour que le relevé compte les torrents qu'elle vient d'ajouter ; comment savoir qu'elle est finie (API de cross-seed, sinon ses journaux) est à établir en construisant le job. Le job n'arrête aucun service lui-même : l'arrêt automatique éteint tout le monde, cross-seed d'abord, ceux dont il dépend ensuite ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)).
 2. **Torrents** :
    - lire la liste et le statut de chaque tracker ;
    - tester que chaque tracker répond, avant de conclure : un torrent dont le tracker ne répond pas est **inactif**, revu au passage suivant, pas mort ;
-   - classer les autres en valides et morts (le tracker répond mais ne connaît plus le torrent) ;
-   - poser l'étiquette `tracker-invalide` sur les morts, et la retirer de ceux qui sont revenus ;
-   - ajouter les adresses de secours qui manquent, d'après `MEDIA_TRACKERS` (§6) : aucun tracker n'est nommé dans le code.
-3. **Médias** : relier chaque film et chaque épisode présent sur le disque ou connu des outils, dans votre backlog ou non, à son fichier (Radarr, Sonarr), au disque (existence, inode, taille), à Jellyfin (élément et collection) et à ses torrents (par le lien physique entre le fichier de la bibliothèque et celui du torrent, ce qui couvre aussi les torrents de cross-seed). Relever aussi la qualité et la durée réelle du fichier (Radarr et Sonarr les lisent dans le fichier), et retirer « vérifié » des fichiers remplacés.
-4. **Écarts** : les médias sur le disque sans aucun torrent, et les doublons (§5). Les médias oubliés, eux, se calculent dans l'instance locale, la seule à voir à la fois le NAS et le backlog (§5).
-5. **Rapport dans la console**, un résumé comparé à la semaine précédente :
+   - classer les autres en valides et morts (le tracker répond mais ne connaît plus le torrent) ; l'état d'un torrent est le meilleur de ses adresses : qu'une adresse refuse (« Forbidden ») quand une autre accepte n'est pas une erreur, c'est le tracker qui refuse une annonce en double ;
+   - poser l'étiquette `tracker-invalide` sur les morts, et la retirer de ceux qui sont revenus : c'est la seule écriture du job dans qBittorrent. Aucun tracker n'est nommé dans le code.
+3. **Médias** : relier chaque film et chaque épisode présent sur le disque ou connu des outils, dans votre backlog ou non, à son fichier (Radarr, Sonarr), au disque (existence, inode, taille), à Jellyfin (élément et collection) et à ses torrents (par le lien physique entre le fichier de la bibliothèque et celui du torrent, ce qui couvre aussi les torrents de cross-seed). Relever aussi la qualité, la durée réelle et les langues du fichier (Radarr et Sonarr les lisent dans le fichier), et retirer « vérifié » des fichiers remplacés.
+4. **Écarts** : les médias sur le disque sans aucun torrent, les doublons et les écarts des outils (§5) ; les torrents sans média (fichiers seulement dans `torrents/`, de la place perdue) et les torrents jamais téléchargés (à 0 %). Les médias oubliés, eux, se calculent dans l'instance locale, la seule à voir à la fois le NAS et le backlog (§5).
+5. **Rapport dans la console**, sur une page à part : la page principale de la console n'en montre que les chiffres, avec un lien vers le rapport, et le rapport a un lien de retour. Un résumé comparé au passage précédent :
    - nombre de torrents, valides par tracker ;
-   - morts, en deux groupes : terminés (tracker joint, torrent inconnu) et non terminés, avec pour ces derniers un bouton « Supprimer entièrement » (torrent et fichiers, après confirmation) ;
-   - inactifs ;
-   - nombre de médias sans torrent et en doublon ;
-   - ce que cross-seed a ajouté dans la semaine (les torrents de l'étiquette `cross-seed` ajoutés depuis le passage précédent).
+   - morts, en deux groupes : terminés (tracker joint, torrent inconnu) et non terminés ;
+   - trackers entièrement injoignables (aucune de leurs adresses ne répond) et leurs torrents inactifs : c'est la seule erreur de tracker signalée ;
+   - torrents sans média, avec leur taille, et torrents jamais téléchargés ;
+   - doublons, chacun avec ses fichiers (chemin, qualité, taille) ;
+   - nombre de médias sans torrent ;
+   - ce que cross-seed a ajouté (les torrents de l'étiquette `cross-seed` ajoutés depuis le passage précédent).
 
-   Le détail par média (torrents, taille, qualité, poids par heure, partage, Jellyfin, doublon) n'est pas dans la console : il est dans le backlog en mode connecté, avec ses filtres (§5). La console ne garde que ce qui n'est pas un média du backlog : les torrents et leurs trackers.
+   Le rapport ne fait qu'informer : aucun bouton n'y supprime de torrent ni de fichier, cela se fait dans qBittorrent ou sur le disque.
+
+   Le détail par média (torrents, taille, qualité, poids par heure, partage, Jellyfin, écarts) n'est pas dans la console : il est dans le backlog en mode connecté, avec ses filtres (§5). La console ne garde que ce qui n'est pas un média du backlog : les torrents et leurs trackers.
 
 ## 9. Script d'essai
 
 Avant toute interface, des scripts que je fournis (`scripts/mediaTrial/`, supprimés quand le job existe) et que vous lancez depuis votre PC, avec vos clés (lues dans votre `.env`) et votre courte liste. Ils appellent Radarr, Sonarr, Jellyfin et qBittorrent par le LAN, et lisent le disque dans une liste des fichiers (chemin, inode, taille) produite par une seule commande `find` sur le NAS, en lecture seule. Ils produisent un fichier Excel, une feuille par vérification, à écrire hors du dépôt. Vous le validez avant que le job et le tableau soient construits. Ils vérifient :
 
 1. **TMDB** : sur une courte liste d'identifiants que vous choisissez (films, séries en cours et finies, sagas, épisodes spéciaux), tout ce que le cahier des charges en attend : titres français et original, langue, dates, durées, images, collections, saisons et épisodes, et la détection des séries « en cours » (§7.3).
-2. **Le rapprochement de vos 44 séries** par titre et année, avec les cas douteux.
-3. **Les étapes 3 et 4 du job** sur toute votre liste : une ligne par film et par épisode, avec ce qu'il a trouvé (Radarr ou Sonarr, fichier, inode, qualité, durée, Jellyfin, collection, torrents et leur état) et ce qu'il n'a pas su relier.
-4. **Les médias oubliés et les doublons** : ce qui est sur le disque, dans les outils ou dans qBittorrent sans être dans votre liste.
+2. **Le rapprochement de vos séries** par titre et année, avec les cas douteux.
+3. **Les étapes 3 et 4 du job** sur toute votre liste : une ligne par film et par épisode, avec ce qu'il a trouvé (Radarr ou Sonarr, stockage, fichier, inode, qualité, durée, langues audio, Jellyfin, collection, torrents et leur état, écarts), ce qu'il n'a pas su relier, et les paliers des trackers de chaque torrent.
+4. **Les médias oubliés, une ligne par média, les torrents sans média et les doublons** : ce qui est sur le disque, dans les outils ou dans qBittorrent sans être dans votre liste.
 5. **Les temps** : combien dure chaque étape, pour situer la durée du job.
+
+**Lancement** : `pnpm tools mediaTrial --short <liste.txt> --list <export.xlsx> --files <fichiers.tsv>` ; l'en-tête de `scripts/mediaTrial.sh` détaille les options.
+
+- **Entrées** : la liste courte (une ligne `film 603` ou `série 1396`, modèle dans `scripts/mediaTrial/shortList.example.txt`), votre liste exportée en `.xlsx`, et la liste des fichiers, écrite directement sur le PC par `ssh nas "find /Volume2/data -type f -printf '%i\t%s\t%n\t%p\n'" > <dossier>/media-files.tsv`. Sans `--files`, seules les vérifications 1 et 2 tournent.
+- **Clés** : `TMDB_API_KEY`, `RADARR_API_KEY`, `SONARR_API_KEY`, `JELLYFIN_API_KEY`, `QBITTORRENT_USER` et `QBITTORRENT_PASSWORD`, dans le `.env` du PC. Radarr et Sonarr se démarrent depuis la console avant le lancement.
+- **Colonnes de l'export** : reconnues par leur titre (« TMDB », « IMDB », « Groupe », « Collection », « État », « Titre », « Année ») ; la feuille « 0 Colonnes lues » du rapport dit lesquelles ont été prises.
+- **Rapport** : par défaut `Téléchargements/media-trial-<date>.xlsx`, refusé dans le dépôt. Des trackers, il ne garde que le nom d'hôte, jamais l'adresse complète, qui contient la clé personnelle.
+- **Lecture seule partout** : aucune étiquette ni aucun tracker n'est posé dans qBittorrent, rien n'est modifié dans les outils.
 
 ## 10. Repris du backlog des jeux
 
-À réutiliser tel quel, voir le [backlog des jeux](backlog_game.md) : tableau (lecture seule et mode édition, tri, filtres, URL, colonnes, pages, clavier), sous-lignes et agrégats, sagas et numéros (familles, trous, « Réorganiser »), recherche puis fiche puis ajout, partage entre base commune et base du compte, export et suppression des données d'un compte. Avec 1 808 films et des centaines d'épisodes, la virtualisation des lignes (ne construire dans la page que les lignes visibles à l'écran, pour que le défilement reste fluide), prévue « pour plus tard » côté jeux, devient nécessaire.
+À réutiliser tel quel, voir le [backlog des jeux](backlog_game.md) : tableau (lecture seule et mode édition, tri, filtres, URL, colonnes, pages, clavier), sous-lignes et agrégats, sagas et numéros (familles, trous, « Réorganiser »), recherche puis fiche puis ajout, partage entre base commune et base du compte, export et suppression des données d'un compte. Avec plusieurs milliers de films et des centaines d'épisodes, la virtualisation des lignes (ne construire dans la page que les lignes visibles à l'écran, pour que le défilement reste fluide), prévue « pour plus tard » côté jeux, devient nécessaire.
 
 ## 11. Questions ouvertes
 

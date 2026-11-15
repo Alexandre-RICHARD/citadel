@@ -107,7 +107,7 @@ Le fonctionnement est décrit dans [infra](../infra/infra.md).
   - **Activité** : une visite de leur adresse, notée par Caddy, placé devant eux sur les mêmes ports ; ou un travail en cours (Radarr et Sonarr : un téléchargement qui attend d'être importé ; cross-seed : une recherche). `infra-ops` vérifie chaque minute, à la place de l'`auto-stop` actuel, pour les six services.
   - **Réveil à la visite** : ouvrir l'adresse d'un service arrêté le démarre, par le même chemin que l'instance locale (Caddy passe la visite à la console, qui dépose une demande de démarrage).
   - **Dépendances** : Radarr et Sonarr démarrent Prowlarr ; Bazarr démarre Radarr et Sonarr ; cross-seed démarre déjà Prowlarr, Radarr et Sonarr. Un service ne s'arrête pas tant qu'un service qui dépend de lui tourne.
-  - **cross-seed** : le job `media-sync` du mercredi le démarre et lui fait lancer une recherche complète, sauf s'il en a déjà une en cours ; la recherche finie, il s'arrête comme les autres.
+  - **cross-seed** : le job `media-sync`, la nuit du mardi au mercredi, le démarre et lui fait lancer une recherche complète, sauf s'il en a déjà une en cours ; la recherche finie, il s'arrête comme les autres.
 - Onduleur : sans lui, une coupure de courant peut abîmer la base ou les bases SQLite des *arr.
 
 ### 4.2 Secrets
@@ -199,7 +199,11 @@ Le projet est décrit dans [Backlog](../backlog/backlog_game.md) ; les films et 
 
 - Tableau d'un très gros backlog (plusieurs centaines de jeux) : virtualiser les lignes, car chacune porte environ 65 éléments du DOM ([Backlog, §8](../backlog/backlog_game.md#8-base-endpoints-et-code)). Mettre aussi en mémoire côté serveur les lignes calculées de chaque compte, effacées à chaque écriture, si le calcul d'une page dépasse quelques centaines de millisecondes.
 - Étendre le backlog aux films et aux séries : cahier des charges en cours dans [Backlog des médias](../backlog/backlog_media.md), questions ouvertes au §11.
+  - Lancer les scripts d'essai (`pnpm tools mediaTrial`, [§9](../backlog/backlog_media.md#9-script-dessai)) et valider leur rapport avant de construire le job et le tableau. Les supprimer ensuite, avec `scripts/mediaTrial.sh` et la dépendance `exceljs` de la racine.
+  - Pour finir l'essai : vider dans le `.env` du PC les valeurs qui ne servaient qu'à lire la prod depuis le PC (`RADARR_API_KEY`, `SONARR_API_KEY`, `JELLYFIN_API_KEY`, `QBITTORRENT_USER`, `QBITTORRENT_PASSWORD`). Les clés restent, vides, puisque `checkEnvFiles` exige les mêmes partout ; `TMDB_API_KEY` reste remplie, le serveur de dev en a besoin.
 - Réimporter l'historique de TV Time dans le backlog des médias, une fois celui-ci construit.
+- Backlog des médias : que le job mette les adresses de secours d'un tracker sur le palier suivant de qBittorrent, pour qu'il n'annonce plus deux fois (à l'essai, l'une des deux adresses d'un tracker refusait de nombreux torrents, sans conséquence). L'API n'a pas de paramètre de palier : dans `addTrackers`, une ligne vide entre deux adresses passe au palier suivant (`parseTrackerEntries`, dans son code). À essayer sur un torrent de test.
+- Backlog des médias : créer ou remplir la collection Jellyfin d'une saga en un clic. À cadrer, car le backlog ne fait que lire le NAS ([§3](../backlog/backlog_media.md#3-sécurité-et-exposition)) : par la console, par exemple. Les collections Jellyfin existantes sont vides : leurs liens vers les films se sont probablement perdus quand les dossiers ont été renommés.
 
 ### 6.5 Écarté
 

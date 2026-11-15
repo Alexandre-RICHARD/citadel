@@ -71,3 +71,9 @@
 # ====================
 # Folders
 /packages/specs/node_modules/
+
+# ====================
+# =       Docs       =
+# ====================
+# Captures de maquettes qui montrent des données réelles (collection, tailles, dossiers) : jamais versionnées
+docs/backlog/maquettes/
