@@ -22,8 +22,12 @@ export type OptimisticMutationOptions<
 	// Lectures touchées : figées avant la mise à jour optimiste, resynchronisées après la mutation
 	getAffectedQueryKeys: (variables: Variables) => QueryKey[];
 	// Lectures relues après une mutation réussie, par défaut toutes les lectures touchées. Une lecture que la réponse du
-	// serveur met déjà à jour (la ligne d'un jeu dans le tableau) n'a pas à y figurer : après un échec, elles sont toutes relues
-	getResyncQueryKeys?: (variables: Variables) => QueryKey[];
+	// serveur met déjà à jour (la ligne d'un jeu dans le tableau) n'a pas à y figurer : après un échec, elles sont toutes relues.
+	// `rollback` (undefined si applyOptimistic a échoué) dit ce que la mutation a changé
+	getResyncQueryKeys?: (
+		variables: Variables,
+		rollback: Rollback | undefined,
+	) => QueryKey[];
 	// Écrit le résultat attendu dans le cache et renvoie de quoi le défaire
 	applyOptimistic: (queryClient: QueryClient, variables: Variables) => Rollback;
 	// Défait exactement ce qu'a écrit applyOptimistic, sans toucher aux autres mutations en cours

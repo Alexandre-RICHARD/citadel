@@ -107,7 +107,12 @@ export function buildOptimisticMutationCallbacks<
 		},
 
 		// Le serveur reste la source de vérité des valeurs calculées (totaux, dates, ordre)
-		onSettled(_data: unknown, error: unknown, variables: Variables): void {
+		onSettled(
+			_data: unknown,
+			error: unknown,
+			variables: Variables,
+			context?: MutationContext<Rollback>,
+		): void {
 			// Relire une donnée du compte sans session ne ferait qu'un 401 de plus
 			if (isSessionExpiredError(error)) {
 				queryKeysToResync.delete(queryClient);
@@ -123,7 +128,7 @@ export function buildOptimisticMutationCallbacks<
 				...(error === null &&
 				isAlone &&
 				options.getResyncQueryKeys !== undefined
-					? options.getResyncQueryKeys(variables)
+					? options.getResyncQueryKeys(variables, context?.rollback)
 					: options.getAffectedQueryKeys(variables)),
 			]);
 

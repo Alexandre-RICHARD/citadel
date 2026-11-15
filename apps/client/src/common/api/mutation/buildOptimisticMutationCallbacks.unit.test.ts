@@ -356,6 +356,22 @@ describe("buildOptimisticMutationCallbacks.ts", () => {
 			});
 		});
 
+		it("SHOULD hand what the mutation changed to getResyncQueryKeys", async () => {
+			// Arrange
+			const getResyncQueryKeys = vi.fn(() => [GAME_KEY]);
+			const { queryClient, callbacks } = setup({ getResyncQueryKeys });
+			vi.spyOn(queryClient, "isMutating").mockReturnValue(1);
+			const context = await callbacks.onMutate(VARIABLES);
+
+			// Act
+			callbacks.onSettled(undefined, null, VARIABLES, context);
+
+			// Assert
+			expect(getResyncQueryKeys).toHaveBeenCalledExactlyOnceWith(VARIABLES, {
+				previousName: "Hades",
+			});
+		});
+
 		it("SHOULD invalidate every affected query WHEN another mutation was running at the same time", () => {
 			// Arrange
 			const listKey: QueryKey = ["games"];

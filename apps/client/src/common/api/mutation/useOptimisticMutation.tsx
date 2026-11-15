@@ -1,12 +1,10 @@
 import type { EndpointModel } from "@citadel/specs/src/specUtils/endpointModel.type";
-import {
-	useIsMutating,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { hashKey, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useSyncExternalStore } from "react";
 
 import { fetchHandler } from "../fetch/fetchHandler";
 import { buildOptimisticMutationCallbacks } from "./buildOptimisticMutationCallbacks";
+import { getPendingMutationCounter } from "./getPendingMutationCounter";
 import { notifyMutationFailure } from "./notifyMutationFailure";
 import type { OptimisticMutationOptions } from "./optimisticMutationOptions.type";
 
@@ -20,22 +18,23 @@ export function useOptimisticMutation<
 	Rollback,
 >(options: OptimisticMutationOptions<Endpoint, Variables, Rollback>) {
 	const queryClient = useQueryClient();
-	const pendingCount = useIsMutating({
-		mutationKey: options.mutationKey,
-		exact: true,
-	});
+	// Le tableau monte une mutation par cellule : useIsMutating, qui reparcourt tout le cache pour chacune, le figeait
+	const pendingMutations = getPendingMutationCounter(queryClient);
+	const keyHash = hashKey(options.mutationKey);
+	const subscribe = useCallback(
+		(listener: () => void) => pendingMutations.subscribe(keyHash, listener),
+		[pendingMutations, keyHash],
+	);
+	const pendingCount = useSyncExternalStore(subscribe, () =>
+		pendingMutations.getCount(keyHash),
+	);
 
-	// Lu dans le cache plutôt que dans l'état React : deux clics rapprochés tombent avant le prochain rendu
+	// Lu dans le compteur plutôt que dans l'état React : deux clics rapprochés tombent avant le prochain rendu
 	function mutateIfIdle(
 		run: (variables: Variables) => void,
 		variables: Variables,
 	): void {
-		const isRunning =
-			queryClient.isMutating({
-				mutationKey: options.mutationKey,
-				exact: true,
-			}) > 0;
-		if (!isRunning) run(variables);
+		if (pendingMutations.getCount(keyHash) === 0) run(variables);
 	}
 
 	const mutation = useMutation({

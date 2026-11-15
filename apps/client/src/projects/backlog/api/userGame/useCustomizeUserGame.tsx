@@ -7,6 +7,7 @@ import { HttpMethodEnum } from "@citadel/specs/src/specUtils/httpMethod.enum";
 
 import { createTemporaryId } from "../../../../common/api/mutation/createTemporaryId";
 import { useOptimisticMutation } from "../../../../common/api/mutation/useOptimisticMutation";
+import { isSameSeriesPlacement } from "../../helper/series/isSameSeriesPlacement";
 import { backlogErrorReasons } from "../backlogErrorReasons";
 import { backlogFieldLabels } from "../backlogFieldLabels";
 import { backlogQueryKeys } from "../backlogQueryKeys";
@@ -21,11 +22,14 @@ type Customization = Pick<
 	UserGameDto,
 	"imageId" | "endingType" | "series" | "seriesNumber" | "seriesNumberLabel"
 >;
-type Rollback = { customization: Customization } | null;
+type Rollback = {
+	customization: Customization;
+	isSeriesPlacementKept: boolean;
+} | null;
 
 /**
- * « Personnaliser » : la ligne change tout de suite ; les numéros
- * des autres jeux de la série, que le serveur décale, se resynchronisent après
+ * « Personnaliser » : la ligne change tout de suite ; les numéros des autres jeux de la série, que le serveur décale, se
+ * resynchronisent après. Sans changement de série ni de numéro (image, type de fin), la réponse du serveur suffit
  */
 export function useCustomizeUserGame(gameId: number) {
 	return useOptimisticMutation<
@@ -49,6 +53,16 @@ export function useCustomizeUserGame(gameId: number) {
 			backlogQueryKeys.allSeries(),
 			backlogQueryKeys.seriesEntriesOfAll(),
 		],
+		// Relire tout le tableau à chaque type de fin changé saturait le serveur, qui recalcule le backlog page par page
+		getResyncQueryKeys: (_body, rollback) =>
+			rollback?.isSeriesPlacementKept === true
+				? [backlogQueryKeys.storedGame(gameId)]
+				: [
+						backlogQueryKeys.userGames(),
+						backlogQueryKeys.storedGame(gameId),
+						backlogQueryKeys.allSeries(),
+						backlogQueryKeys.seriesEntriesOfAll(),
+					],
 		applyOptimistic: (queryClient, body) => {
 			const current = findCachedUserGame(queryClient, gameId);
 			if (current === undefined) return null;
@@ -82,6 +96,10 @@ export function useCustomizeUserGame(gameId: number) {
 					seriesNumber: current.seriesNumber,
 					seriesNumberLabel: current.seriesNumberLabel,
 				},
+				isSeriesPlacementKept: isSameSeriesPlacement(current, {
+					series,
+					seriesNumber,
+				}),
 			};
 		},
 		revertOptimistic: (queryClient, _body, rollback) => {
