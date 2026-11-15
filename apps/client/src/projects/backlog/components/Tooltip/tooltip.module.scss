@@ -32,10 +32,13 @@
   animation: fade-in 120ms vars.$ease;
 }
 
+// Bulle explicative : plus large, et la souris peut la rejoindre pour la lire ou en sélectionner le texte
 .wideBubble {
-  max-width: 40rem;
-  padding: 1rem 1.2rem;
+  width: max-content;
+  max-width: min(60rem, calc(100vw - 2rem));
+  padding: 1.2rem 1.4rem;
   font-weight: 400;
+  pointer-events: auto;
 }
 
 @keyframes fade-in {

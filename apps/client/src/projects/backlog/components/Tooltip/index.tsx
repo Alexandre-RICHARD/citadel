@@ -2,6 +2,7 @@ import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNa
 import {
 	type ReactNode,
 	type RefObject,
+	useCallback,
 	useEffect,
 	useId,
 	useRef,
@@ -26,6 +27,9 @@ type Props = {
 
 /** Au survol, la bulle attend un peu pour ne pas clignoter au passage de la souris ; au clavier, elle apparaît tout de suite */
 const hoverDelayMs = 400;
+
+/** Une bulle explicative reste le temps de passer la souris de l'élément à la bulle, espace qui les sépare compris */
+const leaveGraceMs = 250;
 
 function TooltipBubble({
 	anchorRef,
@@ -86,6 +90,15 @@ export function Tooltip({
 
 	useEffect(() => () => window.clearTimeout(timerRef.current), []);
 
+	// Un clic dans une bulle explicative (pour en sélectionner le texte) ne la ferme pas
+	const isInsideKeptBubble = useCallback(
+		(target: EventTarget | null) =>
+			isWide &&
+			target instanceof Node &&
+			(document.getElementById(id)?.contains(target) ?? false),
+		[isWide, id],
+	);
+
 	// Ouverte, elle se ferme au défilement, au clic et avec Échap
 	useEffect(() => {
 		if (!isOpen) {
@@ -94,24 +107,34 @@ export function Tooltip({
 		function close() {
 			setIsOpen(false);
 		}
+		function closeOnPointerDown(event: PointerEvent) {
+			if (!isInsideKeptBubble(event.target)) {
+				close();
+			}
+		}
 		function closeOnEscape(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				close();
 			}
 		}
 		window.addEventListener("scroll", close, { capture: true, passive: true });
-		window.addEventListener("pointerdown", close, { capture: true });
+		window.addEventListener("pointerdown", closeOnPointerDown, {
+			capture: true,
+		});
 		window.addEventListener("keydown", closeOnEscape, { capture: true });
 		return () => {
 			window.removeEventListener("scroll", close, { capture: true });
-			window.removeEventListener("pointerdown", close, { capture: true });
+			window.removeEventListener("pointerdown", closeOnPointerDown, {
+				capture: true,
+			});
 			window.removeEventListener("keydown", closeOnEscape, { capture: true });
 		};
-	}, [isOpen]);
+	}, [isOpen, isInsideKeptBubble]);
 
 	function show(delayMs: number) {
 		window.clearTimeout(timerRef.current);
-		if (hasContent) {
+		// Déjà ouverte (la souris revient de la bulle) : rien à rouvrir
+		if (hasContent && !isOpen) {
 			timerRef.current = window.setTimeout(() => setIsOpen(true), delayMs);
 		}
 	}
@@ -119,6 +142,17 @@ export function Tooltip({
 	function hide() {
 		window.clearTimeout(timerRef.current);
 		setIsOpen(false);
+	}
+
+	// La bulle est dans le body, mais ses événements remontent à l'enveloppe par l'arbre React : la rejoindre ne compte
+	// pas comme quitter l'élément. Une bulle explicative se ferme avec un délai, annulé si la souris la rejoint
+	function leave() {
+		if (!(isWide && isOpen)) {
+			hide();
+			return;
+		}
+		window.clearTimeout(timerRef.current);
+		timerRef.current = window.setTimeout(hide, leaveGraceMs);
 	}
 
 	return (
@@ -130,9 +164,13 @@ export function Tooltip({
 					show(hoverDelayMs);
 				}
 			}}
-			onPointerLeave={hide}
+			onPointerLeave={leave}
 			// Un clic annule aussi la bulle en attente : elle ne réapparaît pas après coup
-			onPointerDown={hide}
+			onPointerDown={(event) => {
+				if (!isInsideKeptBubble(event.target)) {
+					hide();
+				}
+			}}
 			onFocus={(event) => {
 				if (event.target.matches(":focus-visible")) {
 					show(0);
