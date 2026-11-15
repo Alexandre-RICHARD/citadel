@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 
 import { isOwnImage } from "../../../shared/isOwnImage";
 import type { ServiceItem } from "../../../shared/serviceItem.type";
+import { copyToClipboard } from "../../api/copyToClipboard";
 import { describeAvailableUpdates } from "../../format/describeAvailableUpdates";
 import { ActionButton } from "../ActionButton";
 import styles from "./versionsTable.module.scss";
@@ -46,8 +47,7 @@ export function VersionsTable({ services }: Props) {
 			setCopyState(result);
 			window.setTimeout(() => setCopyState("idle"), 2500);
 		}
-		navigator.clipboard
-			.writeText(updatesText)
+		copyToClipboard(updatesText)
 			.then(() => showResult("copied"))
 			.catch(() => showResult("failed"));
 	}
