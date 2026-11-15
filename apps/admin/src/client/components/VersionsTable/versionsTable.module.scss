@@ -5,6 +5,13 @@
   background: var(--surface);
   box-shadow: var(--shadow);
 
+  // Au-dessus du tableau : copier les mises à jour disponibles
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.8rem 1.6rem;
+  }
+
   table {
     width: 100%;
     font-size: 1.3rem;

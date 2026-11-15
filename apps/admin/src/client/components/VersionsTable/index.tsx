@@ -1,7 +1,10 @@
-import type { ReactNode } from "react";
+import { Check, Copy } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
 import { isOwnImage } from "../../../shared/isOwnImage";
 import type { ServiceItem } from "../../../shared/serviceItem.type";
+import { describeAvailableUpdates } from "../../format/describeAvailableUpdates";
+import { ActionButton } from "../ActionButton";
 import styles from "./versionsTable.module.scss";
 
 type Props = {
@@ -32,11 +35,40 @@ function latestCell(service: ServiceItem): ReactNode {
 // Mettre à jour : changer le tag dans compose.yml, commiter, pnpm release. Nos images
 // n'y sont pas : elles suivent les versions de Citadel, celles de la carte de déploiement.
 export function VersionsTable({ services }: Props) {
+	const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+		"idle",
+	);
+	const updatesText = describeAvailableUpdates(services);
+
+	// Les mises à jour disponibles, en texte, pour les coller dans une conversation
+	function copyUpdates() {
+		function showResult(result: "copied" | "failed") {
+			setCopyState(result);
+			window.setTimeout(() => setCopyState("idle"), 2500);
+		}
+		navigator.clipboard
+			.writeText(updatesText)
+			.then(() => showResult("copied"))
+			.catch(() => showResult("failed"));
+	}
+
+	let copyLabel = "Copier les mises à jour";
+	if (copyState === "copied") copyLabel = "Copié";
+	if (copyState === "failed") copyLabel = "Copie impossible";
+
 	return (
 		<section
 			className={styles.versionsTable}
 			aria-label="Versions"
 		>
+			<div className={styles.toolbar}>
+				<ActionButton
+					label={copyLabel}
+					icon={copyState === "copied" ? Check : Copy}
+					disabled={updatesText === ""}
+					onClick={copyUpdates}
+				/>
+			</div>
 			<table>
 				<thead>
 					<tr>
