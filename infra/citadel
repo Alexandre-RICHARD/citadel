@@ -500,8 +500,10 @@ auto_rollback() {
 # déploiement annulé). Elles se retéléchargent si besoin.
 cleanup_old_versions() {
 	local keep
-	# Les plus récentes d'abord, sans doublon (un retour arrière répète une version)
-	keep=$(successful_versions | tac | awk '!seen[$0]++' | head -n "$KEEP_VERSIONS")
+	# Les plus récentes d'abord, sans doublon (un retour arrière répète une version).
+	# Pas de « head » : il quitte avant la fin de l'historique, tac reçoit SIGPIPE (code 141)
+	# et pipefail fait échouer tout le déploiement. awk lit tout et garde les N premières.
+	keep=$(successful_versions | tac | awk -v max="$KEEP_VERSIONS" '!seen[$0]++ && ++kept <= max')
 	docker image ls --format '{{.Repository}}:{{.Tag}}' | { grep "^$REGISTRY/citadel-" || true; } |
 		while read -r image; do
 			# Une image encore utilisée par un conteneur refuse d'être supprimée : tant mieux
