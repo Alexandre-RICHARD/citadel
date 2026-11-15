@@ -24,11 +24,11 @@ export function AccessSection() {
 			>
 				Accès externes
 			</h2>
+			<TrafficCard
+				traffic={traffic.data}
+				error={traffic.error}
+			/>
 			<div className={styles.cards}>
-				<TrafficCard
-					traffic={traffic.data}
-					error={traffic.error}
-				/>
 				<ScansCard
 					traffic={traffic.data}
 					now={traffic.updatedAt}
