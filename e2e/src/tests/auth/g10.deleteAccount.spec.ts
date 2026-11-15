@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { E2EUrlEnum } from "../../dictionaries/e2eUrl.enum.ts";
 import { createGdcData } from "../../helpers/api/createGdcData.ts";
+import { ANSWER_TIMEOUT_MS } from "../../helpers/forms/answerTimeout.ts";
 import { retryUntilAnswered } from "../../helpers/forms/retryUntilAnswered.ts";
 import { waitForMailWithSubject } from "../../helpers/mail/waitForMailWithSubject.ts";
 import { backToCitadel } from "../../helpers/navigation/backToCitadel.ts";
@@ -82,7 +83,7 @@ test.describe("Profil : suppression du compte", () => {
 					.fill(computeTotp(secret, 1));
 				await deleteButton.click();
 				await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.HOMEPAGE}`), {
-					timeout: 3_000,
+					timeout: ANSWER_TIMEOUT_MS,
 				});
 			});
 			await expect(
