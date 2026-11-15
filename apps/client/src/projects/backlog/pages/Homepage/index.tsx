@@ -115,14 +115,22 @@ export function Homepage() {
 		);
 	}
 
+	// Trier ou filtrer change les lignes affichées : les jeux dépliés se referment
+	const changeView = useCallback(
+		(update: (current: BacklogView) => BacklogView) => {
+			setExpandedGameIds([]);
+			setView(update);
+		},
+		[],
+	);
 	const changeFilter = useCallback(
 		(column: BacklogColumnEnum, filter: ColumnFilter | null) => {
-			setView((current) => ({
+			changeView((current) => ({
 				...current,
 				filters: setColumnFilter(current.filters, column, filter),
 			}));
 		},
-		[],
+		[changeView],
 	);
 	const toggleExpanded = useCallback(
 		(gameId: number) =>
@@ -224,16 +232,16 @@ export function Homepage() {
 		overview,
 		expandedGameIds,
 		onToggleSort: (column) =>
-			setView((current) => ({
+			changeView((current) => ({
 				...current,
 				sort: toggleSort(current.sort, column),
 			})),
 		onFilterChange: changeFilter,
 		onFilterModeChange: (filterMode) =>
-			setView((current) => ({ ...current, filterMode })),
+			changeView((current) => ({ ...current, filterMode })),
 		// Sans filtre, la combinaison revient à « et »
 		onClearFilters: () =>
-			setView((current) => ({
+			changeView((current) => ({
 				...current,
 				filters: [],
 				filterMode: FilterModeEnum.AND,
