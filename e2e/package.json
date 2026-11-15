@@ -24,7 +24,7 @@
   "devDependencies": {
     "@citadel/eslint-config": "workspace:*",
     "@citadel/typescript-config": "workspace:*",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.65.1",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "globals": "catalog:",
