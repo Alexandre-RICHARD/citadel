@@ -24,6 +24,8 @@ async function failToLogIn(
 	);
 	await fillLoginForm(page, { identifier, password });
 	const response = await responsePromise;
+	// Le timing n'est complet qu'une fois le corps reçu : waitForResponse rend la main dès les en-têtes
+	await response.finished();
 	// responseEnd est déjà une durée depuis le début de la requête (startTime est, lui, absolu) ; -1 si non mesurée
 	const { responseEnd } = response.request().timing();
 	expect(responseEnd, "durée de la réponse non mesurée").toBeGreaterThan(0);
