@@ -16,6 +16,7 @@ import { Callout } from "../../../../components/Callout";
 import { Modal } from "../../../../components/Modal";
 import { mediaImportRejectionLabels } from "../../../../helper/label/mediaImportRejectionLabels";
 import { mediaTypeLabels } from "../../../../helper/label/mediaTypeLabels";
+import { decodeCsvText } from "../../../../helper/media/decodeCsvText";
 import type { MediaImportCsv } from "../../../../helper/media/mediaImportCsv.type";
 import { parseMediaImportCsv } from "../../../../helper/media/parseMediaImportCsv";
 import mediaStyles from "../../../../media.module.scss";
@@ -139,7 +140,7 @@ export function ImportMediaModal({ onClose }: Props) {
 
 	async function readFile(file: File): Promise<void> {
 		setFileName(file.name);
-		setCsv(parseMediaImportCsv(await file.text()));
+		setCsv(parseMediaImportCsv(decodeCsvText(await file.arrayBuffer())));
 	}
 
 	let body;
