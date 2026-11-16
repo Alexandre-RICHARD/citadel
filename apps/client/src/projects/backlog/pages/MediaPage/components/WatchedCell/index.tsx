@@ -10,6 +10,7 @@ import { planWatchedChange } from "../../../../helper/media/planWatchedChange";
 import type { WatchedTarget } from "../../../../helper/media/watchedTarget.type";
 import mediaStyles from "../../../../media.module.scss";
 import type { MediaTableControls } from "../../mediaTableControls.type";
+import { useMediaMode } from "../../useMediaMode";
 
 type Props = {
 	userMediaId: number;
@@ -42,7 +43,7 @@ export function WatchedCell({
 }: Props) {
 	const updateUserMedia = useUpdateUserMedia(userMediaId, "watched");
 	const setEpisodesWatched = useSetEpisodesWatched(userMediaId);
-	const loadShowSeasons = useLoadShowSeasons();
+	const loadShowSeasons = useLoadShowSeasons(useMediaMode().nas !== null);
 	const progressText =
 		progress === null || progress.airedCount === 0 || isWatched ? null : (
 			<span

@@ -2,6 +2,7 @@ import {
 	EllipsisVertical,
 	Globe,
 	ListOrdered,
+	MonitorPlay,
 	Palette,
 	Trash2,
 } from "lucide-react";
@@ -13,7 +14,9 @@ import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Menu } from "../../../../components/Menu";
 import type { MenuItem } from "../../../../components/Menu/menuItem.type";
+import { buildJellyfinItemUrl } from "../../../../helper/nas/buildJellyfinItemUrl";
 import type { MediaTableControls } from "../../mediaTableControls.type";
+import { useMediaMode } from "../../useMediaMode";
 
 type Props = {
 	row: MediaRowFm;
@@ -35,6 +38,19 @@ export function MediaActionsCell({ row, table }: Props) {
 	const pointerAnchorRef = useRef<HTMLSpanElement>(null);
 	const rowRef = useRef<HTMLElement | null>(null);
 	const { popover, setPopover, openModal } = table;
+	const { nas } = useMediaMode();
+	const jellyfinItemId = row.nas?.jellyfinItemId ?? null;
+	const jellyfinUrl =
+		nas?.jellyfin === null ||
+		nas?.jellyfin === undefined ||
+		jellyfinItemId === null
+			? null
+			: buildJellyfinItemUrl(
+					nas.jellyfin.hostname,
+					nas.jellyfin.port,
+					nas.jellyfin.serverId,
+					jellyfinItemId,
+				);
 	const { userMediaId, saga } = row;
 	const isOpen =
 		popover?.kind === "actionsMenu" && popover.userMediaId === userMediaId;
@@ -72,6 +88,19 @@ export function MediaActionsCell({ row, table }: Props) {
 			isGroupStart: true,
 			onSelect: () => undefined,
 		},
+		// Mode connecté : la page de l'élément dans Jellyfin, d'où « Lire » démarre la lecture (§5)
+		...(nas === null
+			? []
+			: [
+					{
+						label: "Ouvrir dans Jellyfin",
+						icon: MonitorPlay,
+						href: jellyfinUrl,
+						disabledReason:
+							jellyfinUrl === null ? "Ce média n’est pas dans Jellyfin" : null,
+						onSelect: () => undefined,
+					},
+				]),
 		{
 			label: "Retirer du backlog",
 			icon: Trash2,

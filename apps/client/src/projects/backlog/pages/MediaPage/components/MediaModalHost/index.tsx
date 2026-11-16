@@ -1,23 +1,25 @@
-import type { MediaColumnEnum } from "@citadel/specs/src/projects/backlog/enum/mediaColumn.enum";
+import type { ConnectedMediaColumn } from "@citadel/specs/src/projects/backlog/helper/view/connectedMediaColumn.type";
 
 import type { ColumnSetting } from "../../../../helper/view/columnSetting.type";
-import { mediaTable } from "../../../../helper/view/mediaTable";
 import { ColumnsModal } from "../../../Homepage/components/ColumnsModal";
 import type { MediaModal } from "../../mediaModal.type";
+import { useMediaMode } from "../../useMediaMode";
 import { AddMediaModal } from "../AddMediaModal";
 import { ConfirmMediaRemovalModal } from "../ConfirmMediaRemovalModal";
+import { ConfirmVerifiedModal } from "../ConfirmVerifiedModal";
 import { ConfirmWatchedModal } from "../ConfirmWatchedModal";
 import { CustomizeMediaModal } from "../CustomizeMediaModal";
 import { ImportMediaModal } from "../ImportMediaModal";
 import { ReorderSagaModal } from "../ReorderSagaModal";
 import { ShowUpdatesModal } from "../ShowUpdatesModal";
+import { UnlockNasModal } from "../UnlockNasModal";
 
 type Props = {
 	modal: MediaModal;
-	columns: ColumnSetting<MediaColumnEnum>[];
+	columns: ColumnSetting<ConnectedMediaColumn>[];
 	onClose: () => void;
-	onToggleColumn: (key: MediaColumnEnum) => void;
-	onMoveColumn: (key: MediaColumnEnum, offset: -1 | 1) => void;
+	onToggleColumn: (key: ConnectedMediaColumn) => void;
+	onMoveColumn: (key: ConnectedMediaColumn, offset: -1 | 1) => void;
 };
 
 // La modale ouverte du backlog des films et séries ; chacune a sa propre fenêtre (key) : défilement, focus et saisie repartent de zéro
@@ -28,6 +30,7 @@ export function MediaModalHost({
 	onToggleColumn,
 	onMoveColumn,
 }: Props) {
+	const { table } = useMediaMode();
 	switch (modal.kind) {
 		case "addMedia":
 			return (
@@ -71,6 +74,18 @@ export function MediaModalHost({
 					onClose={onClose}
 				/>
 			);
+		case "confirmVerified":
+			return (
+				<ConfirmVerifiedModal
+					userMediaId={modal.userMediaId}
+					title={modal.title}
+					subject={modal.subject}
+					plan={modal.plan}
+					onClose={onClose}
+				/>
+			);
+		case "unlockNas":
+			return <UnlockNasModal onClose={onClose} />;
 		case "importList":
 			return <ImportMediaModal onClose={onClose} />;
 		case "showUpdates":
@@ -78,7 +93,7 @@ export function MediaModalHost({
 		case "editColumns":
 			return (
 				<ColumnsModal
-					table={mediaTable}
+					table={table}
 					columns={columns}
 					onToggleVisibility={onToggleColumn}
 					onMove={onMoveColumn}

@@ -4,6 +4,7 @@ import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/c
 import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
 import { MediaColumnEnum } from "@citadel/specs/src/projects/backlog/enum/mediaColumn.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
+import type { ConnectedMediaColumn } from "@citadel/specs/src/projects/backlog/helper/view/connectedMediaColumn.type";
 import { FileUp, RefreshCw } from "lucide-react";
 import {
 	Suspense,
@@ -18,12 +19,15 @@ import {
 import { QueryErrorBoundary } from "../../../../react/QueryErrorBoundary";
 import { backlogErrorReasons } from "../../api/backlogErrorReasons";
 import { useMediaRows } from "../../api/media/useMediaRows";
+import type { NasStatusFm } from "../../api/model/nas/nasStatusFm.type";
+import { useNasStatus } from "../../api/nas/useNasStatus";
 import styles from "../../backlog.module.scss";
 import { Button } from "../../components/Button";
 import { Toolbar } from "../../components/Toolbar";
 import type { BacklogView } from "../../helper/view/backlogView.type";
 import { buildViewParams } from "../../helper/view/buildViewParams";
 import type { ColumnSetting } from "../../helper/view/columnSetting.type";
+import { connectedMediaTable } from "../../helper/view/connectedMediaTable";
 import { keepVisibleView } from "../../helper/view/keepVisibleView";
 import { loadSavedColumns } from "../../helper/view/loadSavedColumns";
 import { mediaTable } from "../../helper/view/mediaTable";
@@ -31,34 +35,41 @@ import { moveColumn } from "../../helper/view/moveColumn";
 import { readViewFromUrl } from "../../helper/view/readViewFromUrl";
 import { saveColumns } from "../../helper/view/saveColumns";
 import { setColumnFilter } from "../../helper/view/setColumnFilter";
+import type { TableDefinition } from "../../helper/view/tableDefinition.type";
 import { toggleColumnVisibility } from "../../helper/view/toggleColumnVisibility";
 import { toggleSort } from "../../helper/view/toggleSort";
 import { useEditModeTimeout } from "../Homepage/useEditModeTimeout";
+import { ForgottenMediaPanel } from "./components/ForgottenMediaPanel";
 import { MediaModalHost } from "./components/MediaModalHost";
 import { MediaTable } from "./components/MediaTable";
 import { MEDIA_ROWS_PLACEHOLDER } from "./components/MediaTable/mediaRowsPlaceholder";
+import { NasToolbarStatus } from "./components/NasToolbarStatus";
 import { TmdbAttribution } from "./components/TmdbAttribution";
 import { TmdbSearchBar } from "./components/TmdbSearchBar";
 import type { MediaModal } from "./mediaModal.type";
+import type { MediaMode } from "./mediaMode.type";
+import { MediaModeContext } from "./mediaModeContext";
 import type { MediaTableControls } from "./mediaTableControls.type";
 import type { MediaTablePopover } from "./mediaTablePopover.type";
 import type { MediaTableSettings } from "./mediaTableSettings.type";
 
-type View = BacklogView<MediaColumnEnum>;
+type View = BacklogView<ConnectedMediaColumn>;
 
 type LoadedMediaTableProps = {
 	// La vue lue sur le serveur : celle d'avant reste affichée tant que la nouvelle n'est pas arrivée
 	readView: View;
+	isConnected: boolean;
 	settings: MediaTableSettings;
 	table: MediaTableControls;
 };
 
 function LoadedMediaTable({
 	readView,
+	isConnected,
 	settings,
 	table,
 }: LoadedMediaTableProps) {
-	const rows = useMediaRows(readView);
+	const rows = useMediaRows(readView, isConnected);
 	return (
 		<MediaTable
 			rows={rows.rows}
@@ -76,28 +87,36 @@ function LoadedMediaTable({
 }
 
 // Le tri et les filtres de l'URL, sans les colonnes masquées dans ce navigateur
-function readInitialView(): View {
+function readInitialView(
+	definition: TableDefinition<ConnectedMediaColumn>,
+): View {
 	return keepVisibleView(
-		readViewFromUrl(mediaTable, window.location.search),
-		loadSavedColumns(mediaTable) ?? mediaTable.defaultColumns,
+		readViewFromUrl(definition, window.location.search),
+		loadSavedColumns(definition) ?? definition.defaultColumns,
 	);
 }
 
+type MediaPageContentProps = {
+	status: NasStatusFm;
+};
+
 /**
- * Le backlog des films et séries, en mode classique (§2) : le tableau des jeux, avec ses colonnes, ses saisons et ses
- * épisodes dépliables (une seule série et une seule saison à la fois), la recherche TMDB, l'import de liste et les
- * nouveautés des séries
+ * Le backlog des films et séries (§2) : le tableau des jeux, avec ses colonnes, ses saisons et ses épisodes dépliables
+ * (une seule série et une seule saison à la fois), la recherche TMDB, l'import de liste et les nouveautés des séries. En
+ * mode connecté, les colonnes du NAS, les médias oubliés et la date du relevé en plus
  */
-export function MediaPage() {
+function MediaPageContent({ status }: MediaPageContentProps) {
+	const isConnected = status.isUnlocked;
+	const definition = isConnected ? connectedMediaTable : mediaTable;
 	const [modal, setModal] = useState<MediaModal | null>(null);
 	const [popover, setPopover] = useState<MediaTablePopover | null>(null);
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [expandedShowId, setExpandedShowId] = useState<number | null>(null);
 	const [expandedSeasonId, setExpandedSeasonId] = useState<number | null>(null);
-	const [columns, setColumns] = useState<ColumnSetting<MediaColumnEnum>[]>(
-		() => loadSavedColumns(mediaTable) ?? [...mediaTable.defaultColumns],
+	const [columns, setColumns] = useState<ColumnSetting<ConnectedMediaColumn>[]>(
+		() => loadSavedColumns(definition) ?? [...definition.defaultColumns],
 	);
-	const [view, setView] = useState<View>(readInitialView);
+	const [view, setView] = useState<View>(() => readInitialView(definition));
 	const deferredView = useDeferredValue(view);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const isModalOpen = modal !== null;
@@ -116,7 +135,10 @@ export function MediaPage() {
 		setView(update);
 	}, []);
 	const changeFilter = useCallback(
-		(column: MediaColumnEnum, filter: ColumnFilter<MediaColumnEnum> | null) => {
+		(
+			column: ConnectedMediaColumn,
+			filter: ColumnFilter<ConnectedMediaColumn> | null,
+		) => {
 			changeView((current) => ({
 				...current,
 				filters: setColumnFilter(current.filters, column, filter),
@@ -150,8 +172,8 @@ export function MediaPage() {
 	);
 
 	// Une colonne masquée sort du tri et des filtres
-	function changeColumnVisibility(key: MediaColumnEnum) {
-		const nextColumns = toggleColumnVisibility(mediaTable, columns, key);
+	function changeColumnVisibility(key: ConnectedMediaColumn) {
+		const nextColumns = toggleColumnVisibility(definition, columns, key);
 		setColumns(nextColumns);
 		setView((current) => keepVisibleView(current, nextColumns));
 	}
@@ -161,8 +183,8 @@ export function MediaPage() {
 
 	// La disposition des colonnes se garde dans le navigateur
 	useEffect(() => {
-		saveColumns(mediaTable, columns);
-	}, [columns]);
+		saveColumns(definition, columns);
+	}, [definition, columns]);
 
 	// Le tri et les filtres se gardent dans l'URL, sans toucher à l'état du routeur
 	useEffect(() => {
@@ -291,6 +313,10 @@ export function MediaPage() {
 						>
 							Récupérer les nouveautés des séries
 						</Button>
+						<NasToolbarStatus
+							nas={status}
+							onUnlock={() => openModal({ kind: "unlockNas" })}
+						/>
 					</>
 				}
 				isEditMode={isEditMode}
@@ -298,6 +324,7 @@ export function MediaPage() {
 				onOpenColumns={() => openModal({ kind: "editColumns" })}
 			/>
 			<main className={styles.main}>
+				{isConnected && <ForgottenMediaPanel table={table} />}
 				<QueryErrorBoundary
 					actionLabel="charger les films et séries"
 					errorReasons={backlogErrorReasons}
@@ -322,6 +349,7 @@ export function MediaPage() {
 					>
 						<LoadedMediaTable
 							readView={deferredView}
+							isConnected={isConnected}
 							settings={settings}
 							table={table}
 						/>
@@ -341,5 +369,29 @@ export function MediaPage() {
 				/>
 			)}
 		</div>
+	);
+}
+
+/**
+ * Le backlog des films et séries : le mode connecté (instance locale du NAS, déverrouillée) est lu d'abord, le temps
+ * d'une requête ; il choisit les colonnes et l'endpoint du tableau. Changer de mode recrée la page, colonnes comprises
+ */
+export function MediaPage() {
+	const status = useNasStatus();
+	const mode = useMemo<MediaMode>(
+		() =>
+			status?.isUnlocked === true
+				? { table: connectedMediaTable, nas: status }
+				: { table: mediaTable, nas: null },
+		[status],
+	);
+	if (status === undefined) return <div className={styles.page} />;
+	return (
+		<MediaModeContext.Provider value={mode}>
+			<MediaPageContent
+				key={status.isUnlocked ? "connected" : "classic"}
+				status={status}
+			/>
+		</MediaModeContext.Provider>
 	);
 }

@@ -1,5 +1,5 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import type { MediaColumnEnum } from "@citadel/specs/src/projects/backlog/enum/mediaColumn.enum";
+import type { ConnectedMediaColumn } from "@citadel/specs/src/projects/backlog/helper/view/connectedMediaColumn.type";
 import { Clapperboard, FileUp, FunnelX, Search, SearchX } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -149,7 +149,7 @@ export function MediaTable({
 							hasFilters={filters.length > 0}
 							onClearFilters={clearFilters}
 						/>
-						{visibleColumns.map((column: MediaColumnEnum) => (
+						{visibleColumns.map((column: ConnectedMediaColumn) => (
 							<th
 								key={column}
 								className={cellClassNames[column]}

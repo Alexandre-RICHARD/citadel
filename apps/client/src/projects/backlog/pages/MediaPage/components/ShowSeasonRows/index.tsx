@@ -1,5 +1,7 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { MediaColumnEnum } from "@citadel/specs/src/projects/backlog/enum/mediaColumn.enum";
+import { NasColumnEnum } from "@citadel/specs/src/projects/backlog/enum/nasColumn.enum";
+import type { ConnectedMediaColumn } from "@citadel/specs/src/projects/backlog/helper/view/connectedMediaColumn.type";
 import { ChevronRight, CircleAlert, CornerDownRight } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -13,26 +15,24 @@ import type { ShowSeasonFm } from "../../../../api/model/media/showSeasonFm.type
 import styles from "../../../../backlog.module.scss";
 import { Spinner } from "../../../../components/Spinner";
 import { Tooltip } from "../../../../components/Tooltip";
-import { formatDuration } from "../../../../helper/format/formatDuration";
+import { isNasColumn } from "../../../../helper/view/isNasColumn";
 import mediaStyles from "../../../../media.module.scss";
 import { ReleaseDateLabel } from "../../../Homepage/components/ReleaseDateLabel";
 import type { MediaTableControls } from "../../mediaTableControls.type";
+import { useMediaMode } from "../../useMediaMode";
 import { MediaThumbnail } from "../MediaThumbnail";
+import { NasCell } from "../NasCell";
+import { RuntimeCell } from "../RuntimeCell";
+import { VerifiedCell } from "../VerifiedCell";
 import { WatchedCell } from "../WatchedCell";
 
 type Props = {
 	row: MediaRowFm;
-	columns: MediaColumnEnum[];
-	cellClassNames: Partial<Record<MediaColumnEnum, string>>;
+	columns: ConnectedMediaColumn[];
+	cellClassNames: Partial<Record<ConnectedMediaColumn, string>>;
 	expandedSeasonId: number | null;
 	table: MediaTableControls;
 };
-
-function renderRuntime(runtimeMinutes: number | null): ReactNode {
-	return runtimeMinutes === null ? null : (
-		<span className={styles.number}>{formatDuration(runtimeMinutes)}</span>
-	);
-}
 
 /**
  * Sous-lignes d'une série dépliée : une par saison, les épisodes spéciaux à la fin, puis les épisodes de la saison
@@ -45,7 +45,10 @@ export function ShowSeasonRows({
 	expandedSeasonId,
 	table,
 }: Props) {
-	const { seasons, error } = useShowSeasons(row.userMediaId);
+	const { seasons, error } = useShowSeasons(
+		row.userMediaId,
+		useMediaMode().nas !== null,
+	);
 	const isEditable = !row.isTemporary;
 
 	if (seasons === undefined)
@@ -74,7 +77,7 @@ export function ShowSeasonRows({
 		);
 
 	function renderSeasonCell(
-		column: MediaColumnEnum,
+		column: ConnectedMediaColumn,
 		season: ShowSeasonFm,
 	): ReactNode {
 		switch (column) {
@@ -100,7 +103,12 @@ export function ShowSeasonRows({
 					/>
 				);
 			case MediaColumnEnum.RUNTIME:
-				return renderRuntime(season.runtimeMinutes);
+				return (
+					<RuntimeCell
+						runtimeMinutes={season.runtimeMinutes}
+						nas={season.nas}
+					/>
+				);
 			case MediaColumnEnum.WATCHED:
 				return (
 					<WatchedCell
@@ -117,13 +125,31 @@ export function ShowSeasonRows({
 						table={table}
 					/>
 				);
+			case NasColumnEnum.VERIFIED:
+				return (
+					<VerifiedCell
+						userMediaId={row.userMediaId}
+						title={row.title}
+						target={{ kind: "season", seasonId: season.seasonId }}
+						subject={season.name}
+						nas={season.nas}
+						isDisabled={!isEditable}
+						table={table}
+					/>
+				);
 			default:
-				return null;
+				return isNasColumn(column) ? (
+					<NasCell
+						column={column}
+						nas={season.nas}
+						mediaType={row.mediaType}
+					/>
+				) : null;
 		}
 	}
 
 	function renderEpisodeCell(
-		column: MediaColumnEnum,
+		column: ConnectedMediaColumn,
 		episode: ShowEpisodeFm,
 	): ReactNode {
 		switch (column) {
@@ -156,7 +182,12 @@ export function ShowSeasonRows({
 					/>
 				);
 			case MediaColumnEnum.RUNTIME:
-				return renderRuntime(episode.runtimeMinutes);
+				return (
+					<RuntimeCell
+						runtimeMinutes={episode.runtimeMinutes}
+						nas={episode.nas}
+					/>
+				);
 			case MediaColumnEnum.WATCHED:
 				return (
 					<WatchedCell
@@ -170,8 +201,26 @@ export function ShowSeasonRows({
 						table={table}
 					/>
 				);
+			case NasColumnEnum.VERIFIED:
+				return (
+					<VerifiedCell
+						userMediaId={row.userMediaId}
+						title={row.title}
+						target={{ kind: "episode", episodeId: episode.episodeId }}
+						subject={`l’épisode ${episode.episodeNumber}`}
+						nas={episode.nas}
+						isDisabled={!isEditable}
+						table={table}
+					/>
+				);
 			default:
-				return null;
+				return isNasColumn(column) ? (
+					<NasCell
+						column={column}
+						nas={episode.nas}
+						mediaType={row.mediaType}
+					/>
+				) : null;
 		}
 	}
 

@@ -24,6 +24,7 @@ function buildPlaceholderRow(userMediaId: number, title: string): MediaRowFm {
 		isInProgress: false,
 		comment: null,
 		isTemporary: false,
+		nas: null,
 	};
 }
 

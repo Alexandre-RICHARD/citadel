@@ -2,6 +2,7 @@ import type { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/med
 
 import type { MediaRowFm } from "../../api/model/media/mediaRowFm.type";
 import type { WatchedPlan } from "../../helper/media/watchedPlan.type";
+import type { VerifiedPlan } from "../../helper/nas/verifiedPlan.type";
 
 // La modale ouverte du backlog des films et séries, avec seulement ce qui l'identifie : chacune lit ses données et garde sa saisie
 export type MediaModal =
@@ -26,6 +27,16 @@ export type MediaModal =
 			subject: string;
 			plan: Exclude<WatchedPlan, { kind: "direct" }>;
 	  }
+	// Une case « Vérifié » qui touche plusieurs épisodes (mode connecté)
+	| {
+			kind: "confirmVerified";
+			userMediaId: number;
+			title: string;
+			subject: string;
+			plan: VerifiedPlan;
+	  }
+	// Le mot de passe des médias, pour ouvrir le mode connecté
+	| { kind: "unlockNas" }
 	| { kind: "importList" }
 	| { kind: "showUpdates" }
 	| { kind: "editColumns" };

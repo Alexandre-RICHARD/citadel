@@ -2,6 +2,8 @@ import { isTextField } from "@citadel/common/src/browser/dom/isTextField";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
 import { MediaColumnEnum } from "@citadel/specs/src/projects/backlog/enum/mediaColumn.enum";
 import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum";
+import { NasColumnEnum } from "@citadel/specs/src/projects/backlog/enum/nasColumn.enum";
+import type { ConnectedMediaColumn } from "@citadel/specs/src/projects/backlog/helper/view/connectedMediaColumn.type";
 import { ChevronRight } from "lucide-react";
 import {
 	type KeyboardEvent,
@@ -14,22 +16,26 @@ import type { MediaRowFm } from "../../../../api/model/media/mediaRowFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
 import { focusSiblingRow } from "../../../../helper/dom/focusSiblingRow";
-import { formatDuration } from "../../../../helper/format/formatDuration";
 import { getLanguageLabel } from "../../../../helper/media/getLanguageLabel";
 import { getRowKeyAction } from "../../../../helper/table/getRowKeyAction";
+import nasStyles from "../../../../nas.module.scss";
 import { ReleaseDateLabel } from "../../../Homepage/components/ReleaseDateLabel";
 import type { MediaTableControls } from "../../mediaTableControls.type";
+import { JellyfinCollectionNote } from "../JellyfinCollectionNote";
 import { MediaActionsCell } from "../MediaActionsCell";
 import { MediaDataCell } from "../MediaDataCell";
 import { MediaThumbnail } from "../MediaThumbnail";
 import { MediaTypeIcon } from "../MediaTypeIcon";
+import { NasCell } from "../NasCell";
+import { RuntimeCell } from "../RuntimeCell";
 import { ShowSeasonRows } from "../ShowSeasonRows";
+import { VerifiedCell } from "../VerifiedCell";
 import { WatchedCell } from "../WatchedCell";
 
 type Props = {
 	row: MediaRowFm;
-	columns: MediaColumnEnum[];
-	cellClassNames: Partial<Record<MediaColumnEnum, string>>;
+	columns: ConnectedMediaColumn[];
+	cellClassNames: Partial<Record<ConnectedMediaColumn, string>>;
 	// Série dépliée : ses saisons suivent, et `expandedSeasonId` dit laquelle montre ses épisodes
 	isExpanded: boolean;
 	expandedSeasonId: number | null;
@@ -85,7 +91,7 @@ export const MediaRowGroup = memo(function MediaRowGroup({
 		else table.openModal({ kind: "confirmRemoval", row });
 	}
 
-	function renderCell(column: MediaColumnEnum): ReactNode {
+	function renderCell(column: ConnectedMediaColumn): ReactNode {
 		switch (column) {
 			case MediaColumnEnum.THUMBNAIL:
 				return <MediaThumbnail path={row.imagePath} />;
@@ -106,20 +112,29 @@ export const MediaRowGroup = memo(function MediaRowGroup({
 					? null
 					: getLanguageLabel(row.originalLanguage);
 			// Un clic sur la saga filtre le tableau sur ses médias, aussi en lecture seule
+			// En mode connecté, la collection Jellyfin dessous, signalée quand son nom diffère (§5)
 			case MediaColumnEnum.SAGA:
-				return row.saga === null ? null : (
-					<span className={styles.seriesCell}>
-						<Tooltip content="Filtrer sur cette saga">
-							<button
-								type="button"
-								className={styles.seriesButton}
-								onClick={() => {
-									if (row.saga !== null) table.filterOnSaga(row.saga.name);
-								}}
-							>
-								{row.saga.name}
-							</button>
-						</Tooltip>
+				return (
+					<span className={nasStyles.stack}>
+						{row.saga !== null && (
+							<span className={styles.seriesCell}>
+								<Tooltip content="Filtrer sur cette saga">
+									<button
+										type="button"
+										className={styles.seriesButton}
+										onClick={() => {
+											if (row.saga !== null) table.filterOnSaga(row.saga.name);
+										}}
+									>
+										{row.saga.name}
+									</button>
+								</Tooltip>
+							</span>
+						)}
+						<JellyfinCollectionNote
+							sagaName={row.saga?.name ?? null}
+							collection={row.nas?.jellyfinCollection ?? null}
+						/>
 					</span>
 				);
 			case MediaColumnEnum.SAGA_NUMBER:
@@ -134,10 +149,11 @@ export const MediaRowGroup = memo(function MediaRowGroup({
 					/>
 				);
 			case MediaColumnEnum.RUNTIME:
-				return row.runtimeMinutes === null ? null : (
-					<span className={styles.number}>
-						{formatDuration(row.runtimeMinutes)}
-					</span>
+				return (
+					<RuntimeCell
+						runtimeMinutes={row.runtimeMinutes}
+						nas={row.nas}
+					/>
 				);
 			case MediaColumnEnum.IN_PROGRESS:
 			case MediaColumnEnum.UP_NEXT:
@@ -180,8 +196,26 @@ export const MediaRowGroup = memo(function MediaRowGroup({
 						table={table}
 					/>
 				);
+			case NasColumnEnum.VERIFIED:
+				return (
+					<VerifiedCell
+						userMediaId={row.userMediaId}
+						title={row.title}
+						target={isShow ? { kind: "show" } : null}
+						subject={isShow ? "la série" : "le film"}
+						nas={row.nas}
+						isDisabled={row.isTemporary}
+						table={table}
+					/>
+				);
 			default:
-				return null;
+				return (
+					<NasCell
+						column={column}
+						nas={row.nas}
+						mediaType={row.mediaType}
+					/>
+				);
 		}
 	}
 
