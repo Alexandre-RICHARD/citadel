@@ -11,6 +11,10 @@ export function fromTmdbShowResponse(
 	show: TmdbTvShowResponse,
 	seasons: TmdbSeasonResponse[],
 ): TmdbShowData {
+	// L'identifiant de chaque saison est dans la liste de la fiche, pas dans la saison lue à part
+	const seasonIds = new Map(
+		(show.seasons ?? []).map((season) => [season.season_number, season.id]),
+	);
 	return {
 		id: show.id,
 		name: trimToNull(show.name) ?? show.original_name,
@@ -21,7 +25,11 @@ export function fromTmdbShowResponse(
 		posterPath: trimToNull(show.poster_path),
 		isOngoing: isOngoingTmdbShow(show.status, show.in_production),
 		seasons: seasons
-			.map(fromTmdbSeasonResponse)
+			.flatMap((season) => {
+				const id = seasonIds.get(season.season_number);
+				// Sans identifiant dans la liste de la série, la saison ne peut pas être rangée en base
+				return id === undefined ? [] : [fromTmdbSeasonResponse(season, id)];
+			})
 			.sort((first, second) => first.seasonNumber - second.seasonNumber),
 	};
 }

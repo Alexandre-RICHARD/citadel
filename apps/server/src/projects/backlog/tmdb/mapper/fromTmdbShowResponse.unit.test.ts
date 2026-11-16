@@ -21,12 +21,10 @@ const SHOW: TmdbTvShowResponse = {
 };
 
 function buildSeason(
-	id: number,
 	seasonNumber: number,
 	overrides: Partial<TmdbSeasonResponse> = {},
 ): TmdbSeasonResponse {
 	return {
-		id,
 		season_number: seasonNumber,
 		name: `Saison ${seasonNumber}`,
 		air_date: "2008-01-20",
@@ -56,8 +54,8 @@ describe("fromTmdbShowResponse.ts", () => {
 	describe("seasons", () => {
 		it("SHOULD sort the seasons by number, specials first", () => {
 			const result = fromTmdbShowResponse(SHOW, [
-				buildSeason(3577, 1),
-				buildSeason(3572, 0),
+				buildSeason(1),
+				buildSeason(0),
 			]);
 
 			expect(
@@ -65,9 +63,20 @@ describe("fromTmdbShowResponse.ts", () => {
 			).toStrictEqual([0, 1]);
 		});
 
+		it("SHOULD take the season id from the show list, the season read apart having none, and skip a season the list lacks", () => {
+			const result = fromTmdbShowResponse(SHOW, [
+				buildSeason(1),
+				buildSeason(7),
+			]);
+
+			expect(
+				result.seasons.map(({ id, seasonNumber }) => [id, seasonNumber]),
+			).toStrictEqual([[3577, 1]]);
+		});
+
 		it("SHOULD keep each episode and name the unnamed ones as TMDB does in French", () => {
 			const result = fromTmdbShowResponse(SHOW, [
-				buildSeason(3577, 1, {
+				buildSeason(1, {
 					name: "",
 					episodes: [
 						{

@@ -7,9 +7,10 @@ import type { TmdbSeasonResponse } from "../type/tmdbSeasonResponse.type.ts";
 // Un nom vide chez TMDB : « Saison 2 », « Épisode 5 », comme TMDB les nomme en français
 export function fromTmdbSeasonResponse(
 	season: TmdbSeasonResponse,
+	id: number,
 ): TmdbSeasonData {
 	return {
-		id: season.id,
+		id,
 		seasonNumber: season.season_number,
 		name: trimToNull(season.name) ?? `Saison ${season.season_number}`,
 		airDate: trimToNull(season.air_date),
