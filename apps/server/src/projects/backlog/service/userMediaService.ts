@@ -1,5 +1,6 @@
 import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
+import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 import type { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
@@ -7,13 +8,17 @@ import { ConflictError } from "../../../error/ConflictError.ts";
 import { NotFoundError } from "../../../error/NotFoundError.ts";
 import type { CreateUserMediaBean } from "../bean/createUserMediaBean.type.ts";
 import type { CustomizeUserMediaBean } from "../bean/customizeUserMediaBean.type.ts";
+import type { GetAllUserMediaBean } from "../bean/getAllUserMediaBean.type.ts";
 import type { MediaCustomizationBean } from "../bean/mediaCustomizationBean.type.ts";
 import type { SetEpisodesWatchedBean } from "../bean/setEpisodesWatchedBean.type.ts";
+import type { ShowSeasonBean } from "../bean/showSeasonBean.type.ts";
 import type { UpdateUserMediaBean } from "../bean/updateUserMediaBean.type.ts";
 import type { UserMediaBean } from "../bean/userMediaBean.type.ts";
 import type { UserMediaIdBean } from "../bean/userMediaIdBean.type.ts";
+import type { UserMediaPageBean } from "../bean/userMediaPageBean.type.ts";
 import { fetchMediaUnlessStored } from "../helper/fetchMediaUnlessStored.ts";
 import { loadUserMediaBean } from "../helper/loadUserMediaBean.ts";
+import { loadUserMediaBeans } from "../helper/loadUserMediaBeans.ts";
 import { resolveSagaPlacement } from "../helper/resolveSagaPlacement.ts";
 import { storeFetchedMedia } from "../helper/storeFetchedMedia.ts";
 import type { UserMedia } from "../models/UserMedia.ts";
@@ -21,6 +26,7 @@ import { getMovieCollectionQuery } from "../query/movie/getMovieCollectionQuery.
 import { deleteUnusedSagasQuery } from "../query/saga/deleteUnusedSagasQuery.ts";
 import { linkCollectionToSagaQuery } from "../query/saga/linkCollectionToSagaQuery.ts";
 import { updateSagaNumbersQuery } from "../query/saga/updateSagaNumbersQuery.ts";
+import { getShowSeasonsQuery } from "../query/tvShow/getShowSeasonsQuery.ts";
 import { createUserMediaQuery } from "../query/userMedia/createUserMediaQuery.ts";
 import { deleteUserMediaQuery } from "../query/userMedia/deleteUserMediaQuery.ts";
 import { findUserMediaIdsByTmdbQuery } from "../query/userMedia/findUserMediaIdsByTmdbQuery.ts";
@@ -29,6 +35,8 @@ import { getUserMediaQuery } from "../query/userMedia/getUserMediaQuery.ts";
 import { updateUserMediaQuery } from "../query/userMedia/updateUserMediaQuery.ts";
 import { deleteShowWatchedEpisodesQuery } from "../query/watchedEpisode/deleteShowWatchedEpisodesQuery.ts";
 import { setWatchedEpisodesQuery } from "../query/watchedEpisode/setWatchedEpisodesQuery.ts";
+import { filterUserMediaBeans } from "../view/media/filterUserMediaBeans.ts";
+import { sortUserMediaBeans } from "../view/media/sortUserMediaBeans.ts";
 
 function userMediaNotFound(userMediaId: number): NotFoundError {
 	return new NotFoundError(
@@ -92,6 +100,50 @@ async function reloadUserMediaBean(
 
 // Chaque méthode ne voit que le backlog du compte : le média du backlog d'un autre répond comme absent (404)
 class UserMediaService {
+	/**
+	 * Tableau des films et séries : tout le backlog du compte est lu, filtré et trié en mémoire, comme celui des jeux, puis
+	 * découpé en pages. Le résumé (films, séries) et les langues proposées au filtre portent sur tout le backlog
+	 */
+	async getAllUserMedia(
+		userId: number,
+		{ page, sort, filters, filterMode }: GetAllUserMediaBean,
+	): Promise<UserMediaPageBean> {
+		const pageSize = Number(BacklogPageSizeEnum.USER_MEDIA);
+		const userMediaList = await loadUserMediaBeans(userId);
+		const sorted = sortUserMediaBeans(
+			filterUserMediaBeans(userMediaList, filters, filterMode),
+			sort,
+		);
+		const movieCount = userMediaList.filter(
+			({ mediaType }) => mediaType === MediaTypeEnum.MOVIE,
+		).length;
+		return {
+			userMedia: sorted.slice((page - 1) * pageSize, page * pageSize),
+			matchedCount: sorted.length,
+			movieCount,
+			showCount: userMediaList.length - movieCount,
+			originalLanguages: [
+				...new Set(
+					userMediaList.flatMap(({ originalLanguage }) =>
+						originalLanguage === null ? [] : [originalLanguage],
+					),
+				),
+			].toSorted(),
+		};
+	}
+
+	// Dépliage d'une série : ses saisons et leurs épisodes, avec ceux que le compte a vus ; un film n'en a aucune
+	async getShowSeasons(
+		userId: number,
+		{ userMediaId }: UserMediaIdBean,
+	): Promise<ShowSeasonBean[]> {
+		const userMedia = await getUserMediaQuery(userId, userMediaId);
+		if (userMedia === null) throw userMediaNotFound(userMediaId);
+		return userMedia.tvShowId === null
+			? []
+			: getShowSeasonsQuery(userId, userMedia.tvShowId);
+	}
+
 	/**
 	 * Ajout au backlog. Le média est d'abord lu sur TMDB s'il n'est pas en base (une série avec toutes ses saisons et tous
 	 * ses épisodes, sans choix possible, §7.1), hors transaction : la base ne reste pas verrouillée pendant l'appel

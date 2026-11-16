@@ -18,6 +18,7 @@ export type UserMediaBean = {
 	imagePath: string | null;
 	saga: SagaBean | null;
 	sagaNumber: number | null;
+	sagaNumberLabel: string | null;
 	isWatched: boolean;
 	watchedEpisodeCount: number;
 	airedEpisodeCount: number;

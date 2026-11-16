@@ -17,6 +17,7 @@ export function fromUserMediaBeanToUserMediaDto(
 		imagePath: userMedia.imagePath,
 		saga: userMedia.saga,
 		sagaNumber: userMedia.sagaNumber,
+		sagaNumberLabel: userMedia.sagaNumberLabel,
 		isWatched: userMedia.isWatched,
 		watchedEpisodeCount: userMedia.watchedEpisodeCount,
 		airedEpisodeCount: userMedia.airedEpisodeCount,

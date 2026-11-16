@@ -4,6 +4,7 @@ import type { Transaction } from "sequelize";
 
 import type { UserMediaBean } from "../bean/userMediaBean.type.ts";
 import { fromUserMediaEntityToUserMediaBean } from "../mapper/beanEntity/userMedia/fromUserMediaEntityToUserMediaBean.ts";
+import { getSagaNumbersQuery } from "../query/saga/getSagaNumbersQuery.ts";
 import { getShowEpisodeStatesQuery } from "../query/userMedia/getShowEpisodeStatesQuery.ts";
 import { getUserMediaWithDetailsQuery } from "../query/userMedia/getUserMediaWithDetailsQuery.ts";
 
@@ -30,5 +31,13 @@ export async function loadUserMediaBean(
 					),
 					getTodayIsoDate(),
 				);
-	return fromUserMediaEntityToUserMediaBean(userMedia, showProgress);
+	const sagaEntries =
+		userMedia.sagaId === null
+			? []
+			: await getSagaNumbersQuery(userId, userMedia.sagaId, transaction);
+	return fromUserMediaEntityToUserMediaBean(
+		userMedia,
+		showProgress,
+		sagaEntries,
+	);
 }

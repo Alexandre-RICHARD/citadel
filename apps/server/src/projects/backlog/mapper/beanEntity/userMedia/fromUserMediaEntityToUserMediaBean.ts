@@ -1,16 +1,19 @@
 import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum.ts";
 import type { ShowProgress } from "@citadel/specs/src/projects/backlog/helper/media/showProgress.type.ts";
+import { formatSeriesNumber } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/formatSeriesNumber.ts";
+import type { SeriesEntry } from "@citadel/specs/src/projects/backlog/helper/seriesNumber/seriesEntry.type.ts";
 
 import type { UserMediaBean } from "../../../bean/userMediaBean.type.ts";
 import type { UserMedia } from "../../../models/UserMedia.ts";
 
 /**
  * Une ligne lue avec son film ou sa série (getUserMediaWithDetailsQuery). `showProgress` : la progression d'une série,
- * null pour un film, qui garde sa propre case « vu »
+ * null pour un film, qui garde sa propre case « vu ». `sagaEntries` : les numéros de sa saga, pour afficher le sien
  */
 export function fromUserMediaEntityToUserMediaBean(
 	userMedia: UserMedia,
 	showProgress: ShowProgress | null,
+	sagaEntries: SeriesEntry[],
 ): UserMediaBean {
 	const { movie, tvShow, saga } = userMedia;
 	const common = {
@@ -18,6 +21,10 @@ export function fromUserMediaEntityToUserMediaBean(
 		imagePath: userMedia.imagePath,
 		saga: saga ? { id: saga.id, name: saga.name } : null,
 		sagaNumber: userMedia.sagaNumber,
+		sagaNumberLabel:
+			userMedia.sagaNumber === null
+				? null
+				: formatSeriesNumber(userMedia.sagaNumber, sagaEntries),
 		isUpNext: userMedia.isUpNext,
 		isInProgress: userMedia.isInProgress,
 		comment: userMedia.comment,

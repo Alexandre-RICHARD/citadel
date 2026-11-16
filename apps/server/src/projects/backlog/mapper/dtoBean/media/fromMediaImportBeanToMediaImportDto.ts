@@ -11,11 +11,12 @@ export function fromMediaImportBeanToMediaImportDto(
 		readCount: mediaImport.readCount,
 		totalCount: mediaImport.totalCount,
 		recognized: mediaImport.recognized.map(
-			({ mediaType, tmdbId, title, date }) => ({
+			({ mediaType, tmdbId, title, date, posterPath }) => ({
 				mediaType,
 				tmdbId,
 				title,
 				date,
+				posterPath,
 			}),
 		),
 		rejected: mediaImport.rejected.map(({ mediaType, tmdbId, reason }) => ({
