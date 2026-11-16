@@ -22,7 +22,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 
 ## 1. Principes
 
-- **Personnel, comme les jeux** : chaque compte a son backlog de films et de séries, sur la même route que les jeux.
+- **Personnel, comme les jeux** : chaque compte a son backlog de films et de séries, sous la même route que les jeux (§2).
 - **Tout s'ajoute à la main**, par une recherche TMDB (§7). Rien n'entre automatiquement depuis Radarr, Sonarr, Jellyfin ou qBittorrent ; le job quotidien signale seulement ce qui y est présent sans être dans le backlog (§8). Seule exception, un import de liste, qui est une fonction de l'interface (§7.2).
 - **Deux familles de colonnes**, sans mélange :
   - **renseignées par vous** (visionnage, à regarder bientôt, en cours, commentaire, saga…) ou **tirées de TMDB** (titres, langue, dates, durée, images) : stockées dans la base du site, visibles partout ;
@@ -36,6 +36,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
 - **Mode classique** : tout compte, depuis n'importe où. Les colonnes du NAS n'existent pas : ni affichées, ni dans les filtres, ni dans le choix des colonnes.
 - **Mode connecté** : le même site, ouvert par son adresse locale, en LAN et par Tailscale seulement : `http://<IP du NAS>:8003` chez vous, `http://<nom Tailscale du NAS>:8003` par Tailscale, comme la pré-prod (8002) et la console. Jamais par le domaine public, et aucun lien du site public n'y mène : un marque-page sur chaque appareil. Le mode s'y déverrouille par le mot de passe des médias (§3). Son serveur lit la base du site et `media-state`, fusionne les deux par identifiant TMDB, puis trie, filtre, compte et découpe en pages comme pour les jeux, colonnes du NAS comprises. Le site public, lui, ne sait rien du NAS.
 - **Fraîcheur** : l'état du NAS est celui du dernier passage du job (§8), dont la date s'affiche en haut du tableau. Seul « Partage en cours » est lu en direct. La console relance le job à la demande (§8).
+- **Routes** : chaque backlog a sa sous-route, `/backlog/games` pour les jeux et `/backlog/media` pour les films et séries, pour que leurs tris et leurs filtres ne se mélangent pas dans l'URL. `/backlog` mène aux jeux, en gardant ses paramètres, pour que les anciens liens marchent encore.
 - **Barre du haut** : celle du backlog des jeux, avec un bouton pour passer des jeux aux films et séries ; en mode connecté, la date du relevé et un lien vers le rapport du job dans la console (§8). Ce lien reprend le nom d'hôte par lequel vous êtes venu (IP du NAS en LAN, nom Tailscale sinon), au port de la console : il marche dans les deux cas.
 - **Comportement par colonne** :
 
@@ -58,7 +59,7 @@ Cahier des charges du suivi des films et des séries, à construire : rien n'exi
   - **En veille, réveillée à la visite** (`citadel.mode: on-demand`) : arrêtée, elle ne prend ni CPU ni RAM.
     - **Réveil** : quand elle est arrêtée, Caddy, au lieu de l'erreur 502, passe la visite à la console, qui dépose une demande « démarrer `site-local-server` » dans `state/queue/`, comme son bouton « Démarrer ». `infra-ops` lit cette file toutes les 2 secondes et démarre le conteneur. La page affiche « Démarrage… » et se recharge seule : quelques secondes d'attente.
     - **Pourquoi ce détour** : Caddy, exposé à Internet, n'a jamais accès à Docker. La console ne gagne qu'une action, sans mot de passe mais fixe (démarrer ce seul conteneur) et limitée en fréquence, joignable seulement par le port 8003. Un invité sur votre wifi peut au pire la démarrer, et tombe sur la page de connexion.
-    - **Arrêt** : après **environ 10 minutes sans aucune requête**, par l'arrêt automatique commun aux services à la demande ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)) : Caddy note la dernière visite, `infra-ops` vérifie chaque minute.
+    - **Arrêt** : après **environ 10 minutes sans aucune requête** : Caddy note la dernière visite, `infra-ops` vérifie chaque minute. Construit d'abord pour l'instance locale seule, avant elle, et prévu pour s'étendre aux autres services à la demande ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)).
     - **Le front ne relit rien tout seul** (pas de rafraîchissement périodique) : sinon, un onglet oublié la tiendrait éveillée. « Partage en cours » se lit au chargement et à chaque action.
     - **Le job quotidien n'en a pas besoin** : il parle directement à qBittorrent, Radarr, Sonarr, Jellyfin et au disque, et n'écrit que dans `media-state`.
 - **Organisation du code** : une seule image, un seul code.
@@ -163,7 +164,7 @@ Le fichier de `medias/` et celui de `torrents/` sont deux noms d'un même fichie
 **Variables d'environnement du NAS** (`.env.prod`), en plus de celles qui existent (`QBITTORRENT_USER`, `QBITTORRENT_PASSWORD`, `JELLYFIN_API_KEY`) :
 
 - `RADARR_API_KEY`, `SONARR_API_KEY` ;
-- `MEDIA_TRACKERS` : chaque tracker, son nom affiché dans le rapport et ses adresses, pour regrouper les adresses d'un même tracker (§8) ;
+- `MEDIA_TRACKERS` : chaque tracker, son nom affiché dans le rapport et ses adresses d'annonce, telles que dans qBittorrent (deux pour un tracker qui a une adresse de secours), pour regrouper les adresses d'un même tracker (§8). Un JSON sur une ligne : `[{"name":"…","urls":["…","…"]}]`. Le job n'en compare que le nom d'hôte : la clé personnelle que contient l'adresse n'est jamais écrite ailleurs ;
 - `MEDIA_PASSWORD_HASH`, `MEDIA_OWNER_USER_ID` et `MEDIA_STATE_DIR`, sur l'instance locale seulement (§3).
 
 **TMDB** : la clé d'API (`TMDB_API_KEY`) reste sur le serveur du site. Les images se chargent depuis `image.tmdb.org`, directement par le navigateur, comme celles d'IGDB.
@@ -176,13 +177,10 @@ Comme pour les jeux : recherche TMDB (films et séries ensemble) dans la barre d
 
 ### 7.2 Import de liste
 
-- **Une fonction de l'interface**, pour tout compte : un fichier CSV dont une colonne donne l'identifiant TMDB (et le type, film ou série). Les autres colonnes sont facultatives : saga, numéro, vu (pour une série, le dernier épisode vu, qui coche aussi tous les précédents), à regarder bientôt, commentaire.
+- **Une fonction de l'interface**, pour tout compte : un fichier CSV de deux colonnes, l'identifiant TMDB et le type (film ou série), rien d'autre. Chaque média entre avec les valeurs par défaut : la première image de TMDB comme miniature, sans saga, rien de vu, ni à regarder bientôt, ni en cours, ni commentaire. Tout se règle ensuite à la main.
 - **Aperçu avant tout enregistrement** : une ligne par média reconnu, et la liste de ceux qui ne le sont pas, avec la raison. Rien n'est écrit avant « Valider ».
 - **Rythme des appels TMDB** : un import de plusieurs milliers de films demande autant de fiches. Le serveur les lit à un rythme limité, nettement sous la limite de TMDB (de l'ordre de 50 requêtes par seconde), attend quand TMDB répond 429, et ne relit pas une fiche déjà en base. Les films partagés entre comptes (§6) ne sont donc lus qu'une fois.
-- **Premier usage, votre liste** (un tableur) :
-  - les films, tous avec leurs identifiants TMDB et IMDB, le groupe (la future saga) et l'identifiant de collection TMDB ;
-  - les séries, sans identifiant et jamais tenues à jour : l'identifiant de Sonarr quand la série y est, sinon un rapprochement TMDB par titre et année. Chaque ligne douteuse se valide dans l'aperçu parmi ses candidats, et toute ligne accepte un identifiant saisi à la main (à l'essai : une majorité de sûres, une minorité de douteuses, de rares introuvables). TMDB fait foi : deux lignes qui tombent sur la même série n'en font qu'une, et l'aperçu le dit (deux saisons que la liste range en deux séries, par exemple) ;
-  - sa colonne « État » ne passe pas par l'import : « vérifié » vit sur le NAS. Une reprise unique, par un script que vous lancez après le premier passage du job, coche « vérifié » pour « Fini » ; tout le reste est non vérifié.
+- **Premier usage, votre liste** : les identifiants TMDB de vos films et de vos séries, sans rien d'autre. Sagas, visionnage et « vérifié » se reprennent ensuite à la main : aucune reprise automatique.
 
 ### 7.3 Nouveaux épisodes
 
@@ -193,10 +191,12 @@ Comme pour les jeux : recherche TMDB (films et séries ensemble) dans la barre d
 
 `media-sync`, un job d'`infra-ops`, chaque **nuit à 3 h** (`0 3 * * *`) : il ne fait presque aucun appel à TMDB, rien n'empêche de le lancer tous les jours, suivi par healthchecks.io comme les autres ([infra, §9](../infra/infra.md#9-alertes-healthchecksio)). La console le relance à la demande. Le relevé lui-même dure moins d'une minute (à l'essai, pour une collection de plusieurs milliers de films et de torrents) ; c'est l'attente de cross-seed (étape 1) qui fait la durée du job, et le délai de healthchecks.io doit la couvrir.
 
+**Où il tourne** : `infra-ops`, qui n'a que bash, fait l'étape 1 (démarrer les services). Les étapes suivantes sont un second point d'entrée de l'image du serveur, comme la commande d'après restauration, lancé en conteneur ponctuel : `/Volume2/data` en lecture seule, `media-state` en écriture, aucun accès à la base. Le relevé va dans `media-state`, le rapport dans `state/`, que la console lit déjà : la console ne monte pas `media-state`. Les formats de ces deux fichiers sont dans les specs, partagés par le job, l'instance locale et la console.
+
 1. **Démarrer Radarr, Sonarr et Bazarr** s'ils sont arrêtés (ce qui démarre aussi Prowlarr, dont ils dépendent), et **cross-seed**, puis lui faire lancer une recherche complète, sauf s'il en a déjà une en cours. Cette recherche reste hebdomadaire (la nuit du mardi au mercredi) : chaque nuit, elle solliciterait trop les trackers ; les autres nuits, le job passe directement à l'étape 2. **Le job attend la fin de cette recherche** avant l'étape 2, pour que le relevé compte les torrents qu'elle vient d'ajouter ; comment savoir qu'elle est finie (API de cross-seed, sinon ses journaux) est à établir en construisant le job. Le job n'arrête aucun service lui-même : l'arrêt automatique éteint tout le monde, cross-seed d'abord, ceux dont il dépend ensuite ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)).
 2. **Torrents** :
    - lire la liste et le statut de chaque tracker ;
-   - tester que chaque tracker répond, avant de conclure : un torrent dont le tracker ne répond pas est **inactif**, revu au passage suivant, pas mort ;
+   - tester que chaque tracker répond, avant de conclure : un torrent dont le tracker ne répond pas est **inactif**, revu au passage suivant, pas mort. Un tracker répond quand au moins une de ses adresses fonctionne sur au moins un torrent, d'après le statut que donne qBittorrent : le job n'appelle jamais un tracker lui-même ;
    - classer les autres en valides et morts (le tracker répond mais ne connaît plus le torrent) ; l'état d'un torrent est le meilleur de ses adresses : qu'une adresse refuse (« Forbidden ») quand une autre accepte n'est pas une erreur, c'est le tracker qui refuse une annonce en double ;
    - poser l'étiquette `tracker-invalide` sur les morts, et la retirer de ceux qui sont revenus : c'est la seule écriture du job dans qBittorrent. Aucun tracker n'est nommé dans le code.
 3. **Médias** : relier chaque film et chaque épisode présent sur le disque ou connu des outils, dans votre backlog ou non, à son fichier (Radarr, Sonarr), au disque (existence, inode, taille), à Jellyfin (élément et collection) et à ses torrents (par le lien physique entre le fichier de la bibliothèque et celui du torrent, ce qui couvre aussi les torrents de cross-seed). Relever aussi la qualité, la durée réelle et les langues du fichier (Radarr et Sonarr les lisent dans le fichier), et retirer « vérifié » des fichiers remplacés.
@@ -234,7 +234,7 @@ Avant toute interface, des scripts que je fournis (`scripts/mediaTrial/`, suppri
 
 ## 10. Repris du backlog des jeux
 
-À réutiliser tel quel, voir le [backlog des jeux](backlog_game.md) : tableau (lecture seule et mode édition, tri, filtres, URL, colonnes, pages, clavier), sous-lignes et agrégats, sagas et numéros (familles, trous, « Réorganiser »), recherche puis fiche puis ajout, partage entre base commune et base du compte, export et suppression des données d'un compte. Avec plusieurs milliers de films et des centaines d'épisodes, la virtualisation des lignes (ne construire dans la page que les lignes visibles à l'écran, pour que le défilement reste fluide), prévue « pour plus tard » côté jeux, devient nécessaire.
+À réutiliser tel quel, voir le [backlog des jeux](backlog_game.md) : tableau (lecture seule et mode édition, tri, filtres, URL, colonnes, pages, clavier), sous-lignes et agrégats, sagas et numéros (familles, trous, « Réorganiser »), recherche puis fiche puis ajout, partage entre base commune et base du compte, export et suppression des données d'un compte. Avec plusieurs milliers de films et des centaines d'épisodes, la virtualisation des lignes (ne construire dans la page que les lignes visibles à l'écran, pour que le défilement reste fluide) reste pour plus tard, comme côté jeux ([todo, §6.4](../todo/todo.md#64-pour-plus-tard)).
 
 ## 11. Questions ouvertes
 
