@@ -27,4 +27,21 @@ export const backlogErrorReasons: Record<BacklogErrorCodeEnum, string> = {
 		"une version jouée a un statut de fin : le type de fin ne peut plus être retiré",
 	[BacklogErrorCodeEnum.SERIES_ENTRIES_MISMATCH]:
 		"la série a changé entre-temps",
+	[BacklogErrorCodeEnum.TMDB_MEDIA_NOT_FOUND]:
+		"ce film ou cette série n'existe plus sur TMDB",
+	[BacklogErrorCodeEnum.TMDB_UNAVAILABLE]: "TMDB ne répond pas",
+	[BacklogErrorCodeEnum.USER_MEDIA_NOT_FOUND]:
+		"ce média n'est plus dans le backlog",
+	[BacklogErrorCodeEnum.USER_MEDIA_ALREADY_EXISTS]:
+		"ce média est déjà dans le backlog",
+	[BacklogErrorCodeEnum.SAGA_NOT_FOUND]: "cette saga n'existe plus",
+	[BacklogErrorCodeEnum.EPISODE_NOT_IN_SHOW]:
+		"cet épisode n'appartient pas à cette série",
+	[BacklogErrorCodeEnum.WATCHED_ONLY_FOR_MOVIES]:
+		"une série se coche épisode par épisode",
+	[BacklogErrorCodeEnum.MEDIA_IMPORT_NOT_FOUND]: "aucun import n'est en cours",
+	[BacklogErrorCodeEnum.MEDIA_IMPORT_ALREADY_RUNNING]:
+		"un import est déjà en cours",
+	[BacklogErrorCodeEnum.MEDIA_IMPORT_NOT_READY]:
+		"la lecture de la liste n'est pas terminée",
 };

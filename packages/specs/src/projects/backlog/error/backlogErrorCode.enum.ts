@@ -28,4 +28,23 @@ export enum BacklogErrorCodeEnum {
 	ENDING_TYPE_REQUIRED = "ENDING_TYPE_REQUIRED",
 	// Les jeux envoyés pour « Réorganiser la série » ne sont plus exactement ceux de la série
 	SERIES_ENTRIES_MISMATCH = "SERIES_ENTRIES_MISMATCH",
+
+	// ==== Films et séries ====
+	// Sur TMDB : l'identifiant ne mène plus à aucun film ou série
+	TMDB_MEDIA_NOT_FOUND = "TMDB_MEDIA_NOT_FOUND",
+	// TMDB injoignable, ou réponse inattendue (clé refusée…) : l'action peut réussir plus tard
+	TMDB_UNAVAILABLE = "TMDB_UNAVAILABLE",
+	USER_MEDIA_NOT_FOUND = "USER_MEDIA_NOT_FOUND",
+	USER_MEDIA_ALREADY_EXISTS = "USER_MEDIA_ALREADY_EXISTS",
+	SAGA_NOT_FOUND = "SAGA_NOT_FOUND",
+	// Un épisode envoyé n'est pas un épisode de cette série
+	EPISODE_NOT_IN_SHOW = "EPISODE_NOT_IN_SHOW",
+	// « Vu » d'une série se coche par ses épisodes, jamais sur la série elle-même
+	WATCHED_ONLY_FOR_MOVIES = "WATCHED_ONLY_FOR_MOVIES",
+	// Le compte n'a aucun import en cours (fini, annulé, ou perdu au redémarrage du serveur)
+	MEDIA_IMPORT_NOT_FOUND = "MEDIA_IMPORT_NOT_FOUND",
+	// Un seul import à la fois par compte
+	MEDIA_IMPORT_ALREADY_RUNNING = "MEDIA_IMPORT_ALREADY_RUNNING",
+	// « Valider » avant que toutes les fiches soient lues, ou après l'échec de la lecture
+	MEDIA_IMPORT_NOT_READY = "MEDIA_IMPORT_NOT_READY",
 }
