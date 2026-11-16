@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BacklogColumnEnum } from "../enum/backlogColumn.enum.ts";
+import { gameColumnFilterKinds } from "../helper/view/gameColumnFilterKinds.ts";
 import { filterParamSchema } from "./filterParamSchema.ts";
 
 describe("filterParamSchema.ts", () => {
@@ -12,7 +13,9 @@ describe("filterParamSchema.ts", () => {
 		])(
 			"SHOULD keep the filter as text WHEN $column is $value",
 			({ column, value }) => {
-				expect(filterParamSchema(column).safeParse(value)).toStrictEqual({
+				expect(
+					filterParamSchema(gameColumnFilterKinds, column).safeParse(value),
+				).toStrictEqual({
 					success: true,
 					data: value,
 				});
@@ -21,7 +24,10 @@ describe("filterParamSchema.ts", () => {
 
 		it("SHOULD accept a missing filter", () => {
 			expect(
-				filterParamSchema(BacklogColumnEnum.NAME).safeParse(undefined).success,
+				filterParamSchema(
+					gameColumnFilterKinds,
+					BacklogColumnEnum.NAME,
+				).safeParse(undefined).success,
 			).toBe(true);
 		});
 	});
@@ -33,7 +39,10 @@ describe("filterParamSchema.ts", () => {
 		])(
 			"SHOULD refuse the filter WHEN $column is $value",
 			({ column, value }) => {
-				expect(filterParamSchema(column).safeParse(value).success).toBe(false);
+				expect(
+					filterParamSchema(gameColumnFilterKinds, column).safeParse(value)
+						.success,
+				).toBe(false);
 			},
 		);
 	});

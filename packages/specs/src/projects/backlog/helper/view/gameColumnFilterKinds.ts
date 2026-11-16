@@ -1,10 +1,9 @@
 import { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
+import type { ColumnFilterKinds } from "./columnFilterKinds.type.ts";
 
-// Sorte de filtre de chaque colonne ; la miniature et les actions n'ont ni filtre ni tri
-export const columnFilterKinds: Readonly<
-	Record<BacklogColumnEnum, ColumnFilterKindEnum | null>
-> = {
+// Sorte de filtre de chaque colonne du tableau des jeux ; la miniature et les actions n'ont ni filtre ni tri
+export const gameColumnFilterKinds: ColumnFilterKinds<BacklogColumnEnum> = {
 	[BacklogColumnEnum.THUMBNAIL]: null,
 	[BacklogColumnEnum.NAME]: ColumnFilterKindEnum.TEXT,
 	[BacklogColumnEnum.SERIES]: ColumnFilterKindEnum.TEXT,

@@ -1,9 +1,8 @@
-import { normalizeText } from "@citadel/common/src/universal/string/normalizeText.ts";
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
-import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum.ts";
 import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
 
+import { matchesColumnFilter } from "./common/matchesColumnFilter.ts";
 import { getColumnValue } from "./getColumnValue.ts";
 import type { UserGameView } from "./userGameView.type.ts";
 import type { ViewRow } from "./viewRow.type.ts";
@@ -17,53 +16,12 @@ function getColumnTexts(column: BacklogColumnEnum, row: ViewRow): string[] {
 	return texts.filter((text) => typeof text === "string");
 }
 
-function isInRange<Value extends number | string>(
-	value: unknown,
-	type: "number" | "string",
-	min: Value | null,
-	max: Value | null,
-): boolean {
-	return (
-		typeof value === type &&
-		(min === null || (value as Value) >= min) &&
-		(max === null || (value as Value) <= max)
-	);
-}
-
-// Une ligne sans valeur (plateforme d'un jeu à plusieurs versions jouées) ne correspond à aucune valeur cochée
-function matchesValues(value: unknown, values: string[]): boolean {
-	return typeof value === "string" && values.includes(value);
-}
-
-// Sans accents ni majuscules ; une valeur exacte (clic sur une série) doit être tout le texte
 function matchesFilter(row: ViewRow, filter: ColumnFilter): boolean {
-	switch (filter.kind) {
-		case ColumnFilterKindEnum.TEXT: {
-			const searched = normalizeText(filter.text);
-			const texts = getColumnTexts(filter.column, row).map(normalizeText);
-			return filter.isExact
-				? texts.includes(searched)
-				: texts.some((text) => text.includes(searched));
-		}
-		case ColumnFilterKindEnum.VALUE:
-			return matchesValues(getColumnValue(filter.column, row), filter.values);
-		case ColumnFilterKindEnum.BOOLEAN:
-			return getColumnValue(filter.column, row) === filter.value;
-		case ColumnFilterKindEnum.NUMBER_RANGE:
-			return isInRange(
-				getColumnValue(filter.column, row),
-				"number",
-				filter.min,
-				filter.max,
-			);
-		default:
-			return isInRange(
-				getColumnValue(filter.column, row),
-				"string",
-				filter.from,
-				filter.to,
-			);
-	}
+	return matchesColumnFilter(
+		filter,
+		getColumnValue(filter.column, row),
+		getColumnTexts(filter.column, row),
+	);
 }
 
 /**

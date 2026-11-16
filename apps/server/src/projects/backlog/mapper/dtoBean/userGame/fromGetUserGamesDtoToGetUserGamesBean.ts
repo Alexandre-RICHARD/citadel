@@ -1,9 +1,9 @@
 import type { GetUserGamesQueryParamDto } from "@citadel/specs/src/projects/backlog/endpoint/userGames/getUserGames/getUserGamesQueryParamDto.type.ts";
-import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
-import { parseFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/parseFilterParam.ts";
-import { parseSortParam } from "@citadel/specs/src/projects/backlog/helper/view/parseSortParam.ts";
+import { gameColumnFilterKinds } from "@citadel/specs/src/projects/backlog/helper/view/gameColumnFilterKinds.ts";
+import { readViewParams } from "@citadel/specs/src/projects/backlog/helper/view/readViewParams.ts";
 
 import type { GetUserGamesBean } from "../../../bean/getUserGamesBean.type.ts";
+import { readQueryParam } from "../common/readQueryParam.ts";
 
 // Le schéma a déjà vérifié chaque paramètre : ils se lisent tous
 export function fromGetUserGamesDtoToGetUserGamesBean(
@@ -11,13 +11,8 @@ export function fromGetUserGamesDtoToGetUserGamesBean(
 ): GetUserGamesBean {
 	return {
 		page: queryParamDto.page,
-		sort: parseSortParam(queryParamDto.sort) ?? [],
-		filterMode: queryParamDto.filterMode,
-		filters: Object.values(BacklogColumnEnum).flatMap((column) => {
-			const text: unknown = (queryParamDto as Record<string, unknown>)[column];
-			const filter =
-				typeof text === "string" ? parseFilterParam(column, text) : null;
-			return filter === null ? [] : [filter];
-		}),
+		...readViewParams(gameColumnFilterKinds, (name) =>
+			readQueryParam(queryParamDto, name),
+		),
 	};
 }

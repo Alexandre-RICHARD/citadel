@@ -1,4 +1,4 @@
-// Écriture du tri et des filtres, la même dans l'URL de la page et dans la query de getUserGames :
+// Écriture du tri et des filtres, la même dans l'URL de la page et dans la query du tableau (getUserGames, getAllUserMedia) :
 // `?sort=releaseDate:desc,name:asc&series==The+Witcher&rating=10..18&owned=yes`
 export enum ViewParamSyntaxEnum {
 	SORT_PARAM = "sort",

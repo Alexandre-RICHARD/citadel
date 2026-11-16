@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
 import { formatFilterParam } from "./formatFilterParam.ts";
+import { gameColumnFilterKinds } from "./gameColumnFilterKinds.ts";
 import { parseFilterParam } from "./parseFilterParam.ts";
 
 describe("parseFilterParam.ts", () => {
@@ -85,7 +86,7 @@ describe("parseFilterParam.ts", () => {
 		])(
 			"SHOULD read the filter WHEN it is $reason",
 			({ column, text, expected }) => {
-				const filter = parseFilterParam(column, text);
+				const filter = parseFilterParam(gameColumnFilterKinds, column, text);
 				expect(filter).toStrictEqual(expected);
 				expect(filter === null ? null : formatFilterParam(filter)).toBe(text);
 			},
@@ -93,7 +94,11 @@ describe("parseFilterParam.ts", () => {
 
 		it("SHOULD drop the empty and repeated values of a list", () => {
 			expect(
-				parseFilterParam(BacklogColumnEnum.PLATFORM, "PS4||PC|PS4"),
+				parseFilterParam(
+					gameColumnFilterKinds,
+					BacklogColumnEnum.PLATFORM,
+					"PS4||PC|PS4",
+				),
 			).toStrictEqual({
 				column: BacklogColumnEnum.PLATFORM,
 				kind: ColumnFilterKindEnum.VALUE,
@@ -104,7 +109,13 @@ describe("parseFilterParam.ts", () => {
 		it.each(["", "|", "||"])(
 			"SHOULD read nothing WHEN the list is %j",
 			(text) => {
-				expect(parseFilterParam(BacklogColumnEnum.STATUS, text)).toBeNull();
+				expect(
+					parseFilterParam(
+						gameColumnFilterKinds,
+						BacklogColumnEnum.STATUS,
+						text,
+					),
+				).toBeNull();
 			},
 		);
 	});
@@ -143,7 +154,7 @@ describe("parseFilterParam.ts", () => {
 				text: "x",
 			},
 		])("SHOULD give no filter WHEN it is $reason", ({ column, text }) => {
-			expect(parseFilterParam(column, text)).toBeNull();
+			expect(parseFilterParam(gameColumnFilterKinds, column, text)).toBeNull();
 		});
 	});
 });

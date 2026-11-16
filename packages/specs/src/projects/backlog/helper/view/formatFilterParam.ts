@@ -3,7 +3,9 @@ import type { ColumnFilter } from "./columnFilter.type.ts";
 import { ViewParamSyntaxEnum } from "./viewParamSyntax.enum.ts";
 
 // Filtre → sa valeur dans l'URL ou la query (inverse de parseFilterParam)
-export function formatFilterParam(filter: ColumnFilter): string {
+export function formatFilterParam<Column extends string>(
+	filter: ColumnFilter<Column>,
+): string {
 	switch (filter.kind) {
 		case ColumnFilterKindEnum.TEXT:
 			return filter.isExact

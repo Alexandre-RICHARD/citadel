@@ -1,12 +1,13 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum.ts";
 
+import type { ColumnValue } from "./common/columnValue.type.ts";
 import type { ViewRow } from "./viewRow.type.ts";
 
 // Ce qu'affiche une ligne dans une colonne, pour le tri et les filtres ; null quand la case est vide
 export function getColumnValue(
 	column: BacklogColumnEnum,
 	row: ViewRow,
-): string | number | boolean | null {
+): ColumnValue {
 	switch (column) {
 		case BacklogColumnEnum.NAME:
 			return row.frenchName ?? row.name;

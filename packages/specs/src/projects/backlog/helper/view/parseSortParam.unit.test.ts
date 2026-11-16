@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { SortDirectionEnum } from "../../enum/sortDirection.enum.ts";
 import { formatSortParam } from "./formatSortParam.ts";
+import { gameColumnFilterKinds } from "./gameColumnFilterKinds.ts";
 import { parseSortParam } from "./parseSortParam.ts";
 
 describe("parseSortParam.ts", () => {
 	describe("readable values", () => {
 		it("SHOULD read the criteria in their priority order", () => {
 			const text = "releaseDate:desc,name:asc";
-			const sort = parseSortParam(text);
+			const sort = parseSortParam(gameColumnFilterKinds, text);
 			expect(sort).toStrictEqual([
 				{
 					column: BacklogColumnEnum.RELEASE_DATE,
@@ -21,7 +22,7 @@ describe("parseSortParam.ts", () => {
 		});
 
 		it("SHOULD give no criterion WHEN the text is empty", () => {
-			expect(parseSortParam("")).toStrictEqual([]);
+			expect(parseSortParam(gameColumnFilterKinds, "")).toStrictEqual([]);
 		});
 	});
 
@@ -34,7 +35,7 @@ describe("parseSortParam.ts", () => {
 			{ reason: "a repeated column", text: "name:asc,name:desc" },
 			{ reason: "an empty criterion", text: "name:asc," },
 		])("SHOULD refuse the sort WHEN it has $reason", ({ text }) => {
-			expect(parseSortParam(text)).toBeNull();
+			expect(parseSortParam(gameColumnFilterKinds, text)).toBeNull();
 		});
 	});
 });

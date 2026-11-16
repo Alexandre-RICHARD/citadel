@@ -1,10 +1,9 @@
 import { getUniqueValues } from "@citadel/common/src/universal/array/getUniqueValues.ts";
 
 import { isoDateSchema } from "../../../../specUtils/schemaValidator/date/isoDateSchema.ts";
-import type { BacklogColumnEnum } from "../../enum/backlogColumn.enum.ts";
 import { ColumnFilterKindEnum } from "../../enum/columnFilterKind.enum.ts";
 import type { ColumnFilter } from "./columnFilter.type.ts";
-import { columnFilterKinds } from "./columnFilterKinds.ts";
+import type { ColumnFilterKinds } from "./columnFilterKinds.type.ts";
 import { ViewParamSyntaxEnum } from "./viewParamSyntax.enum.ts";
 
 const dateSchema = isoDateSchema("Date");
@@ -40,13 +39,15 @@ function parseRange<Bound>(
 
 /**
  * Valeur d'un filtre lue dans l'URL ou la query : `zelda`, `=The Witcher`, `finished`, `yes`, `10..18`, `2020-01-01..`.
- * `null` si elle est vide, illisible, ou si la colonne n'a pas de filtre
+ * `kinds` : la sorte de filtre de chaque colonne du tableau. `null` si elle est vide, illisible, ou si la colonne n'a pas
+ * de filtre
  */
-export function parseFilterParam(
-	column: BacklogColumnEnum,
+export function parseFilterParam<Column extends string>(
+	kinds: ColumnFilterKinds<Column>,
+	column: Column,
 	text: string,
-): ColumnFilter | null {
-	switch (columnFilterKinds[column]) {
+): ColumnFilter<Column> | null {
+	switch (kinds[column]) {
 		case ColumnFilterKindEnum.TEXT: {
 			const isExact = text.startsWith(ViewParamSyntaxEnum.EXACT_PREFIX);
 			const searched = isExact

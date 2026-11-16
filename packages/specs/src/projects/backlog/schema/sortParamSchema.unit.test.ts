@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 
+import { gameColumnFilterKinds } from "../helper/view/gameColumnFilterKinds.ts";
 import { sortParamSchema } from "./sortParamSchema.ts";
+
+const gameSortParamSchema = sortParamSchema(gameColumnFilterKinds);
 
 describe("sortParamSchema.ts", () => {
 	describe("accepted values", () => {
 		it("SHOULD keep a readable sort as text, read later by the server", () => {
 			expect(
-				sortParamSchema.safeParse("releaseDate:desc,name:asc"),
+				gameSortParamSchema.safeParse("releaseDate:desc,name:asc"),
 			).toStrictEqual({ success: true, data: "releaseDate:desc,name:asc" });
 		});
 
 		it("SHOULD default to no sort WHEN the param is missing", () => {
-			expect(sortParamSchema.safeParse(undefined)).toStrictEqual({
+			expect(gameSortParamSchema.safeParse(undefined)).toStrictEqual({
 				success: true,
 				data: "",
 			});
@@ -24,7 +27,7 @@ describe("sortParamSchema.ts", () => {
 			{ reason: "the direction is unknown", value: "name:up" },
 			{ reason: "a column appears twice", value: "name:asc,name:desc" },
 		])("SHOULD refuse the sort WHEN $reason", ({ value }) => {
-			expect(sortParamSchema.safeParse(value).success).toBe(false);
+			expect(gameSortParamSchema.safeParse(value).success).toBe(false);
 		});
 	});
 });
