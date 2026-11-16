@@ -33,6 +33,7 @@
 #   citadel log-retention              vide les logs dont la plus vieille ligne a plus de 90 jours
 #   citadel contact-retry              renvoie les messages de contact dont l'email n'était pas parti
 #   citadel vpn-watch                  relance ce qui a perdu le réseau de Gluetun
+#   citadel idle-stop                  arrête ce que personne n'a visité depuis son délai
 #   citadel tailscale-status           relève les appareils Tailscale, pour la console
 #
 # UN fichier, DEUX endroits où il tourne :
@@ -105,6 +106,9 @@ CONSOLE_UID=1000
 # journal de restauration (monté par compose.yml)
 SERVER_UID=1000
 RESTORE_JOURNAL_DIR=$APPDATA_DIR/site-prod-server/restore-journal
+# media-state, l'état du NAS pour le backlog des médias : le relevé du job (survey/) et les
+# cases « vérifié » (verified/), seule écriture de l'instance locale (node)
+MEDIA_STATE_DIR=$APPDATA_DIR/media-state
 
 # --- Affichage ---
 say() { printf '%s\n' "$*"; }
@@ -198,6 +202,13 @@ host_main() {
 			mkdir -p "$RESTORE_JOURNAL_DIR"
 			chown "$SERVER_UID:$SERVER_UID" "$RESTORE_JOURNAL_DIR"
 			chmod 700 "$RESTORE_JOURNAL_DIR"
+			# media-state, pour la même raison : verified/ au serveur, qui y écrit les cases
+			# « vérifié » ; survey/ reste à root, l'instance locale ne fait que le lire. Le job
+			# media-sync (étape suivante du backlog des médias) écrira dans survey/
+			mkdir -p "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
+			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/verified"
+			chmod 755 "$MEDIA_STATE_DIR/survey"
+			chmod 700 "$MEDIA_STATE_DIR/verified"
 			run_ops "$2" "$@"
 			;;
 		*)
@@ -2006,6 +2017,53 @@ job_auto_stop() {
 	record_check ok "arrêt automatique" "${stopped:-rien à arrêter}"
 }
 
+# --- idle-stop : chaque minute, par infra-ops ---
+# Les services étiquetés citadel.idle-stop (« 10m » dans compose.yml) s'arrêtent quand
+# personne ne les a visités depuis ce délai. La « visite » est lue dans les logs d'accès
+# de Caddy : une requête vers le port du service (citadel.idle-port, 8003 pour l'instance
+# locale du backlog des médias), quel que soit le nom d'hôte (IP du NAS en LAN, nom
+# Tailscale, localhost avec pnpm prod:local). Aucun fichier en plus : Caddy écrit déjà ces
+# lignes, et Docker les garde.
+#
+# Pourquoi pas le temps depuis le démarrage, comme auto-stop : le service doit rester
+# allumé tant qu'on s'en sert, et s'éteindre vite quand on l'oublie. Pourquoi pas une
+# activité vue par le service lui-même : arrêté, il ne verrait rien, et c'est Caddy qui le
+# réveille (la console, par son port interne, quand il répond 502).
+#
+# Un service démarré depuis moins longtemps que son délai est laissé tranquille : démarré
+# à la main depuis la console, il a le temps d'être visité.
+#
+# Pas un job suivi (ni jobs/<job>.json, ni healthchecks.io) : comme vpn-watch, il passe
+# chaque minute et n'écrit une ligne que quand il arrête quelque chose.
+cmd_idle_stop() {
+	# Un déploiement en cours recrée les conteneurs lui-même : ne pas le gêner
+	mkdir -p "$STATE_DIR"
+	exec 9>"$STATE_DIR/lock"
+	flock --nonblock 9 || return 0
+
+	local name limit port started seconds now caddy_log
+	now=$(date +%s)
+	while IFS='|' read -r name limit port started; do
+		[[ -n $name && $port =~ ^[0-9]+$ ]] || continue
+		case $limit in
+			*h) seconds=$((${limit%h} * 3600)) ;;
+			*m) seconds=$((${limit%m} * 60)) ;;
+			*) continue ;;
+		esac
+		# Démarré il y a moins que son délai : on verra à la prochaine minute
+		((now - $(date -d "$started" +%s) > seconds)) || continue
+		# Les lignes d'accès de Caddy sur la période (JSON, une par requête : sa sortie
+		# standard ; ses propres messages vont sur la sortie d'erreur, ignorée). Une requête
+		# vers ce port porte « "host":"<nom>:<port>" ».
+		caddy_log=$(docker logs --since "${seconds}s" infra-caddy 2>/dev/null) || continue
+		if ! grep -q "\"host\":\"[^\"]*:$port\"" <<<"$caddy_log"; then
+			docker stop "${name#/}" >/dev/null
+			say "$(date '+%F %T') ${name#/} : aucune visite sur le port $port depuis $limit, arrêté"
+		fi
+	done < <(docker ps --quiet --filter "label=com.docker.compose.project=$(own_project)" --filter label=citadel.idle-stop |
+		xargs -r docker inspect --format '{{.Name}}|{{index .Config.Labels "citadel.idle-stop"}}|{{index .Config.Labels "citadel.idle-port"}}|{{.State.StartedAt}}')
+}
+
 # Le planning des jobs, lu dans infra/ops/crontab, pour « prochain passage » dans la
 # console : [{job, cron}]
 write_schedule() {
@@ -2231,6 +2289,7 @@ ops_main() {
 		auto-stop) run_job "$command" skip ;;
 		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats | log-retention) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;
+		idle-stop) cmd_idle_stop ;;
 		tailscale-status) cmd_tailscale_status ;;
 		queue-watch) cmd_queue_watch ;;
 		cron)

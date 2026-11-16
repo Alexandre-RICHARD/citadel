@@ -261,6 +261,109 @@ services:
       citadel.controllable: "false"
 
   # ===================================================================================
+  # L'instance locale : le mode connecté du backlog des médias
+  # ===================================================================================
+  # La même image que le serveur du site, sur la base de prod, mais joignable seulement en
+  # LAN et par Tailscale : http://<IP du NAS>:8003, servie par Caddy (le front vient de
+  # site-prod-client, seul /api vient d'ici). Elle est la seule à lire media-state, le
+  # relevé du job media-sync : stockage, partage, qualité, langues, « vérifié ». Le serveur
+  # public n'a ni ce dossier ni MEDIA_STATE_DIR : ces routes n'existent pas chez lui.
+  #
+  # En veille : arrêtée, elle ne prend ni CPU ni RAM. Elle s'arrête après 10 minutes sans
+  # visite sur le port 8003 (citadel idle-stop, chaque minute, lit les logs d'accès de
+  # Caddy), et se réveille à la visite suivante : Caddy, qui reçoit alors un 502, passe la
+  # requête au port de réveil de la console (8101, non publié), qui la démarre. La page
+  # affiche « Démarrage… » et se recharge seule.
+  #
+  # Mode « on-demand » : citadel deploy la met à jour sans la démarrer.
+  site-local-server:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-server:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: site-local-server
+    environment:
+      SERVER_PORT: "3000"
+      # La base de prod, avec le même compte que le serveur public : lire et écrire des lignes
+      DB_HOST: site-prod-db
+      DB_PORT: "3306"
+      DB_DATABASE_NAME: citadel
+      DB_USER_NAME: citadel_app
+      DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
+      INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+      TMDB_API_KEY: ${TMDB_API_KEY:?manque dans .env.prod}
+      # Les vrais emails, comme la prod : sans eux, une connexion par code reçu par email
+      # serait impossible sur l'adresse locale. Même quota Brevo que le serveur public
+      MAIL_SENDER: brevo
+      BREVO_API_KEY: ${BREVO_API_KEY:?manque dans .env.prod}
+      # Les mêmes clés que la prod : les mêmes comptes, les mêmes secrets de double
+      # authentification (voir site-prod-server)
+      AUTH_CODE_HMAC_KEY: ${AUTH_CODE_HMAC_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY: ${AUTH_TOTP_ENCRYPTION_KEY:?manque dans .env.prod}
+      AUTH_TOTP_ENCRYPTION_KEY_VERSION: ${AUTH_TOTP_ENCRYPTION_KEY_VERSION:?manque dans .env.prod}
+      AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY: ${AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY:-}
+      # En HTTP (LAN, Tailscale) : le cookie de session perd Secure et son préfixe __Host-,
+      # réservés au HTTPS. Une session propre à l'adresse locale
+      AUTH_COOKIE_SECURE: "false"
+      # Le même journal de restauration que la prod : une suppression faite d'ici doit
+      # survivre, elle aussi, à une restauration de la base. Une ligne ajoutée à la fois, par
+      # l'un ou l'autre serveur : des ajouts en fin de fichier, sûrs pour des lignes courtes
+      AUTH_RESTORE_JOURNAL_DIR: /var/lib/citadel/restore-journal
+      # Le mode connecté. Le dossier posé monte ses routes (sur ce seul conteneur)
+      MEDIA_STATE_DIR: /media-state
+      # Le mot de passe des médias, jamais celui de la console : son hachage argon2id
+      # (pnpm tools hashAdminPassword le fabrique aussi). Le changer annule tous les
+      # déverrouillages en cours
+      MEDIA_PASSWORD_HASH: ${MEDIA_PASSWORD_HASH:?manque dans .env.prod}
+      # Le seul compte du site qui peut ouvrir le mode connecté : qui apprendrait le mot de
+      # passe des médias devrait aussi avoir ce compte, avec sa double authentification
+      MEDIA_OWNER_USER_ID: ${MEDIA_OWNER_USER_ID:?manque dans .env.prod}
+      # Les liens « Ouvrir dans Jellyfin » et vers le rapport de la console, sur le nom d'hôte
+      # par lequel la page a été ouverte : les ports publiés plus bas dans ce fichier
+      MEDIA_JELLYFIN_PORT: "8096"
+      MEDIA_CONSOLE_PORT: "8100"
+    volumes:
+      - /Volume1/appdata/site-prod-server/restore-journal:/var/lib/citadel/restore-journal
+      # Le relevé du job (survey/), en lecture seule : le backlog ne fait que lire le NAS
+      - /Volume1/appdata/media-state/survey:/media-state/survey:ro
+      # Sa seule écriture côté NAS : les cases « vérifié » (verified/). Un dossier entier,
+      # car un fichier remplacé par renommage ne se monte pas seul. citadel deploy le crée
+      # au propriétaire du serveur (node)
+      - /Volume1/appdata/media-state/verified:/media-state/verified
+    networks:
+      - site
+      # edge : Caddy, qui lui envoie /api du port 8003, et la sortie vers Internet (TMDB,
+      # IGDB, Brevo). Pas le réseau du VPN : il ne parle pas à qBittorrent
+      - edge
+    depends_on:
+      site-prod-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    labels:
+      citadel.name: "Instance locale"
+      citadel.description: "Mode connecté du backlog des médias, sur le port 8003"
+      citadel.group: "site-prod"
+      citadel.mode: "on-demand"
+      citadel.controllable: "true"
+      # Arrêtée après 10 minutes sans visite sur le port 8003 (citadel idle-stop)
+      citadel.idle-stop: "10m"
+      citadel.idle-port: "8003"
+
+  # ===================================================================================
   # La pré-prod : la prod en petit, arrêtée la plupart du temps
   # ===================================================================================
   # Mêmes images que la prod, sa propre base (citadel_preprod) : restaurée chaque nuit
@@ -444,6 +547,8 @@ services:
       - "4443:443"
       # La pré-prod : la box ne l'envoie pas, LAN et Tailscale seulement
       - "8002:8002"
+      # L'instance locale du backlog des médias (mode connecté) : pareil, LAN et Tailscale
+      - "8003:8003"
     volumes:
       # Certificats et comptes ACME, gardés d'une version à l'autre (volume Docker : il
       # reprend les droits de l'utilisateur caddy de l'image, sans réglage)
@@ -651,6 +756,12 @@ services:
       # certificats (lues en HTTPS, sans accès à ses fichiers ni à ses clés)
       CADDY_CONTAINER: infra-caddy
       SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
+      # Le port de réveil de l'instance locale du backlog des médias : Caddy y passe une visite
+      # du port 8003 quand l'instance est arrêtée. Jamais publié (rien dans « ports ») : seul
+      # Caddy, sur le réseau edge, le joint. Il ne sait que démarrer ce conteneur, au plus
+      # une fois toutes les 30 secondes, à travers le filtre Docker
+      WAKE_PORT: "8101"
+      LOCAL_INSTANCE_CONTAINER: site-local-server
       # Le serveur du site, joint directement par le réseau edge (pas par Caddy, qui refuse
       # /api/internal depuis Internet) : le nombre d'emails qui n'ont pas pu partir cette
       # semaine. Pas de préfixe /api : c'est Caddy qui le retire, et on ne passe pas par lui

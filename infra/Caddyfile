@@ -68,7 +68,7 @@
 # (images, cartes, API) s'ajoute à la ligne qui lui correspond, puis se teste avec
 # `pnpm prod:local`.
 (content_security_policy) {
-	header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://images.igdb.com https://tile.openstreetmap.org; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+	header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://images.igdb.com https://image.tmdb.org https://tile.openstreetmap.org; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
 }
 
 # L'IP du visiteur, transmise au serveur Express. {client_ip} est celle que Caddy a validée
@@ -151,6 +151,14 @@
 			respond 404
 		}
 
+		# /api/backlog/nas/… : le mode connecté du backlog des médias, qui n'existe que sur
+		# l'instance locale (port 8003, plus bas). Le serveur public ne monte pas ces routes ;
+		# cette barrière de plus les refuse avant même de l'atteindre. /api/backlog/nas-status
+		# (un autre chemin) reste ouvert : le serveur public y répond « pas de mode connecté »
+		handle /api/backlog/nas/* {
+			respond 404
+		}
+
 		# /api/… va au serveur, préfixe retiré : /api/health arrive en /health.
 		# Les routes du serveur ne changent donc pas, et le front appelle /api partout.
 		handle_path /api/* {
@@ -183,6 +191,46 @@ http://:8002 {
 	}
 	handle {
 		reverse_proxy site-preprod-client:8080
+	}
+}
+
+# ===== L'instance locale du backlog des médias : http://<NAS>:8003, LAN et Tailscale =====
+# Le mode connecté (backlog_media.md, §3) : le même site, mais /api va à site-local-server,
+# la seule instance qui lit media-state. La box n'envoie jamais ce port : invisible depuis
+# Internet. En HTTP, comme la console et la pré-prod : par Tailscale, WireGuard chiffre tout.
+http://:8003 {
+	import content_security_policy
+	# Les visites sont journalisées comme celles du site : citadel idle-stop y lit la dernière
+	# requête vers ce port, et arrête l'instance après 10 minutes sans visite
+	import access_log
+	encode zstd gzip
+
+	handle /api/internal/* {
+		respond 404
+	}
+	handle_path /api/* {
+		reverse_proxy site-local-server:3000 {
+			import real_ip
+		}
+	}
+	# Le front est le même partout : celui de la prod, qui tourne toujours
+	handle {
+		reverse_proxy site-prod-client:8080
+	}
+
+	# L'instance est arrêtée (veille) : son nom ne répond plus, Caddy obtient un 502. Une
+	# requête /api passe alors au port de réveil de la console (8101, réseau edge, jamais
+	# publié), qui démarre le conteneur et répond 503 « en démarrage » : le front affiche
+	# « Démarrage… » et recharge la page quelques secondes plus tard. Caddy, exposé à
+	# Internet, n'a jamais accès à Docker : la console, elle, ne sait faire que ce démarrage-là.
+	# orig_uri : le chemin d'avant handle_path, qui a retiré /api
+	handle_errors 502 {
+		@api expression {http.request.orig_uri.path}.startsWith("/api/")
+		handle @api {
+			reverse_proxy infra-admin:8101 {
+				import real_ip
+			}
+		}
 	}
 }
 

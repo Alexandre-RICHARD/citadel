@@ -19,6 +19,10 @@
 # Chaque minute : les appareils de ton tailnet, déposés pour la console (state/tailscale.json)
 * * * * * citadel tailscale-status
 
+# Chaque minute : arrêt de ce que personne n'a visité depuis son délai (citadel.idle-stop :
+# l'instance locale du backlog des médias)
+* * * * * citadel idle-stop
+
 # Toutes les 5 min : le site répond-il depuis Internet ?
 */5 * * * * citadel site-check
 

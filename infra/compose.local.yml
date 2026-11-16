@@ -10,6 +10,9 @@
 #   https://citadel.localhost:8443            le site (accepter l'avertissement : certificat de test)
 #   https://jellyfin.citadel.localhost:8443   Jellyfin, à travers Caddy (ou http://localhost:8096)
 #   http://localhost:8100                     la console (mot de passe : admin)
+#   http://localhost:8003                     l'instance locale du backlog des médias : le mode
+#                                             connecté, sur un media-state fictif (mot de passe des
+#                                             médias : media-local, pour le premier compte créé)
 #   http://localhost:8080                     qBittorrent (admin / adminadmin) ; 9696 Prowlarr,
 #                                             7878 Radarr, 8989 Sonarr, 6767 Bazarr, 2468 cross-seed
 #
@@ -79,6 +82,50 @@ services:
       site-prod-migrations:
         condition: service_completed_successfully
 
+  # L'instance locale du backlog des médias, sur un media-state fictif : le relevé
+  # versionné avec les tests (apps/server/src/testUtils/mediaState/fixture), sans aucun
+  # vrai nom de fichier, de torrent ni de tracker, copié dans un volume jetable (cocher
+  # « Vérifié » y écrit). Elle s'arrête après 10 minutes sans visite, comme sur le NAS, et
+  # la visite suivante la réveille par la console
+  site-local-server:
+    image: citadel-server:local
+    environment:
+      MAIL_SENDER: journal
+    volumes:
+      - restore-journal:/var/lib/citadel/restore-journal
+      - type: volume
+        source: media-state
+        target: /media-state/survey
+        read_only: true
+        volume:
+          subpath: survey
+      - type: volume
+        source: media-state
+        target: /media-state/verified
+        volume:
+          subpath: verified
+    depends_on:
+      media-state-fixture:
+        condition: service_completed_successfully
+
+  # Copie le media-state fictif dans son volume, avant l'instance locale : verified/ au
+  # serveur (node, 1000), qui y écrit. Une seule fois : les cases cochées restent jusqu'à
+  # prod:local:down
+  media-state-fixture:
+    image: busybox:1.37.0
+    command:
+      - sh
+      - -c
+      - >-
+        [ -f /media-state/survey/current.json ] ||
+        (mkdir -p /media-state/survey /media-state/verified &&
+        cp /fixture/survey/current.json /media-state/survey/ &&
+        chown 1000:1000 /media-state/verified)
+    volumes:
+      - ../apps/server/src/testUtils/mediaState/fixture:/fixture:ro
+      - media-state:/media-state
+    restart: "no"
+
   site-prod-client:
     image: citadel-client:local
     build:
@@ -126,6 +173,7 @@ services:
       - "127.0.0.1:8000:80"
       - "127.0.0.1:8443:443"
       - "127.0.0.1:8002:8002"
+      - "127.0.0.1:8003:8003"
     volumes:
       - site-public:/srv/public:ro
 
@@ -314,6 +362,7 @@ configs:
 volumes:
   db-data:
   restore-journal:
+  media-state:
   preprod-db-data:
   ops-state:
   admin-state:
