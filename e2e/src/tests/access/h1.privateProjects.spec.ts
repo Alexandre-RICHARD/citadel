@@ -24,15 +24,24 @@ test.describe("Accès aux projets", () => {
 		const identity = await createConnectedAccount(page, "quentin");
 		await logOut(page);
 
-		for (const { project, path } of [
-			{ project: "Backlog", path: E2EUrlEnum.BACKLOG },
-			{ project: "Game Death Counter", path: E2EUrlEnum.GAME_DEATH_COUNTER },
+		// `landing` : où la page se pose après la connexion (`/backlog` mène à sa sous-route des jeux)
+		for (const { project, path, landing } of [
+			{
+				project: "Backlog",
+				path: E2EUrlEnum.BACKLOG,
+				landing: E2EUrlEnum.BACKLOG_GAMES,
+			},
+			{
+				project: "Game Death Counter",
+				path: E2EUrlEnum.GAME_DEATH_COUNTER,
+				landing: E2EUrlEnum.GAME_DEATH_COUNTER,
+			},
 		]) {
-			await test.step(`« Y accéder » de ${project}, déconnecté : la connexion, puis retour à ${path}`, async () => {
+			await test.step(`« Y accéder » de ${project}, déconnecté : la connexion, puis retour à ${landing}`, async () => {
 				await openProjectFromHomepage(page, project);
 				await expect(page).toHaveURL(loginUrlFor(path));
 				await logIn(page, identity);
-				await expect(page).toHaveURL(new RegExp(`${path}$`));
+				await expect(page).toHaveURL(new RegExp(`${landing}$`));
 				await backToCitadel(page);
 				await logOut(page);
 			});
