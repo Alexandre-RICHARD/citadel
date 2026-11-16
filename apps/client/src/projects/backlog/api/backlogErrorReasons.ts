@@ -35,6 +35,7 @@ export const backlogErrorReasons: Record<BacklogErrorCodeEnum, string> = {
 	[BacklogErrorCodeEnum.USER_MEDIA_ALREADY_EXISTS]:
 		"ce média est déjà dans le backlog",
 	[BacklogErrorCodeEnum.SAGA_NOT_FOUND]: "cette saga n'existe plus",
+	[BacklogErrorCodeEnum.SAGA_ENTRIES_MISMATCH]: "la saga a changé entre-temps",
 	[BacklogErrorCodeEnum.EPISODE_NOT_IN_SHOW]:
 		"cet épisode n'appartient pas à cette série",
 	[BacklogErrorCodeEnum.WATCHED_ONLY_FOR_MOVIES]:

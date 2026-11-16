@@ -6,4 +6,6 @@ export type MediaImportRecognizedDto = {
 	tmdbId: number;
 	title: string;
 	date: string | null;
+	// L'affiche que prendra sa miniature : la première de TMDB
+	posterPath: string | null;
 };

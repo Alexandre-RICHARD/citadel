@@ -18,6 +18,8 @@ export type UserMediaDto = {
 	imagePath: string | null;
 	saga: SagaDto | null;
 	sagaNumber: number | null;
+	// Le numéro tel qu'il s'affiche, avec autant de décimales que les autres médias de sa famille (3.10 parmi 3.01 … 3.10)
+	sagaNumberLabel: string | null;
 	isWatched: boolean;
 	watchedEpisodeCount: number;
 	airedEpisodeCount: number;

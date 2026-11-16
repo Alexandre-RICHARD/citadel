@@ -12,6 +12,8 @@ import type { StartMediaImport } from "./endpoint/mediaImports/startMediaImport/
 import type { ValidateMediaImport } from "./endpoint/mediaImports/validateMediaImport/validateMediaImportEndpoint.interface.ts";
 import type { GetBacklogOverview } from "./endpoint/overview/getBacklogOverview/getBacklogOverviewEndpoint.interface.ts";
 import type { GetAllSagas } from "./endpoint/sagas/getAllSagas/getAllSagasEndpoint.interface.ts";
+import type { GetSagaEntries } from "./endpoint/sagas/getSagaEntries/getSagaEntriesEndpoint.interface.ts";
+import type { ReorderSaga } from "./endpoint/sagas/reorderSaga/reorderSagaEndpoint.interface.ts";
 import type { GetAllSeries } from "./endpoint/series/getAllSeries/getAllSeriesEndpoint.interface.ts";
 import type { GetSeriesEntries } from "./endpoint/series/getSeriesEntries/getSeriesEntriesEndpoint.interface.ts";
 import type { ReorderSeries } from "./endpoint/series/reorderSeries/reorderSeriesEndpoint.interface.ts";
@@ -29,6 +31,8 @@ import type { GetUserGames } from "./endpoint/userGames/getUserGames/getUserGame
 import type { CreateUserMedia } from "./endpoint/userMedia/createUserMedia/createUserMediaEndpoint.interface.ts";
 import type { CustomizeUserMedia } from "./endpoint/userMedia/customizeUserMedia/customizeUserMediaEndpoint.interface.ts";
 import type { DeleteUserMedia } from "./endpoint/userMedia/deleteUserMedia/deleteUserMediaEndpoint.interface.ts";
+import type { GetAllUserMedia } from "./endpoint/userMedia/getAllUserMedia/getAllUserMediaEndpoint.interface.ts";
+import type { GetShowSeasons } from "./endpoint/userMedia/getShowSeasons/getShowSeasonsEndpoint.interface.ts";
 import type { SetEpisodesWatched } from "./endpoint/userMedia/setEpisodesWatched/setEpisodesWatchedEndpoint.interface.ts";
 import type { UpdateUserMedia } from "./endpoint/userMedia/updateUserMedia/updateUserMediaEndpoint.interface.ts";
 import type { CreateUserVersion } from "./endpoint/userVersions/createUserVersion/createUserVersionEndpoint.interface.ts";
@@ -66,7 +70,11 @@ export type BacklogEndpointRegistry =
 	| UpdateUserMedia
 	| DeleteUserMedia
 	| SetEpisodesWatched
+	| GetAllUserMedia
+	| GetShowSeasons
 	| GetAllSagas
+	| GetSagaEntries
+	| ReorderSaga
 	| StartMediaImport
 	| GetMediaImport
 	| ValidateMediaImport

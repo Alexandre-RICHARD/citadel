@@ -2,6 +2,8 @@
 export enum BacklogPageSizeEnum {
 	// Défilement infini du tableau
 	USER_GAMES = 25,
+	// Défilement infini du tableau des films et séries
+	USER_MEDIA = 40,
 	// « Ma base »
 	STORED_GAMES = 50,
 }

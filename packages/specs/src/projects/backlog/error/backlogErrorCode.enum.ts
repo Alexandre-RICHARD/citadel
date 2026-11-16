@@ -37,6 +37,8 @@ export enum BacklogErrorCodeEnum {
 	USER_MEDIA_NOT_FOUND = "USER_MEDIA_NOT_FOUND",
 	USER_MEDIA_ALREADY_EXISTS = "USER_MEDIA_ALREADY_EXISTS",
 	SAGA_NOT_FOUND = "SAGA_NOT_FOUND",
+	// Les médias envoyés pour « Réorganiser la saga » ne sont plus exactement ceux de la saga
+	SAGA_ENTRIES_MISMATCH = "SAGA_ENTRIES_MISMATCH",
 	// Un épisode envoyé n'est pas un épisode de cette série
 	EPISODE_NOT_IN_SHOW = "EPISODE_NOT_IN_SHOW",
 	// « Vu » d'une série se coche par ses épisodes, jamais sur la série elle-même
