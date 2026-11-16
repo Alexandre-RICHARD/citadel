@@ -5,6 +5,13 @@
 	"movies": [
 		{
 			"tmdbId": 603,
+			"toolTmdbId": 603,
+			"jellyfinTmdbId": 603,
+			"folder": {
+				"path": "/data/medias/movies/Film 603 (1999)",
+				"title": "Film 603",
+				"year": 1999
+			},
 			"title": "Matrix",
 			"year": 1999,
 			"jellyfinCollection": "Matrix",
@@ -46,6 +53,13 @@
 		},
 		{
 			"tmdbId": 348,
+			"toolTmdbId": 348,
+			"jellyfinTmdbId": 348,
+			"folder": {
+				"path": "/data/medias/movies/Film 348 (1979)",
+				"title": "Film 348",
+				"year": 1979
+			},
 			"title": "Alien",
 			"year": 1979,
 			"jellyfinCollection": "Alien",
@@ -81,6 +95,13 @@
 		},
 		{
 			"tmdbId": 679,
+			"toolTmdbId": 679,
+			"jellyfinTmdbId": null,
+			"folder": {
+				"path": "/data/medias/movies/Film 679 (1986)",
+				"title": "Film 679",
+				"year": 1986
+			},
 			"title": "Aliens",
 			"year": 1986,
 			"jellyfinCollection": "Aliens",
@@ -118,6 +139,13 @@
 		},
 		{
 			"tmdbId": 949,
+			"toolTmdbId": 949,
+			"jellyfinTmdbId": 949,
+			"folder": {
+				"path": "/data/medias/movies_archives/Film 949 (1995)",
+				"title": "Film 949",
+				"year": 1995
+			},
 			"title": "Heat",
 			"year": 1995,
 			"jellyfinCollection": null,
@@ -151,6 +179,9 @@
 		},
 		{
 			"tmdbId": 129,
+			"toolTmdbId": 129,
+			"jellyfinTmdbId": null,
+			"folder": null,
 			"title": "Le Voyage de Chihiro",
 			"year": 2001,
 			"jellyfinCollection": null,
@@ -166,6 +197,13 @@
 		},
 		{
 			"tmdbId": 680,
+			"toolTmdbId": null,
+			"jellyfinTmdbId": 680,
+			"folder": {
+				"path": "/data/medias/movies/Film 680 (1994)",
+				"title": "Film 680",
+				"year": 1994
+			},
 			"title": "Pulp Fiction",
 			"year": 1994,
 			"jellyfinCollection": null,
@@ -200,6 +238,13 @@
 	"shows": [
 		{
 			"tmdbId": 70523,
+			"toolTmdbId": 70523,
+			"jellyfinTmdbId": 70523,
+			"folder": {
+				"path": "/data/medias/series/Serie 70523",
+				"title": "Serie 70523",
+				"year": null
+			},
 			"title": "Dark",
 			"year": 2017,
 			"jellyfinItemId": "fixture-show-70523",
@@ -374,6 +419,13 @@
 		},
 		{
 			"tmdbId": 1396,
+			"toolTmdbId": 1396,
+			"jellyfinTmdbId": 1396,
+			"folder": {
+				"path": "/data/medias/series/Serie 1396",
+				"title": "Serie 1396",
+				"year": null
+			},
 			"title": "Breaking Bad",
 			"year": 2008,
 			"jellyfinItemId": "fixture-show-1396",

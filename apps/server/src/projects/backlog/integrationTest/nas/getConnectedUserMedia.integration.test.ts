@@ -1,7 +1,10 @@
 import type { ConnectedUserMediaListDto } from "@citadel/specs/src/projects/backlog/dto/nas/connectedUserMediaListDto.type.ts";
 import { LanguageTagEnum } from "@citadel/specs/src/projects/backlog/enum/languageTag.enum.ts";
+import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum.ts";
+import { NasGapKindEnum } from "@citadel/specs/src/projects/backlog/enum/nasGapKind.enum.ts";
 import { NasSharingEnum } from "@citadel/specs/src/projects/backlog/enum/nasSharing.enum.ts";
 import { NasStorageEnum } from "@citadel/specs/src/projects/backlog/enum/nasStorage.enum.ts";
+import { NasToolEnum } from "@citadel/specs/src/projects/backlog/enum/nasTool.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { ApiPrefixEnum } from "@citadel/specs/src/specUtils/apiPrefix.enum.ts";
 import { HttpStatutCodeErrorEnum } from "@citadel/specs/src/specUtils/httpStatutCodeError.enum.ts";
@@ -19,6 +22,7 @@ import { writeTestSurvey } from "../../../../testUtils/integration/backlog/nas/w
 import { nextTmdbId } from "../../../../testUtils/integration/backlog/nextTmdbId.ts";
 import { seedBacklogShow } from "../../../../testUtils/integration/backlog/seedBacklogShow.ts";
 import { buildSurveyedMovie } from "../../../../testUtils/unit/backlog/buildSurveyedMovie.ts";
+import { markTmdbIdCheckedQuery } from "../../query/tmdbCheck/markTmdbIdCheckedQuery.ts";
 
 const USER_MEDIA_URL = `${ApiPrefixEnum.BACKLOG}/nas/user-media`;
 
@@ -69,6 +73,50 @@ describe("getConnectedUserMedia", () => {
 				verifiedCount: 0,
 				verifiableCount: 1,
 			});
+		});
+
+		it("SHOULD find a movie that Radarr files under another TMDB ID, with the gap", async () => {
+			// Arrange
+			const owner = await openUnlockedNasAgent();
+			const movieId = await addMovie(owner.userId);
+			const radarrId = await nextTmdbId();
+			writeTestSurvey({
+				movies: [{ ...buildSurveyedMovie(radarrId), jellyfinTmdbId: movieId }],
+			});
+
+			// Act
+			const response = await owner.agent.get(USER_MEDIA_URL);
+
+			// Assert
+			const { userMedia } = response.body as ConnectedUserMediaListDto;
+			expect(userMedia.at(0)?.nas.storage).toBe(NasStorageEnum.IN_JELLYFIN);
+			expect(userMedia.at(0)?.nas.gaps).toStrictEqual([
+				{
+					kind: NasGapKindEnum.TOOL_MISMATCH,
+					tool: NasToolEnum.RADARR,
+					tmdbId: radarrId,
+				},
+			]);
+		});
+
+		it("SHOULD report a TMDB ID that TMDB no longer knows", async () => {
+			// Arrange
+			const owner = await openUnlockedNasAgent();
+			const movieId = await addMovie(owner.userId);
+			await markTmdbIdCheckedQuery(
+				{ mediaType: MediaTypeEnum.MOVIE, tmdbId: movieId },
+				true,
+			);
+			writeTestSurvey({ movies: [buildSurveyedMovie(movieId)] });
+
+			// Act
+			const response = await owner.agent.get(USER_MEDIA_URL);
+
+			// Assert
+			const { userMedia } = response.body as ConnectedUserMediaListDto;
+			expect(userMedia.at(0)?.nas.gaps).toStrictEqual([
+				{ kind: NasGapKindEnum.TMDB_ID_GONE },
+			]);
 		});
 
 		it("SHOULD say a movie is not tracked WHEN the survey does not know it", async () => {

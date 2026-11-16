@@ -13,6 +13,13 @@ export function buildSurveyedShow(
 ): SurveyedShow {
 	return {
 		tmdbId,
+		toolTmdbId: tmdbId,
+		jellyfinTmdbId: tmdbId,
+		folder: {
+			path: `/data/medias/series/Série ${tmdbId}`,
+			title: `Série ${tmdbId}`,
+			year: 2017,
+		},
 		title: `Série ${tmdbId}`,
 		year: 2017,
 		jellyfinItemId: `show-${tmdbId}`,

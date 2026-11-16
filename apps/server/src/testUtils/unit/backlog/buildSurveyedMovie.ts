@@ -14,6 +14,13 @@ export function buildSurveyedMovie(
 ): SurveyedMovie {
 	return {
 		tmdbId,
+		toolTmdbId: tmdbId,
+		jellyfinTmdbId: tmdbId,
+		folder: {
+			path: `/data/medias/movies/Film ${tmdbId} (1999)`,
+			title: `Film ${tmdbId}`,
+			year: 1999,
+		},
 		title: `Film ${tmdbId}`,
 		year: 1999,
 		jellyfinCollection: null,

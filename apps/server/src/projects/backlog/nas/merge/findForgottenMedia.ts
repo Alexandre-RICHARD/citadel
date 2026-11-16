@@ -48,8 +48,8 @@ function compareForgotten(
 
 /**
  * Ce que le NAS contient sans être dans le backlog (§5), une ligne par média avec les endroits où il est. `backlogKeys` :
- * « movie:603 », « show:1396 » pour chaque média du backlog. Ceux qu'aucun outil ne relie à TMDB, par leur chemin, à la
- * fin
+ * « movie:603 », « show:1396 » pour chaque média du backlog, dans le relevé déjà relié au backlog (resolveMediaSurvey).
+ * Ceux qu'aucun outil ne relie à TMDB, par leur chemin, à la fin
  */
 export function findForgottenMedia(
 	survey: MediaSurvey,
@@ -57,14 +57,16 @@ export function findForgottenMedia(
 ): ForgottenMediaBean[] {
 	const movies = survey.movies
 		.filter(
-			({ tmdbId }) => !backlogKeys.has(`${MediaTypeEnum.MOVIE}:${tmdbId}`),
+			({ tmdbId }) =>
+				tmdbId === null || !backlogKeys.has(`${MediaTypeEnum.MOVIE}:${tmdbId}`),
 		)
-		.map(({ tmdbId, title, year, entry }) => ({
+		.map(({ tmdbId, title, year, folder, entry }) => ({
 			tmdbId,
 			mediaType: MediaTypeEnum.MOVIE,
 			title,
 			year,
-			path: null,
+			// Un film qu'aucun outil ne relie à TMDB se désigne par son dossier
+			path: tmdbId === null ? (folder?.path ?? entry.file?.path ?? null) : null,
 			...describePlaces([entry], false),
 		}));
 	const shows = survey.shows

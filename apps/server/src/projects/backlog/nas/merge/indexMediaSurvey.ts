@@ -6,7 +6,12 @@ import type { SurveyIndex } from "./surveyIndex.type.ts";
 // Range le relevé par identifiant TMDB ; un identifiant en double (relevé abîmé) garde sa dernière ligne
 export function indexMediaSurvey(survey: MediaSurvey): SurveyIndex {
 	return {
-		movies: new Map(survey.movies.map((movie) => [movie.tmdbId, movie])),
+		// Un film sans identifiant n'est relié à aucune ligne : il ne sert qu'aux oubliés
+		movies: new Map(
+			survey.movies.flatMap((movie) =>
+				movie.tmdbId === null ? [] : [[movie.tmdbId, movie] as const],
+			),
+		),
 		shows: new Map(
 			survey.shows.map((show) => [
 				show.tmdbId,

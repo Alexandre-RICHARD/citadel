@@ -3,6 +3,7 @@ import { fetchCachedTmdbShow } from "./fetchCachedTmdbShow.ts";
 import { fetchTmdbMovie } from "./fetchTmdbMovie.ts";
 import { fetchTmdbPosterPaths } from "./fetchTmdbPosterPaths.ts";
 import { fetchTmdbShow } from "./fetchTmdbShow.ts";
+import { isKnownOnTmdb } from "./isKnownOnTmdb.ts";
 import { searchTmdbMedia } from "./searchTmdbMedia.ts";
 
 /**
@@ -17,4 +18,5 @@ export const tmdbGateway = {
 	fetchFreshMovie: fetchTmdbMovie,
 	fetchFreshShow: fetchTmdbShow,
 	fetchPosterPaths: fetchTmdbPosterPaths,
+	isKnown: isKnownOnTmdb,
 };

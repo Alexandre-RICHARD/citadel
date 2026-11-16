@@ -4,6 +4,7 @@ import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaTyp
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 import { buildVerificationKey } from "@citadel/specs/src/projects/backlog/helper/nas/buildVerificationKey.ts";
 import type { VerificationTarget } from "@citadel/specs/src/projects/backlog/helper/nas/verificationTarget.type.ts";
+import type { MediaSurvey } from "@citadel/specs/src/projects/backlog/mediaState/mediaSurvey.type.ts";
 import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum.ts";
 import type { Request } from "express";
 
@@ -22,7 +23,6 @@ import type { SetMediaVerifiedBean } from "../bean/setMediaVerifiedBean.type.ts"
 import type { UserMediaBean } from "../bean/userMediaBean.type.ts";
 import type { UserMediaIdBean } from "../bean/userMediaIdBean.type.ts";
 import { buildUserMediaPage } from "../helper/buildUserMediaPage.ts";
-import { loadUserMediaBean } from "../helper/loadUserMediaBean.ts";
 import { loadUserMediaBeans } from "../helper/loadUserMediaBeans.ts";
 import { isUnlockTokenValid } from "../nas/access/isUnlockTokenValid.ts";
 import { mediaPasswordHasher } from "../nas/access/mediaPasswordHasher.ts";
@@ -30,6 +30,7 @@ import { nasOwner } from "../nas/access/nasOwner.ts";
 import { signUnlockToken } from "../nas/access/signUnlockToken.ts";
 import { unlockCookie } from "../nas/access/unlockCookie.ts";
 import { unlockThrottle } from "../nas/access/unlockThrottle.ts";
+import { addTmdbGoneGap } from "../nas/merge/addTmdbGoneGap.ts";
 import { describeEpisodeNas } from "../nas/merge/describeEpisodeNas.ts";
 import { describeFileNas } from "../nas/merge/describeFileNas.ts";
 import { describeShowNas } from "../nas/merge/describeShowNas.ts";
@@ -38,13 +39,17 @@ import { findSurveyEntry } from "../nas/merge/findSurveyEntry.ts";
 import { indexMediaSurvey } from "../nas/merge/indexMediaSurvey.ts";
 import { isVerifiableEntry } from "../nas/merge/isVerifiableEntry.ts";
 import { keepValidVerifications } from "../nas/merge/keepValidVerifications.ts";
+import type { NasDetailsBean } from "../nas/merge/nasDetailsBean.type.ts";
+import { resolveMediaSurvey } from "../nas/merge/resolveMediaSurvey.ts";
 import type { SurveyIndex } from "../nas/merge/surveyIndex.type.ts";
+import { toBacklogMediaRef } from "../nas/merge/toBacklogMediaRef.ts";
 import { readMediaSurvey } from "../nas/state/readMediaSurvey.ts";
 import { readMediaVerifications } from "../nas/state/readMediaVerifications.ts";
 import { runSerially } from "../nas/state/runSerially.ts";
 import { writeMediaVerifications } from "../nas/state/writeMediaVerifications.ts";
 import { filterConnectedUserMedia } from "../nas/view/filterConnectedUserMedia.ts";
 import { sortConnectedUserMedia } from "../nas/view/sortConnectedUserMedia.ts";
+import { getGoneTmdbIdsQuery } from "../query/tmdbCheck/getGoneTmdbIdsQuery.ts";
 import { getUserShowsEpisodeRefsQuery } from "../query/tvShow/getUserShowsEpisodeRefsQuery.ts";
 import { userMediaService } from "./userMediaService.ts";
 
@@ -66,10 +71,28 @@ type MergeContext = {
 	today: string;
 };
 
+/**
+ * Le dernier relevé, relié à ce backlog : chaque média du backlog y retrouve son film ou sa série, même quand un outil
+ * le range sous un autre identifiant (resolveMediaSurvey). Le backlog entier, car un média relié à l'un ne l'est plus
+ * à l'autre
+ */
+async function readResolvedSurvey(
+	settings: NasSettings,
+	userMediaList: UserMediaBean[],
+): Promise<MediaSurvey> {
+	return resolveMediaSurvey(
+		await readMediaSurvey(settings.stateDir),
+		userMediaList.map(toBacklogMediaRef),
+	);
+}
+
 // Le relevé, et les cases « Vérifié » qui valent encore pour lui
-async function loadMergeContext(settings: NasSettings): Promise<MergeContext> {
+async function loadMergeContext(
+	settings: NasSettings,
+	userMediaList: UserMediaBean[],
+): Promise<MergeContext> {
 	const [survey, verifications] = await Promise.all([
-		readMediaSurvey(settings.stateDir),
+		readResolvedSurvey(settings, userMediaList),
 		readMediaVerifications(settings.stateDir),
 	]);
 	const index = indexMediaSurvey(survey);
@@ -82,6 +105,34 @@ async function loadMergeContext(settings: NasSettings): Promise<MergeContext> {
 		),
 		today: getTodayIsoDate(),
 	};
+}
+
+// Les colonnes du NAS d'une ligne du tableau : un film, ou une série agrégée sur ses épisodes
+function describeUserMediaNas(
+	context: MergeContext,
+	userMedia: UserMediaBean,
+	episodesByShow: Awaited<ReturnType<typeof getUserShowsEpisodeRefsQuery>>,
+): NasDetailsBean {
+	if (userMedia.mediaType === MediaTypeEnum.SHOW)
+		return describeShowNas(
+			{
+				...context,
+				showTmdbId: userMedia.tmdbId,
+				originalLanguage: userMedia.originalLanguage,
+			},
+			episodesByShow.get(userMedia.tmdbId) ?? [],
+			true,
+		);
+	const movie = context.index.movies.get(userMedia.tmdbId);
+	return describeFileNas({
+		entry: movie?.entry ?? null,
+		isVerified: context.verifiedKeys.has(
+			buildVerificationKey({ kind: "movie", tmdbId: userMedia.tmdbId }),
+		),
+		tmdbMinutes: userMedia.runtimeMinutes,
+		originalLanguage: userMedia.originalLanguage,
+		jellyfinCollection: movie?.jellyfinCollection ?? null,
+	});
 }
 
 function userMediaNotFound(userMediaId: number): NotFoundError {
@@ -205,37 +256,19 @@ export const nasService = {
 		userId: number,
 		{ page, sort, filters, filterMode }: GetConnectedUserMediaBean,
 	) {
-		const [context, userMediaList, episodesByShow] = await Promise.all([
-			loadMergeContext(settings),
+		const [userMediaList, episodesByShow, goneKeys] = await Promise.all([
 			loadUserMediaBeans(userId),
 			getUserShowsEpisodeRefsQuery(userId),
+			getGoneTmdbIdsQuery(userId),
 		]);
+		const context = await loadMergeContext(settings, userMediaList);
 		const rows: ConnectedUserMediaBean[] = userMediaList.map((userMedia) => {
-			if (userMedia.mediaType === MediaTypeEnum.SHOW)
-				return {
-					...userMedia,
-					nas: describeShowNas(
-						{
-							...context,
-							showTmdbId: userMedia.tmdbId,
-							originalLanguage: userMedia.originalLanguage,
-						},
-						episodesByShow.get(userMedia.tmdbId) ?? [],
-						true,
-					),
-				};
-			const movie = context.index.movies.get(userMedia.tmdbId);
+			const nas = describeUserMediaNas(context, userMedia, episodesByShow);
 			return {
 				...userMedia,
-				nas: describeFileNas({
-					entry: movie?.entry ?? null,
-					isVerified: context.verifiedKeys.has(
-						buildVerificationKey({ kind: "movie", tmdbId: userMedia.tmdbId }),
-					),
-					tmdbMinutes: userMedia.runtimeMinutes,
-					originalLanguage: userMedia.originalLanguage,
-					jellyfinCollection: movie?.jellyfinCollection ?? null,
-				}),
+				nas: goneKeys.has(`${userMedia.mediaType}:${userMedia.tmdbId}`)
+					? addTmdbGoneGap(nas)
+					: nas,
 			};
 		});
 		const sorted = sortConnectedUserMedia(
@@ -250,12 +283,13 @@ export const nasService = {
 		userId: number,
 		{ userMediaId }: UserMediaIdBean,
 	): Promise<ConnectedShowSeasonBean[]> {
-		const [userMedia, seasons, context] = await Promise.all([
-			loadUserMediaBean(userId, userMediaId),
+		const [userMediaList, seasons] = await Promise.all([
+			loadUserMediaBeans(userId),
 			userMediaService.getShowSeasons(userId, { userMediaId }),
-			loadMergeContext(settings),
 		]);
-		if (userMedia === null) throw userMediaNotFound(userMediaId);
+		const userMedia = userMediaList.find(({ id }) => id === userMediaId);
+		if (userMedia === undefined) throw userMediaNotFound(userMediaId);
+		const context = await loadMergeContext(settings, userMediaList);
 		const showContext = {
 			...context,
 			showTmdbId: userMedia.tmdbId,
@@ -293,12 +327,13 @@ export const nasService = {
 		userId: number,
 		{ userMediaId, episodeIds, isVerified }: SetMediaVerifiedBean,
 	): Promise<void> {
-		const userMedia = await loadUserMediaBean(userId, userMediaId);
-		if (userMedia === null) throw userMediaNotFound(userMediaId);
+		const userMediaList = await loadUserMediaBeans(userId);
+		const userMedia = userMediaList.find(({ id }) => id === userMediaId);
+		if (userMedia === undefined) throw userMediaNotFound(userMediaId);
 		const targets = await resolveTargets(userId, userMedia, episodeIds);
 		await runSerially(async () => {
 			const [survey, verifications] = await Promise.all([
-				readMediaSurvey(settings.stateDir),
+				readResolvedSurvey(settings, userMediaList),
 				readMediaVerifications(settings.stateDir),
 			]);
 			const index = indexMediaSurvey(survey);
@@ -339,12 +374,9 @@ export const nasService = {
 		settings: NasSettings,
 		userId: number,
 	): Promise<ForgottenMediaBean[]> {
-		const [survey, userMediaList] = await Promise.all([
-			readMediaSurvey(settings.stateDir),
-			loadUserMediaBeans(userId),
-		]);
+		const userMediaList = await loadUserMediaBeans(userId);
 		return findForgottenMedia(
-			survey,
+			await readResolvedSurvey(settings, userMediaList),
 			new Set(
 				userMediaList.map(({ mediaType, tmdbId }) => `${mediaType}:${tmdbId}`),
 			),

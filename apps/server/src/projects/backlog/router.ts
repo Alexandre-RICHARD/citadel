@@ -57,6 +57,7 @@ import { sagaController } from "./controller/sagaController.ts";
 import { seriesController } from "./controller/seriesController.ts";
 import { showUpdateController } from "./controller/showUpdateController.ts";
 import { tmdbController } from "./controller/tmdbController.ts";
+import { tmdbIdCheckController } from "./controller/tmdbIdCheckController.ts";
 import { userGameController } from "./controller/userGameController.ts";
 import { userMediaController } from "./controller/userMediaController.ts";
 import { userVersionController } from "./controller/userVersionController.ts";
@@ -334,6 +335,13 @@ typedRouter.POST(
 typedRouter.POST(
 	`${ApiPrefixEnum.INTERNAL}${ApiPrefixEnum.BACKLOG}/show-updates`,
 	showUpdateController.refreshOngoing,
+	internalOnly,
+);
+
+// Le même job, juste après : un septième des identifiants TMDB des backlogs, relus (écart « Identifiant TMDB disparu »)
+typedRouter.POST(
+	`${ApiPrefixEnum.INTERNAL}${ApiPrefixEnum.BACKLOG}/tmdb-ids/check`,
+	tmdbIdCheckController.checkSlice,
 	internalOnly,
 );
 
