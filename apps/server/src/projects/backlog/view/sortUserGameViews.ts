@@ -23,7 +23,10 @@ function getSortValue(
 			? null
 			: ENDING_TYPE_ORDER.indexOf(row.endingType);
 	const value = getColumnValue(column, row);
-	return typeof value === "boolean" ? Number(value) : value;
+	if (Array.isArray(value)) return value.length;
+	return typeof value === "boolean"
+		? Number(value)
+		: (value as string | number | null);
 }
 
 // Tri multi-colonnes sur ce qu'affichent les lignes des jeux ; sans tri, le jeu touché en dernier passe en premier

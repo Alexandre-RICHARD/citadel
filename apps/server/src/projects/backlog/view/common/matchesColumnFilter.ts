@@ -1,5 +1,6 @@
 import { normalizeText } from "@citadel/common/src/universal/string/normalizeText.ts";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum.ts";
+import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum.ts";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type.ts";
 
 import type { ColumnValue } from "./columnValue.type.ts";
@@ -20,12 +21,14 @@ function isInRange<Value extends number | string>(
 /**
  * Une case passe-t-elle le filtre de sa colonne ? `value` : ce qu'elle affiche ; `texts` : les textes qu'y cherche un
  * filtre texte (le titre et le titre original, par exemple). Sans accents ni majuscules ; une valeur exacte (clic sur une
- * série) doit être tout le texte. Une case vide ne correspond à aucune valeur cochée, ni à aucun intervalle
+ * série) doit être tout le texte. Une case vide ne correspond à aucune valeur cochée, ni à aucun intervalle.
+ * Une case à plusieurs étiquettes (langues) passe si elle a toutes les valeurs cochées (et), ou l'une d'elles (ou)
  */
 export function matchesColumnFilter<Column extends string>(
 	filter: ColumnFilter<Column>,
 	value: ColumnValue,
 	texts: string[],
+	filterMode: FilterModeEnum = FilterModeEnum.OR,
 ): boolean {
 	switch (filter.kind) {
 		case ColumnFilterKindEnum.TEXT: {
@@ -36,6 +39,10 @@ export function matchesColumnFilter<Column extends string>(
 				: normalizedTexts.some((text) => text.includes(searched));
 		}
 		case ColumnFilterKindEnum.VALUE:
+			if (Array.isArray(value))
+				return filterMode === FilterModeEnum.AND
+					? filter.values.every((wanted) => value.includes(wanted))
+					: filter.values.some((wanted) => value.includes(wanted));
 			return typeof value === "string" && filter.values.includes(value);
 		case ColumnFilterKindEnum.BOOLEAN:
 			return value === filter.value;

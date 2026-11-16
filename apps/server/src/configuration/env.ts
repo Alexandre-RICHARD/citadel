@@ -1,3 +1,4 @@
+import { parsePasswordHash } from "@citadel/common/src/node/password/parsePasswordHash.ts";
 import { z } from "zod";
 
 import { MailSenderKindEnum } from "../mail/sender/mailSenderKind.enum.ts";
@@ -12,6 +13,14 @@ function booleanFlag(defaultValue: boolean) {
 		.enum(["true", "false"])
 		.default(defaultValue ? "true" : "false")
 		.transform((flag) => flag === "true");
+}
+
+// Une variable facultative : absente ou vide, elle n'est pas posée (les fichiers .env gardent les lignes vides)
+function optionalVariable<Schema extends z.ZodType>(schema: Schema) {
+	return z.preprocess(
+		(value) => (value === "" ? undefined : value),
+		schema.optional(),
+	);
 }
 
 // 32 octets en hexadécimal : `openssl rand -hex 32` (Git Bash)
@@ -128,6 +137,26 @@ const envSchema = z.object({
 	AUTH_TOTP_PREVIOUS_ENCRYPTION_KEY: z
 		.union([z.literal(""), z.string().regex(HEX_KEY_32_BYTES, HEX_KEY_MESSAGE)])
 		.default(""),
+
+	// ----- Backlog des médias, mode connecté : l'instance locale du NAS seulement (lues par nasSettings) -----
+	// Le dossier media-state : posé, il monte les routes du NAS ; absent (serveur public, pré-prod), elles n'existent pas
+	MEDIA_STATE_DIR: optionalVariable(z.string()),
+	// [secret] Hash argon2id du mot de passe des médias (pnpm tools hashAdminPassword le fabrique aussi)
+	MEDIA_PASSWORD_HASH: optionalVariable(
+		z
+			.string()
+			.refine(
+				(storedHash) => parsePasswordHash(storedHash) !== null,
+				"argon2id hash expected",
+			),
+	),
+	// Le seul compte qui peut déverrouiller le mode connecté
+	MEDIA_OWNER_USER_ID: optionalVariable(z.coerce.number().int().positive()),
+	// Durée d'un déverrouillage
+	MEDIA_UNLOCK_HOURS: positiveInteger(12),
+	// Ports de Jellyfin et de la console sur le NAS, pour les liens « Ouvrir dans Jellyfin » et vers le rapport du job
+	MEDIA_JELLYFIN_PORT: positiveInteger(8096),
+	MEDIA_CONSOLE_PORT: positiveInteger(8100),
 });
 
 // Les règles entre variables, une fois chacune valide
@@ -149,6 +178,17 @@ const envRulesSchema = envSchema
 			message:
 				"MAIL_REGISTRATION_STOP <= MAIL_CONTACT_STOP <= MAIL_DAILY_LIMIT expected",
 			path: ["MAIL_CONTACT_STOP"],
+		},
+	)
+	// Le mode connecté ne s'ouvre qu'avec son mot de passe, et pour un seul compte
+	.refine(
+		(variables) =>
+			variables.MEDIA_STATE_DIR === undefined ||
+			(variables.MEDIA_PASSWORD_HASH !== undefined &&
+				variables.MEDIA_OWNER_USER_ID !== undefined),
+		{
+			message: "required with MEDIA_PASSWORD_HASH and MEDIA_OWNER_USER_ID",
+			path: ["MEDIA_STATE_DIR"],
 		},
 	)
 	// Argon2 refuse moins de 8 Kio par fil de calcul

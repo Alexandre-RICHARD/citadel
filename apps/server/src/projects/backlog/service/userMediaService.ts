@@ -1,6 +1,5 @@
 import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
-import { BacklogPageSizeEnum } from "@citadel/specs/src/projects/backlog/helper/view/backlogPageSize.enum.ts";
 import type { Transaction } from "sequelize";
 
 import { runInTransaction } from "../../../common/database/runInTransaction.ts";
@@ -16,6 +15,7 @@ import type { UpdateUserMediaBean } from "../bean/updateUserMediaBean.type.ts";
 import type { UserMediaBean } from "../bean/userMediaBean.type.ts";
 import type { UserMediaIdBean } from "../bean/userMediaIdBean.type.ts";
 import type { UserMediaPageBean } from "../bean/userMediaPageBean.type.ts";
+import { buildUserMediaPage } from "../helper/buildUserMediaPage.ts";
 import { fetchMediaUnlessStored } from "../helper/fetchMediaUnlessStored.ts";
 import { loadUserMediaBean } from "../helper/loadUserMediaBean.ts";
 import { loadUserMediaBeans } from "../helper/loadUserMediaBeans.ts";
@@ -108,28 +108,12 @@ class UserMediaService {
 		userId: number,
 		{ page, sort, filters, filterMode }: GetAllUserMediaBean,
 	): Promise<UserMediaPageBean> {
-		const pageSize = Number(BacklogPageSizeEnum.USER_MEDIA);
 		const userMediaList = await loadUserMediaBeans(userId);
 		const sorted = sortUserMediaBeans(
 			filterUserMediaBeans(userMediaList, filters, filterMode),
 			sort,
 		);
-		const movieCount = userMediaList.filter(
-			({ mediaType }) => mediaType === MediaTypeEnum.MOVIE,
-		).length;
-		return {
-			userMedia: sorted.slice((page - 1) * pageSize, page * pageSize),
-			matchedCount: sorted.length,
-			movieCount,
-			showCount: userMediaList.length - movieCount,
-			originalLanguages: [
-				...new Set(
-					userMediaList.flatMap(({ originalLanguage }) =>
-						originalLanguage === null ? [] : [originalLanguage],
-					),
-				),
-			].toSorted(),
-		};
+		return buildUserMediaPage(userMediaList, sorted, page);
 	}
 
 	// Dépliage d'une série : ses saisons et leurs épisodes, avec ceux que le compte a vus ; un film n'en a aucune

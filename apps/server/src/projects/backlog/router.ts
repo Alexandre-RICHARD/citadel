@@ -51,6 +51,7 @@ import { requestValidator } from "../../middleware/requestValidator.ts";
 import { gameController } from "./controller/gameController.ts";
 import { igdbController } from "./controller/igdbController.ts";
 import { mediaImportController } from "./controller/mediaImportController.ts";
+import { nasController } from "./controller/nasController.ts";
 import { overviewController } from "./controller/overviewController.ts";
 import { sagaController } from "./controller/sagaController.ts";
 import { seriesController } from "./controller/seriesController.ts";
@@ -335,5 +336,10 @@ typedRouter.POST(
 	showUpdateController.refreshOngoing,
 	internalOnly,
 );
+
+// ==== Mode connecté ====
+// Monté partout, même sur le serveur public, qui répond que le mode connecté n'existe pas ; ses autres routes sont
+// dans nasRouter, montées seulement sur l'instance locale du NAS
+typedRouter.GET(`${ApiPrefixEnum.BACKLOG}/nas-status`, nasController.getStatus);
 
 export const backlogRouter = expressRouter;
