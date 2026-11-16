@@ -16,4 +16,7 @@ export enum TechnicalErrorCodeEnum {
 	// Trop de requêtes d'affilée : l'en-tête Retry-After donne le délai avant de réessayer, en secondes
 	TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS",
 	INTERNAL_ERROR = "INTERNAL_ERROR",
+	// 503 de l'instance locale du backlog des médias arrêtée pour inactivité : la console du NAS, appelée par Caddy à sa
+	// place, vient de la démarrer. Le front affiche « Démarrage… » et recharge la page après Retry-After
+	LOCAL_INSTANCE_STARTING = "LOCAL_INSTANCE_STARTING",
 }

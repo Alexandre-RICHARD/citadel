@@ -10,6 +10,13 @@ import type { CancelMediaImport } from "./endpoint/mediaImports/cancelMediaImpor
 import type { GetMediaImport } from "./endpoint/mediaImports/getMediaImport/getMediaImportEndpoint.interface.ts";
 import type { StartMediaImport } from "./endpoint/mediaImports/startMediaImport/startMediaImportEndpoint.interface.ts";
 import type { ValidateMediaImport } from "./endpoint/mediaImports/validateMediaImport/validateMediaImportEndpoint.interface.ts";
+import type { GetConnectedShowSeasons } from "./endpoint/nas/getConnectedShowSeasons/getConnectedShowSeasonsEndpoint.interface.ts";
+import type { GetConnectedUserMedia } from "./endpoint/nas/getConnectedUserMedia/getConnectedUserMediaEndpoint.interface.ts";
+import type { GetForgottenMedia } from "./endpoint/nas/getForgottenMedia/getForgottenMediaEndpoint.interface.ts";
+import type { GetNasStatus } from "./endpoint/nas/getNasStatus/getNasStatusEndpoint.interface.ts";
+import type { LockNas } from "./endpoint/nas/lockNas/lockNasEndpoint.interface.ts";
+import type { SetMediaVerified } from "./endpoint/nas/setMediaVerified/setMediaVerifiedEndpoint.interface.ts";
+import type { UnlockNas } from "./endpoint/nas/unlockNas/unlockNasEndpoint.interface.ts";
 import type { GetBacklogOverview } from "./endpoint/overview/getBacklogOverview/getBacklogOverviewEndpoint.interface.ts";
 import type { GetAllSagas } from "./endpoint/sagas/getAllSagas/getAllSagasEndpoint.interface.ts";
 import type { GetSagaEntries } from "./endpoint/sagas/getSagaEntries/getSagaEntriesEndpoint.interface.ts";
@@ -81,4 +88,11 @@ export type BacklogEndpointRegistry =
 	| CancelMediaImport
 	| GetShowUpdates
 	| ApplyShowUpdates
-	| RefreshOngoingShows;
+	| RefreshOngoingShows
+	| GetNasStatus
+	| UnlockNas
+	| LockNas
+	| GetConnectedUserMedia
+	| GetConnectedShowSeasons
+	| SetMediaVerified
+	| GetForgottenMedia;

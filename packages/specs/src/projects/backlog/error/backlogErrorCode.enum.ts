@@ -49,4 +49,16 @@ export enum BacklogErrorCodeEnum {
 	MEDIA_IMPORT_ALREADY_RUNNING = "MEDIA_IMPORT_ALREADY_RUNNING",
 	// « Valider » avant que toutes les fiches soient lues, ou après l'échec de la lecture
 	MEDIA_IMPORT_NOT_READY = "MEDIA_IMPORT_NOT_READY",
+
+	// ==== Mode connecté (instance locale du NAS) ====
+	// Mot de passe des médias refusé
+	MEDIA_PASSWORD_INVALID = "MEDIA_PASSWORD_INVALID",
+	// Seul le compte du propriétaire du NAS (MEDIA_OWNER_USER_ID) peut déverrouiller le mode connecté
+	NAS_OWNER_ONLY = "NAS_OWNER_ONLY",
+	// Mode connecté pas déverrouillé, ou plus (12 h passées, mot de passe des médias changé)
+	NAS_LOCKED = "NAS_LOCKED",
+	// Le relevé du job est absent ou illisible : rien à fusionner avec le backlog
+	NAS_SURVEY_UNAVAILABLE = "NAS_SURVEY_UNAVAILABLE",
+	// « Vérifié » sur un média sans fichier, ou avec plusieurs fichiers (écart « Doublon »)
+	NOT_VERIFIABLE = "NOT_VERIFIABLE",
 }
