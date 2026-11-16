@@ -2,9 +2,12 @@ import "./src/configuration/timezone.ts";
 
 import { afterAll, beforeEach, inject } from "vitest";
 
+import { configureNasTestEnvironment } from "./src/testUtils/integration/backlog/nas/configureNasTestEnvironment.ts";
 import { loadIntegrationTestEnvironment } from "./src/testUtils/integration/loadIntegrationTestEnvironment.ts";
 
 loadIntegrationTestEnvironment();
+// Comme l'instance locale du NAS : les routes du mode connecté sont montées, sur un media-state jetable
+await configureNasTestEnvironment();
 
 // Import dynamique : env.ts lit process.env dès son import, donc après le chargement de .env.test
 const { sequelize } = await import("./src/configuration/sequelize.ts");

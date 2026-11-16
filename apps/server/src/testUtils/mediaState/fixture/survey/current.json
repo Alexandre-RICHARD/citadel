@@ -1,0 +1,461 @@
+{
+	"formatVersion": 1,
+	"surveyedAt": "2026-11-16T03:00:00.000+01:00",
+	"jellyfinServerId": "fixture-server",
+	"movies": [
+		{
+			"tmdbId": 603,
+			"title": "Matrix",
+			"year": 1999,
+			"jellyfinCollection": "Matrix",
+			"entry": {
+				"storage": "in_jellyfin",
+				"trackedBy": "radarr",
+				"file": {
+					"path": "/data/medias/movies/Film 603 (1999)/film.mkv",
+					"inode": 6030,
+					"sizeBytes": 9800000000,
+					"quality": "fhd",
+					"durationMinutes": 136,
+					"audioLanguages": [
+						"fr",
+						"en"
+					],
+					"subtitleLanguages": [
+						"fr"
+					]
+				},
+				"fileCount": 1,
+				"jellyfinItemId": "fixture-movie-603",
+				"torrents": [
+					{
+						"hash": "fixture-603-a",
+						"name": "film-603-1080p",
+						"trackerName": "Tracker A",
+						"sharing": "seeding"
+					},
+					{
+						"hash": "fixture-603-b",
+						"name": "film-603-1080p",
+						"trackerName": "Tracker B",
+						"sharing": "error"
+					}
+				],
+				"gaps": []
+			}
+		},
+		{
+			"tmdbId": 348,
+			"title": "Alien",
+			"year": 1979,
+			"jellyfinCollection": "Alien",
+			"entry": {
+				"storage": "in_jellyfin",
+				"trackedBy": "radarr",
+				"file": {
+					"path": "/data/medias/movies/Film 348 (1979)/film.mkv",
+					"inode": 3480,
+					"sizeBytes": 28400000000,
+					"quality": "4k",
+					"durationMinutes": 138,
+					"audioLanguages": [
+						"en"
+					],
+					"subtitleLanguages": [
+						"fr",
+						"en"
+					]
+				},
+				"fileCount": 1,
+				"jellyfinItemId": "fixture-movie-348",
+				"torrents": [
+					{
+						"hash": "fixture-348",
+						"name": "film-348-2160p",
+						"trackerName": "Tracker B",
+						"sharing": "tracker_unreachable"
+					}
+				],
+				"gaps": []
+			}
+		},
+		{
+			"tmdbId": 679,
+			"title": "Aliens",
+			"year": 1986,
+			"jellyfinCollection": "Aliens",
+			"entry": {
+				"storage": "present",
+				"trackedBy": "radarr",
+				"file": {
+					"path": "/data/medias/movies/Film 679 (1986)/film.mkv",
+					"inode": 6790,
+					"sizeBytes": 4100000000,
+					"quality": "hd",
+					"durationMinutes": 137,
+					"audioLanguages": [
+						"fr"
+					],
+					"subtitleLanguages": []
+				},
+				"fileCount": 1,
+				"jellyfinItemId": null,
+				"torrents": [
+					{
+						"hash": "fixture-679",
+						"name": "film-679-720p",
+						"trackerName": "Tracker A",
+						"sharing": "error"
+					}
+				],
+				"gaps": [
+					{
+						"kind": "jellyfin_mismatch",
+						"tmdbId": null
+					}
+				]
+			}
+		},
+		{
+			"tmdbId": 949,
+			"title": "Heat",
+			"year": 1995,
+			"jellyfinCollection": null,
+			"entry": {
+				"storage": "in_jellyfin",
+				"trackedBy": "radarr",
+				"file": {
+					"path": "/data/medias/movies_archives/Film 949 (1995)/film.avi",
+					"inode": 9490,
+					"sizeBytes": 1400000000,
+					"quality": "sd",
+					"durationMinutes": 170,
+					"audioLanguages": [],
+					"subtitleLanguages": []
+				},
+				"fileCount": 2,
+				"jellyfinItemId": "fixture-movie-949",
+				"torrents": [],
+				"gaps": [
+					{
+						"kind": "duplicate",
+						"fileCount": 2
+					},
+					{
+						"kind": "tool_mismatch",
+						"tool": "radarr",
+						"tmdbId": 950
+					}
+				]
+			}
+		},
+		{
+			"tmdbId": 129,
+			"title": "Le Voyage de Chihiro",
+			"year": 2001,
+			"jellyfinCollection": null,
+			"entry": {
+				"storage": "expected",
+				"trackedBy": "radarr",
+				"file": null,
+				"fileCount": 0,
+				"jellyfinItemId": null,
+				"torrents": [],
+				"gaps": []
+			}
+		},
+		{
+			"tmdbId": 680,
+			"title": "Pulp Fiction",
+			"year": 1994,
+			"jellyfinCollection": null,
+			"entry": {
+				"storage": "in_jellyfin",
+				"trackedBy": null,
+				"file": {
+					"path": "/data/medias/movies/Film 680 (1994)/film.mkv",
+					"inode": 6800,
+					"sizeBytes": 7200000000,
+					"quality": "fhd",
+					"durationMinutes": 154,
+					"audioLanguages": [
+						"fr",
+						"en"
+					],
+					"subtitleLanguages": [
+						"fr"
+					]
+				},
+				"fileCount": 1,
+				"jellyfinItemId": "fixture-movie-680",
+				"torrents": [],
+				"gaps": [
+					{
+						"kind": "untracked"
+					}
+				]
+			}
+		}
+	],
+	"shows": [
+		{
+			"tmdbId": 70523,
+			"title": "Dark",
+			"year": 2017,
+			"jellyfinItemId": "fixture-show-70523",
+			"jellyfinCollection": null,
+			"episodes": [
+				{
+					"seasonNumber": 1,
+					"episodeNumber": 1,
+					"entry": {
+						"storage": "in_jellyfin",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 70523/Saison 1/S1E1.mkv",
+							"inode": 7052311,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": "fixture-episode-70523-1-1",
+						"torrents": [
+							{
+								"hash": "fixture-season-70523-1",
+								"name": "serie-70523-saison-1",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				},
+				{
+					"seasonNumber": 1,
+					"episodeNumber": 2,
+					"entry": {
+						"storage": "in_jellyfin",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 70523/Saison 1/S1E2.mkv",
+							"inode": 7052312,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": "fixture-episode-70523-1-2",
+						"torrents": [
+							{
+								"hash": "fixture-season-70523-1",
+								"name": "serie-70523-saison-1",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				},
+				{
+					"seasonNumber": 1,
+					"episodeNumber": 3,
+					"entry": {
+						"storage": "in_jellyfin",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 70523/Saison 1/S1E3.mkv",
+							"inode": 7052313,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": "fixture-episode-70523-1-3",
+						"torrents": [
+							{
+								"hash": "fixture-season-70523-1",
+								"name": "serie-70523-saison-1",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				},
+				{
+					"seasonNumber": 2,
+					"episodeNumber": 1,
+					"entry": {
+						"storage": "present",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 70523/Saison 2/S2E1.mkv",
+							"inode": 7052321,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": null,
+						"torrents": [
+							{
+								"hash": "fixture-season-70523-2",
+								"name": "serie-70523-saison-2",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				},
+				{
+					"seasonNumber": 2,
+					"episodeNumber": 2,
+					"entry": {
+						"storage": "present",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 70523/Saison 2/S2E2.mkv",
+							"inode": 7052322,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": null,
+						"torrents": [
+							{
+								"hash": "fixture-season-70523-2",
+								"name": "serie-70523-saison-2",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				}
+			]
+		},
+		{
+			"tmdbId": 1396,
+			"title": "Breaking Bad",
+			"year": 2008,
+			"jellyfinItemId": "fixture-show-1396",
+			"jellyfinCollection": null,
+			"episodes": [
+				{
+					"seasonNumber": 1,
+					"episodeNumber": 1,
+					"entry": {
+						"storage": "in_jellyfin",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 1396/Saison 1/S1E1.mkv",
+							"inode": 139611,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": "fixture-episode-1396-1-1",
+						"torrents": [
+							{
+								"hash": "fixture-season-1396-1",
+								"name": "serie-1396-saison-1",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				},
+				{
+					"seasonNumber": 1,
+					"episodeNumber": 2,
+					"entry": {
+						"storage": "in_jellyfin",
+						"trackedBy": "sonarr",
+						"file": {
+							"path": "/data/medias/series/Serie 1396/Saison 1/S1E2.mkv",
+							"inode": 139612,
+							"sizeBytes": 1200000000,
+							"quality": "fhd",
+							"durationMinutes": 52,
+							"audioLanguages": [
+								"fr",
+								"de"
+							],
+							"subtitleLanguages": [
+								"fr"
+							]
+						},
+						"fileCount": 1,
+						"jellyfinItemId": "fixture-episode-1396-1-2",
+						"torrents": [
+							{
+								"hash": "fixture-season-1396-1",
+								"name": "serie-1396-saison-1",
+								"trackerName": "Tracker A",
+								"sharing": "seeding"
+							}
+						],
+						"gaps": []
+					}
+				}
+			]
+		}
+	],
+	"unlinked": [
+		{
+			"path": "/data/medias/movies_archives/Dossier sans nom",
+			"trackedBy": null,
+			"fileCount": 1,
+			"sizeBytes": 700000000,
+			"isInJellyfin": false,
+			"torrentCount": 0
+		}
+	]
+}
