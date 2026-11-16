@@ -25,6 +25,7 @@ import type { GetAllSeries } from "./endpoint/series/getAllSeries/getAllSeriesEn
 import type { GetSeriesEntries } from "./endpoint/series/getSeriesEntries/getSeriesEntriesEndpoint.interface.ts";
 import type { ReorderSeries } from "./endpoint/series/reorderSeries/reorderSeriesEndpoint.interface.ts";
 import type { ApplyShowUpdates } from "./endpoint/showUpdates/applyShowUpdates/applyShowUpdatesEndpoint.interface.ts";
+import type { CheckTmdbIds } from "./endpoint/showUpdates/checkTmdbIds/checkTmdbIdsEndpoint.interface.ts";
 import type { GetShowUpdates } from "./endpoint/showUpdates/getShowUpdates/getShowUpdatesEndpoint.interface.ts";
 import type { RefreshOngoingShows } from "./endpoint/showUpdates/refreshOngoingShows/refreshOngoingShowsEndpoint.interface.ts";
 import type { GetMediaPosters } from "./endpoint/tmdb/getMediaPosters/getMediaPostersEndpoint.interface.ts";
@@ -89,6 +90,7 @@ export type BacklogEndpointRegistry =
 	| GetShowUpdates
 	| ApplyShowUpdates
 	| RefreshOngoingShows
+	| CheckTmdbIds
 	| GetNasStatus
 	| UnlockNas
 	| LockNas

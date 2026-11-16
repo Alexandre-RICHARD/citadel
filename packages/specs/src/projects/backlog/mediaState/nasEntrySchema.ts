@@ -9,7 +9,9 @@ import { nasTorrentSchema } from "./nasTorrentSchema.ts";
 /**
  * Ce que le job sait d'un film ou d'un épisode. `file` : le fichier principal (le plus gros, quand il y en a plusieurs) ;
  * `fileCount` : les fichiers distincts trouvés, plus d'un faisant l'écart « Doublon ». `trackedBy` : l'outil qui le
- * suit, null quand aucun ne le suit. `jellyfinItemId` : son élément dans Jellyfin, pour « Ouvrir dans Jellyfin »
+ * suit, null quand aucun ne le suit. `jellyfinItemId` : son élément dans Jellyfin, pour « Ouvrir dans Jellyfin ».
+ * `gaps` : ceux que le job voit seul (doublon, hors Radarr ou Sonarr) ; l'instance locale ajoute ceux qui dépendent du
+ * backlog (fiche différente, identifiant TMDB disparu)
  */
 export const nasEntrySchema = z.object({
 	storage: z.enum(NasStorageEnum),
