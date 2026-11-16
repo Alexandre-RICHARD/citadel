@@ -80,7 +80,7 @@ export const footerPages: FooterPage[] = [
 				title: "Propriété intellectuelle",
 				paragraphs: [
 					"Le code du site est publié sous [licence MIT](repositoryLicense) : on peut le réutiliser, le modifier et le redistribuer, à condition de conserver la mention de son auteur et la licence.",
-					"Les noms, logos et images des jeux et du réseau de transport cités appartiennent à leurs détenteurs. Les données des jeux viennent d’[IGDB](igdb), celles du réseau [Irigo](irigo) de ses [données ouvertes](irigoOpenData), et le fond de carte des contributeurs d’[OpenStreetMap](openStreetMapCopyright).",
+					"Les noms, logos et images des jeux, des films, des séries et du réseau de transport cités appartiennent à leurs détenteurs. Les données des jeux viennent d’[IGDB](igdb), celles des films et des séries de [The Movie Database (TMDB)](tmdb), qui n’approuve ni ne certifie ce site, celles du réseau [Irigo](irigo) de ses [données ouvertes](irigoOpenData), et le fond de carte des contributeurs d’[OpenStreetMap](openStreetMapCopyright).",
 				],
 			},
 		],
@@ -165,7 +165,7 @@ export const footerPages: FooterPage[] = [
 			{
 				title: "Les ressources tierces",
 				paragraphs: [
-					"Deux projets affichent des images venues d’autres sites, qui voient alors votre adresse IP : le Backlog charge ses jaquettes depuis [IGDB](igdb), un service de Twitch ([politique de confidentialité de Twitch](twitchPrivacy)), et Angers Irigo son fond de carte depuis [OpenStreetMap](openStreetMapCopyright) ([politique de confidentialité de la fondation OpenStreetMap](openStreetMapPrivacy)).",
+					"Deux projets affichent des images venues d’autres sites, qui voient alors votre adresse IP : le Backlog charge les jaquettes des jeux depuis [IGDB](igdb), un service de Twitch ([politique de confidentialité de Twitch](twitchPrivacy)), et les affiches des films et des séries depuis [TMDB](tmdb) ([politique de confidentialité de TMDB](tmdbPrivacy)) ; Angers Irigo son fond de carte depuis [OpenStreetMap](openStreetMapCopyright) ([politique de confidentialité de la fondation OpenStreetMap](openStreetMapPrivacy)).",
 					"Les données temps réel d’[Irigo](irigo), elles, passent par le serveur du site : leur fournisseur ne voit pas votre adresse IP.",
 				],
 			},
