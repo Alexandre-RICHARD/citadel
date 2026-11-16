@@ -10,6 +10,8 @@ export enum E2EUrlEnum {
 	FOOTER_LEGAL_NOTICE = "/homepage/mentions-legales",
 	FOOTER_PERSONAL_DATA = "/homepage/donnees-personnelles",
 	BACKLOG = "/backlog",
+	// Où mène `/backlog` : le backlog des jeux, chaque backlog ayant sa sous-route
+	BACKLOG_GAMES = "/backlog/games",
 	GAME_DEATH_COUNTER = "/game-death-counter",
 	SATISFACTORY = "/satisfactory",
 	IRIGO = "/angers-irigo",

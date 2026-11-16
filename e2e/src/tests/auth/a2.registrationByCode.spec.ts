@@ -42,7 +42,7 @@ test.describe("Inscription", () => {
 
 		await test.step("« Passer cette étape » ramène à /backlog, connecté", async () => {
 			await page.getByRole("button", { name: "Passer cette étape" }).click();
-			await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.BACKLOG}$`));
+			await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.BACKLOG_GAMES}$`));
 			await expect(
 				page.getByRole("link", { name: "Mon profil" }),
 			).toBeVisible();

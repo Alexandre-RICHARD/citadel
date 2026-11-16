@@ -46,7 +46,7 @@ test.describe("Connexion", () => {
 		await logIn(page, identity);
 
 		await test.step("La page demandée (le Backlog) s'ouvre, la session est un cookie de navigateur (sans durée)", async () => {
-			await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.BACKLOG}$`));
+			await expect(page).toHaveURL(new RegExp(`${E2EUrlEnum.BACKLOG_GAMES}$`));
 			const cookie = await findSessionCookie(page.context());
 			expect(cookie, "cookie de session").toBeDefined();
 			expect(cookie?.expires, "cookie de session sans Max-Age").toBe(-1);
