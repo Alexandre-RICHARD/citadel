@@ -9,6 +9,9 @@ import { getGameImagesPathParamSchema } from "@citadel/specs/src/projects/backlo
 import { getGamePreviewPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/igdb/getGamePreview/getGamePreviewPathParamSchema.ts";
 import { searchIgdbGamesQueryParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/igdb/searchIgdbGames/searchIgdbGamesQueryParamSchema.ts";
 import { startMediaImportBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/mediaImports/startMediaImport/startMediaImportBodySchema.ts";
+import { getSagaEntriesPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/sagas/getSagaEntries/getSagaEntriesPathParamSchema.ts";
+import { reorderSagaBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/sagas/reorderSaga/reorderSagaBodySchema.ts";
+import { reorderSagaPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/sagas/reorderSaga/reorderSagaPathParamSchema.ts";
 import { getSeriesEntriesPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/series/getSeriesEntries/getSeriesEntriesPathParamSchema.ts";
 import { reorderSeriesBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/series/reorderSeries/reorderSeriesBodySchema.ts";
 import { reorderSeriesPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/series/reorderSeries/reorderSeriesPathParamSchema.ts";
@@ -26,6 +29,8 @@ import { createUserMediaBodySchema } from "@citadel/specs/src/projects/backlog/e
 import { customizeUserMediaBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/customizeUserMedia/customizeUserMediaBodySchema.ts";
 import { customizeUserMediaPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/customizeUserMedia/customizeUserMediaPathParamSchema.ts";
 import { deleteUserMediaPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/deleteUserMedia/deleteUserMediaPathParamSchema.ts";
+import { getAllUserMediaQueryParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/getAllUserMedia/getAllUserMediaQueryParamSchema.ts";
+import { getShowSeasonsPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/getShowSeasons/getShowSeasonsPathParamSchema.ts";
 import { setEpisodesWatchedBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/setEpisodesWatched/setEpisodesWatchedBodySchema.ts";
 import { setEpisodesWatchedPathParamSchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/setEpisodesWatched/setEpisodesWatchedPathParamSchema.ts";
 import { updateUserMediaBodySchema } from "@citadel/specs/src/projects/backlog/endpoint/userMedia/updateUserMedia/updateUserMediaBodySchema.ts";
@@ -222,6 +227,18 @@ typedRouter.GET(
 );
 
 // ==== FILMS ET SÉRIES : BACKLOG DU COMPTE ====
+typedRouter.GET(
+	`${ApiPrefixEnum.BACKLOG}/user-media`,
+	userMediaController.getAll,
+	requestValidator({ query: getAllUserMediaQueryParamSchema }),
+);
+
+typedRouter.GET(
+	`${ApiPrefixEnum.BACKLOG}/user-media/:userMediaId/seasons`,
+	userMediaController.getSeasons,
+	requestValidator({ params: getShowSeasonsPathParamSchema }),
+);
+
 typedRouter.POST(
 	`${ApiPrefixEnum.BACKLOG}/user-media`,
 	userMediaController.create,
@@ -262,6 +279,21 @@ typedRouter.PUT(
 );
 
 typedRouter.GET(`${ApiPrefixEnum.BACKLOG}/sagas`, sagaController.getAll);
+
+typedRouter.GET(
+	`${ApiPrefixEnum.BACKLOG}/sagas/:sagaId/entries`,
+	sagaController.getEntries,
+	requestValidator({ params: getSagaEntriesPathParamSchema }),
+);
+
+typedRouter.PUT(
+	`${ApiPrefixEnum.BACKLOG}/sagas/:sagaId/entries`,
+	sagaController.reorder,
+	requestValidator({
+		params: reorderSagaPathParamSchema,
+		body: reorderSagaBodySchema,
+	}),
+);
 
 // ==== FILMS ET SÉRIES : IMPORT DE LISTE ====
 typedRouter.POST(
