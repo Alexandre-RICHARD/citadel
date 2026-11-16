@@ -13,6 +13,8 @@ export const regexDictionary = {
 
 	// image_id d'une image IGDB : lettres minuscules et chiffres ("co1tnw")
 	igdbImageId: /^[a-z0-9]+$/,
+	// Chemin d'une image TMDB : une barre puis un nom de fichier ("/kqjL17yufvn9OVLyXYpvtyrFfak.jpg")
+	tmdbImagePath: /^\/[A-Za-z0-9_-]+\.(jpg|jpeg|png|svg)$/,
 
 	// Signe diacritique (accent, cédille…) d'un texte décomposé par normalize("NFD")
 	diacritic: /\p{Diacritic}/gu,
