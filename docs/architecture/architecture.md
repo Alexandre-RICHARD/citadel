@@ -256,6 +256,7 @@ infra/
 apps/client/nginx.conf   conf du conteneur front : SPA, relais /irigo
 .github/workflows/images.yml   construit et publie les images à chaque tag v*
 scripts/release.sh             lancé par pnpm tools release
+scripts/deploy.sh              lancé par pnpm tools deploy
 ```
 
 Sur le NAS :
@@ -276,6 +277,8 @@ Les fichiers d'infra sont commentés abondamment, en français : pourquoi et com
 | Script | Rôle |
 | --- | --- |
 | `release` | La mise en production ([infra, §4](../infra/infra.md#4-commandes)) |
+| `deploy` | Relance le déploiement d'une version déjà publiée ([infra, §4](../infra/infra.md#4-commandes)) |
+| `sendEnvProd` | Envoie `.env.prod` sur le NAS, après en avoir montré les différences ([infra, §4](../infra/infra.md#4-commandes)) |
 | `checkDocLinks` | Les liens et ancres de la documentation : à lancer après une grosse édition des docs |
 | `checkEnvFiles` | Les fichiers `.env*` ont les mêmes variables, dans le même ordre que `.env.example` |
 | `checkExternalLinks` | Les liens externes du site répondent encore (demande Internet) |

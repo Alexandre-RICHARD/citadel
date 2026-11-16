@@ -50,6 +50,8 @@ Sur votre PC :
 | `pnpm prod:local:down` | arrête tout et efface les volumes jetables |
 | `pnpm tools release` | demande « réelle » ou « simulation » ; la réelle valide, tague, pousse, attend les images, puis lance le déploiement sur le NAS, qui montre son plan et attend votre « o » |
 | `pnpm tools release --dry-run` | la simulation directe : s'arrête juste avant le tag, rien ne part |
+| `pnpm tools deploy [version]` | relance seulement le déploiement d'une version déjà publiée (par défaut le dernier tag), après un échec de l'étape 6 de `release` : ni validation, ni tag, ni push. Le NAS montre son plan et attend votre « o » |
+| `pnpm tools sendEnvProd` | envoie `./.env.prod` sur le NAS (`/Volume1/citadel/.env.prod`) : montre d'abord les seules lignes qui diffèrent (rouge `-` : le NAS, vert `+` : le PC, qui est le nouveau ; les valeurs y figurent), demande confirmation, et garde l'ancien en `.env.prod.avant-envoi` |
 | `pnpm tools` | menu des outils de `scripts/` : `hashAdminPassword` (pour `ADMIN_PASSWORD_HASH`), `generateAuthSecrets`, `checkEnvFiles`, `clean`… ; `pnpm tools <nom>` lance l'un d'eux directement |
 
 Sur le NAS (`ssh nas`), en secours de la console :
