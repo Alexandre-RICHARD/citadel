@@ -176,6 +176,9 @@ services:
       # renouvelle quand il expire (plus rien à refaire à la main). Le navigateur ne les voit jamais
       INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+      # Clé d'API TMDB du backlog des médias (films et séries) : seul le serveur appelle TMDB,
+      # le navigateur ne la voit jamais. Il ne charge que les images, sur image.tmdb.org
+      TMDB_API_KEY: ${TMDB_API_KEY:?manque dans .env.prod}
       # Les emails du site (formulaire de contact) partent vraiment, par l'API de Brevo. Les
       # seuils du quota quotidien gardent leurs valeurs par défaut (env.ts du serveur)
       MAIL_SENDER: brevo
@@ -349,6 +352,7 @@ services:
       DB_USER_PASSWORD: ${DB_USER_PASSWORD:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_ID: ${INTERNET_GAME_DATA_BASE_CLIENT_ID:?manque dans .env.prod}
       INTERNET_GAME_DATA_BASE_CLIENT_SECRET: ${INTERNET_GAME_DATA_BASE_CLIENT_SECRET:?manque dans .env.prod}
+      TMDB_API_KEY: ${TMDB_API_KEY:?manque dans .env.prod}
       # Jamais de vrai email depuis la pré-prod : elle lit le même .env.prod que la prod, mais
       # le « journal » écrit seulement dans son log qu'un email serait parti. Pas de clé Brevo
       MAIL_SENDER: journal

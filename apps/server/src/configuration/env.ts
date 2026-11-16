@@ -33,6 +33,8 @@ const envSchema = z.object({
 	// Application Twitch du Backlog (dev.twitch.tv) : le serveur en tire lui-même ses tokens IGDB, renouvelés au besoin
 	INTERNET_GAME_DATA_BASE_CLIENT_ID: z.string().min(1),
 	INTERNET_GAME_DATA_BASE_CLIENT_SECRET: z.string().min(1),
+	// Backlog des médias : la clé d'API TMDB, ou son jeton de lecture (eyJ…), les deux donnés par le compte TMDB
+	TMDB_API_KEY: z.string().min(1),
 
 	LOG_DB: z
 		.enum(["true", "false"])
