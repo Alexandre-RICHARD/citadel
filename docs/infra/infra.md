@@ -136,6 +136,8 @@ Dans `infra/ops/crontab`. `citadel <job>` en lance un tout de suite, comme le bo
 | Toutes les 5 min | `site-check` | le site répond depuis Internet (par Cloudflare, comme un visiteur) |
 | Toutes les 5 min | `auto-stop` | arrête les services démarrés à la main après leur délai (les *arr, par exemple), jamais Jellyfin pendant une lecture |
 | Toutes les heures | `qbittorrent-stats`, `storage-stats` | historiques de la console |
+| Chaque nuit, 2 h | `media-sync` | relevé du NAS pour le backlog des médias et rapport de la console ([backlog des médias, §8](../backlog/backlog_media.md#8-le-job-quotidien)) ; la nuit du mardi au mercredi, recherche complète de cross-seed |
+| Chaque nuit, 2 h 30 | `media-tmdb` | séries en cours relues sur TMDB, et un septième des identifiants TMDB des backlogs vérifiés |
 | Chaque nuit, 3 h 30 | `log-retention` | vide le log d'un conteneur dont la plus vieille ligne a plus de 90 jours |
 | Chaque nuit, 4 h | `update-check` | mises à jour des images tierces |
 | Chaque nuit, 4 h 30 | `vpn-leak-test` | IP de sortie et DNS des téléchargements, par le VPN |
@@ -242,7 +244,7 @@ Ensuite : un dump (`.sql.zst`) se décompresse avec `zstd -d <fichier>` (`winget
 
 ## 9. Alertes (healthchecks.io)
 
-Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`) signalent leur début, leur réussite ou leur échec à healthchecks.io (offre gratuite), qui alerte par email et sur Discord si un job échoue **ou ne passe pas à l'heure** : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Limite : si `infra-ops` s'arrête, l'alerte de `site-check` annonce un site injoignable alors que c'est la surveillance qui est tombée. Certificats, disques, conteneurs et mises à jour se surveillent dans la console ; TOS garde ses emails SMART et d'espace disque.
+Les jobs suivis (`site-check`, `db-backup`, `db-restore-test`, `config-backup`, `config-verify`, `vpn-leak-test`, `media-sync`, `media-tmdb`) signalent leur début, leur réussite ou leur échec à healthchecks.io (offre gratuite), qui alerte par email et sur Discord si un job échoue **ou ne passe pas à l'heure** : NAS éteint, `infra-ops` arrêté, job qui n'a pas tourné. Limite : si `infra-ops` s'arrête, l'alerte de `site-check` annonce un site injoignable alors que c'est la surveillance qui est tombée. Certificats, disques, conteneurs et mises à jour se surveillent dans la console ; TOS garde ses emails SMART et d'espace disque.
 
 Chaque contrôle (une ligne dans la liste de votre projet healthchecks.io) se crée seul, au premier signal du job, sous son nom.
 
@@ -258,6 +260,8 @@ Chaque contrôle (une ligne dans la liste de votre projet healthchecks.io) se cr
 | `config-backup` | `0 3 * * 1` | 1 h |
 | `config-verify` | `0 3 * * 1` | 2 h |
 | `vpn-leak-test` | `30 4 * * *` | 1 h |
+| `media-sync` | `0 2 * * *` | 1 h |
+| `media-tmdb` | `30 2 * * *` | 1 h |
 
 ## 10. Réglages hors du dépôt
 
