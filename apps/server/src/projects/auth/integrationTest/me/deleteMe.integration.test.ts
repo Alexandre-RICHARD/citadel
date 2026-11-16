@@ -108,10 +108,10 @@ describe("deleteMe", () => {
 			expect(response.status).toBe(HttpStatutCodeSuccessEnum.NO_CONTENT);
 			expect(
 				Object.values(await countAccountProjectRows(account.userId)),
-			).toStrictEqual([0, 0, 0, 0, 0, 0, 0]);
+			).toStrictEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 			expect(
 				Object.values(await countAccountProjectRows(stranger.userId)),
-			).toStrictEqual([1, 1, 1, 1, 1, 1, 1]);
+			).toStrictEqual([1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1]);
 		});
 
 		it("SHOULD delete a protected account WHEN a TOTP code comes with the password", async () => {

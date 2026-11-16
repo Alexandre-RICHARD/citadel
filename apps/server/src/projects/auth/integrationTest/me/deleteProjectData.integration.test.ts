@@ -14,6 +14,7 @@ import { openTestSession } from "../../../../testUtils/integration/auth/openTest
 import { readRestoreJournal } from "../../../../testUtils/integration/auth/readRestoreJournal.ts";
 import { selectAuthRows } from "../../../../testUtils/integration/auth/selectAuthRows.ts";
 import { selectBacklogRows } from "../../../../testUtils/integration/backlog/selectBacklogRows.ts";
+import { selectMediaRows } from "../../../../testUtils/integration/backlog/selectMediaRows.ts";
 import { buildUniqueIp } from "../../../../testUtils/integration/buildUniqueIp.ts";
 import { expectAuthenticationRequired } from "../../../../testUtils/integration/expectAuthenticationRequired.ts";
 import { expectValidationError } from "../../../../testUtils/integration/expectValidationError.ts";
@@ -29,6 +30,18 @@ const BACKLOG_TABLES = [
 	"backlog_done_dlc",
 	"backlog_series",
 ] as const;
+const MEDIA_TABLES = [
+	"backlog_user_media",
+	"backlog_watched_episode",
+	"backlog_saga",
+	"backlog_saga_collection",
+] as const;
+const MEDIA_ROWS_OF_SEEDED_ACCOUNT = {
+	backlog_user_media: 2,
+	backlog_watched_episode: 1,
+	backlog_saga: 1,
+	backlog_saga_collection: 1,
+};
 
 const DELETE_PROJECT_DATA_URL = `${ApiPrefixEnum.AUTH}/me/projects`;
 
@@ -87,7 +100,7 @@ describe("deleteProjectData", () => {
 			expect(await isSessionOpen(session.cookie)).toBe(true);
 		});
 
-		it("SHOULD delete the backlog of the account, its series included, and keep the shared IGDB data", async () => {
+		it("SHOULD delete the backlog of the account, its series and sagas included, and keep the shared IGDB and TMDB data", async () => {
 			// Arrange
 			const { account, session, data } = await openAccountWithData();
 			const stranger = await insertTestAccount();
@@ -113,6 +126,18 @@ describe("deleteProjectData", () => {
 			expect(
 				(await selectBacklogRows.gameIds(data.backlog.gameId)).dlcIds,
 			).toStrictEqual([data.backlog.dlcId]);
+			expect(
+				await countAccountProjectRows(account.userId, MEDIA_TABLES),
+			).toStrictEqual({
+				backlog_user_media: 0,
+				backlog_watched_episode: 0,
+				backlog_saga: 0,
+				backlog_saga_collection: 0,
+			});
+			expect(await selectMediaRows.movieExists(data.media.movieId)).toBe(true);
+			expect(
+				await countAccountProjectRows(stranger.userId, MEDIA_TABLES),
+			).toStrictEqual(MEDIA_ROWS_OF_SEEDED_ACCOUNT);
 			expect(
 				await countAccountProjectRows(account.userId, GDC_TABLES),
 			).toStrictEqual({ gdc_game: 1, gdc_boss: 1, gdc_death: 1 });

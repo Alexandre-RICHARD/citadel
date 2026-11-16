@@ -2,9 +2,12 @@ import { createModelExportTable } from "../../../common/archive/createModelExpor
 import { createSqlExportTable } from "../../../common/archive/createSqlExportTable.ts";
 import type { ProjectUserData } from "../../../common/userData/projectUserData.type.ts";
 import { DatabaseError } from "../../../error/DatabaseError.ts";
+import { Saga } from "../models/Saga.ts";
 import { Series } from "../models/Series.ts";
 import { UserGame } from "../models/UserGame.ts";
+import { UserMedia } from "../models/UserMedia.ts";
 import { UserVersion } from "../models/UserVersion.ts";
+import { WatchedEpisode } from "../models/WatchedEpisode.ts";
 
 /**
  * Le backlog du compte, enfants d'abord (docs/auth/auth.md, §3.1) : ses jeux, ses versions jouées (et par
@@ -17,6 +20,10 @@ export const backlogUserData: ProjectUserData = {
 			await UserGame.destroy({ where: { userId }, transaction });
 			await UserVersion.destroy({ where: { userId }, transaction });
 			await Series.destroy({ where: { userId }, transaction });
+			// Films et séries : un média tient sa saga en RESTRICT, il part avant elle (et ses collections reliées, en cascade)
+			await WatchedEpisode.destroy({ where: { userId }, transaction });
+			await UserMedia.destroy({ where: { userId }, transaction });
+			await Saga.destroy({ where: { userId }, transaction });
 		} catch (error) {
 			throw new DatabaseError("Failed to delete Backlog data", {
 				cause: error,
@@ -92,6 +99,50 @@ export const backlogUserData: ProjectUserData = {
 				WHERE s.user_id = :userId
 				OR s.id IN (SELECT ug.series_id FROM backlog_user_game ug WHERE ug.user_id = :userId)
 				ORDER BY s.id
+			`,
+		}),
+		// Films et séries : chaque ligne nomme son film ou sa série par l'identifiant TMDB
+		createModelExportTable({
+			tableName: "backlog_user_media",
+			model: UserMedia,
+			ownerAttribute: "userId",
+			columns: [
+				"id",
+				"movieId",
+				"tvShowId",
+				"imagePath",
+				"sagaId",
+				"sagaNumber",
+				"isWatched",
+				"isUpNext",
+				"isInProgress",
+				"comment",
+				"createdAt",
+				"updatedAt",
+			],
+		}),
+		createModelExportTable({
+			tableName: "backlog_watched_episode",
+			model: WatchedEpisode,
+			ownerAttribute: "userId",
+			orderAttribute: "tvEpisodeId",
+			columns: ["tvEpisodeId", "createdAt"],
+		}),
+		createModelExportTable({
+			tableName: "backlog_saga",
+			model: Saga,
+			ownerAttribute: "userId",
+			columns: ["id", "name", "createdAt", "updatedAt"],
+		}),
+		createSqlExportTable({
+			tableName: "backlog_saga_collection",
+			columns: ["saga_id", "collection_id", "collection_name", "created_at"],
+			sql: `
+				SELECT sc.saga_id, sc.collection_id, c.name AS collection_name, sc.created_at
+				FROM backlog_saga_collection sc
+				JOIN backlog_media_collection c ON c.id = sc.collection_id
+				WHERE sc.user_id = :userId
+				ORDER BY sc.saga_id, sc.collection_id
 			`,
 		}),
 	],

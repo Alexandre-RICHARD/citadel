@@ -76,6 +76,10 @@ describe("exportMyData", () => {
 				"backlog_user_version.csv",
 				"backlog_done_dlc.csv",
 				"backlog_series.csv",
+				"backlog_user_media.csv",
+				"backlog_watched_episode.csv",
+				"backlog_saga.csv",
+				"backlog_saga_collection.csv",
 			]);
 		});
 
@@ -138,6 +142,31 @@ describe("exportMyData", () => {
 					new RegExp(`^${data.backlog.seriesId},Mes jeux,`, "u"),
 				),
 			]);
+			expect(readDataLines(files["backlog_user_media.csv"])).toHaveLength(2);
+			expect(readDataLines(files["backlog_user_media.csv"])[0]).toMatch(
+				new RegExp(
+					`^${data.media.movieUserMediaId},${data.media.movieId},,,${data.media.sagaId},1,`,
+					"u",
+				),
+			);
+			expect(readDataLines(files["backlog_watched_episode.csv"])).toStrictEqual(
+				[expect.stringMatching(new RegExp(`^${data.media.episodeId},`, "u"))],
+			);
+			expect(readDataLines(files["backlog_saga.csv"])).toStrictEqual([
+				expect.stringMatching(
+					new RegExp(`^${data.media.sagaId},Mes sagas,`, "u"),
+				),
+			]);
+			expect(readDataLines(files["backlog_saga_collection.csv"])).toStrictEqual(
+				[
+					expect.stringMatching(
+						new RegExp(
+							`^${data.media.sagaId},${data.media.collectionId},Dune,`,
+							"u",
+						),
+					),
+				],
+			);
 		});
 
 		it("SHOULD export the shared IGDB series holding a game of the user, and only those", async () => {

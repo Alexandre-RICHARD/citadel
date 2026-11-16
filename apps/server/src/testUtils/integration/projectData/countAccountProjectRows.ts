@@ -19,6 +19,14 @@ const OWNED_ROWS_SQL = {
 		JOIN backlog_user_version uv ON uv.id = dd.user_version_id WHERE uv.user_id = :userId`,
 	backlog_series:
 		"SELECT COUNT(*) AS rowCount FROM backlog_series WHERE user_id = :userId",
+	backlog_user_media:
+		"SELECT COUNT(*) AS rowCount FROM backlog_user_media WHERE user_id = :userId",
+	backlog_watched_episode:
+		"SELECT COUNT(*) AS rowCount FROM backlog_watched_episode WHERE user_id = :userId",
+	backlog_saga:
+		"SELECT COUNT(*) AS rowCount FROM backlog_saga WHERE user_id = :userId",
+	backlog_saga_collection:
+		"SELECT COUNT(*) AS rowCount FROM backlog_saga_collection WHERE user_id = :userId",
 } as const;
 
 type ProjectTableName = keyof typeof OWNED_ROWS_SQL;

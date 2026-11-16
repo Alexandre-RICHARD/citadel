@@ -45,7 +45,7 @@ describe("restoreReplayService", () => {
 			expect(await selectAuthRows.user(account.userId)).toBeNull();
 			expect(
 				Object.values(await countAccountProjectRows(account.userId)),
-			).toStrictEqual([0, 0, 0, 0, 0, 0, 0]);
+			).toStrictEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 		});
 
 		it("SHOULD empty again only the projects that were emptied", async () => {
