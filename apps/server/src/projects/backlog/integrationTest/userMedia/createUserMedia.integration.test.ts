@@ -69,6 +69,7 @@ describe("createUserMedia", () => {
 				imagePath: "/other-poster.jpg",
 				saga: null,
 				sagaNumber: null,
+				sagaNumberLabel: null,
 				isWatched: false,
 				watchedEpisodeCount: 0,
 				airedEpisodeCount: 0,
