@@ -1,0 +1,140 @@
+.page {
+  min-height: 100vh;
+
+  // La barre du haut de l'accueil, avec un retour
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem max(1.6rem, calc((100vw - 128rem) / 2 + 1.6rem));
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(1rem);
+  }
+
+  .back {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--text);
+    font-size: 1.5rem;
+    font-weight: 650;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  .logo {
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: var(--radius-s);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .version {
+    color: var(--text-subtle);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    max-width: 128rem;
+    margin: 0 auto;
+    padding: 2.4rem 1.6rem 6rem;
+  }
+
+  .heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.2rem 2.4rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    color: var(--text-subtle);
+    font-size: 1.3rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.2rem 1.6rem;
+  }
+
+  .lastRun {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--text-muted);
+    font-size: 1.3rem;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1.2rem;
+  }
+
+  .duplicate {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+  }
+
+  .duplicateLabel {
+    padding: 1.2rem 1.6rem 0.2rem;
+    font-size: 1.35rem;
+    font-weight: 650;
+  }
+
+  .duplicateFiles {
+    list-style: none;
+
+    > li {
+      border-top: none;
+    }
+  }
+
+  .notice {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-size: 1.3rem;
+  }
+
+  .error {
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-s);
+    background: var(--danger-subtle);
+    color: var(--danger);
+  }
+
+  .muted {
+    color: var(--text-subtle);
+  }
+
+  .footnote {
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+  }
+}

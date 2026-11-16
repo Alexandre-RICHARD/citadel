@@ -9,6 +9,7 @@ import { errorHandler } from "./http/errorHandler.ts";
 import { HttpError } from "./http/HttpError.ts";
 import { securityHeaders } from "./http/securityHeaders.ts";
 import { jobsRouter } from "./jobs/jobsRouter.ts";
+import { mediaReportRouter } from "./mediaReport/mediaReportRouter.ts";
 import { operationsRouter } from "./operations/operationsRouter.ts";
 import { overviewRouter } from "./overviewRouter.ts";
 import { requestsRouter } from "./requests/requestsRouter.ts";
@@ -37,6 +38,7 @@ app.use(overviewRouter);
 app.use(jobsRouter);
 app.use(requestsRouter);
 app.use(operationsRouter);
+app.use(mediaReportRouter);
 app.use("/api", () => {
 	throw new HttpError(404, "Route inconnue");
 });
@@ -55,5 +57,12 @@ app.use(
 		},
 	}),
 );
+
+// La page du rapport des médias (/media), où mène aussi le backlog en mode connecté : la même page, que le front
+// choisit d'après l'adresse
+app.get("/media", (_request, response) => {
+	response.setHeader("Cache-Control", "no-cache");
+	response.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
 
 app.use(errorHandler);

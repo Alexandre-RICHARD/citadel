@@ -5,6 +5,6 @@ export type NasStatusFm = {
 	surveyedAt: string | null;
 	// Pour « Ouvrir dans Jellyfin » : null tant que le mode connecté est fermé
 	jellyfin: { hostname: string; port: number; serverId: string | null } | null;
-	// L'accueil de la console, où se lit le rapport du job
+	// La page du rapport du job dans la console (/media)
 	consoleUrl: string | null;
 };

@@ -25,6 +25,6 @@ export function fromNasStatusDtoToNasStatusFm(
 		consoleUrl:
 			status.consolePort === null
 				? null
-				: `http://${hostname}:${status.consolePort}/`,
+				: `http://${hostname}:${status.consolePort}/media`,
 	};
 }

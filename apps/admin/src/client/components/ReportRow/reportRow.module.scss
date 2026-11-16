@@ -1,0 +1,39 @@
+.row {
+  display: grid;
+  // Le nom, plus large, puis --cells cellules (posée par le composant)
+  grid-template-columns: minmax(0, 3fr) repeat(var(--cells), minmax(0, 1fr));
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1rem 1.6rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.3rem;
+
+  @media (width <= 720px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+
+  .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tag {
+    justify-self: start;
+    padding: 0.1rem 0.7rem;
+    border-radius: 99rem;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .cell {
+    overflow: hidden;
+    color: var(--text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}

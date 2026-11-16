@@ -21,6 +21,7 @@ import { DeadlinesCard } from "../DeadlinesCard";
 import { JobsSection } from "../JobsSection";
 import { LimitsDialog } from "../LimitsDialog";
 import { LogsDialog } from "../LogsDialog";
+import { MediaCard } from "../MediaCard";
 import { OperationsSection } from "../OperationsSection";
 import { RequestDialog } from "../RequestDialog";
 import { ServiceGroup } from "../ServiceGroup";
@@ -247,6 +248,7 @@ export function Dashboard({ consoleVersion, onLogout }: Props) {
 						}}
 					/>
 					<DeadlinesCard />
+					<MediaCard />
 				</div>
 
 				<ThemeProvider theme={SERVICES_THEME}>

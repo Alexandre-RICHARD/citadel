@@ -22,7 +22,7 @@ describe("fromNasStatusDtoToNasStatusFm.ts", () => {
 				isUnlocked: true,
 				surveyedAt: "2026-11-10T03:00:00.000+01:00",
 				jellyfin: { hostname: "nas", port: 8096, serverId: "server-1" },
-				consoleUrl: "http://nas:8100/",
+				consoleUrl: "http://nas:8100/media",
 			});
 		});
 	});

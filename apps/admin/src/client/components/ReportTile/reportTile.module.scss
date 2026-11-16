@@ -1,0 +1,60 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+
+  .label {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+  }
+
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 2.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .badge {
+    padding: 0.1rem 0.7rem;
+    border-radius: 99rem;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 600;
+
+    &[data-tone="ok"] {
+      background: var(--ok-subtle);
+      color: var(--ok);
+    }
+
+    &[data-tone="danger"] {
+      background: var(--danger-subtle);
+      color: var(--danger);
+    }
+
+    &[data-tone="accent"] {
+      background: var(--accent-subtle);
+      color: var(--accent);
+    }
+  }
+
+  // Deux lignes au plus : le détail complet reste dans l'infobulle
+  .detail {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}

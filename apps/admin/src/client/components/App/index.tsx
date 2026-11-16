@@ -5,6 +5,7 @@ import { apiRequest } from "../../api/apiRequest";
 import { UNAUTHORIZED_EVENT } from "../../api/unauthorizedEvent";
 import { Dashboard } from "../Dashboard";
 import { LoginScreen } from "../LoginScreen";
+import { MediaReportPage } from "../MediaReportPage";
 
 // « checking » : on demande au serveur si le cookie de session est encore bon
 type SessionState = "checking" | "anonymous" | SessionInfo;
@@ -41,14 +42,23 @@ export function App() {
 				}}
 			/>
 		);
+	function logout(): void {
+		void apiRequest("/logout", { method: "POST" }).finally(() => {
+			setSession("anonymous");
+		});
+	}
+	// Deux pages : l'accueil, et le rapport des médias (/media), où mène aussi le backlog en mode connecté
+	if (window.location.pathname === "/media")
+		return (
+			<MediaReportPage
+				consoleVersion={session.consoleVersion}
+				onLogout={logout}
+			/>
+		);
 	return (
 		<Dashboard
 			consoleVersion={session.consoleVersion}
-			onLogout={() => {
-				void apiRequest("/logout", { method: "POST" }).finally(() => {
-					setSession("anonymous");
-				});
-			}}
+			onLogout={logout}
 		/>
 	);
 }

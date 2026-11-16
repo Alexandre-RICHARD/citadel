@@ -39,6 +39,20 @@ export const JOB_DEFINITIONS = [
 		monitored: true,
 	},
 	{
+		name: "media-sync",
+		label: "Relevé des médias",
+		description:
+			"Le NAS relevé pour le backlog des médias, et le rapport des torrents",
+		monitored: true,
+	},
+	{
+		name: "media-tmdb",
+		label: "Médias sur TMDB",
+		description:
+			"Séries en cours relues, et un septième des identifiants vérifiés",
+		monitored: true,
+	},
+	{
 		name: "update-check",
 		label: "Mises à jour disponibles",
 		description:
