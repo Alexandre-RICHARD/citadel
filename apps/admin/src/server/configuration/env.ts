@@ -31,6 +31,12 @@ const envSchema = z.object({
 	// Le serveur Express du site, par le réseau Docker : le nombre d'emails qui n'ont pas pu partir
 	SITE_API_URL: z.url(),
 
+	// Le port de réveil de l'instance locale du backlog des médias (wake/wakeApp.ts), joint par Caddy seul. Absent : pas
+	// de port de réveil (dev)
+	WAKE_PORT: z.coerce.number().int().positive().optional(),
+	// Le seul conteneur que ce port démarre
+	LOCAL_INSTANCE_CONTAINER: z.string().min(1).default("site-local-server"),
+
 	// /Volume1/citadel/state du NAS, en lecture seule : version en service, historique,
 	// jobs, sauvegardes, résultats des demandes
 	STATE_DIR: z.string().min(1),

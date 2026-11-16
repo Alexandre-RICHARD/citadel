@@ -13,6 +13,7 @@ import { RouterProvider } from "react-router";
 import { tanStackQueryClient } from "./configuration/tanStackQueryClient";
 import { ProjectTransition } from "./react/appNavigation/projectTransition/ProjectTransition";
 import { router } from "./react/appNavigation/routes";
+import { LocalInstanceStarting } from "./react/LocalInstanceStarting";
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
@@ -21,6 +22,8 @@ createRoot(document.getElementById("root")!).render(
 				<RouterProvider router={router} />
 				{/* Hors du routeur : le rideau des transitions survit au changement de page */}
 				<ProjectTransition />
+				{/* L'instance locale du backlog des médias qui se réveille : par-dessus tout, puis la page se recharge */}
+				<LocalInstanceStarting />
 			</QueryClientProvider>
 		</ThemeProvider>
 	</StrictMode>,

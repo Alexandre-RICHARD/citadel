@@ -1,3 +1,4 @@
+import { TechnicalErrorCodeEnum } from "@citadel/specs/src/specUtils/error/technicalErrorCode.enum";
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "./ApiError";
@@ -28,6 +29,17 @@ describe("isTransientApiError.ts", () => {
 				);
 			},
 		);
+
+		it("SHOULD not be transient WHEN the local instance is starting", () => {
+			expect(
+				isTransientApiError(
+					new ApiError({
+						status: 503,
+						code: TechnicalErrorCodeEnum.LOCAL_INSTANCE_STARTING,
+					}),
+				),
+			).toBe(false);
+		});
 
 		it("SHOULD not be transient WHEN the error does not come from the API", () => {
 			expect(

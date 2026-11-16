@@ -15,4 +15,6 @@ export const technicalErrorReasons: Record<TechnicalErrorCodeEnum, string> = {
 	[TechnicalErrorCodeEnum.TOO_MANY_REQUESTS]:
 		"trop de demandes d'affilée, réessayez dans un moment",
 	[TechnicalErrorCodeEnum.INTERNAL_ERROR]: "le serveur a rencontré une erreur",
+	[TechnicalErrorCodeEnum.LOCAL_INSTANCE_STARTING]:
+		"le serveur démarre, réessayez dans quelques secondes",
 };
