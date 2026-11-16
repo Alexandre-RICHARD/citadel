@@ -88,6 +88,11 @@ CSRF : `SameSite=Lax`, mutations en `POST`/`PATCH`/`DELETE`, contrôle de l'en-t
 | `backlog_done_dlc` | Cascade par sa version jouée |
 | `backlog_series` | `user_id` nullable : vide pour une série IGDB commune, rempli pour une série créée à la main ; un `CHECK` l'impose |
 | Tables IGDB (`backlog_game`, `backlog_version`, `backlog_version_platform`, `backlog_dlc`, `backlog_company`, `backlog_platform`) | Données communes, aucun lien |
+| `backlog_user_media` | `user_id` ; unicité `(user_id, movie_id)` et `(user_id, tv_show_id)` ; cascade |
+| `backlog_watched_episode` | `user_id` ; clé primaire `(user_id, tv_episode_id)` ; cascade |
+| `backlog_saga` | `user_id` obligatoire : une saga est toujours à son compte ; unicité `(user_id, name)` ; cascade |
+| `backlog_saga_collection` | `user_id` ; clé primaire `(user_id, collection_id)` ; cascade par le compte et par sa saga |
+| Tables TMDB (`backlog_movie`, `backlog_tv_show`, `backlog_tv_season`, `backlog_tv_episode`, `backlog_media_collection`) | Données communes, aucun lien |
 
 Un jeu du backlog ne se range que dans une série IGDB ou une série de son propriétaire ; « Nouvelle série… » ne retrouve un nom que parmi celles-là. Un jeu en base (données IGDB) est à tous : celui du backlog d'un autre reste proposé par « Ajouter un jeu depuis la Citadel ».
 
