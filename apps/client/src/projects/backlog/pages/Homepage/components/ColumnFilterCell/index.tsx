@@ -3,26 +3,19 @@ import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/c
 import { EndingTypeEnum } from "@citadel/specs/src/projects/backlog/enum/endingType.enum";
 import { StatusEnum } from "@citadel/specs/src/projects/backlog/enum/status.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
-import { columnFilterKinds } from "@citadel/specs/src/projects/backlog/helper/view/columnFilterKinds";
-import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
-import { Check, Minus, X } from "lucide-react";
 
-import styles from "../../../../backlog.module.scss";
-import { Select } from "../../../../components/Select";
 import type { SelectOption } from "../../../../components/Select/selectOption.type";
-import { columnLabels } from "../../../../helper/label/columnLabels";
 import { endingTypeLabels } from "../../../../helper/label/endingTypeLabels";
 import { getStatusLabel } from "../../../../helper/status/getStatusLabel";
+import { gameTable } from "../../../../helper/view/gameTable";
+import { isDurationColumn } from "../../../../helper/view/isDurationColumn";
+import { BooleanFilter } from "../BooleanFilter";
 import { DateRangeFilter } from "../DateRangeFilter";
 import { EndingTypeLabel } from "../EndingTypeLabel";
 import { NumberRangeFilter } from "../NumberRangeFilter";
 import { StatusBadge } from "../StatusBadge";
 import { TextFilter } from "../TextFilter";
 import { ValueFilter } from "../ValueFilter";
-
-const ALL_VALUES = "";
-const YES = String(ViewParamSyntaxEnum.YES);
-const NO = String(ViewParamSyntaxEnum.NO);
 
 type Props = {
 	column: BacklogColumnEnum;
@@ -59,9 +52,9 @@ export function ColumnFilterCell({
 	platformNames,
 	onChange,
 }: Props) {
-	const label = `Filtre ${columnLabels[column]}`;
+	const label = `Filtre ${gameTable.labels[column]}`;
 
-	switch (columnFilterKinds[column]) {
+	switch (gameTable.kinds[column]) {
 		case ColumnFilterKindEnum.TEXT:
 			return (
 				<TextFilter
@@ -81,47 +74,15 @@ export function ColumnFilterCell({
 					onChange={onChange}
 				/>
 			);
-		case ColumnFilterKindEnum.BOOLEAN: {
-			let selectedValue = ALL_VALUES;
-			if (filter?.kind === ColumnFilterKindEnum.BOOLEAN)
-				selectedValue = filter.value ? YES : NO;
-			// Colonne étroite : le champ ne montre qu'une icône, la liste les libellés
+		case ColumnFilterKindEnum.BOOLEAN:
 			return (
-				<Select
-					value={selectedValue}
-					options={[
-						{
-							value: ALL_VALUES,
-							label: "Tous",
-							triggerContent: (
-								<Minus
-									className={styles.filterAllMark}
-									aria-hidden
-								/>
-							),
-						},
-						{ value: YES, label: "Oui", triggerContent: <Check aria-hidden /> },
-						{ value: NO, label: "Non", triggerContent: <X aria-hidden /> },
-					]}
-					ariaLabel={label}
-					size="sm"
-					isCompact
-					isHighlighted={filter?.kind === ColumnFilterKindEnum.BOOLEAN}
-					className={styles.filterSelect}
-					onChange={(value) =>
-						onChange(
-							value === ALL_VALUES
-								? null
-								: {
-										column,
-										kind: ColumnFilterKindEnum.BOOLEAN,
-										value: value === YES,
-									},
-						)
-					}
+				<BooleanFilter
+					column={column}
+					filter={filter?.kind === ColumnFilterKindEnum.BOOLEAN ? filter : null}
+					label={label}
+					onChange={onChange}
 				/>
 			);
-		}
 		case ColumnFilterKindEnum.NUMBER_RANGE:
 			return (
 				<NumberRangeFilter
@@ -130,6 +91,7 @@ export function ColumnFilterCell({
 						filter?.kind === ColumnFilterKindEnum.NUMBER_RANGE ? filter : null
 					}
 					label={label}
+					isDuration={isDurationColumn(gameTable, column)}
 					onChange={onChange}
 				/>
 			);

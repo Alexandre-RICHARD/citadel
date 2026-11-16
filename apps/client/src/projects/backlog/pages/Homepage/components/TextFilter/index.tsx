@@ -1,6 +1,5 @@
 import { useDebouncedCallback } from "@citadel/common/src/react/hooks/useDebouncedCallback";
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 import { useState } from "react";
@@ -9,18 +8,26 @@ import styles from "../../../../backlog.module.scss";
 import { Tooltip } from "../../../../components/Tooltip";
 import { UiDelayEnum } from "../../../../helper/timing/uiDelay.enum";
 
-type Props = {
-	column: BacklogColumnEnum;
-	filter: Extract<ColumnFilter, { kind: ColumnFilterKindEnum.TEXT }> | null;
+type Props<Column extends string> = {
+	column: Column;
+	filter: Extract<
+		ColumnFilter<Column>,
+		{ kind: ColumnFilterKindEnum.TEXT }
+	> | null;
 	label: string;
-	onChange: (filter: ColumnFilter | null) => void;
+	onChange: (filter: ColumnFilter<Column> | null) => void;
 };
 
 /**
  * « Contient… » : la saisie s'affiche tout de suite, le tableau se relit une fois la frappe arrêtée. Un filtre posé
  * ailleurs (clic sur une série) remplace la saisie
  */
-export function TextFilter({ column, filter, label, onChange }: Props) {
+export function TextFilter<Column extends string>({
+	column,
+	filter,
+	label,
+	onChange,
+}: Props<Column>) {
 	const filterText = filter?.text ?? "";
 	const [text, setText] = useState(filterText);
 	const [syncedText, setSyncedText] = useState(filterText);

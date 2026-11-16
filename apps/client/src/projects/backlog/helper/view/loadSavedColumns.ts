@@ -1,45 +1,46 @@
 import { readLocalStorage } from "@citadel/common/src/browser/storage/readLocalStorage";
 import { getIsRecord } from "@citadel/common/src/universal/value/getIsRecord";
-import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 
 import type { ColumnSetting } from "./columnSetting.type";
-import { COLUMNS_STORAGE_KEY } from "./columnsStorageKey";
+import type { TableDefinition } from "./tableDefinition.type";
 
-function isColumnKey(value: unknown): value is BacklogColumnEnum {
-	return Object.values<unknown>(BacklogColumnEnum).includes(value);
-}
-
-function readColumnSetting(saved: unknown): ColumnSetting | null {
+function readColumnSetting<Column extends string>(
+	table: TableDefinition<Column>,
+	saved: unknown,
+): ColumnSetting<Column> | null {
 	if (
 		!getIsRecord(saved) ||
-		!isColumnKey(saved.key) ||
+		typeof saved.key !== "string" ||
+		!Object.hasOwn(table.kinds, saved.key) ||
 		typeof saved.isVisible !== "boolean"
 	)
 		return null;
+	const key = saved.key as Column;
 	return {
-		key: saved.key,
-		isVisible: saved.key === BacklogColumnEnum.ACTIONS || saved.isVisible,
+		key,
+		isVisible: key === table.actionsColumn || saved.isVisible,
 	};
 }
 
 /**
- * Disposition des colonnes gardée dans le navigateur ; null si absente ou illisible.
+ * Disposition des colonnes d'un tableau gardée dans le navigateur ; null si absente ou illisible.
  * Une colonne inconnue ou en double est ignorée, une nouvelle colonne se place derrière celle qui la précède par défaut,
- * Actions reste visible
+ * avec sa visibilité par défaut ; Actions reste visible
  */
-export function loadSavedColumns(): ColumnSetting[] | null {
-	const saved = readLocalStorage(COLUMNS_STORAGE_KEY);
+export function loadSavedColumns<Column extends string>(
+	table: TableDefinition<Column>,
+): ColumnSetting<Column>[] | null {
+	const saved = readLocalStorage(table.storageKey);
 	if (!Array.isArray(saved)) return null;
-	const columns: ColumnSetting[] = [];
+	const columns: ColumnSetting<Column>[] = [];
 	for (const item of saved as unknown[]) {
-		const setting = readColumnSetting(item);
+		const setting = readColumnSetting(table, item);
 		if (setting !== null && !columns.some(({ key }) => key === setting.key))
 			columns.push(setting);
 	}
-	const defaultKeys = Object.values(BacklogColumnEnum);
-	for (const [index, key] of defaultKeys.entries())
-		if (!columns.some((setting) => setting.key === key)) {
-			const previousKey = defaultKeys[index - 1];
+	for (const [index, defaultSetting] of table.defaultColumns.entries())
+		if (!columns.some((setting) => setting.key === defaultSetting.key)) {
+			const previousKey = table.defaultColumns[index - 1]?.key;
 			const previousIndex = columns.findIndex(
 				(setting) => setting.key === previousKey,
 			);
@@ -47,10 +48,7 @@ export function loadSavedColumns(): ColumnSetting[] | null {
 			columns.splice(
 				previousIndex === -1 ? columns.length : previousIndex + 1,
 				0,
-				{
-					key,
-					isVisible: true,
-				},
+				{ ...defaultSetting },
 			);
 		}
 	return columns;

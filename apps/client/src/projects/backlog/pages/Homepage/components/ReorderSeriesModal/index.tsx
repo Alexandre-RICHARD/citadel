@@ -1,12 +1,13 @@
 import { ListOrdered } from "lucide-react";
 
 import { useAllSeries } from "../../../../api/series/useAllSeries";
+import { useReorderSeries } from "../../../../api/series/useReorderSeries";
 import { useSeriesEntries } from "../../../../api/series/useSeriesEntries";
 import { Modal } from "../../../../components/Modal";
 import { useIsFreshOnce } from "../../../../hooks/useIsFreshOnce";
 import { LoadingState } from "../LoadingState";
 import { ModalActions } from "../ModalActions";
-import { ReorderSeriesForm } from "../ReorderSeriesForm";
+import { SeriesOrderForm } from "../SeriesOrderForm";
 
 type Props = {
 	seriesId: number;
@@ -19,6 +20,7 @@ type Props = {
 export function ReorderSeriesModal({ seriesId, gameId, onClose }: Props) {
 	const { entries, error, isStale } = useSeriesEntries(seriesId);
 	const isFresh = useIsFreshOnce({ data: entries ?? undefined, isStale });
+	const reorderSeries = useReorderSeries(seriesId);
 	const seriesName =
 		useAllSeries().find(({ id }) => id === seriesId)?.name ?? "Série";
 
@@ -46,11 +48,15 @@ export function ReorderSeriesModal({ seriesId, gameId, onClose }: Props) {
 			</Modal>
 		);
 	return (
-		<ReorderSeriesForm
-			seriesId={seriesId}
-			seriesName={seriesName}
+		<SeriesOrderForm
+			title="Réorganiser la série"
+			subtitle={seriesName}
+			itemLabel="jeu"
 			gameId={gameId}
 			storedEntries={entries}
+			onValidate={(nextEntries) =>
+				reorderSeries.mutate({ entries: nextEntries })
+			}
 			onClose={onClose}
 		/>
 	);

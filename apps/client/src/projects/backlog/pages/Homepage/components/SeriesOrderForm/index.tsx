@@ -9,7 +9,6 @@ import { GripVertical, ListOrdered, TriangleAlert } from "lucide-react";
 import { useRef, useState } from "react";
 
 import type { SeriesEntryFm } from "../../../../api/model/seriesEntryFm.type";
-import { useReorderSeries } from "../../../../api/series/useReorderSeries";
 import styles from "../../../../backlog.module.scss";
 import { Callout } from "../../../../components/Callout";
 import { Modal } from "../../../../components/Modal";
@@ -23,22 +22,32 @@ import { SeriesNumberField } from "../SeriesNumberField";
 const SUB_ENTRY_INDENT_PX = 32;
 
 type Props = {
-	seriesId: number;
-	seriesName: string;
+	// « Réorganiser la série », « Réorganiser la saga »
+	title: string;
+	// Le nom de la série ou de la saga
+	subtitle: string;
+	// Comment s'appelle un élément de la liste : « jeu », « média »
+	itemLabel: string;
+	// L'élément d'où le menu a été ouvert, mis en valeur
 	gameId: number;
 	storedEntries: SeriesEntryFm[];
+	// Les nouveaux numéros de tous les éléments, sur « Valider »
+	onValidate: (entries: SeriesEntry[]) => void;
 	onClose: () => void;
 };
 
 /**
- * Glisser un jeu par sa poignée sur le trait entre deux lignes, décalé à droite pour en faire un sous-jeu, ou taper son
- * numéro. Un jeu sorti avant un jeu placé plus haut est signalé. Rien ne part avant « Valider »
+ * Réorganiser une série de jeux ou une saga de films et séries (mêmes règles de numéros) : glisser un élément par sa
+ * poignée sur le trait entre deux lignes, décalé à droite pour en faire un sous-élément, ou taper son numéro. Un élément
+ * sorti avant un élément placé plus haut est signalé. Rien ne part avant « Valider »
  */
-export function ReorderSeriesForm({
-	seriesId,
-	seriesName,
+export function SeriesOrderForm({
+	title,
+	subtitle,
+	itemLabel,
 	gameId: currentGameId,
 	storedEntries,
+	onValidate,
 	onClose,
 }: Props) {
 	const [entries, setEntries] = useState<SeriesEntry[]>(() =>
@@ -49,7 +58,6 @@ export function ReorderSeriesForm({
 	const dragStartX = useRef(0);
 	const [gapIndex, setGapIndex] = useState<number | null>(null);
 	const [wantsSub, setWantsSub] = useState(false);
-	const reorderSeries = useReorderSeries(seriesId);
 
 	const storedEntryById = new Map(
 		storedEntries.map((entry) => [entry.gameId, entry]),
@@ -85,8 +93,8 @@ export function ReorderSeriesForm({
 
 	return (
 		<Modal
-			title="Réorganiser la série"
-			subtitle={seriesName}
+			title={title}
+			subtitle={subtitle}
 			icon={ListOrdered}
 			actions={
 				// Sans numéro changé, « Valider » reste inactif
@@ -94,7 +102,7 @@ export function ReorderSeriesForm({
 					canValidate={hasChanges}
 					onCancel={onClose}
 					onValidate={() => {
-						reorderSeries.mutate({ entries });
+						onValidate(entries);
 						onClose();
 					}}
 				/>
@@ -102,8 +110,8 @@ export function ReorderSeriesForm({
 			onClose={onClose}
 		>
 			<Callout className={styles.seriesHint}>
-				Glissez un jeu par sa poignée entre deux lignes, un peu à droite pour en
-				faire un sous-jeu, ou tapez son numéro (3, 3.1).
+				Glissez un {itemLabel} par sa poignée entre deux lignes, un peu à droite
+				pour en faire un sous-{itemLabel}, ou tapez son numéro (3, 3.1).
 			</Callout>
 			<ol className={styles.seriesList}>
 				{entries.map(({ gameId, seriesNumber }, index) => {
@@ -120,7 +128,7 @@ export function ReorderSeriesForm({
 					);
 					const gameName =
 						game === undefined
-							? `jeu ${gameId}`
+							? `${itemLabel} ${gameId}`
 							: (game.frenchName ?? game.name);
 					return (
 						<li
@@ -199,7 +207,7 @@ export function ReorderSeriesForm({
 								/>
 							</Tooltip>
 							{game === undefined ? (
-								<span>Jeu introuvable</span>
+								<span>Introuvable</span>
 							) : (
 								<>
 									<span className={styles.nameBlock}>

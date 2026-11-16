@@ -1,7 +1,9 @@
-import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
-import { columnFilterKinds } from "@citadel/specs/src/projects/backlog/helper/view/columnFilterKinds";
+import type { TableDefinition } from "./tableDefinition.type";
 
 // La miniature et les actions n'ont ni tri ni filtre
-export function isSortableColumn(column: BacklogColumnEnum): boolean {
-	return columnFilterKinds[column] !== null;
+export function isSortableColumn<Column extends string>(
+	table: TableDefinition<Column>,
+	column: Column,
+): boolean {
+	return table.kinds[column] !== null;
 }

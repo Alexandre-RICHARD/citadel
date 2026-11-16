@@ -1,5 +1,4 @@
 import { formatShortIsoDate } from "@citadel/common/src/universal/date/formatShortIsoDate";
-import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
@@ -9,18 +8,23 @@ import { formatRangeSummary } from "../../../../helper/format/formatRangeSummary
 import { FormField } from "../FormField";
 import { RangeFilter } from "../RangeFilter";
 
-type Props = {
-	column: BacklogColumnEnum;
+type Props<Column extends string> = {
+	column: Column;
 	filter: Extract<
-		ColumnFilter,
+		ColumnFilter<Column>,
 		{ kind: ColumnFilterKindEnum.DATE_RANGE }
 	> | null;
 	label: string;
-	onChange: (filter: ColumnFilter | null) => void;
+	onChange: (filter: ColumnFilter<Column> | null) => void;
 };
 
 // Dates de début et de fin, incluses ; une date ne compte qu'une fois complète
-export function DateRangeFilter({ column, filter, label, onChange }: Props) {
+export function DateRangeFilter<Column extends string>({
+	column,
+	filter,
+	label,
+	onChange,
+}: Props<Column>) {
 	const from = filter?.from ?? null;
 	const to = filter?.to ?? null;
 

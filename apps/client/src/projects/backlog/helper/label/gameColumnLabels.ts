@@ -1,7 +1,7 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 
-// Libellé complet de chaque colonne
-export const columnLabels: Readonly<Record<BacklogColumnEnum, string>> = {
+// Libellé complet de chaque colonne du tableau des jeux
+export const gameColumnLabels: Readonly<Record<BacklogColumnEnum, string>> = {
 	[BacklogColumnEnum.THUMBNAIL]: "Miniature",
 	[BacklogColumnEnum.NAME]: "Nom",
 	[BacklogColumnEnum.SERIES]: "Série",

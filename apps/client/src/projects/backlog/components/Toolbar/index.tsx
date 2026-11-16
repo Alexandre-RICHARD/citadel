@@ -4,46 +4,44 @@ import {
 	Castle,
 	Columns3,
 	Gamepad2,
-	LibraryBig,
 	Lock,
 	Moon,
 	PencilLine,
 	Sun,
 	UserRound,
 } from "lucide-react";
-import type { RefObject } from "react";
+import type { ReactNode } from "react";
 
-import { buildReturnToHomepagePath } from "../../../../../../react/appNavigation/buildReturnToHomepagePath";
-import { ProjectsEnum } from "../../../../../../react/appNavigation/projects.enum";
-import { useProjectColorScheme } from "../../../../../../react/projectTheme/useProjectColorScheme";
-import { AuthPathEnum } from "../../../../../auth/routing/authPath.enum";
-import type { GameHitFm } from "../../../../api/model/gameHitFm.type";
-import styles from "../../../../backlog.module.scss";
-import { Button } from "../../../../components/Button";
-import { LinkButton } from "../../../../components/LinkButton";
-import { Tooltip } from "../../../../components/Tooltip";
-import type { BacklogModal } from "../../backlogModal.type";
-import { SearchBar } from "../SearchBar";
+import { buildReturnToHomepagePath } from "../../../../react/appNavigation/buildReturnToHomepagePath";
+import { ProjectsEnum } from "../../../../react/appNavigation/projects.enum";
+import { useProjectColorScheme } from "../../../../react/projectTheme/useProjectColorScheme";
+import { AuthPathEnum } from "../../../auth/routing/authPath.enum";
+import styles from "../../backlog.module.scss";
+import { Button } from "../Button";
+import { LinkButton } from "../LinkButton";
+import { SectionSwitch } from "../SectionSwitch";
+import { Tooltip } from "../Tooltip";
 
 type Props = {
-	searchInputRef: RefObject<HTMLInputElement | null>;
-	// Jeux en base hors backlog, comptés sur le bouton ; null tant que la vue d'ensemble n'est pas chargée
-	outsideBacklogGameCount: number | null;
+	// La recherche du backlog affiché (IGDB pour les jeux, TMDB pour les films et séries)
+	search: ReactNode;
+	// Les boutons propres au backlog affiché, après la recherche
+	actions: ReactNode;
 	isEditMode: boolean;
 	onEditModeChange: (isEditMode: boolean) => void;
-	onSelectHit: (hit: GameHitFm) => void;
-	onOpenModal: (modal: BacklogModal) => void;
+	onOpenColumns: () => void;
 };
 
-// Barre du haut : la recherche IGDB, l'ajout depuis la base, les colonnes, le mode édition, le thème, le profil et le retour à la
-// Citadel
+/**
+ * Barre du haut, commune aux deux backlogs : la bascule jeux / films et séries, la recherche et les boutons du backlog
+ * affiché, puis les colonnes, le mode édition, le thème, le profil et le retour à la Citadel
+ */
 export function Toolbar({
-	searchInputRef,
-	outsideBacklogGameCount,
+	search,
+	actions,
 	isEditMode,
 	onEditModeChange,
-	onSelectHit,
-	onOpenModal,
+	onOpenColumns,
 }: Props) {
 	const { colorScheme, toggleColorScheme } = useProjectColorScheme(
 		ProjectsEnum.Backlog,
@@ -58,32 +56,15 @@ export function Toolbar({
 				</span>
 				<h1 className={styles.title}>Backlog</h1>
 			</div>
-			<SearchBar
-				inputRef={searchInputRef}
-				onSelect={onSelectHit}
-			/>
-			<Button
-				icon={LibraryBig}
-				tooltip={
-					outsideBacklogGameCount === 0
-						? "Tous les jeux de la base sont dans le backlog"
-						: "Ajouter au backlog un jeu déjà en base, sans IGDB"
-				}
-				tooltipPlacement="bottom"
-				disabled={outsideBacklogGameCount === 0}
-				onClick={() => onOpenModal({ kind: "addFromDatabase" })}
-			>
-				Ajouter un jeu depuis la Citadel
-				{outsideBacklogGameCount !== null && (
-					<span className={styles.countBadge}>{outsideBacklogGameCount}</span>
-				)}
-			</Button>
+			<SectionSwitch />
+			{search}
+			{actions}
 			<div className={styles.toolbarEnd}>
 				<Button
 					icon={Columns3}
 					tooltip="Visibilité et ordre des colonnes"
 					tooltipPlacement="bottom"
-					onClick={() => onOpenModal({ kind: "editColumns" })}
+					onClick={onOpenColumns}
 				>
 					Colonnes
 				</Button>

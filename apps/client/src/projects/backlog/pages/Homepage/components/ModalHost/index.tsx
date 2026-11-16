@@ -1,6 +1,7 @@
 import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 
 import type { ColumnSetting } from "../../../../helper/view/columnSetting.type";
+import { gameTable } from "../../../../helper/view/gameTable";
 import type { BacklogModal } from "../../backlogModal.type";
 import { getHitModal } from "../../getHitModal";
 import { AddDlcsModal } from "../AddDlcsModal";
@@ -116,6 +117,7 @@ export function ModalHost({
 		case "editColumns":
 			return (
 				<ColumnsModal
+					table={gameTable}
 					columns={columns}
 					onToggleVisibility={onToggleColumn}
 					onMove={onMoveColumn}

@@ -1,24 +1,19 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import {
-	FunnelX,
-	Gamepad2,
-	ListFilter,
-	PencilLine,
-	Search,
-	SearchX,
-} from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { FunnelX, Gamepad2, Search, SearchX } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import type { BacklogRowFm } from "../../../../api/model/backlogRowFm.type";
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
+import { ClearFiltersCell } from "../../../../components/ClearFiltersCell";
 import { Spinner } from "../../../../components/Spinner";
+import { TableCaptionStatus } from "../../../../components/TableCaptionStatus";
+import { useLoadMoreOnScroll } from "../../../../hooks/useLoadMoreOnScroll";
 import { getColumnClassNames } from "../../getColumnClassNames";
 import type { TableControls } from "../../tableControls.type";
 import type { TableSettings } from "../../tableSettings.type";
 import { ColumnFilterCell } from "../ColumnFilterCell";
-import { ColumnHeader } from "../ColumnHeader";
-import { FilterModeToggle } from "../FilterModeToggle";
+import { GameColumnHeader } from "../GameColumnHeader";
 import { GameRowGroup } from "../GameRowGroup";
 import { PlayTimeRecap } from "../PlayTimeRecap";
 import { ScrollTopButton } from "../ScrollTopButton";
@@ -70,7 +65,11 @@ export function BacklogTable({
 		() => getColumnClassNames(visibleColumns, false),
 		[visibleColumns],
 	);
-	const loadMoreRef = useRef<HTMLDivElement>(null);
+	const loadMoreRef = useLoadMoreOnScroll(
+		hasNextPage,
+		rows.length,
+		onLoadNextPage,
+	);
 	// Les bornes des nombres et des dates sont des champs libres : effacer les filtres recrée la ligne pour les vider
 	const [filterRowKey, setFilterRowKey] = useState(0);
 	const platformNames = (overview?.playedPlatforms ?? []).map(
@@ -83,21 +82,6 @@ export function BacklogTable({
 		setFilterRowKey((key) => key + 1);
 		onClearFilters();
 	}
-
-	// Défilement infini : la page suivante se charge à l'approche du bas de page, avant de l'atteindre
-	useEffect(() => {
-		const loadMore = loadMoreRef.current;
-		if (!hasNextPage || loadMore === null) return undefined;
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries.some(({ isIntersecting }) => isIntersecting))
-					onLoadNextPage();
-			},
-			{ rootMargin: "0px 0px 800px 0px" },
-		);
-		observer.observe(loadMore);
-		return () => observer.disconnect();
-	}, [hasNextPage, rows.length, onLoadNextPage]);
 
 	return (
 		<div className={styles.tableArea}>
@@ -130,44 +114,14 @@ export function BacklogTable({
 						</>
 					)}
 				</span>
-				{filters.length > 0 && (
-					<span className={styles.captionFilters}>
-						<ListFilter aria-hidden />
-						{filters.length > 1
-							? `${filters.length} filtres actifs`
-							: "1 filtre actif"}
-						{filters.length > 1 && (
-							<FilterModeToggle
-								value={view.filterMode}
-								onChange={onFilterModeChange}
-							/>
-						)}
-						<Button
-							icon={FunnelX}
-							variant="ghost"
-							size="sm"
-							tooltip="Retirer tous les filtres d'un coup"
-							onClick={clearFilters}
-						>
-							Réinitialiser les filtres
-						</Button>
-					</span>
-				)}
-				{isStale && (
-					<span className={styles.captionFilters}>
-						<Spinner />
-						Mise à jour…
-					</span>
-				)}
-				{table.isEditMode && (
-					<span className={styles.editModeTag}>
-						<PencilLine aria-hidden />
-						Mode édition
-						<span className={styles.editModeHint}>
-							retour en lecture seule après 1 min sans activité
-						</span>
-					</span>
-				)}
+				<TableCaptionStatus
+					filterCount={filters.length}
+					filterMode={view.filterMode}
+					isStale={isStale}
+					isEditMode={table.isEditMode}
+					onFilterModeChange={onFilterModeChange}
+					onClearFilters={clearFilters}
+				/>
 			</div>
 			<table
 				className={joinClassNames(
@@ -187,7 +141,7 @@ export function BacklogTable({
 							<ScrollTopButton />
 						</th>
 						{visibleColumns.map((column) => (
-							<ColumnHeader
+							<GameColumnHeader
 								key={column}
 								column={column}
 								sort={view.sort}
@@ -200,29 +154,10 @@ export function BacklogTable({
 						key={filterRowKey}
 						className={styles.filterRow}
 					>
-						{/* Un filtre actif fait place au bouton qui les retire tous */}
-						<th
-							className={styles.expandCell}
-							aria-label="Filtres"
-						>
-							{filters.length === 0 ? (
-								<ListFilter
-									className={styles.filterRowIcon}
-									aria-hidden
-								/>
-							) : (
-								<Button
-									icon={FunnelX}
-									variant="ghost"
-									size="sm"
-									ariaLabel="Effacer tous les filtres"
-									tooltip="Effacer tous les filtres"
-									tooltipPlacement="right"
-									className={styles.clearFiltersButton}
-									onClick={clearFilters}
-								/>
-							)}
-						</th>
+						<ClearFiltersCell
+							hasFilters={filters.length > 0}
+							onClearFilters={clearFilters}
+						/>
 						{visibleColumns.map((column) => (
 							<th
 								key={column}

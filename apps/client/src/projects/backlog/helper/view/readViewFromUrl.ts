@@ -1,25 +1,13 @@
-import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
-import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterMode.enum";
-import { parseFilterParam } from "@citadel/specs/src/projects/backlog/helper/view/parseFilterParam";
-import { parseSortParam } from "@citadel/specs/src/projects/backlog/helper/view/parseSortParam";
-import { ViewParamSyntaxEnum } from "@citadel/specs/src/projects/backlog/helper/view/viewParamSyntax.enum";
+import { readViewParams } from "@citadel/specs/src/projects/backlog/helper/view/readViewParams";
 
 import type { BacklogView } from "./backlogView.type";
+import type { TableDefinition } from "./tableDefinition.type";
 
 // Tri et filtres de l'URL de la page ; un paramètre illisible est ignoré (lien ancien, saisie à la main)
-export function readViewFromUrl(search: string): BacklogView {
+export function readViewFromUrl<Column extends string>(
+	table: TableDefinition<Column>,
+	search: string,
+): BacklogView<Column> {
 	const params = new URLSearchParams(search);
-	return {
-		sort:
-			parseSortParam(params.get(ViewParamSyntaxEnum.SORT_PARAM) ?? "") ?? [],
-		filterMode:
-			params.get(ViewParamSyntaxEnum.FILTER_MODE_PARAM) === FilterModeEnum.OR
-				? FilterModeEnum.OR
-				: FilterModeEnum.AND,
-		filters: Object.values(BacklogColumnEnum).flatMap((column) => {
-			const text = params.get(column);
-			const filter = text === null ? null : parseFilterParam(column, text);
-			return filter === null ? [] : [filter];
-		}),
-	};
+	return readViewParams(table.kinds, (name) => params.get(name));
 }

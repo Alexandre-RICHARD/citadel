@@ -1,5 +1,4 @@
 import { toggleArrayItem } from "@citadel/common/src/universal/array/toggleArrayItem";
-import type { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ColumnFilterKindEnum } from "@citadel/specs/src/projects/backlog/enum/columnFilterKind.enum";
 import type { ColumnFilter } from "@citadel/specs/src/projects/backlog/helper/view/columnFilter.type";
 
@@ -8,23 +7,26 @@ import { Checkbox } from "../../../../components/Checkbox";
 import type { SelectOption } from "../../../../components/Select/selectOption.type";
 import { RangeFilter } from "../RangeFilter";
 
-type Props = {
-	column: BacklogColumnEnum;
-	filter: Extract<ColumnFilter, { kind: ColumnFilterKindEnum.VALUE }> | null;
+type Props<Column extends string> = {
+	column: Column;
+	filter: Extract<
+		ColumnFilter<Column>,
+		{ kind: ColumnFilterKindEnum.VALUE }
+	> | null;
 	label: string;
 	options: SelectOption<string>[];
-	onChange: (filter: ColumnFilter | null) => void;
+	onChange: (filter: ColumnFilter<Column> | null) => void;
 };
 
 // Filtre d'une colonne à liste (type de fin, plateforme, statut) : des cases cumulables, une ligne passe si elle a l'une
 // des valeurs cochées. Le bouton aussi étroit que la colonne résume les valeurs, les cases s'ouvrent dans un panneau
-export function ValueFilter({
+export function ValueFilter<Column extends string>({
 	column,
 	filter,
 	label,
 	options,
 	onChange,
-}: Props) {
+}: Props<Column>) {
 	const checkedValues = filter?.values ?? [];
 	const summary =
 		checkedValues.length === 0

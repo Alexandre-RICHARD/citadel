@@ -9,11 +9,11 @@ import type { BacklogView } from "./backlogView.type";
  * Tri et filtres en paramètres : ceux de l'URL de la page, et ceux de la query du tableau (même écriture).
  * Le tri n'y est que s'il y en a un, la combinaison des filtres que si elle est « ou » ; l'ordre suit les filtres, pour une clé de cache stable
  */
-export function buildViewParams({
+export function buildViewParams<Column extends string>({
 	sort,
 	filters,
 	filterMode,
-}: BacklogView): Record<string, string> {
+}: BacklogView<Column>): Record<string, string> {
 	return Object.fromEntries([
 		...(sort.length === 0
 			? []

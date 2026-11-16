@@ -1,7 +1,7 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { COLUMNS_STORAGE_KEY } from "./columnsStorageKey";
+import { gameTable } from "./gameTable";
 import { loadSavedColumns } from "./loadSavedColumns";
 import { saveColumns } from "./saveColumns";
 
@@ -17,10 +17,10 @@ describe("saveColumns.ts", () => {
 				isVisible: key !== BacklogColumnEnum.COMMENT,
 			}));
 
-			saveColumns(columns);
+			saveColumns(gameTable, columns);
 
-			expect(localStorage.getItem(COLUMNS_STORAGE_KEY)).not.toBeNull();
-			expect(loadSavedColumns()).toStrictEqual(columns);
+			expect(localStorage.getItem(gameTable.storageKey)).not.toBeNull();
+			expect(loadSavedColumns(gameTable)).toStrictEqual(columns);
 		});
 	});
 });

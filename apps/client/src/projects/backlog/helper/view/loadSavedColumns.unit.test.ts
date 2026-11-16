@@ -1,11 +1,11 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { COLUMNS_STORAGE_KEY } from "./columnsStorageKey";
+import { gameTable } from "./gameTable";
 import { loadSavedColumns } from "./loadSavedColumns";
 
 function save(value: unknown): void {
-	localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(value));
+	localStorage.setItem(gameTable.storageKey, JSON.stringify(value));
 }
 
 describe("loadSavedColumns.ts", () => {
@@ -20,7 +20,7 @@ describe("loadSavedColumns.ts", () => {
 				{ key: BacklogColumnEnum.NAME, isVisible: true },
 			]);
 
-			const columns = loadSavedColumns();
+			const columns = loadSavedColumns(gameTable);
 
 			expect(columns?.[0]).toStrictEqual({
 				key: BacklogColumnEnum.RATING,
@@ -39,7 +39,7 @@ describe("loadSavedColumns.ts", () => {
 					.map((key) => ({ key, isVisible: key !== BacklogColumnEnum.RATING })),
 			);
 
-			const keys = loadSavedColumns()?.map(({ key }) => key);
+			const keys = loadSavedColumns(gameTable)?.map(({ key }) => key);
 
 			expect(keys?.indexOf(BacklogColumnEnum.IN_PROGRESS)).toBe(
 				(keys?.indexOf(BacklogColumnEnum.STATUS) ?? 0) + 1,
@@ -55,7 +55,7 @@ describe("loadSavedColumns.ts", () => {
 				null,
 			]);
 
-			const columns = loadSavedColumns();
+			const columns = loadSavedColumns(gameTable);
 
 			expect(columns?.[0]).toStrictEqual({
 				key: BacklogColumnEnum.RATING,
@@ -69,7 +69,7 @@ describe("loadSavedColumns.ts", () => {
 		it("SHOULD keep the actions visible WHEN they were saved hidden", () => {
 			save([{ key: BacklogColumnEnum.ACTIONS, isVisible: false }]);
 
-			expect(loadSavedColumns()?.[0]).toStrictEqual({
+			expect(loadSavedColumns(gameTable)?.[0]).toStrictEqual({
 				key: BacklogColumnEnum.ACTIONS,
 				isVisible: true,
 			});
@@ -78,13 +78,13 @@ describe("loadSavedColumns.ts", () => {
 
 	describe("no layout", () => {
 		it("SHOULD return null WHEN nothing is saved", () => {
-			expect(loadSavedColumns()).toBeNull();
+			expect(loadSavedColumns(gameTable)).toBeNull();
 		});
 
 		it("SHOULD return null WHEN the saved value is not a list", () => {
 			save({ columns: [] });
 
-			expect(loadSavedColumns()).toBeNull();
+			expect(loadSavedColumns(gameTable)).toBeNull();
 		});
 	});
 });

@@ -1,6 +1,7 @@
 import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { describe, expect, it } from "vitest";
 
+import { gameTable } from "./gameTable";
 import { toggleColumnVisibility } from "./toggleColumnVisibility";
 
 const COLUMNS = [
@@ -16,7 +17,7 @@ describe("toggleColumnVisibility.ts", () => {
 			{ key: BacklogColumnEnum.RATING, expected: true },
 		])("SHOULD flip the visibility of $key", ({ key, expected }) => {
 			expect(
-				toggleColumnVisibility(COLUMNS, key).find(
+				toggleColumnVisibility(gameTable, COLUMNS, key).find(
 					(column) => column.key === key,
 				)?.isVisible,
 			).toBe(expected);
@@ -26,7 +27,7 @@ describe("toggleColumnVisibility.ts", () => {
 	describe("actions column", () => {
 		it("SHOULD keep the actions visible, without them there is no menu", () => {
 			expect(
-				toggleColumnVisibility(COLUMNS, BacklogColumnEnum.ACTIONS),
+				toggleColumnVisibility(gameTable, COLUMNS, BacklogColumnEnum.ACTIONS),
 			).toStrictEqual(COLUMNS);
 		});
 	});

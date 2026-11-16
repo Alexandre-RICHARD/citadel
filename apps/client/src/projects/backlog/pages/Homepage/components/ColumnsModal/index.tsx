@@ -1,33 +1,34 @@
 import { joinClassNames } from "@citadel/common/src/universal/string/joinClassNames";
-import { BacklogColumnEnum } from "@citadel/specs/src/projects/backlog/enum/backlogColumn.enum";
 import { ChevronDown, ChevronUp, Columns3 } from "lucide-react";
 
 import styles from "../../../../backlog.module.scss";
 import { Button } from "../../../../components/Button";
 import { Checkbox } from "../../../../components/Checkbox";
 import { Modal } from "../../../../components/Modal";
-import { columnLabels } from "../../../../helper/label/columnLabels";
 import type { ColumnSetting } from "../../../../helper/view/columnSetting.type";
+import type { TableDefinition } from "../../../../helper/view/tableDefinition.type";
 
-type Props = {
-	columns: ColumnSetting[];
-	onToggleVisibility: (key: BacklogColumnEnum) => void;
-	onMove: (key: BacklogColumnEnum, offset: -1 | 1) => void;
+type Props<Column extends string> = {
+	table: TableDefinition<Column>;
+	columns: ColumnSetting<Column>[];
+	onToggleVisibility: (key: Column) => void;
+	onMove: (key: Column, offset: -1 | 1) => void;
 	onClose: () => void;
 };
 
 // Visibilité et ordre des colonnes : appliqués tout de suite, gardés dans le navigateur
-export function ColumnsModal({
+export function ColumnsModal<Column extends string>({
+	table,
 	columns,
 	onToggleVisibility,
 	onMove,
 	onClose,
-}: Props) {
+}: Props<Column>) {
 	const visibleCount = columns.filter(({ isVisible }) => isVisible).length;
 
 	// Déplacée en premier ou en dernier, une colonne perd un de ses boutons : le focus passe à l'autre
 	function move(
-		key: BacklogColumnEnum,
+		key: Column,
 		offset: -1 | 1,
 		button: HTMLButtonElement,
 		isReachingEnd: boolean,
@@ -66,8 +67,8 @@ export function ColumnsModal({
 			</p>
 			<ol className={styles.columnList}>
 				{columns.map(({ key, isVisible }, index) => {
-					const label = columnLabels[key];
-					const isActions = key === BacklogColumnEnum.ACTIONS;
+					const label = table.labels[key];
+					const isActions = key === table.actionsColumn;
 					return (
 						<li
 							key={key}

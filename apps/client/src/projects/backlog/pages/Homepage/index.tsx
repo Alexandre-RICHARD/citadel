@@ -22,10 +22,11 @@ import { useBacklogOverview } from "../../api/overview/useBacklogOverview";
 import { useBacklogRows } from "../../api/userGame/useBacklogRows";
 import styles from "../../backlog.module.scss";
 import { ModalMinimizeContext } from "../../components/Modal/modalMinimizeContext";
+import { Toolbar } from "../../components/Toolbar";
 import type { BacklogView } from "../../helper/view/backlogView.type";
 import { buildViewParams } from "../../helper/view/buildViewParams";
 import type { ColumnSetting } from "../../helper/view/columnSetting.type";
-import { DEFAULT_COLUMNS } from "../../helper/view/defaultColumns";
+import { gameTable } from "../../helper/view/gameTable";
 import { keepVisibleView } from "../../helper/view/keepVisibleView";
 import { loadSavedColumns } from "../../helper/view/loadSavedColumns";
 import { moveColumn } from "../../helper/view/moveColumn";
@@ -35,10 +36,11 @@ import { setColumnFilter } from "../../helper/view/setColumnFilter";
 import { toggleColumnVisibility } from "../../helper/view/toggleColumnVisibility";
 import { toggleSort } from "../../helper/view/toggleSort";
 import type { BacklogModal } from "./backlogModal.type";
+import { AddFromDatabaseButton } from "./components/AddFromDatabaseButton";
 import { BacklogTable } from "./components/BacklogTable";
 import { BACKLOG_ROWS_PLACEHOLDER } from "./components/BacklogTable/backlogRowsPlaceholder";
 import { ModalHost } from "./components/ModalHost";
-import { Toolbar } from "./components/Toolbar";
+import { SearchBar } from "./components/SearchBar";
 import { getHitModal } from "./getHitModal";
 import { getNextQueuedModal } from "./getNextQueuedModal";
 import type { TableControls } from "./tableControls.type";
@@ -76,8 +78,8 @@ function LoadedBacklogTable({
 // Le tri et les filtres de l'URL, sans les colonnes masquées dans ce navigateur
 function readInitialView(): BacklogView {
 	return keepVisibleView(
-		readViewFromUrl(window.location.search),
-		loadSavedColumns() ?? DEFAULT_COLUMNS,
+		readViewFromUrl(gameTable, window.location.search),
+		loadSavedColumns(gameTable) ?? gameTable.defaultColumns,
 	);
 }
 
@@ -89,7 +91,7 @@ export function Homepage() {
 	const [isModalMinimized, setIsModalMinimized] = useState(false);
 	const [expandedGameIds, setExpandedGameIds] = useState<number[]>([]);
 	const [columns, setColumns] = useState<ColumnSetting[]>(
-		() => loadSavedColumns() ?? [...DEFAULT_COLUMNS],
+		() => loadSavedColumns(gameTable) ?? [...gameTable.defaultColumns],
 	);
 	const [view, setView] = useState<BacklogView>(readInitialView);
 	const deferredView = useDeferredValue(view);
@@ -150,7 +152,7 @@ export function Homepage() {
 
 	// Une colonne masquée sort du tri et des filtres
 	function changeColumnVisibility(key: BacklogColumnEnum) {
-		const nextColumns = toggleColumnVisibility(columns, key);
+		const nextColumns = toggleColumnVisibility(gameTable, columns, key);
 		setColumns(nextColumns);
 		setView((current) => keepVisibleView(current, nextColumns));
 	}
@@ -160,7 +162,7 @@ export function Homepage() {
 
 	// La disposition des colonnes se garde dans le navigateur
 	useEffect(() => {
-		saveColumns(columns);
+		saveColumns(gameTable, columns);
 	}, [columns]);
 
 	// Le tri et les filtres se gardent dans l'URL, sans toucher à l'état du routeur
@@ -252,12 +254,21 @@ export function Homepage() {
 	return (
 		<div className={styles.page}>
 			<Toolbar
-				searchInputRef={searchInputRef}
-				outsideBacklogGameCount={overview?.outsideBacklogGameCount ?? null}
+				search={
+					<SearchBar
+						inputRef={searchInputRef}
+						onSelect={(hit) => openModal(getHitModal(hit))}
+					/>
+				}
+				actions={
+					<AddFromDatabaseButton
+						outsideBacklogGameCount={overview?.outsideBacklogGameCount ?? null}
+						onClick={() => openModal({ kind: "addFromDatabase" })}
+					/>
+				}
 				isEditMode={isEditMode}
 				onEditModeChange={setIsEditMode}
-				onSelectHit={(hit) => openModal(getHitModal(hit))}
-				onOpenModal={openModal}
+				onOpenColumns={() => openModal({ kind: "editColumns" })}
 			/>
 			<main className={styles.main}>
 				<QueryErrorBoundary

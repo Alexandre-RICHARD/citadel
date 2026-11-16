@@ -4,13 +4,14 @@ import { FilterModeEnum } from "@citadel/specs/src/projects/backlog/enum/filterM
 import { SortDirectionEnum } from "@citadel/specs/src/projects/backlog/enum/sortDirection.enum";
 import { describe, expect, it } from "vitest";
 
+import { gameTable } from "./gameTable";
 import { readViewFromUrl } from "./readViewFromUrl";
 
 describe("readViewFromUrl.ts", () => {
 	describe("readable params", () => {
 		it("SHOULD read the sort and each filter of the URL", () => {
 			expect(
-				readViewFromUrl("?sort=name:desc&owned=yes&series==Zelda"),
+				readViewFromUrl(gameTable, "?sort=name:desc&owned=yes&series==Zelda"),
 			).toStrictEqual({
 				sort: [
 					{ column: BacklogColumnEnum.NAME, direction: SortDirectionEnum.DESC },
@@ -33,31 +34,31 @@ describe("readViewFromUrl.ts", () => {
 		});
 
 		it("SHOULD read the or combination of the filters", () => {
-			expect(readViewFromUrl("?filterMode=or&owned=yes").filterMode).toBe(
-				FilterModeEnum.OR,
-			);
+			expect(
+				readViewFromUrl(gameTable, "?filterMode=or&owned=yes").filterMode,
+			).toBe(FilterModeEnum.OR);
 		});
 	});
 
 	describe("unreadable params", () => {
 		it("SHOULD fall back to and WHEN the combination is unknown", () => {
-			expect(readViewFromUrl("?filterMode=xor").filterMode).toBe(
+			expect(readViewFromUrl(gameTable, "?filterMode=xor").filterMode).toBe(
 				FilterModeEnum.AND,
 			);
 		});
 
 		it("SHOULD ignore an unreadable sort or filter, from an old link or typed by hand", () => {
-			expect(readViewFromUrl("?sort=nope&rating=high&unknown=1")).toStrictEqual(
-				{
-					sort: [],
-					filters: [],
-					filterMode: FilterModeEnum.AND,
-				},
-			);
+			expect(
+				readViewFromUrl(gameTable, "?sort=nope&rating=high&unknown=1"),
+			).toStrictEqual({
+				sort: [],
+				filters: [],
+				filterMode: FilterModeEnum.AND,
+			});
 		});
 
 		it("SHOULD return an empty view WHEN the URL has no param", () => {
-			expect(readViewFromUrl("")).toStrictEqual({
+			expect(readViewFromUrl(gameTable, "")).toStrictEqual({
 				sort: [],
 				filters: [],
 				filterMode: FilterModeEnum.AND,
