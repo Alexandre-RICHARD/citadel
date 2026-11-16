@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Backlog des médias
 
-Cahier des charges du suivi des films et des séries, en construction : la base et les endpoints de l'ajout, de l'import et des nouveaux épisodes existent (§7.4), le reste est à construire. Il ne décrit que ce qui est nouveau ; tout ce qui reprend le [backlog des jeux](backlog_game.md) est seulement cité (§10). Les questions encore ouvertes sont au §11, et les tâches dans le [todo](../todo/todo.md#6-backlog).
+Cahier des charges du suivi des films et des séries, en construction : le mode classique existe (tableau, ajout, import, nouveaux épisodes, §7.4) ; le mode connecté, le job et le rapport de la console sont à construire. Il ne décrit que ce qui est nouveau ; tout ce qui reprend le [backlog des jeux](backlog_game.md) est seulement cité (§10). Les questions encore ouvertes sont au §11, et les tâches dans le [todo](../todo/todo.md#6-backlog).
 
 **Maquettes** : des captures de la maquette Figma, gardées hors du dépôt car elles montrent des données réelles (`docs/backlog/maquettes/`, ignoré par git), montrent le tableau en mode connecté, les médias oubliés et le rapport de la console. Ce n'est qu'une aide visuelle, figée au 15 novembre 2026 : les décisions prises depuis ne s'y reportent plus, et ce document fait foi. Tout ce que le backlog des médias partage avec celui des jeux (barre du haut, tableau, cases, menus, filtres) reprend le style et le comportement de ce dernier, pas ceux de la maquette.
 
@@ -193,12 +193,15 @@ Comme pour les jeux : recherche TMDB (films et séries ensemble) dans la barre d
 - **TMDB** : seul le serveur l'appelle (`tmdb/`, clé `TMDB_API_KEY`, obligatoire au démarrage), à 20 requêtes par seconde au plus, et rejoue une requête refusée pour excès de débit (429) après l'attente demandée. Une série se lit en une requête, puis ses saisons 20 par 20. Une fiche ouverte reste 10 minutes en mémoire, le temps de l'ajouter ; l'import et les nouveaux épisodes relisent toujours la fiche du jour.
 - **Sagas** : un film rangé dans une saga relie sa collection TMDB à cette saga, si elle ne l'est encore à aucune ; ses autres films la proposent ensuite. Une saga qui n'a plus aucun média quitte la base, avec ses liens. Les numéros suivent les règles des séries des jeux (specs, `helper/seriesNumber`).
 - **Progression d'une série** (specs, `helper/media`) : sur ses saisons principales et ses épisodes déjà diffusés, la même fonction pour le front et le serveur.
+- **Tableau** : comme celui des jeux, tout le backlog du compte est lu, filtré et trié en mémoire, puis découpé en pages de 40 ; les filtres ne lisent que la ligne du média (une série passe sur sa progression, pas sur ses épisodes). Tri, filtres, URL, colonnes et en-têtes sont communs aux deux tableaux : chacun ne déclare que ses colonnes (specs, `mediaColumnFilterKinds` ; front, `mediaTable`). « Vu » se trie sur la part vue (un film 0 ou 1, une série « 12 / 26 »). Les cascades de « Vu » se décident dans le front (`planWatchedChange`), qui envoie la liste des épisodes après confirmation.
 - **Import** : gardé en mémoire, un par compte. Le serveur lit les fiches en arrière-plan, et le front suit la progression jusqu'à l'aperçu. Un aperçu attend « Valider » une heure ; un redémarrage du serveur le perd, il suffit de relancer l'import.
 
 Endpoints, sous `/api/backlog`, tous `protected` sauf la route interne :
 
 | Endpoint | Rôle |
 | --- | --- |
+| `GET /user-media` | Le tableau : une page de lignes triées et filtrées (même écriture que l'URL), et le résumé de tout le backlog (films, séries, langues proposées au filtre) |
+| `GET /user-media/:userMediaId/seasons` | Dépliage d'une série : ses saisons et leurs épisodes, avec ceux qui sont vus |
 | `GET /tmdb/search?query=` | Recherche TMDB de la barre du haut, films et séries ensemble |
 | `GET /tmdb/movies/:tmdbId`, `GET /tmdb/shows/:tmdbId` | Fiche d'un film (avec la saga proposée), d'une série (avec ses saisons et ses épisodes) |
 | `GET /tmdb/:mediaType/:tmdbId/posters` | Affiches proposées pour la miniature |
@@ -206,6 +209,7 @@ Endpoints, sous `/api/backlog`, tous `protected` sauf la route interne :
 | `PATCH /user-media/:userMediaId` | Une cellule (seuls les champs modifiés) ; « Vu » seulement pour un film |
 | `PUT /user-media/:userMediaId/watched-episodes` | Cases « Vu » des épisodes d'une série, cascades comprises |
 | `GET /sagas` | Les sagas du compte |
+| `GET /sagas/:sagaId/entries`, `PUT /sagas/:sagaId/entries` | Les médias d'une saga par numéro ; « Réorganiser la saga » |
 | `POST /media-imports`, `GET /media-imports/current`, `POST /media-imports/current/validation`, `DELETE /media-imports/current` | Import de liste : lancer, suivre, valider, annuler |
 | `GET /show-updates`, `POST /show-updates` | « Récupérer les nouveautés des séries » : récapitulatif, puis « Valider » |
 | `POST /api/internal/backlog/show-updates` | Le passage de nuit du job `media-tmdb`, par le réseau Docker |

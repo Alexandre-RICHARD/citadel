@@ -69,8 +69,8 @@ Un monorepo pnpm. Le front React appelle l'API Express par `/api` (même origine
 | --- | --- | --- |
 | [Homepage](docs/homepage/homepage.md) | `/homepage` | La vitrine des projets, le contact et les pages légales |
 | [Game Death Counter](docs/gameDeathCounter/gameDeathCounter.md) | `/game-death-counter` | Compteur de morts dans les jeux de type Souls |
-| [Backlog](docs/backlog/backlog_game.md) | `/backlog` | Suivi de mes jeux vidéo, sur les données d'IGDB |
-| [Backlog des médias](docs/backlog/backlog_media.md) | `/backlog` | Suivi des films et séries, sur les données de TMDB (cahier des charges, à construire) |
+| [Backlog](docs/backlog/backlog_game.md) | `/backlog/games` | Suivi de mes jeux vidéo, sur les données d'IGDB |
+| [Backlog des médias](docs/backlog/backlog_media.md) | `/backlog/media` | Suivi des films et séries, sur les données de TMDB (en construction : mode classique fait) |
 | [Angers Irigo](docs/angersIrigo/angersIrigo.md) | `/angers-irigo` | Bus et trams d'Angers en temps réel |
 | [Satisfactory](docs/satisfactory/satisfactory.md) | `/satisfactory` | Outils pour le jeu éponyme |
 
