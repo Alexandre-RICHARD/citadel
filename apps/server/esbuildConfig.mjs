@@ -2,10 +2,12 @@ import { regexDictionary } from "@citadel/common/src/universal/regex/regexDictio
 import { build } from "esbuild";
 
 await build({
-	// Le serveur, et la commande « après restauration » que citadel restore-db lance dans la même image
+	// Le serveur, la commande « après restauration » que citadel restore-db lance dans la même image, et le job
+	// media-sync qu'infra-ops y lance chaque nuit (sans la base)
 	entryPoints: [
 		{ in: "src/index.ts", out: "build.server" },
 		{ in: "src/afterRestore.ts", out: "afterRestore" },
+		{ in: "src/mediaSync.ts", out: "mediaSync" },
 	],
 	outdir: "build",
 	outExtension: { ".js": ".cjs" },
