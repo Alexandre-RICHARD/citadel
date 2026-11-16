@@ -202,11 +202,11 @@ host_main() {
 			mkdir -p "$RESTORE_JOURNAL_DIR"
 			chown "$SERVER_UID:$SERVER_UID" "$RESTORE_JOURNAL_DIR"
 			chmod 700 "$RESTORE_JOURNAL_DIR"
-			# media-state, pour la même raison : verified/ au serveur, qui y écrit les cases
-			# « vérifié » ; survey/ reste à root, l'instance locale ne fait que le lire. Le job
-			# media-sync (étape suivante du backlog des médias) écrira dans survey/
+			# media-state, pour la même raison, au serveur (node) : verified/, où l'instance
+			# locale écrit les cases « vérifié », et survey/, où le job media-sync (même image)
+			# écrit son relevé. L'instance locale monte survey/ en lecture seule
 			mkdir -p "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
-			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/verified"
+			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
 			chmod 755 "$MEDIA_STATE_DIR/survey"
 			chmod 700 "$MEDIA_STATE_DIR/verified"
 			run_ops "$2" "$@"
@@ -993,7 +993,7 @@ cmd_tailscale_status() {
 
 # Les jobs qui ont leur contrôle chez healthchecks.io : les autres ne font
 # qu'afficher, une panne y serait sans conséquence
-PINGED_JOBS=" site-check db-backup db-restore-test config-backup config-verify vpn-leak-test "
+PINGED_JOBS=" site-check db-backup db-restore-test config-backup config-verify vpn-leak-test media-sync media-tmdb "
 
 # Les exclusions de l'ancien backup.sh, reprises telles quelles, plus les
 # dossiers des bases du site : elles ont leurs propres dumps, et s'archivent mal en
@@ -1995,6 +1995,101 @@ job_contact_retry() {
 	fi
 }
 
+# --- media-sync : chaque nuit à 2 h ---
+# Le relevé du NAS pour le backlog des médias (docs/backlog/backlog_media.md, §8). Ici,
+# l'étape 1 : infra-ops a Docker, le job n'en a pas.
+#   1. démarrer ce que le relevé lit (qBittorrent, Jellyfin, les *arr, cross-seed) s'ils
+#      sont arrêtés, dans l'ordre de leurs dépendances. Le job n'arrête rien : auto-stop
+#      éteint les *arr et cross-seed 3 h après leur démarrage ;
+#   2. la nuit du mardi au mercredi seulement, demander à cross-seed sa recherche complète
+#      (chaque nuit, elle solliciterait trop les trackers). Le job n'attend pas sa fin : ce
+#      qu'elle ajoute entre dans le relevé de la nuit suivante ;
+#   3. le relevé lui-même, dans un conteneur jetable de l'image du serveur (service
+#      media-sync de compose.yml) : relevé dans media-state/survey, rapport dans
+#      state/media-sync, étiquette tracker-invalide dans qBittorrent.
+# Pris derrière le verrou, comme les sauvegardes : il ne croise ni un déploiement, ni
+# config-backup, qui arrête ces mêmes services le lundi à 3 h.
+MEDIA_SYNC_SERVICES="media-qbittorrent media-jellyfin media-prowlarr media-radarr media-sonarr media-bazarr media-cross-seed"
+# Le jour de la recherche complète de cross-seed (date +%u : 3 = mercredi, la nuit du mardi)
+CROSS_SEED_SEARCH_DAY=3
+
+# Demande à cross-seed une recherche complète (POST /api/job, name=search) et écrit ce qui
+# s'est passé, avec les valeurs du rapport : started, already_running ou failed. Sa clé
+# d'API en en-tête, jamais dans l'adresse
+start_cross_seed_search() {
+	local key code
+	key=$(env_value CROSS_SEED_API_KEY)
+	if [[ -z $key ]]; then
+		echo failed
+		return 0
+	fi
+	code=$(curl --silent --max-time 30 --output /dev/null --write-out '%{http_code}' \
+		--header "X-Api-Key: $key" --data name=search http://media-gluetun:2468/api/job) || code=""
+	case $code in
+		200) echo started ;;
+		# Déjà en cours, ou sa prochaine recherche est trop proche pour en avancer une
+		409) echo already_running ;;
+		*) echo failed ;;
+	esac
+}
+
+job_media_sync() {
+	local service started=() search=not_scheduled output
+	for service in $MEDIA_SYNC_SERVICES; do
+		container_running "$service" && continue
+		docker start "$service" >/dev/null || check_fail "démarrage de $service" "docker start en échec"
+		started+=("$service")
+	done
+	for service in $MEDIA_SYNC_SERVICES; do
+		wait_healthy "$service" || check_fail "démarrage de $service" "pas sain après 3 minutes"
+	done
+	check_ok "services média" "${started[*]:-tous déjà allumés}"
+
+	if [[ $(date +%u) == "$CROSS_SEED_SEARCH_DAY" ]]; then
+		search=$(start_cross_seed_search)
+		case $search in
+			started) check_ok "recherche de cross-seed" "lancée : ses ajouts entreront dans le relevé de demain" ;;
+			already_running) check_ok "recherche de cross-seed" "déjà en cours, ou trop proche de la prochaine" ;;
+			*) check_ok "recherche de cross-seed" "refusée ou injoignable (CROSS_SEED_API_KEY ?) : relevé fait quand même" ;;
+		esac
+	fi
+
+	# Le dossier du rapport, au serveur (node), qui y écrit : Docker le créerait à root
+	mkdir -p "$STATE_DIR/media-sync"
+	chown "$SERVER_UID:$SERVER_UID" "$STATE_DIR/media-sync"
+	if ! output=$(compose run --rm --no-deps --env MEDIA_SYNC_CROSS_SEED_SEARCH="$search" media-sync 2>&1); then
+		printf '%s\n' "$output"
+		check_fail "relevé" "$(tail -n 1 <<<"$output")"
+	fi
+	printf '%s\n' "$output"
+	# Sa dernière ligne : le résumé du rapport (torrents, morts, doublons, étiquettes)
+	check_ok "relevé" "$(tail -n 1 <<<"$output")"
+}
+
+# --- media-tmdb : chaque nuit à 2 h 30 ---
+# Le passage de nuit du backlog des médias sur TMDB, fait par le serveur du site, qui a la
+# base et la clé de TMDB (docs/backlog/backlog_media.md, §7.3) : les séries en cours relues
+# (nouveaux épisodes et saisons), puis un septième des identifiants TMDB des backlogs
+# vérifiés (écart « Identifiant TMDB disparu »). Indépendant de media-sync, qui ne touche
+# jamais au site. Appelé de l'intérieur du conteneur du serveur, comme contact-retry : le
+# serveur refuse /internal depuis Caddy, et infra-ops n'a pas le réseau du site.
+job_media_tmdb() {
+	local server=site-prod-server report checked updated verified gone
+	report=$(docker exec "$server" node -e "
+		const call = (path) => fetch('http://127.0.0.1:3000/internal/backlog/' + path, { method: 'POST' }).then(
+			async (response) => (response.ok ? response.json() : process.exit(2)),
+		);
+		(async () => {
+			const shows = await call('show-updates');
+			const ids = await call('tmdb-ids/check');
+			console.log(shows.checkedCount, shows.updatedCount, ids.checkedCount, ids.goneCount);
+		})().catch(() => process.exit(3));
+	") || check_fail "le serveur du site répond" "docker exec $server a échoué (serveur arrêté, TMDB injoignable ou route refusée)"
+	read -r checked updated verified gone <<<"$report"
+	check_ok "séries en cours" "$checked relues sur TMDB, $updated avec de nouveaux épisodes"
+	check_ok "identifiants TMDB" "$verified vérifiés, $gone que TMDB ne connaît plus"
+}
+
 # --- auto-stop : toutes les 5 minutes ---
 # Les services étiquetés citadel.auto-stop (« 3h » dans compose.yml) s'arrêtent quand
 # ils tournent depuis plus longtemps : allumés pour une recherche, ils s'éteignent seuls.
@@ -2088,7 +2183,7 @@ write_schedule() {
 # conteneur ops à part, détaché : un déploiement recrée infra-ops sans s'interrompre.
 # Leur sortie va dans state/requests/<id>.log, leur code de sortie dans <id>.exit.
 
-CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop log-retention contact-retry "
+CONSOLE_JOBS=" db-backup db-restore-test config-backup config-verify site-check update-check storage-stats vpn-leak-test qbittorrent-stats auto-stop log-retention contact-retry media-sync media-tmdb "
 VERSION_PATTERN='^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
 
 # Termine une demande : son message dans le log, son code de sortie
@@ -2117,6 +2212,7 @@ launch_request() {
 		--network "$(own_project)_ops" \
 		--env CITADEL_PROJECT="$(own_project)" \
 		--env HEALTHCHECKS_PING_KEY --env QBITTORRENT_USER --env QBITTORRENT_PASSWORD --env SITE_DOMAIN \
+		--env CROSS_SEED_API_KEY \
 		"${env_flags[@]}" \
 		--entrypoint sh "$image" \
 		-c 'log=$1 exit_file=$2; shift 2; citadel "$@" >>"$log" 2>&1; echo $? >"$exit_file"' \
@@ -2284,8 +2380,9 @@ ops_main() {
 		maintenance) cmd_maintenance "$@" ;;
 		banner) cmd_banner "$@" ;;
 		# Les jobs qui touchent aux bases ou aux services (et contact-retry, qui appelle le serveur du
-		# site) attendent leur tour derrière un déploiement ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
-		db-backup | db-restore-test | config-backup | config-verify | contact-retry) run_job "$command" wait ;;
+		# site, et les deux jobs du backlog des médias) attendent leur tour derrière un déploiement ou un autre job : aucun
+		# ne tourne en même temps qu'un autre ; auto-stop repasse 5 minutes plus tard ; les autres ne touchent à rien
+		db-backup | db-restore-test | config-backup | config-verify | contact-retry | media-sync | media-tmdb) run_job "$command" wait ;;
 		auto-stop) run_job "$command" skip ;;
 		site-check | update-check | storage-stats | vpn-leak-test | qbittorrent-stats | log-retention) run_job "$command" none ;;
 		vpn-watch) cmd_vpn_watch ;;

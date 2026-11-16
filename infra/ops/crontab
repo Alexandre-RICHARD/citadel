@@ -10,8 +10,8 @@
 #   « * » = toutes les valeurs ; « */5 » = toutes les 5 ; jour 1 = lundi.
 #
 # Les heures des jobs suivis par healthchecks.io (site-check, db-backup, db-restore-test,
-# config-backup, config-verify, vpn-leak-test) sont reportées là-bas : le README dit comment. Un
-# changement ici se reporte aussi chez healthchecks.io.
+# config-backup, config-verify, vpn-leak-test, media-sync, media-tmdb) sont reportées
+# là-bas : le README dit comment. Un changement ici se reporte aussi chez healthchecks.io.
 
 # Chaque minute : relancer ce qui a perdu le réseau de Gluetun
 * * * * * citadel vpn-watch
@@ -34,6 +34,14 @@
 
 # Toutes les heures : la place prise par Docker, les configs, les sauvegardes et la base
 15 * * * * citadel storage-stats
+
+# Chaque nuit à 2 h : le relevé du NAS pour le backlog des médias (mode connecté) et son rapport
+# pour la console. La nuit du mardi au mercredi, il lance aussi la recherche complète de cross-seed
+0 2 * * * citadel media-sync
+
+# Chaque nuit à 2 h 30 : les séries en cours relues sur TMDB, puis un septième des identifiants
+# TMDB des backlogs vérifiés. Derrière media-sync s'il dure (verrou commun)
+30 2 * * * citadel media-tmdb
 
 # Chaque nuit à 3 h 30 : les logs de plus de 90 jours sont vidés (règle des 3 mois)
 30 3 * * * citadel log-retention

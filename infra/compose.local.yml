@@ -108,6 +108,12 @@ services:
       media-state-fixture:
         condition: service_completed_successfully
 
+  # Le job media-sync (profil « jobs ») : son image locale seulement. Il ne tourne pas sur
+  # ton PC : il lui faut le vrai disque des médias, les clés de Radarr et Sonarr, et un
+  # .env.prod, que l'infra-ops de ce test n'a pas. Le mode connecté y lit le relevé fictif
+  media-sync:
+    image: citadel-server:local
+
   # Copie le media-state fictif dans son volume, avant l'instance locale : verified/ au
   # serveur (node, 1000), qui y écrit. Une seule fois : les cases cochées restent jusqu'à
   # prod:local:down

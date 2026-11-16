@@ -363,6 +363,72 @@ services:
       citadel.idle-stop: "10m"
       citadel.idle-port: "8003"
 
+  # --- Le job media-sync du backlog des médias ---
+  # Le relevé de nuit du NAS (docs/backlog/backlog_media.md, §8) : un second point d'entrée
+  # de l'image du serveur (build/mediaSync.cjs), comme la commande d'après restauration.
+  # Profil « jobs » : jamais lancé par `up`. citadel media-sync (infra-ops, chaque nuit à
+  # 2 h, ou la console) démarre d'abord les services média, puis le lance à part
+  # (`run --rm media-sync`), et il disparaît une fois fini.
+  # Il lit le disque des médias, Radarr, Sonarr, Jellyfin et qBittorrent, et n'écrit que :
+  #   - le relevé dans media-state/survey (lu par l'instance locale) ;
+  #   - le rapport dans state/media-sync (lu par la console) ;
+  #   - l'étiquette tracker-invalide dans qBittorrent, sa seule écriture là-bas.
+  # Aucun accès à la base du site (ni réseau « site », ni identifiants), et jamais
+  # media-state/verified, celui de l'instance locale.
+  media-sync:
+    <<: [*defaults, *hardened]
+    image: ghcr.io/alexandre-richard/citadel-server:${CITADEL_VERSION:?version manquante, passer par citadel}
+    container_name: media-sync
+    profiles: [jobs]
+    restart: "no"
+    command: ["node", "--enable-source-maps", "build/mediaSync.cjs"]
+    environment:
+      # Les dossiers, tels que montés plus bas
+      MEDIA_DATA_DIR: /data
+      MEDIA_STATE_DIR: /media-state
+      CITADEL_STATE_DIR: /citadel-state
+      # Radarr, Sonarr et qBittorrent répondent dans le réseau de Gluetun ; Jellyfin dans
+      # celui de Caddy
+      RADARR_URL: http://media-gluetun:7878
+      SONARR_URL: http://media-gluetun:8989
+      QBITTORRENT_URL: http://media-gluetun:8080
+      JELLYFIN_URL: http://media-jellyfin:8096
+      # « :- » et non « :? » : une clé manquante n'empêche pas le déploiement du reste ;
+      # c'est le job qui échoue alors, en nommant la variable (console, healthchecks.io)
+      RADARR_API_KEY: ${RADARR_API_KEY:-}
+      SONARR_API_KEY: ${SONARR_API_KEY:-}
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:-}
+      QBITTORRENT_USER: ${QBITTORRENT_USER:-}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:-}
+      # Les trackers, leur nom affiché et leurs adresses d'annonce (JSON sur une ligne).
+      # Le job n'en garde que le nom et le nom d'hôte : la clé personnelle que contient
+      # l'adresse n'est jamais écrite ailleurs
+      MEDIA_TRACKERS: ${MEDIA_TRACKERS:-}
+    volumes:
+      # Le disque des médias, en lecture seule, au même chemin que dans qBittorrent, les
+      # *arr et Jellyfin : leurs chemins se comparent tels quels
+      - /Volume2/data:/data:ro
+      # Son seul dossier de media-state : survey/ (relevé et relevé précédent). citadel
+      # deploy le donne au propriétaire du serveur (node), qui y écrit
+      - /Volume1/appdata/media-state/survey:/media-state/survey
+      # Le rapport pour la console, dans le state/ d'infra-ops (créé par le job, à node)
+      - /Volume1/citadel/state/media-sync:/citadel-state/media-sync
+    networks:
+      - vpn
+      - edge
+    deploy:
+      resources:
+        limits:
+          # L'index du disque et les réponses des outils : quelques dizaines de milliers
+          # de fichiers et de torrents
+          memory: 512M
+    labels:
+      citadel.name: "Relevé des médias"
+      citadel.description: "media-sync : le NAS relevé pour le mode connecté et le rapport de la console"
+      citadel.group: "site-prod"
+      citadel.mode: "job"
+      citadel.controllable: "false"
+
   # ===================================================================================
   # La pré-prod : la prod en petit, arrêtée la plupart du temps
   # ===================================================================================
@@ -649,11 +715,15 @@ services:
       QBITTORRENT_USER: ${QBITTORRENT_USER:?manque dans .env.prod}
       QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD:?manque dans .env.prod}
       SITE_DOMAIN: ${SITE_DOMAIN:-alexandre-richard.fr}
+      # media-sync lance la recherche complète de cross-seed, la nuit du mardi au mercredi.
+      # Facultative : sans elle, le job le signale et fait son relevé quand même
+      CROSS_SEED_API_KEY: ${CROSS_SEED_API_KEY:-}
     networks:
       # ops : la sortie vers Internet (Drive, healthchecks.io, site-check, registres
       # d'images). Il n'écoute toujours rien.
       - ops
-      # vpn : qBittorrent, dans le réseau de Gluetun (qbittorrent-stats)
+      # vpn : qBittorrent, dans le réseau de Gluetun (qbittorrent-stats), et cross-seed
+      # (media-sync y lance sa recherche complète)
       - vpn
     volumes:
       # Piloter le Docker du NAS. Donne tous les droits sur le NAS : ce conteneur
@@ -1220,7 +1290,8 @@ networks:
   # base sur 127.0.0.1, dont DBeaver a besoin
   site: {}
   # Gluetun (qBittorrent et les *arr n'ont pas de réseau à eux, ils utilisent celui de
-  # Gluetun), la console, qui lit qBittorrent et Gluetun, et infra-ops (qbittorrent-stats)
+  # Gluetun), la console, qui lit qBittorrent et Gluetun, infra-ops (qbittorrent-stats,
+  # cross-seed) et le job media-sync (qBittorrent, Radarr, Sonarr)
   vpn: {}
   # La console et le filtre Docker. « internal » : aucune sortie vers Internet
   docker-api:
