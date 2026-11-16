@@ -93,6 +93,7 @@ src/
 └── specUtils/                               préfixes d'API, statuts HTTP, codes techniques, schémas génériques
 ```
 
+- **Formats de fichiers partagés hors de l'API** : quand deux apps échangent un fichier plutôt qu'une requête (le relevé `media-state` du job `media-sync`, lu par l'instance locale du backlog des médias ; plus tard le rapport du job, lu par la console), son schéma zod et ses chemins vivent dans les specs, à côté du projet (`projects/backlog/mediaState/`), avec un `formatVersion` : le lecteur refuse une autre version plutôt que de mal lire. La console dépend donc aussi de `@citadel/specs`.
 - **Réponse d'erreur** : `{ code, message }`. `code` est traduit par le front ; `message` aide le développeur et ne s'affiche jamais.
 - **Codes** : un enum technique commun (`VALIDATION_FAILED`, `MALFORMED_JSON`, `INVALID_REQUEST`, `ROUTE_NOT_FOUND`, `METHOD_NOT_ALLOWED`, `FOREIGN_ORIGIN`, `INTERNAL_ERROR`…) et un enum métier par projet. Chaque interface d'endpoint restreint ses codes par statut.
 - **400** : chaque `issue` porte `path`, un code de règle (`ValidationIssueCodeEnum`) et un éventuel `limit`. Toute `refine` déclare `params: { code: ValidationIssueCodeEnum.X }`, sinon elle sort en `INVALID_VALUE`.

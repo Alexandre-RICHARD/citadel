@@ -2,7 +2,7 @@
 
 [Citadel](../../README.md) › Backlog des médias
 
-Cahier des charges du suivi des films et des séries, en construction : le mode classique existe (tableau, ajout, import, nouveaux épisodes, §7.4) ; le mode connecté, le job et le rapport de la console sont à construire. Il ne décrit que ce qui est nouveau ; tout ce qui reprend le [backlog des jeux](backlog_game.md) est seulement cité (§10). Les questions encore ouvertes sont au §11, et les tâches dans le [todo](../todo/todo.md#6-backlog).
+Cahier des charges du suivi des films et des séries, en construction : le mode classique (tableau, ajout, import, nouveaux épisodes, §7.4) et le mode connecté (§7.5) existent ; le job et le rapport de la console sont à construire. Il ne décrit que ce qui est nouveau ; tout ce qui reprend le [backlog des jeux](backlog_game.md) est seulement cité (§10). Les questions encore ouvertes sont au §11, et les tâches dans le [todo](../todo/todo.md#6-backlog).
 
 **Maquettes** : des captures de la maquette Figma, gardées hors du dépôt car elles montrent des données réelles (`docs/backlog/maquettes/`, ignoré par git), montrent le tableau en mode connecté, les médias oubliés et le rapport de la console. Ce n'est qu'une aide visuelle, figée au 15 novembre 2026 : les décisions prises depuis ne s'y reportent plus, et ce document fait foi. Tout ce que le backlog des médias partage avec celui des jeux (barre du haut, tableau, cases, menus, filtres) reprend le style et le comportement de ce dernier, pas ceux de la maquette.
 
@@ -28,16 +28,16 @@ Cahier des charges du suivi des films et des séries, en construction : le mode 
   - **renseignées par vous** (visionnage, à regarder bientôt, en cours, commentaire, saga…) ou **tirées de TMDB** (titres, langue, dates, durée, images) : stockées dans la base du site, visibles partout ;
   - **relevées sur le NAS** (stockage, collection Jellyfin, partage) ou **cochées par vous mais gardées sur le NAS** (vérifié) : jamais stockées dans la base du site, visibles seulement en mode connecté (§2).
 - **Le visionnage n'est jamais tiré de Jellyfin**, ni automatiquement ni par un bouton : il doit couvrir tout ce que vous avez vu dans votre vie, pas seulement sur votre serveur.
-- **« Vérifié » n'est jamais deviné** : vous seul le cochez. Le job ne fait que le retirer quand le fichier a été remplacé (§5).
+- **« Vérifié » n'est jamais deviné** : vous seul le cochez. Il ne vaut plus quand le fichier a été remplacé (§5).
 - **Rien de ce qui touche au téléchargement n'est nommé dans le dépôt** : les trackers, leurs adresses et tout ce qui pourrait servir de preuve vivent dans les variables d'environnement du NAS et dans `media-state` (§6), jamais dans le code ni dans la doc.
 
 ## 2. Mode classique et mode connecté
 
 - **Mode classique** : tout compte, depuis n'importe où. Les colonnes du NAS n'existent pas : ni affichées, ni dans les filtres, ni dans le choix des colonnes.
 - **Mode connecté** : le même site, ouvert par son adresse locale, en LAN et par Tailscale seulement : `http://<IP du NAS>:8003` chez vous, `http://<nom Tailscale du NAS>:8003` par Tailscale, comme la pré-prod (8002) et la console. Jamais par le domaine public, et aucun lien du site public n'y mène : un marque-page sur chaque appareil. Le mode s'y déverrouille par le mot de passe des médias (§3). Son serveur lit la base du site et `media-state`, fusionne les deux par identifiant TMDB, puis trie, filtre, compte et découpe en pages comme pour les jeux, colonnes du NAS comprises. Le site public, lui, ne sait rien du NAS.
-- **Fraîcheur** : l'état du NAS est celui du dernier passage du job (§8), dont la date s'affiche en haut du tableau. Seul « Partage en cours » est lu en direct. La console relance le job à la demande (§8).
+- **Fraîcheur** : l'état du NAS est celui du dernier passage du job (§8), dont la date s'affiche en haut du tableau. La console relance le job à la demande (§8).
 - **Routes** : chaque backlog a sa sous-route, `/backlog/games` pour les jeux et `/backlog/media` pour les films et séries, pour que leurs tris et leurs filtres ne se mélangent pas dans l'URL. `/backlog` mène aux jeux, en gardant ses paramètres, pour que les anciens liens marchent encore.
-- **Barre du haut** : celle du backlog des jeux, avec un bouton pour passer des jeux aux films et séries ; en mode connecté, la date du relevé et un lien vers le rapport du job dans la console (§8). Ce lien reprend le nom d'hôte par lequel vous êtes venu (IP du NAS en LAN, nom Tailscale sinon), au port de la console : il marche dans les deux cas.
+- **Barre du haut** : celle du backlog des jeux, avec un bouton pour passer des jeux aux films et séries ; en mode connecté, la date du relevé et un lien vers le rapport du job dans la console (§8). Ce lien reprend le nom d'hôte par lequel vous êtes venu (IP du NAS en LAN, nom Tailscale sinon), au port de la console : il marche dans les deux cas. Tant que la page du rapport n'existe pas, il mène à l'accueil de la console. Sur l'instance locale, un bouton « Mode connecté » demande le mot de passe des médias ; une fois déverrouillé, un cadenas reverrouille.
 - **Comportement par colonne** :
 
 | Colonne | Mode classique | Mode connecté |
@@ -55,12 +55,12 @@ Cahier des charges du suivi des films et des séries, en construction : le mode 
 - **Le NAS n'échange rien avec le site public** : le job n'écrit que dans `media-state`, ne lit pas la base du site, et le serveur public ne lit pas `media-state`.
 - **L'instance locale** : un second conteneur de la même image que le serveur du site (`site-local-server`), comme la pré-prod en est un, mais branché sur la base de prod.
   - **Joignable seulement en LAN et par Tailscale**, servie par Caddy sur un port que la box ne redirige pas (8003), en HTTP comme la console et la pré-prod : par Tailscale, WireGuard chiffre tout ; en LAN, les mots de passe ne traversent que votre réseau domestique.
-  - **Le seul conteneur du site à monter `media-state`** (en lecture, sauf les cases « vérifié ») et à pouvoir lire qBittorrent en direct.
+  - **Le seul conteneur du site à monter `media-state`** (en lecture, sauf les cases « vérifié »).
   - **En veille, réveillée à la visite** (`citadel.mode: on-demand`) : arrêtée, elle ne prend ni CPU ni RAM.
-    - **Réveil** : quand elle est arrêtée, Caddy, au lieu de l'erreur 502, passe la visite à la console, qui dépose une demande « démarrer `site-local-server` » dans `state/queue/`, comme son bouton « Démarrer ». `infra-ops` lit cette file toutes les 2 secondes et démarre le conteneur. La page affiche « Démarrage… » et se recharge seule : quelques secondes d'attente.
-    - **Pourquoi ce détour** : Caddy, exposé à Internet, n'a jamais accès à Docker. La console ne gagne qu'une action, sans mot de passe mais fixe (démarrer ce seul conteneur) et limitée en fréquence, joignable seulement par le port 8003. Un invité sur votre wifi peut au pire la démarrer, et tombe sur la page de connexion.
+    - **Réveil** : quand elle est arrêtée, Caddy, au lieu de l'erreur 502, passe la requête `/api` au port de réveil de la console, qui démarre le conteneur par le filtre Docker, comme son bouton « Démarrer », et répond « en démarrage ». La page affiche « Démarrage… » et se recharge seule : quelques secondes d'attente.
+    - **Pourquoi ce détour** : Caddy, exposé à Internet, n'a jamais accès à Docker. La console ne gagne qu'une action, sans mot de passe mais fixe (démarrer ce seul conteneur) et limitée en fréquence (un démarrage toutes les 30 secondes au plus), sur un port interne que seul Caddy joint (8101, jamais publié). Un invité sur votre wifi peut au pire la démarrer, et tombe sur la page de connexion.
     - **Arrêt** : après **environ 10 minutes sans aucune requête** : Caddy note la dernière visite, `infra-ops` vérifie chaque minute. Construit d'abord pour l'instance locale seule, avant elle, et prévu pour s'étendre aux autres services à la demande ([todo, §4.1](../todo/todo.md#41-nas-et-matériel)).
-    - **Le front ne relit rien tout seul** (pas de rafraîchissement périodique) : sinon, un onglet oublié la tiendrait éveillée. « Partage en cours » se lit au chargement et à chaque action.
+    - **Le front ne relit rien tout seul** (pas de rafraîchissement périodique) : sinon, un onglet oublié la tiendrait éveillée.
     - **Le job quotidien n'en a pas besoin** : il parle directement à qBittorrent, Radarr, Sonarr, Jellyfin et au disque, et n'écrit que dans `media-state`.
 - **Organisation du code** : une seule image, un seul code.
   - Le module des médias du NAS est dans le serveur (`apps/server/src/projects/backlog/`), comme le reste du backlog. Ses routes ne sont **montées** que si `MEDIA_STATE_DIR` est posée au démarrage. Le serveur public n'a pas cette variable, et ces routes n'existent donc pas chez lui : 404, comme une adresse inconnue.
@@ -100,10 +100,10 @@ Cahier des charges du suivi des films et des séries, en construction : le mode 
 | Durée | TMDB, et le fichier en mode connecté | Film et épisode ; somme pour une saison et une série. En mode connecté, quand un fichier existe, sa durée réelle est dessus, en évidence, et celle de TMDB dessous, plus discrète ; la durée du fichier passe en alerte quand elle s'écarte de plus de 7 min 30 (version longue, autre montage). L'alerte s'efface quand le fichier est vérifié, les deux durées restent |
 | En cours, commentaire | Vous | |
 | Vu, À voir bientôt | Vous | Les deux dernières colonnes de la partie commune aux deux modes, des cases à en-tête en icône (libellé en infobulle). « À voir bientôt » reprend la colonne « À jouer bientôt » des jeux, case et mise en valeur bleue de la ligne comprises. Vu : film et épisode, vu ou pas vu, rien d'autre (ni abandonné, ni date) ; saison et série vues quand tous leurs épisodes le sont, sinon « 12 / 26 ». Règles ci-dessous |
-| Vérifié | Vous, enregistré sur le NAS | La première colonne du NAS, juste après « Vu » et « À voir bientôt » : une case à en-tête en icône, comme elles. Vous avez lancé le fichier : bon contenu, bon format, bonne langue. **Retiré par le job quand le fichier est remplacé** (autre inode ou autre taille), par exemple quand Radarr en télécharge une meilleure version ; un simple renommage ne le retire pas. Il dit « ce fichier est bien celui que je voulais ici » : il efface les alertes qui viennent du fichier (durée), jamais les écarts des outils ni le partage, qui restent tant qu'ils sont vrais. Série : une case par épisode, cochée en cascade par saison ou par série, avec les dialogues du visionnage. Décochée et grisée tant que le média a plusieurs fichiers (écart « Doublon ») |
+| Vérifié | Vous, enregistré sur le NAS | La première colonne du NAS, juste après « Vu » et « À voir bientôt » : une case à en-tête en icône, comme elles. Vous avez lancé le fichier : bon contenu, bon format, bonne langue. **Il ne vaut plus quand le fichier est remplacé** (autre inode ou autre taille), par exemple quand Radarr en télécharge une meilleure version : la case garde l'empreinte du fichier vérifié, l'instance locale la compare au dernier relevé, et une case périmée quitte `verified/` à l'écriture suivante. Le job n'y écrit jamais. Un simple renommage ne la retire pas. Il dit « ce fichier est bien celui que je voulais ici » : il efface les alertes qui viennent du fichier (durée), jamais les écarts des outils ni le partage, qui restent tant qu'ils sont vrais. Série : une case par épisode, cochée en cascade par saison ou par série, avec les dialogues du visionnage. Décochée et grisée tant que le média a plusieurs fichiers (écart « Doublon ») |
 | Stockage | NAS | Non suivi (ni fichier, ni dans Radarr ou Sonarr) ; Attendu (dans Radarr ou Sonarr, sans fichier) ; En téléchargement (dans qBittorrent, pas fini) ; Présent (fini, pas dans Jellyfin) ; Dans Jellyfin, avec un lien vers l'élément. Il dit où est le fichier, pas qui le suit : un fichier dans Jellyfin que ni Radarr ni Sonarr ne suit est « Dans Jellyfin », avec l'écart « Hors Radarr ou Sonarr » |
 | Collection Jellyfin | NAS | En lecture ; celle que vous avez créée dans Jellyfin |
-| Partage | NAS | Partage en cours (envoie en ce moment, lu en direct) ; En seed (tracker OK) ; Tracker injoignable (inactif, revu au passage suivant) ; En erreur (torrent mort) ; Non présent (aucun torrent sur ce fichier) |
+| Partage | NAS | En seed (tracker OK) ; Tracker injoignable (inactif, revu au passage suivant) ; En erreur (torrent mort) ; Non présent (aucun torrent sur ce fichier) |
 | Torrents | NAS | Nom du ou des torrents liés au fichier, cross-seed compris, avec leur tracker |
 | Qualité | NAS | Quatre valeurs, d'après la meilleure des deux mesures de l'image, largeur ou hauteur : 4K (3840 ou 2160), FHD (1920 ou 1080), HD (1280 ou 720), SD (en dessous). Une seule mesure se trompe : un film en 1920×800 (bandes noires coupées) est FHD, un épisode en 1440×1080 (4:3) aussi |
 | Langues | NAS | Quatre étiquettes au plus : VF (une piste audio en français), VO (une piste audio dans la langue originale du média, celle de TMDB), STFR (des sous-titres français), STVO (des sous-titres dans la langue originale). Quand la langue originale est le français, VO et STVO ne s'affichent pas : VF et STFR disent déjà tout. Quand aucune piste audio n'a de langue connue (pistes non étiquetées, « und »), la cellule affiche « Inconnue », aussi valeur du filtre, pour ne pas la confondre avec un fichier sans VF (quelques films à l'essai). Pistes audio et sous-titres intégrés lus par Radarr et Sonarr, sous-titres à côté du fichier (Bazarr) lus par Jellyfin. Saison et série : chaque étiquette avec le nombre d'épisodes qui l'ont (« VF 18 / 26 »), sans nombre quand tous l'ont. **Filtre** : une valeur par étiquette, plusieurs à la fois en ET ou en OU, comme les autres filtres ; on filtre ainsi sur l'audio, sur les sous-titres ou sur les deux (« VO ET STFR ») |
@@ -165,7 +165,7 @@ Le fichier de `medias/` et celui de `torrents/` sont deux noms d'un même fichie
 
 - `RADARR_API_KEY`, `SONARR_API_KEY` ;
 - `MEDIA_TRACKERS` : chaque tracker, son nom affiché dans le rapport et ses adresses d'annonce, telles que dans qBittorrent (deux pour un tracker qui a une adresse de secours), pour regrouper les adresses d'un même tracker (§8). Un JSON sur une ligne : `[{"name":"…","urls":["…","…"]}]`. Le job n'en compare que le nom d'hôte : la clé personnelle que contient l'adresse n'est jamais écrite ailleurs ;
-- `MEDIA_PASSWORD_HASH`, `MEDIA_OWNER_USER_ID` et `MEDIA_STATE_DIR`, sur l'instance locale seulement (§3).
+- `MEDIA_PASSWORD_HASH` et `MEDIA_OWNER_USER_ID`, lues par l'instance locale seulement (§3) ; `MEDIA_STATE_DIR` est posé par `compose.yml`.
 
 **TMDB** : la clé d'API (`TMDB_API_KEY`) reste sur le serveur du site. Les images se chargent depuis `image.tmdb.org`, directement par le navigateur, comme celles d'IGDB.
 
@@ -213,6 +213,25 @@ Endpoints, sous `/api/backlog`, tous `protected` sauf la route interne :
 | `POST /media-imports`, `GET /media-imports/current`, `POST /media-imports/current/validation`, `DELETE /media-imports/current` | Import de liste : lancer, suivre, valider, annuler |
 | `GET /show-updates`, `POST /show-updates` | « Récupérer les nouveautés des séries » : récapitulatif, puis « Valider » |
 | `POST /api/internal/backlog/show-updates` | Le passage de nuit du job `media-tmdb`, par le réseau Docker |
+
+### 7.5 Mode connecté : code et endpoints
+
+- **Format de `media-state`** (specs, `mediaState/`, avec `formatVersion`) : `survey/current.json` et `survey/previous.json`, le relevé du job (tout le NAS, dans un backlog ou non, par identifiant TMDB, les épisodes par leurs numéros) ; `verified/verified.json`, les cases « vérifié », chacune avec l'empreinte de son fichier. Deux dossiers pour deux écrivains : l'instance locale monte `survey/` en lecture seule et `verified/` en écriture. Un relevé absent, illisible ou d'une autre version répond 503 plutôt que des colonnes fausses.
+- **Fusion** : par identifiant TMDB ; une série et une saison s'agrègent sur leurs épisodes principaux diffusés (stockage et qualité les moins bons, partage le meilleur, tailles additionnées, étiquettes et cases comptées). Les colonnes du NAS se trient et se filtrent comme les autres (specs, `connectedMediaColumnFilterKinds`) ; langues et écarts sont des listes, qui passent un filtre « et » quand elles ont toutes les valeurs cochées.
+- **Déverrouillage** : un cookie signé (HMAC) porte le compte et la fin des 12 heures ; la clé est le hash du mot de passe des médias, si bien que changer le mot de passe annule les déverrouillages. Cinq essais par adresse sur un quart d'heure, en mémoire : un arrêt pour inactivité les remet à zéro.
+- **Front** : un seul front ; il lit `/nas-status` avant le tableau, puis prend le tableau connecté (ses colonnes gardées à part) ou le classique. Les saisons gardent la même clé de cache dans les deux modes, vidée au changement de mode.
+- **Tests** : les tests d'intégration tournent comme l'instance locale, sur un `media-state` jetable que chaque test écrit. Un relevé fictif versionné (`apps/server/src/testUtils/mediaState/fixture`) sert à la QA en dev et à `pnpm prod:local`, qui le copient.
+
+Endpoints, sous `/api/backlog`, tous `protected`. Sauf le premier, ils ne sont montés que sur l'instance locale, et Caddy répond 404 à `/api/backlog/nas/*` sur le domaine public :
+
+| Endpoint | Rôle |
+| --- | --- |
+| `GET /nas-status` | Mode connecté disponible (instance locale, compte du propriétaire) et déverrouillé ; date du relevé et ports, seulement une fois déverrouillé |
+| `POST /nas/unlock`, `POST /nas/lock` | Mot de passe des médias : déverrouiller pour 12 heures, reverrouiller |
+| `GET /nas/user-media` | Le tableau fusionné avec le relevé, colonnes du NAS comprises |
+| `GET /nas/user-media/:userMediaId/seasons` | Dépliage d'une série, avec les colonnes du NAS de chaque saison et de chaque épisode |
+| `PUT /nas/user-media/:userMediaId/verified` | Cases « vérifié » d'un film ou d'épisodes, cascades comprises ; un fichier absent ou en doublon ne se coche pas |
+| `GET /nas/forgotten-media` | Les médias oubliés |
 
 ## 8. Le job quotidien
 

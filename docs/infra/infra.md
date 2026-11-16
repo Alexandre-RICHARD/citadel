@@ -25,6 +25,7 @@ Le site, son API, la stack média (Jellyfin, qBittorrent, *arr derrière un VPN)
 - **Pré-prod** : sur le NAS, arrêtée la plupart du temps. Mêmes images que la prod, `.env.prod` avec la base `citadel_preprod`, restaurée chaque nuit depuis la prod (§7). Elle sert au test de restauration et à la répétition de chaque déploiement qui apporte des migrations.
 - **`citadel deploy <version>`** : plan, confirmation, dump de la base, répétition en pré-prod si la version a des migrations (dernier dump importé, migrations, serveur démarré : un échec arrête tout, la prod n'est pas touchée), migrations en prod, nouveaux conteneurs, vérifications, retour arrière automatique en cas d'échec.
 - **La console** (`apps/admin`) dépose ses demandes (jobs, déploiements, restaurations) dans `state/queue/`, qu'`infra-ops` vérifie (liste fermée d'actions et de versions) puis exécute : une faille dans la console ne donne ni les pleins droits sur Docker, ni l'accès au Drive.
+- **Veille et réveil** : un service étiqueté `citadel.idle-stop` s'arrête après ce délai sans visite sur son port (`citadel.idle-port`) : `citadel idle-stop` lit chaque minute les logs d'accès de Caddy. Arrêté, il se réveille à la visite suivante : Caddy, qui reçoit un 502, passe la requête au port de réveil de la console (8101, jamais publié), qui le démarre par le filtre Docker ; la page affiche « Démarrage… » et se recharge. Pour l'instant, seule l'instance locale du [backlog des médias](../backlog/backlog_media.md#3-sécurité-et-exposition) (`site-local-server`, port 8003) s'en sert.
 - **Bandeau du site** : `infra-ops` écrit le message dans un fichier JSON (identifiant, texte, date de fin) que Caddy sert tel quel (`/banner.json`) : ni base ni API en jeu, il s'affiche même si l'API est en panne. Après une restauration, un message automatique reste 3 mois. Il ne disparaît que par sa croix, retenue avec l'identifiant du message : un nouveau message le réaffiche.
 
 ## 2. Contraintes
@@ -45,7 +46,7 @@ Sur votre PC :
 
 | Commande | Effet |
 | --- | --- |
-| `pnpm prod:local` | les images de prod sur votre PC, stack média comprise : https://citadel.localhost:8443, la console sur http://localhost:8100 |
+| `pnpm prod:local` | les images de prod sur votre PC, stack média comprise : https://citadel.localhost:8443, la console sur http://localhost:8100, l'instance locale du backlog des médias sur http://localhost:8003 (relevé fictif, mot de passe des médias `media-local`, pour le premier compte créé) |
 | `pnpm prod:local:down` | arrête tout et efface les volumes jetables |
 | `pnpm tools release` | demande « réelle » ou « simulation » ; la réelle valide, tague, pousse, attend les images, puis lance le déploiement sur le NAS, qui montre son plan et attend votre « o » |
 | `pnpm tools release --dry-run` | la simulation directe : s'arrête juste avant le tag, rien ne part |
@@ -83,6 +84,7 @@ Depuis vos appareils : par l'IP du NAS en LAN, ou son nom (`NAS_HOSTNAME`) par T
 | qBittorrent, Prowlarr, Radarr, Sonarr, Bazarr, cross-seed | leurs ports habituels | ❌ | ✅ | la leur : leurs réglages suivent leurs dossiers |
 | Console | `http://…`, au port de `ADMIN_PORT` | ❌ | ✅ | son mot de passe |
 | Pré-prod | `http://…`, servie par Caddy (port dans `infra/compose.yml`) | ❌ | ✅ | comptes de la pré-prod |
+| Instance locale du backlog des médias | `http://…:8003`, servie par Caddy, réveillée à la visite | ❌ | ✅ | votre compte du site, puis le mot de passe des médias |
 | Interface de TOS | ses ports habituels | ❌ jamais | ✅ | compte TOS |
 | SSH | son port, dans votre `~/.ssh/config` | ❌ jamais | ✅ | clé seulement |
 | MariaDB, prod et pré-prod | interface locale du NAS | ❌ | tunnel SSH | comptes plus bas |
@@ -130,6 +132,7 @@ Dans `infra/ops/crontab`. `citadel <job>` en lance un tout de suite, comme le bo
 | Quand | Job | Rôle |
 |---|---|---|
 | Chaque minute | `vpn-watch`, `tailscale-status` | relance les services du réseau de Gluetun qui l'ont perdu ; état de Tailscale pour la console |
+| Chaque minute | `idle-stop` | arrête ce que personne n'a visité depuis son délai (§1, veille et réveil) |
 | Toutes les 5 min | `site-check` | le site répond depuis Internet (par Cloudflare, comme un visiteur) |
 | Toutes les 5 min | `auto-stop` | arrête les services démarrés à la main après leur délai (les *arr, par exemple), jamais Jellyfin pendant une lecture |
 | Toutes les heures | `qbittorrent-stats`, `storage-stats` | historiques de la console |
