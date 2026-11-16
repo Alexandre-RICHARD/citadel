@@ -203,11 +203,11 @@ host_main() {
 			chown "$SERVER_UID:$SERVER_UID" "$RESTORE_JOURNAL_DIR"
 			chmod 700 "$RESTORE_JOURNAL_DIR"
 			# media-state, pour la même raison : verified/ au serveur (node), où l'instance
-			# locale écrit les cases « vérifié » ; survey/ à l'utilisateur des services média
-			# (PUID/PGID), sous lequel tourne le job media-sync pour lire /Volume2/data. Le
-			# relevé reste lisible par tous (755, fichiers 644) : l'instance locale le lit
+			# locale écrit les cases « vérifié » ; survey/ au serveur au repos : l'ACL du NAS
+			# (tmacl) ne laisse lire que le propriétaire, et l'instance locale le lit. Le job
+			# media-sync le prend à PUID/PGID le temps de son passage (job_media_sync)
 			mkdir -p "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
-			chown "$(env_value PUID):$(env_value PGID)" "$MEDIA_STATE_DIR/survey"
+			chown -R "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/survey"
 			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/verified"
 			chmod 755 "$MEDIA_STATE_DIR/survey"
 			chmod 700 "$MEDIA_STATE_DIR/verified"
@@ -2035,6 +2035,14 @@ start_cross_seed_search() {
 	esac
 }
 
+# Donne survey/ (et le relevé dedans) à « uid:gid » par un conteneur ponctuel, en root, qui a
+# déjà survey/ en écriture : infra-ops voit /Volume1/appdata en lecture seule. Voir job_media_sync.
+# Un échec est dit sans arrêter : le job, ou la lecture du relevé, le diront aussi
+hand_survey_to() {
+	compose run --rm --no-deps --user 0 --entrypoint chown media-sync -R "$1" /media-state/survey >/dev/null ||
+		echo "⚠ survey/ n'a pas pu passer à $1"
+}
+
 job_media_sync() {
 	local service started=() search=not_scheduled output
 	for service in $MEDIA_SYNC_SERVICES; do
@@ -2060,7 +2068,15 @@ job_media_sync() {
 	# tourne media-sync : Docker le créerait à root. La console le lit (755, fichiers 644)
 	mkdir -p "$STATE_DIR/media-sync"
 	chown "$(env_value PUID):$(env_value PGID)" "$STATE_DIR/media-sync"
-	if ! output=$(compose run --rm --no-deps --env MEDIA_SYNC_CROSS_SEED_SEARCH="$search" media-sync 2>&1); then
+	# Le relevé (survey/) change de propriétaire autour du job : l'ACL du NAS (Terramaster, option
+	# de montage tmacl) ne laisse entrer que le propriétaire, quels que soient les droits « groupe »
+	# et « autres ». Le job (PUID) y écrit, l'instance locale (serveur, 1000) le lit. Rendu au
+	# serveur même si le job échoue
+	hand_survey_to "$(env_value PUID):$(env_value PGID)"
+	local job_failed=false
+	output=$(compose run --rm --no-deps --env MEDIA_SYNC_CROSS_SEED_SEARCH="$search" media-sync 2>&1) || job_failed=true
+	hand_survey_to "$SERVER_UID:$SERVER_UID"
+	if $job_failed; then
 		printf '%s\n' "$output"
 		check_fail "relevé" "$(tail -n 1 <<<"$output")"
 	fi
