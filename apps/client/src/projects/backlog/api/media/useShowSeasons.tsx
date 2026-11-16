@@ -16,9 +16,12 @@ type ShowSeasons = {
  * Dépliage d'une série : ses saisons et leurs épisodes, avec ceux qui sont vus ; ne se lit qu'une série dépliée. Sans
  * suspension : la lecture et son échec s'affichent dans les sous-lignes, le reste du tableau ne bouge pas
  */
-export function useShowSeasons(userMediaId: number): ShowSeasons {
+export function useShowSeasons(
+	userMediaId: number,
+	isConnected: boolean,
+): ShowSeasons {
 	const seasons = useQuery({
-		...showSeasonsQueryOptions(userMediaId),
+		...showSeasonsQueryOptions(userMediaId, isConnected),
 		select: (data) =>
 			fromShowSeasonListDtoToShowSeasonsFm(data, getTodayIsoDate()),
 	});

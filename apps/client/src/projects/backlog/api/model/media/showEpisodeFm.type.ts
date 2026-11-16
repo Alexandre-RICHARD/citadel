@@ -1,3 +1,5 @@
+import type { NasDetailsFm } from "../nas/nasDetailsFm.type";
+
 // Un épisode, sous-ligne de sa saison
 export type ShowEpisodeFm = {
 	episodeId: number;
@@ -9,4 +11,6 @@ export type ShowEpisodeFm = {
 	isWatched: boolean;
 	// Date passée ou du jour : les autres restent hors de la progression et des cascades
 	isAired: boolean;
+	// Mode connecté : ses colonnes du NAS ; null en mode classique et pour un épisode spécial
+	nas: NasDetailsFm | null;
 };

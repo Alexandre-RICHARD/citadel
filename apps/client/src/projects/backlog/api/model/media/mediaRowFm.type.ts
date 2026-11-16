@@ -1,5 +1,6 @@
 import type { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum";
 
+import type { NasDetailsFm } from "../nas/nasDetailsFm.type";
 import type { SagaFm } from "./sagaFm.type";
 
 // Ligne d'un film ou d'une série du backlog
@@ -28,4 +29,6 @@ export type MediaRowFm = {
 	comment: string | null;
 	// Ajouté de façon optimiste, en attente du serveur : grisé et inerte
 	isTemporary: boolean;
+	// Les colonnes du NAS, en mode connecté seulement ; null en mode classique et pour une ligne ajoutée à l'instant
+	nas: NasDetailsFm | null;
 };

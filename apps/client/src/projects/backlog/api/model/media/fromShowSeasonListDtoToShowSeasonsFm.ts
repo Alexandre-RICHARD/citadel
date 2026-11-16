@@ -1,6 +1,8 @@
+import type { ConnectedShowSeasonListDto } from "@citadel/specs/src/projects/backlog/dto/nas/connectedShowSeasonListDto.type";
 import type { ShowSeasonListDto } from "@citadel/specs/src/projects/backlog/dto/userMedia/showSeasonListDto.type";
 import { isAiredEpisode } from "@citadel/specs/src/projects/backlog/helper/media/isAiredEpisode";
 
+import { readNasDetails } from "../nas/readNasDetails";
 import type { ShowEpisodeFm } from "./showEpisodeFm.type";
 import type { ShowSeasonFm } from "./showSeasonFm.type";
 
@@ -18,10 +20,11 @@ function sumRuntimes(episodes: ShowEpisodeFm[]): number | null {
 
 /**
  * Saisons d'une série → sous-lignes, chacune avec sa progression : comme celle de la série (summarizeShowProgress), sur ses
- * seuls épisodes diffusés à `today` (AAAA-MM-JJ). Une réponse vide (un film) n'en a aucune
+ * seuls épisodes diffusés à `today` (AAAA-MM-JJ). Une réponse vide (un film) n'en a aucune. En mode connecté, chaque
+ * saison et chaque épisode portent aussi leurs colonnes du NAS
  */
 export function fromShowSeasonListDtoToShowSeasonsFm(
-	data: ShowSeasonListDto | null,
+	data: ShowSeasonListDto | ConnectedShowSeasonListDto | null,
 	today: string,
 ): ShowSeasonFm[] {
 	return (data?.seasons ?? []).map((season) => {
@@ -34,6 +37,7 @@ export function fromShowSeasonListDtoToShowSeasonsFm(
 			stillPath: episode.stillPath,
 			isWatched: episode.isWatched,
 			isAired: isAiredEpisode(episode.airDate, today),
+			nas: readNasDetails(episode),
 		}));
 		const aired = episodes.filter(({ isAired }) => isAired);
 		const watchedEpisodeCount = aired.filter(
@@ -51,6 +55,7 @@ export function fromShowSeasonListDtoToShowSeasonsFm(
 			airedEpisodeCount: aired.length,
 			isWatched: aired.length > 0 && watchedEpisodeCount === aired.length,
 			episodes,
+			nas: readNasDetails(season),
 		};
 	});
 }

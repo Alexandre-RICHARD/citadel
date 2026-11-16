@@ -43,6 +43,16 @@ export const backlogErrorReasons: Record<BacklogErrorCodeEnum, string> = {
 	[BacklogErrorCodeEnum.MEDIA_IMPORT_NOT_FOUND]: "aucun import n'est en cours",
 	[BacklogErrorCodeEnum.MEDIA_IMPORT_ALREADY_RUNNING]:
 		"un import est déjà en cours",
+	[BacklogErrorCodeEnum.MEDIA_PASSWORD_INVALID]:
+		"le mot de passe des médias est incorrect",
+	[BacklogErrorCodeEnum.NAS_OWNER_ONLY]:
+		"seul le compte du propriétaire du NAS ouvre le mode connecté",
+	[BacklogErrorCodeEnum.NAS_LOCKED]:
+		"le mode connecté est verrouillé, redonnez le mot de passe des médias",
+	[BacklogErrorCodeEnum.NAS_SURVEY_UNAVAILABLE]:
+		"le relevé du NAS est absent ou illisible, relancez le job depuis la console",
+	[BacklogErrorCodeEnum.NOT_VERIFIABLE]:
+		"ce média n'a pas de fichier, ou en a plusieurs",
 	[BacklogErrorCodeEnum.MEDIA_IMPORT_NOT_READY]:
 		"la lecture de la liste n'est pas terminée",
 };

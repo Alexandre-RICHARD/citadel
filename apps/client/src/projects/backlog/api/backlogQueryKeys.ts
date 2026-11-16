@@ -41,6 +41,10 @@ export const backlogQueryKeys = {
 	sagaEntries: (sagaId: number) => [ROOT, "sagaEntries", sagaId] as const,
 	mediaImport: () => [ROOT, "mediaImport"] as const,
 	showUpdates: () => [ROOT, "showUpdates"] as const,
+	// Mode connecté : son statut, les médias oubliés. Les lignes du tableau connecté sont une vue de userMediaLists, et
+	// ses saisons gardent la clé showSeasons : les écritures les mettent à jour comme celles du mode classique
+	nasStatus: () => [ROOT, "nasStatus"] as const,
+	forgottenMedia: () => [ROOT, "forgottenMedia"] as const,
 	// Une seule mutation à la fois par action et par élément
 	mutation: (action: string, ...ids: (number | string)[]) => [
 		ROOT,

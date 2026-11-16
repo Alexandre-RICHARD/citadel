@@ -1,12 +1,15 @@
+import type { ConnectedUserMediaDto } from "@citadel/specs/src/projects/backlog/dto/nas/connectedUserMediaDto.type";
 import type { UserMediaDto } from "@citadel/specs/src/projects/backlog/dto/userMedia/userMediaDto.type";
 import { MediaTypeEnum } from "@citadel/specs/src/projects/backlog/enum/mediaType.enum";
 
 import { isTemporaryId } from "../../../../../common/api/mutation/isTemporaryId";
 import { buildTmdbMediaUrl } from "../../../helper/media/buildTmdbMediaUrl";
+import { readNasDetails } from "../nas/readNasDetails";
 import type { MediaRowFm } from "./mediaRowFm.type";
 
+// Une ligne du mode connecté porte ses colonnes du NAS ; celle du mode classique, ou ajoutée à l'instant, non
 export function fromUserMediaDtoToMediaRowFm(
-	userMedia: UserMediaDto,
+	userMedia: UserMediaDto | ConnectedUserMediaDto,
 ): MediaRowFm {
 	return {
 		userMediaId: userMedia.id,
@@ -37,5 +40,6 @@ export function fromUserMediaDtoToMediaRowFm(
 		isInProgress: userMedia.isInProgress,
 		comment: userMedia.comment,
 		isTemporary: isTemporaryId(userMedia.id),
+		nas: readNasDetails(userMedia),
 	};
 }

@@ -18,6 +18,7 @@ function episode(
 		stillPath: null,
 		isWatched,
 		isAired,
+		nas: null,
 	};
 }
 
@@ -39,6 +40,7 @@ function season(
 		airedEpisodeCount: aired.length,
 		isWatched: aired.length > 0 && aired.every(({ isWatched }) => isWatched),
 		episodes,
+		nas: null,
 	};
 }
 
