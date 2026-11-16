@@ -7,7 +7,7 @@ import { Saga } from "../../models/Saga.ts";
 export async function sagaExistsQuery(
 	userId: number,
 	sagaId: number,
-	transaction: Transaction,
+	transaction: Transaction | null = null,
 ): Promise<boolean> {
 	try {
 		return (
