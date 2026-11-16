@@ -1,5 +1,5 @@
-import { wait } from "@citadel/common/src/universal/async/wait.ts";
 import { fetchWithTimeout } from "@citadel/common/src/universal/http/fetchWithTimeout.ts";
+import { createRequestPacer } from "@citadel/common/src/universal/limit/createRequestPacer.ts";
 import { externalLinks } from "@citadel/specs/src/links/externalLinks.ts";
 import { BacklogErrorCodeEnum } from "@citadel/specs/src/projects/backlog/error/backlogErrorCode.enum.ts";
 
@@ -35,7 +35,7 @@ function unavailable(message: string, cause?: unknown): BadGatewayError {
 class IgdbClient {
 	#tokenRequest: Promise<CachedToken> | null = null;
 
-	#nextRequestAt = 0;
+	#pacer = createRequestPacer(REQUEST_GAP_MS);
 
 	// Requête Apicalypse en texte brut sur un endpoint IGDB (`games`, `game_types`…)
 	async request<Result>(endpoint: string, body: string): Promise<Result> {
@@ -50,7 +50,7 @@ class IgdbClient {
 
 	async #send(endpoint: string, body: string): Promise<Response> {
 		const { accessToken } = await this.#getToken();
-		await this.#waitForSlot();
+		await this.#pacer.waitForTurn();
 		try {
 			return await fetchWithTimeout(
 				`${externalLinks.igdbApi}/${endpoint}`,
@@ -77,14 +77,6 @@ class IgdbClient {
 		} catch (error) {
 			throw unavailable(`IGDB sent an unreadable body on ${endpoint}`, error);
 		}
-	}
-
-	// Chaque requête prend le créneau suivant, réservé avant toute attente : des appels simultanés partent à la suite
-	async #waitForSlot(): Promise<void> {
-		const now = Date.now();
-		const startAt = Math.max(now, this.#nextRequestAt);
-		this.#nextRequestAt = startAt + REQUEST_GAP_MS;
-		if (startAt > now) await wait(startAt - now);
 	}
 
 	// Des appels simultanés partagent la même demande de token ; une demande échouée est refaite au prochain appel
