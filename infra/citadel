@@ -2039,7 +2039,9 @@ start_cross_seed_search() {
 # déjà survey/ en écriture : infra-ops voit /Volume1/appdata en lecture seule. Voir job_media_sync.
 # Un échec est dit sans arrêter : le job, ou la lecture du relevé, le diront aussi
 hand_survey_to() {
-	compose run --rm --no-deps --user 0 --entrypoint chown media-sync -R "$1" /media-state/survey >/dev/null ||
+	# cap_drop: ALL (hardened) retire aussi le droit de changer de propriétaire : on rend CHOWN, et
+	# DAC_OVERRIDE pour entrer dans un dossier que l'ACL du NAS réserve à son propriétaire
+	compose run --rm --no-deps --user 0 --cap-add CHOWN --cap-add DAC_OVERRIDE --entrypoint chown media-sync -R "$1" /media-state/survey >/dev/null ||
 		echo "⚠ survey/ n'a pas pu passer à $1"
 }
 
