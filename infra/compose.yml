@@ -381,6 +381,10 @@ services:
     container_name: media-sync
     profiles: [jobs]
     restart: "no"
+    # Sous l'utilisateur des services média (PUID/PGID), propriétaire de /Volume2/data :
+    # celui du serveur (node, 1000) n'a pas le droit de le lire. citadel lui donne aussi
+    # media-state/survey et state/media-sync, ses deux seules écritures
+    user: "${PUID:?manque dans .env.prod}:${PGID:?manque dans .env.prod}"
     command: ["node", "--enable-source-maps", "build/mediaSync.cjs"]
     environment:
       # Les dossiers, tels que montés plus bas

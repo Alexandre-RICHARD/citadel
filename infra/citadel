@@ -202,11 +202,13 @@ host_main() {
 			mkdir -p "$RESTORE_JOURNAL_DIR"
 			chown "$SERVER_UID:$SERVER_UID" "$RESTORE_JOURNAL_DIR"
 			chmod 700 "$RESTORE_JOURNAL_DIR"
-			# media-state, pour la même raison, au serveur (node) : verified/, où l'instance
-			# locale écrit les cases « vérifié », et survey/, où le job media-sync (même image)
-			# écrit son relevé. L'instance locale monte survey/ en lecture seule
+			# media-state, pour la même raison : verified/ au serveur (node), où l'instance
+			# locale écrit les cases « vérifié » ; survey/ à l'utilisateur des services média
+			# (PUID/PGID), sous lequel tourne le job media-sync pour lire /Volume2/data. Le
+			# relevé reste lisible par tous (755, fichiers 644) : l'instance locale le lit
 			mkdir -p "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
-			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/survey" "$MEDIA_STATE_DIR/verified"
+			chown "$(env_value PUID):$(env_value PGID)" "$MEDIA_STATE_DIR/survey"
+			chown "$SERVER_UID:$SERVER_UID" "$MEDIA_STATE_DIR/verified"
 			chmod 755 "$MEDIA_STATE_DIR/survey"
 			chmod 700 "$MEDIA_STATE_DIR/verified"
 			run_ops "$2" "$@"
@@ -2054,9 +2056,10 @@ job_media_sync() {
 		esac
 	fi
 
-	# Le dossier du rapport, au serveur (node), qui y écrit : Docker le créerait à root
+	# Le dossier du rapport, à l'utilisateur des services média (PUID/PGID), sous lequel
+	# tourne media-sync : Docker le créerait à root. La console le lit (755, fichiers 644)
 	mkdir -p "$STATE_DIR/media-sync"
-	chown "$SERVER_UID:$SERVER_UID" "$STATE_DIR/media-sync"
+	chown "$(env_value PUID):$(env_value PGID)" "$STATE_DIR/media-sync"
 	if ! output=$(compose run --rm --no-deps --env MEDIA_SYNC_CROSS_SEED_SEARCH="$search" media-sync 2>&1); then
 		printf '%s\n' "$output"
 		check_fail "relevé" "$(tail -n 1 <<<"$output")"
