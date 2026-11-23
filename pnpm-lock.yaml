@@ -178,8 +178,8 @@ importers:
         specifier: ^3.15.1
         version: 3.15.1
       gtfs-realtime-bindings:
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^3.0.0
+        version: 3.0.0
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -2831,9 +2831,9 @@ packages:
   gsap@3.15.1:
     resolution: {integrity: sha512-63yjWRFWj3QRP1UOuD8kcidCcy3nxb1mMRpwHr/xJRvPfm9GtWOXFAYUiL0ro1fgPq2nY53LR+98pAgy9BumBg==}
 
-  gtfs-realtime-bindings@2.2.0:
-    resolution: {integrity: sha512-JX6aADdPWtKMXA3Z/G2TK2kgR/gXZFFpfL7cdlR2fYvnJK5JDiyfEGC4+/65dF591d8nooUjhM387OSdesAIDQ==}
-    engines: {node: '>=22'}
+  gtfs-realtime-bindings@3.0.0:
+    resolution: {integrity: sha512-LX4b8N+TJgXweptTxbYoSm+ZvUTY9GRlUmxAHPTO/CzZdocFsLpKBL+a7oKQMEcn08SAlzEmgCOCCUYwwhxcPg==}
+    engines: {node: '>=24.22.3'}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -6923,7 +6923,7 @@ snapshots:
 
   gsap@3.15.1: {}
 
-  gtfs-realtime-bindings@2.2.0:
+  gtfs-realtime-bindings@3.0.0:
     dependencies:
       protobufjs: 8.8.1
       protobufjs-cli: 2.7.1(protobufjs@8.8.1)
